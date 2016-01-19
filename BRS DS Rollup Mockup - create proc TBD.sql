@@ -7,6 +7,8 @@
 -- last day of Monthend (run only once)
 -- Gary run 25 Sep 2015 after daily sales
 --  Highlight to bottom and hit cntl E
+-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+
 
 INSERT INTO BRS_ItemHistory 
 (
@@ -157,16 +159,20 @@ WHERE
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
-		AdjCode, 
+
+		-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
+
 		SalesDivision, 
 		t.Shipto, 
-		FreeGoodsEstInd, 
+		t.FreeGoodsEstInd, 
 		OrderSourceCode, 
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
 		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
 	--			SUM(NetSalesAmt) - SUM(ExtendedCostAmt) AS GPAmt, 
+
 		COUNT(*) AS FactCount,
 		MAX(t.ID) as ID_MAX,
 
@@ -186,16 +192,23 @@ WHERE
 		ON c.ShipTo = t.Shipto   AND
 			c.FiscalMonth = t.FiscalMonth
 
+		LEFT JOIN BRS_ItemMPC as mpc
+		ON mpc.MajorProductClass = t.MajorProductClass
+
 	WHERE     
+--		(t.FiscalMonth BETWEEN 201512 AND 201512)
 		(t.FiscalMonth BETWEEN 201401 AND 201512)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
-		AdjCode, 
+
+		-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END, 
+
 		SalesDivision, 
 		t.Shipto, 
-		FreeGoodsEstInd, 
+		t.FreeGoodsEstInd, 
 		OrderSourceCode
 
 	GO

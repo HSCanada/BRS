@@ -31,6 +31,7 @@ AS
 **	21 Dec 15	tmc		Change Prior Estimate (P) to (E)stimate -- CY Est removed
 **						Set NSA sales to 0 GP for Transactions (already adj in AGG)
 **	23 Dec 15	tmc		Change E & P back -- needed for ME transition from Est to Act adj
+**  19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 report recon
 **    
 *******************************************************************************/
 
@@ -74,7 +75,11 @@ SELECT
 	t.FiscalMonth, 
 	t.Branch,
 	t.GLBU_Class, 
-	t.AdjCode,
+
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
+--	t.AdjCode,
+
 	t.SalesDivision, 
 	'A' AS TrxSrc, 
 
@@ -99,6 +104,11 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	LEFT JOIN BRS_ItemMPC as mpc
+	ON mpc.MajorProductClass = t.MajorProductClass
+
+
 WHERE
 	t.FiscalMonth = @nFiscalMonth AND
 	t.SalesDate = @dtSalesDay
@@ -107,7 +117,11 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-	,t.AdjCode
+
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
+--	,t.AdjCode
+
 	,t.SalesDivision
 
 	,c.MarketClass
@@ -280,7 +294,11 @@ SELECT
 	t.FiscalMonth, 
 	t.Branch,
 	t.GLBU_Class, 
-	t.AdjCode,
+
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
+--	t.AdjCode,
+
 	t.SalesDivision, 
 	'A' AS TrxSrc, 
 
@@ -305,6 +323,11 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	LEFT JOIN BRS_ItemMPC as mpc
+	ON mpc.MajorProductClass = t.MajorProductClass
+
+
 WHERE
 	t.SalesDate < @dtSalesDay AND 
 		t.FiscalMonth = @nFiscalMonth 
@@ -313,7 +336,11 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-	,t.AdjCode
+
+	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
+	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
+--	,t.AdjCode
+
 	,t.SalesDivision
 
 	,c.MarketClass
