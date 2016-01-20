@@ -9,7 +9,7 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_Cube_proc
-**	Desc: Load Weekly Customer & Item Dimentions 
+**	Desc: Load Weekly Customer & Item Dimensions 
 **
 **              
 **	Return values:  @@Error
