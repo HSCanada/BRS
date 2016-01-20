@@ -27,11 +27,16 @@
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
-SET NOCOUNT ON
+--SET NOCOUNT ON
+
+TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_IMD_Sales
+
  
 Select
 	@nFiscalCurrent 	= FiscalMonth,
-	@nFiscalFrom		= FirstFiscalMonth_TY,
+	@nFiscalFrom		= FirstFiscalMonth_LY,
 	@nFiscalTo			= PriorFiscalMonth
 FROM
 	BRS_Rollup_Support02 g
@@ -41,11 +46,9 @@ FROM
 --------------------------------------------------------------------------------
 Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 --------------------------------------------------------------------------------
--- Takes 9min to run, 19 Jan 16
+-- Takes 10min to run, 19 Jan 16
 
-	TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 
-	GO
 	INSERT INTO BRS_AGG_CMBGAD_Sales
 	(
 		FiscalMonth, 
@@ -75,7 +78,7 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
+		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
 
 		SalesDivision, 
 		t.Shipto, 
@@ -118,24 +121,16 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END, 
+		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
 
 		SalesDivision, 
 		t.Shipto, 
 		t.FreeGoodsEstInd, 
 		OrderSourceCode
 
-	GO
-
-
 --------------------------------------------------------------------------------
 Print 'Building Item Summary (BRS_AGG_ICMBGAD_Sales), used by Vendor Sales ...'
 --------------------------------------------------------------------------------
--- Takes xxx min to run, 19 Jan 16
-
-TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-
-GO
 
 INSERT INTO BRS_AGG_ICMBGAD_Sales
 (
@@ -144,9 +139,7 @@ INSERT INTO BRS_AGG_ICMBGAD_Sales
 	Shipto, 
 	Branch, 
 	GLBU_Class, 
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
-
+	AdjCode, 
 	SalesDivision, 
 	FreeGoodsEstInd, 
 	OrderSourceCode, 
@@ -159,10 +152,11 @@ SELECT
 	FiscalMonth, 
 	Shipto, 
 	Branch, 
-	GLBU_Class, 
-	AdjCode, 
+	t.GLBU_Class, 
+-- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
+	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
 	SalesDivision, 
-	FreeGoodsEstInd, 
+	t.FreeGoodsEstInd, 
 	OrderSourceCode, 
 	SUM(NetSalesAmt) AS SalesAmt, 
 	SUM(NetSalesAmt) - SUM(ExtendedCostAmt) AS GPAmt, 
@@ -177,31 +171,26 @@ FROM
 
 WHERE     
 	(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
+--	(t.FiscalMonth BETWEEN 201512 AND 201512 )
+
 GROUP BY 
 	Item,
 	FiscalMonth, 
 	Shipto, 
 	Branch, 
-	GLBU_Class, 
+	t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END, 
+	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
 
 	SalesDivision, 
-	FreeGoodsEstInd, 
+	t.FreeGoodsEstInd, 
 	OrderSourceCode, 
 	Branch
-GO
-
-
 
 --------------------------------------------------------------------------------
 Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
 --------------------------------------------------------------------------------
--- Takes xxx min to run, 19 Jan 16
-
-TRUNCATE TABLE BRS_AGG_IMD_Sales
-GO
 
 INSERT INTO BRS_AGG_IMD_Sales
 (
@@ -250,8 +239,6 @@ GROUP BY
 	SalesDivision, 
 	FreeGoodsEstInd, 
 	OrderSourceCode
-
-GO
 
 
 /*
