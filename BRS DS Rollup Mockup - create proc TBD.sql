@@ -29,11 +29,7 @@ Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
 --SET NOCOUNT ON
 
-TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_IMD_Sales
 
- 
 Select
 	@nFiscalCurrent 	= FiscalMonth,
 	@nFiscalFrom		= FirstFiscalMonth_LY,
@@ -41,6 +37,9 @@ Select
 FROM
 	BRS_Rollup_Support02 g
 
+TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_IMD_Sales
 
 
 --------------------------------------------------------------------------------
@@ -290,7 +289,8 @@ GO
 
 
 
--- Fix FSC?
+-- Fix FSC? - rum manual
+
 SELECT     
 	SalesOrderNumberKEY, 
 	DocType, 
@@ -314,7 +314,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201401 and 201512) 
+	(t.FiscalMonth between 201601 and 201601) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -337,6 +337,6 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201401 and 201512) 
+	(t.FiscalMonth between 201601 and 201601) 
 */
 
