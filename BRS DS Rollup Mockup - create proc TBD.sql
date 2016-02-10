@@ -24,6 +24,11 @@
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
 **    
 *******************************************************************************/
+/*
+TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_IMD_Sales
+*/
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
@@ -37,9 +42,8 @@ Select
 FROM
 	BRS_Rollup_Support02 g
 
-TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_IMD_Sales
+Select FiscalMonth, FirstFiscalMonth_LY, PriorFiscalMonth
+FROM BRS_Rollup_Support02 
 
 
 --------------------------------------------------------------------------------
