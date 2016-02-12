@@ -35,6 +35,7 @@ Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 --SET NOCOUNT ON
 
 
+-- Get Params
 Select
 	@nFiscalCurrent 	= FiscalMonth,
 	@nFiscalFrom		= FirstFiscalMonth_LY,
@@ -42,8 +43,13 @@ Select
 FROM
 	BRS_Rollup_Support02 g
 
-Select FiscalMonth, FirstFiscalMonth_LY, PriorFiscalMonth
-FROM BRS_Rollup_Support02 
+-- Echo Params
+SELECT 
+	FiscalMonth, 
+	FirstFiscalMonth_LY, 
+	PriorFiscalMonth
+FROM 
+	BRS_Rollup_Support02 
 
 
 --------------------------------------------------------------------------------
@@ -291,9 +297,29 @@ FROM
 
 GO
 
+-- Run only FIRST day of month, after Dimension loaded and SM corrections run
 
 
--- Fix FSC? - rum manual
+-- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
+
+
+SELECT DISTINCT    
+	t.Shipto, 
+	t.FiscalMonth, 
+	t.TerritoryCd as HIST_TerritoryCd, 
+	t.VPA as HIST_VPA,
+	'' as HIST_Specialty,
+	'' as HIST_MarketClass,
+	'' as HIST_SegCd
+
+FROM         BRS_Transaction t
+
+where 
+	(t.Shipto > 0) And
+	(DocType <> 'AA') And
+	NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth) AND
+	(t.FiscalMonth between 201601 and 201601) 
+
 
 SELECT     
 	SalesOrderNumberKEY, 
@@ -343,4 +369,6 @@ WHERE
 	(t.DocType <> 'AA') AND 
 	(t.FiscalMonth between 201601 and 201601) 
 */
+
+
 

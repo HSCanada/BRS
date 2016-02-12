@@ -39,6 +39,7 @@ AS
 **  24 Aug 15	tmc		Add new BT mapping logic
 **  14 Dec 15	tmc		Remove Monthend mode (will handle separately)
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
+--  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
 **    
 *******************************************************************************/
 BEGIN
@@ -388,14 +389,17 @@ End
 if (@bDebug <> 0)
 	Print 'Batch Status =' + Convert(varchar, @nBatchStatus)
 
+
 -- 999 = Locked
 If (@nBatchStatus <>999)
 Begin
+
 
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
 			Print 'LOAD NewDay into transaction'
+
 
 	INSERT INTO BRS_Transaction (
 		FiscalMonth, 
@@ -483,19 +487,32 @@ Begin
 		INNER JOIN BRS_ItemMPC AS mpc 
 		ON l.MajorProductClass= mpc.MajorProductClass
 
+--  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
+
+	ORDER BY 
+		FiscalMonth, 
+		Branch, 
+		l.GLBUClass, 
+		SalesDate
+
 		Set @nErrorCode = @@Error
 	End
+
 
 
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
 			Print 'Clear Stage trans'	
-		
-		Delete FROM dbo.STAGE_BRS_Transaction
+
+--  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate		
+		TRUNCATE TABLE dbo.STAGE_BRS_Transaction
+--		Delete FROM dbo.STAGE_BRS_Transaction
 
 		Set @nErrorCode = @@Error
 	End
+
+
 
 	If (@nErrorCode = 0) 
 	Begin
@@ -514,88 +531,6 @@ Begin
 
 End
 
-
--- Update Month with last Customer Info 
--- **  14 Dec 15	tmc		Remove Monthend mode (will handle separately)
-
-/*
-if (@nRunMode <> 0)
-Begin
-	if (@bDebug <> 0)
-		Print 'UPDATE Month Transaction with Current Customer Info'
-
-
-	If (@nErrorCode = 0) 
-	Begin
-		if (@bDebug <> 0)
-			Print 'Get Month Status for BRS'
-
-		Select 	
-			@nBatchStatus = StatusCd
-		From 
-			dbo.BRS_FiscalMonth
-		Where
-			FiscalMonth = @nFiscalMonth
-		
-		Set @nErrorCode = @@Error
-	End
-	
-	if (@bDebug <> 0)
-		Print 'Batch Status =' + Convert(varchar, @nBatchStatus)
-
-
---  06 Dec 15	tmc		Added ME post Terr, VPA update logic
-	-- 999 = Locked
-	If (@nBatchStatus <>999)
-	Begin
-
-		If (@nErrorCode = 0) 
-		Begin
-			if (@bDebug <> 0)
-				Print 'Update Month Custinfo = YES'
-
-			UPDATE    
-				BRS_Transaction
-			SET              
-				Branch = f.Branch, 
-				TerritoryCd = c.LME_TerritoryCd, 
-				Specialty = c.LME_Specialty, 
-				VPA = c.LME_VPA, 
-				StatusCd = 999
-			FROM         
-				BRS_Transaction 
-					INNER JOIN BRS_Customer AS c 
-					ON BRS_Transaction.Shipto = c.ShipTo 
-
-					INNER JOIN BRS_FSC_Rollup AS f 
-					ON c.LME_TerritoryCd = f.TerritoryCd
-
-			WHERE     
-				(BRS_Transaction.FiscalMonth = @nFiscalMonth) AND 
-				-- Update ONLY where valid ST; Adjustments w/o ST will not be touched
-				(BRS_Transaction.Shipto > 0)
-
-			Set @nErrorCode = @@Error
-		End
-
-
-		If (@nErrorCode = 0) 
-		Begin
-			if (@bDebug <> 0)
-				Print 'Set Month BatchStatus to Processed'	
-
-			Update
-				dbo.BRS_FiscalMonth
-			Set 
-				StatusCd = 20
-			Where 
-				FiscalMonth = @nFiscalMonth
-		
-			Set @nErrorCode = @@Error
-		End
-	End
-End
-*/
 
 -- Monthend commit
 
@@ -640,16 +575,6 @@ FROM         STAGE_BRS_Transaction_Load INNER JOIN
 */
 
 
--- Daily (Test / Prod)
 -- [BRS_BE_Transaction_load_proc] 0, 1
--- [BRS_BE_Transaction_load_proc] 0, 0
-
-
--- Monthly (Test / Prod)
--- [BRS_BE_Transaction_load_proc] 1, 1
--- [BRS_BE_Transaction_load_proc] 1, 0
-
-
--- delete from dbo.BRS_Transaction where SalesDate = '11 Jan 2016'
 
 
