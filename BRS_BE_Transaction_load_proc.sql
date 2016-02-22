@@ -40,6 +40,7 @@ AS
 **  14 Dec 15	tmc		Remove Monthend mode (will handle separately)
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
+--  22 Feb 16	tmc		Undo Truncate to to simplify rights for non-admins
 **    
 *******************************************************************************/
 BEGIN
@@ -506,8 +507,8 @@ Begin
 			Print 'Clear Stage trans'	
 
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate		
-		TRUNCATE TABLE dbo.STAGE_BRS_Transaction
---		Delete FROM dbo.STAGE_BRS_Transaction
+--		TRUNCATE TABLE dbo.STAGE_BRS_Transaction
+		Delete FROM dbo.STAGE_BRS_Transaction
 
 		Set @nErrorCode = @@Error
 	End
