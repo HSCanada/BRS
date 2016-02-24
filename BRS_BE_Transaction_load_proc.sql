@@ -41,6 +41,7 @@ AS
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
 --  22 Feb 16	tmc		Undo Truncate to to simplify rights for non-admins
+--	24 Feb 16	tmc		Set Complete status to 15, indicating that a post process is required (20)
 **    
 *******************************************************************************/
 BEGIN
@@ -54,6 +55,11 @@ Set @nTranCount = @@Trancount
 Declare @dtSalesDay datetime
 Declare @nBatchStatus int
 Declare @nFiscalMonth int
+
+SET NOCOUNT ON;
+
+if (@bDebug <> 0)
+	SET NOCOUNT OFF;
 
 Set @nBatchStatus = -1
 
@@ -523,7 +529,8 @@ Begin
 		Update
 			BRS_SalesDay
 		Set 
-			StatusCd = 20
+--	24 Feb 16	tmc		Set Complete status to 15, indicating that a post process is required (20)
+			StatusCd = 15
 		Where 
 			SalesDate = @dtSalesDay
 	
@@ -564,18 +571,10 @@ Return @nErrorCode
 END
 GO
 
--- Find Line# dups
-/*
 
-SELECT     BRS_Transaction.FiscalMonth, BRS_Transaction.SalesOrderNumberKEY, BRS_Transaction.DocType, 
-                      BRS_Transaction.LineNumber, BRS_Transaction.SalesDate
-FROM         STAGE_BRS_Transaction_Load INNER JOIN
-                      BRS_Transaction ON STAGE_BRS_Transaction_Load.SalesOrderNumberKEY = BRS_Transaction.SalesOrderNumberKEY AND 
-                      STAGE_BRS_Transaction_Load.DocType = BRS_Transaction.DocType AND STAGE_BRS_Transaction_Load.LineNumber = BRS_Transaction.LineNumber
+-- debug run
+-- [BRS_BE_Transaction_load_proc] 
 
-*/
-
-
--- [BRS_BE_Transaction_load_proc] 0, 1
-
+-- prod run
+-- [BRS_BE_Transaction_load_proc] 0, 0
 

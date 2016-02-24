@@ -32,6 +32,7 @@ AS
 **						Set NSA sales to 0 GP for Transactions (already adj in AGG)
 **	23 Dec 15	tmc		Change E & P back -- needed for ME transition from Est to Act adj
 **  19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 report recon
+--	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
 **    
 *******************************************************************************/
 
@@ -595,14 +596,144 @@ GROUP BY
 	,t.HIST_MarketClass
 	,t.HIST_SegCd 
 
+UNION ALL
+
+--	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
+
+-- 11. MTD-1 CY - Estimate from LY Aggregate - (CY.PMTD.EST)
+SELECT     
+	'CY' AS TimePeriod, 
+	'' AS DAY, 
+	'' AS MTD, 
+--  PM logic:  pull the last year's monthend - 1 data and set the appropriate quarter logic
+	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
+		t.FiscalMonth <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
+	'YTD' AS YTD, 
+
+	t.FiscalMonth, 
+	t.Branch, 
+	t.GLBU_Class, 
+	t.AdjCode,
+	t.SalesDivision, 
+	'F' AS TrxSrc, 
+
+	t.HIST_MarketClass AS MarketClass, 
+	t.HIST_SegCd AS SegCd,
+
+	'CY.PMTD.EST' AS Status,
+	                      
+	SUM(t.SalesAmt * a.MTDEst_rt)  AS SalesAmt, 
+	SUM(t.GPAmt * a.MTDEst_rt)  AS GPAmt, 
+
+
+	@dtSalesDay  AS SalesDate,
+	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
+	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID	
+
+
+FROM         
+	BRS_AGG_CMBGAD_Sales AS t 
+
+	INNER JOIN BRS_AdjCode AS a 
+	ON t.AdjCode = a.AdjCode 
+
+WHERE    
+-- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
+	t.FiscalMonth = (@nFiscalMonth_LY-1) AND
+
+	(a.MTDEstInd = 1)
+
+GROUP BY 
+	t.FiscalMonth
+	,t.Branch
+	,t.GLBU_Class
+	,t.AdjCode
+	,t.SalesDivision
+
+	,t.HIST_MarketClass
+	,t.HIST_SegCd 
 
 
 END
 
 GO
 
+-- Debug
+-- BRS_DS_Cube_proc 
 
+-- Prod
 -- BRS_DS_Cube_proc 0
 
 
+--
+--
+/*
 
+-- Temp testing for step 11
+
+Declare @nFiscalMonth int
+Declare @nFiscalMonth_LY int
+Declare @dtSalesDay datetime
+
+--Set @nFiscalMonth		= 201512
+--Set @nFiscalMonth_LY	= 201412
+--Set @dtSalesDay = '5 Dec 2015'
+
+Set @nFiscalMonth		= 201501
+Set @nFiscalMonth_LY	= 201401
+Set @dtSalesDay = '4 Jan 2015'
+
+-- 11. MTD-1 CY - Estimate from LY Aggregate - (CY.PMTD.EST)
+SELECT     
+	'CY' AS TimePeriod, 
+	'' AS DAY, 
+	'' AS MTD, 
+--  PM logic:  pull the last year's monthend - 1 data and set the appropriate quarter logic
+	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
+		t.FiscalMonth <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
+	'YTD' AS YTD, 
+
+	t.FiscalMonth, 
+	t.Branch, 
+	t.GLBU_Class, 
+	t.AdjCode,
+	t.SalesDivision, 
+	'F' AS TrxSrc, 
+
+	t.HIST_MarketClass AS MarketClass, 
+	t.HIST_SegCd AS SegCd,
+
+	'CY.PMTD.EST' AS Status,
+	                      
+	SUM(t.SalesAmt * a.MTDEst_rt)  AS SalesAmt, 
+	SUM(t.GPAmt * a.MTDEst_rt)  AS GPAmt, 
+
+
+	@dtSalesDay  AS SalesDate,
+	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
+	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID	
+
+
+FROM         
+	BRS_AGG_CMBGAD_Sales AS t 
+
+	INNER JOIN BRS_AdjCode AS a 
+	ON t.AdjCode = a.AdjCode 
+
+WHERE    
+-- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
+	t.FiscalMonth = (@nFiscalMonth_LY-1) AND
+
+	(a.MTDEstInd = 1)
+
+GROUP BY 
+	t.FiscalMonth
+	,t.Branch
+	,t.GLBU_Class
+	,t.AdjCode
+	,t.SalesDivision
+
+	,t.HIST_MarketClass
+	,t.HIST_SegCd 
+
+*/

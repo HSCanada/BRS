@@ -1,4 +1,4 @@
-
+,
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_AGG_Build_proc
@@ -242,6 +242,9 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 	(t.CalMonth BETWEEN @nFiscalFrom AND @nFiscalTo)
+-- Manual load
+--	(t.CalMonth BETWEEN 201201 AND 201412)
+
 GROUP BY 
 	Item,
 	CalMonth, 
@@ -251,7 +254,7 @@ GROUP BY
 
 
 /*
--- Below needs to be steamlined and possibly moved
+-- Below needs to be streamlined and possibly moved
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
 
