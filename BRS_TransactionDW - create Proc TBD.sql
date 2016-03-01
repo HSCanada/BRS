@@ -1,8 +1,14 @@
 
+-- Step 1:  clear tables (run below)
 /*
 truncate table STAGE_BRS_Promotion 
 truncate table STAGE_BRS_TransactionDW
 */
+-- Step 2:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_TransactionDW_Load.bat"
+
+-- Step 3:  run below script
+
+-- Step 4:  run summary 
 
 INSERT INTO BRS_TransactionDW
 (

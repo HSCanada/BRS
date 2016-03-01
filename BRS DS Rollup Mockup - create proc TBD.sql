@@ -28,7 +28,7 @@
 /*
 TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_IMD_Sales
+-- TRUNCATE TABLE BRS_AGG_IMD_Sales
 */
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
@@ -124,7 +124,7 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 
 	WHERE     
 		(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
---		(t.FiscalMonth BETWEEN 201301 AND 201412)
+--		(t.FiscalMonth BETWEEN 201501 AND 201602)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
@@ -242,9 +242,9 @@ SELECT
 FROM         
 	BRS_TransactionDW AS t
 WHERE     
-	(t.CalMonth BETWEEN @nFiscalFrom AND @nFiscalTo)
+--	(t.CalMonth BETWEEN @nFiscalFrom AND @nFiscalTo)
 -- Manual load
---	(t.CalMonth BETWEEN 201201 AND 201412)
+	(t.CalMonth BETWEEN 201301 AND 201602)
 
 GROUP BY 
 	Item,

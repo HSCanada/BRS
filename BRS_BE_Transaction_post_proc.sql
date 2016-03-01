@@ -31,6 +31,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	25 Feb 16	tmc		Fix Branch change bug
+--	01 Mar 16	tmc		Fixed Customer Segment update bug
 **    
 *******************************************************************************/
 BEGIN
@@ -183,34 +184,12 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
--- BRS23_qrySpec09-UpdateCustSeg
-
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 4 - BRS23_qrySpec09-UpdateCustSeg'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		SegCd = s.SegCd
-	FROM         
-		BRS_Customer c 
-
-		INNER JOIN BRS_CustomerSpecialty AS s 
-		ON c.Specialty = s.Specialty AND
-			c.SegCd <> s.SegCd
-	WHERE     
-		(s.Specialty = '') 
-
-	Set @nErrorCode = @@Error
-End
 
 -- BRS24_qrySpec04-GroupDCCfix (Dental Corp, Fix legacy private practice accounts)
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 5 - BRS24_qrySpec04-GroupDCCfix'
+		Print 'Customer Update Step 4 - BRS24_qrySpec04-GroupDCCfix'
 
 	UPDATE    
 		BRS_Customer
@@ -235,7 +214,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 6 - BRS25_qrySpec05-GroupAOfix'
+		Print 'Customer Update Step 5 - BRS25_qrySpec05-GroupAOfix'
 
 	UPDATE    
 		BRS_Customer
@@ -260,7 +239,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 7 - BRS27_qrySpec06-UpdateSpec'
+		Print 'Customer Update Step 6 - BRS27_qrySpec06-UpdateSpec'
 
 	UPDATE    
 		BRS_Customer
@@ -275,6 +254,33 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+
+----
+-- BRS23_qrySpec09-UpdateCustSeg
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Customer Update Step 7 - BRS23_qrySpec09-UpdateCustSeg'
+
+	UPDATE    
+		BRS_Customer
+	SET              
+		SegCd = s.SegCd
+	FROM         
+		BRS_Customer c 
+
+		INNER JOIN BRS_CustomerSpecialty AS s 
+		ON c.Specialty = s.Specialty AND
+			c.SegCd <> s.SegCd
+	WHERE     
+--	01 Mar 16	tmc		Fixed Customer Segment update bug
+		(s.Specialty <> '') 
+--		(s.Specialty = '') 
+
+	Set @nErrorCode = @@Error
+End
+
+----
 
 -- BRS28_qrySpec07-UpdateMarketGrp
 If (@nErrorCode = 0) 
@@ -383,37 +389,6 @@ Begin
 
 End
 
-/*
--- Changed TerritoryCd
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Check for Changed TerritoryCd'
-
-	SELECT     
-		@nRowCount = COUNT(*)     
-	FROM         
-		BRS_Transaction AS t 
-
-		INNER JOIN BRS_Customer AS c 
-		ON t.Shipto = c.ShipTo 
-
-	WHERE
-		t.FiscalMonth = @nFiscalMonth AND
-		
-		t.DocType <> 'AA' AND
-		t.TerritoryCd <> c.TerritoryCd 
-		
-	Set @nExceptionCount = @nExceptionCount + @nRowCount
-
-	IF (@nRowCount > 0)
-		Set @sMessage = @sMessage + ', Changed-TerritoryCd' 
-
-	if (@bDebug <> 0)
-		Print @nRowCount
-
-End
-*/
 
 -- Missing Branch
 If (@nErrorCode = 0) 
