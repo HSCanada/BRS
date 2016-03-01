@@ -30,6 +30,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	25 Feb 16	tmc		Fix Branch change bug
 **    
 *******************************************************************************/
 BEGIN
@@ -453,10 +454,11 @@ Begin
 		INNER JOIN BRS_Customer AS c 
 		ON t.Shipto = c.ShipTo 
 
+--	25 Feb 16	tmc		Fix Branch change bug
 		INNER JOIN BRS_FSC_Rollup AS f 
-		ON t.TerritoryCd = f.TerritoryCd AND 
-			t.TerritoryORG = f.TerritoryCd AND 
-			c.TerritoryCd = f.TerritoryCd
+		ON c.TerritoryCd = f.TerritoryCd
+--		ON t.TerritoryCd = f.TerritoryCd AND 
+--			t.TerritoryORG = f.TerritoryCd AND 
 	WHERE
 		t.FiscalMonth = @nFiscalMonth AND
 		t.DocType <> 'AA' AND

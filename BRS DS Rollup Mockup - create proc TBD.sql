@@ -1,4 +1,4 @@
-,
+
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_AGG_Build_proc
@@ -22,6 +22,7 @@
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
+--	29 Feb 16	tmc		Updated documentation, pre automation
 **    
 *******************************************************************************/
 /*
@@ -123,7 +124,7 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 
 	WHERE     
 		(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
---		(t.FiscalMonth BETWEEN 201512 AND 201512)
+--		(t.FiscalMonth BETWEEN 201301 AND 201412)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
@@ -180,7 +181,7 @@ FROM
 
 WHERE     
 	(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
---	(t.FiscalMonth BETWEEN 201512 AND 201512 )
+--	(t.FiscalMonth BETWEEN 201401 AND 201412 )
 
 GROUP BY 
 	Item,
@@ -304,8 +305,6 @@ GO
 
 
 -- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
-
-
 SELECT DISTINCT    
 	t.Shipto, 
 	t.FiscalMonth, 
@@ -321,9 +320,10 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth) AND
-	(t.FiscalMonth between 201601 and 201601) 
+	(t.FiscalMonth between 201602 and 201602) 
 
 
+-- True up the FSC to match last day (updated Month filter)
 SELECT     
 	SalesOrderNumberKEY, 
 	DocType, 
@@ -331,6 +331,7 @@ SELECT
 	SalesDate, 
 	t.FiscalMonth, 
 	t.Shipto, 
+	t.NetSalesAmt,
 	t.TerritoryCd as TerritoryCd_Trans, 
 	h.HIST_TerritoryCd , 
 	t.Branch as TransBranch, 
@@ -347,7 +348,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201601 and 201601) 
+	(t.FiscalMonth between 201602 and 201602) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -370,7 +371,14 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201601 and 201601) 
+	(t.FiscalMonth between 201602 and 201602) 
+
+-- Next steps:
+-- 1. set Monthend end & prior ME dates, after DS published
+-- 2. Run this script Summary builds (1 of 2) prior ME adj - about 12 minutes 
+--		a) set dates
+--		b) Manual trucate first
+--		c) run script (about 15 min)
 */
 
 

@@ -469,7 +469,11 @@ go
 
 */
 
+-- Load info
 -- BRS_BE_Dimension_load_proc 0
+
+-- Cleanup info
+-- Exec BRS_BE_Transaction_post_proc 0
 
 
 
