@@ -26,8 +26,11 @@
 **    
 *******************************************************************************/
 /*
+-- TODO:  fix summary hist /vs rebuild logic; add email alert when complete
+
 TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+
 -- TRUNCATE TABLE BRS_AGG_IMD_Sales
 */
 
@@ -198,6 +201,10 @@ GROUP BY
 	OrderSourceCode, 
 	Branch
 
+/*
+
+-- run manual until History tables in place, 2 Feb 16
+
 --------------------------------------------------------------------------------
 Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
 --------------------------------------------------------------------------------
@@ -252,6 +259,7 @@ GROUP BY
 	SalesDivision, 
 	FreeGoodsEstInd, 
 	OrderSourceCode
+*/
 
 
 /*

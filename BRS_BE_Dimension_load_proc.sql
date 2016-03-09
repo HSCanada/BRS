@@ -459,17 +459,13 @@ GO
 
 /*
 truncate table STAGE_BRS_CustomerFull
-go
-
 truncate table STAGE_BRS_ItemFull
-go
 
 truncate table STAGE_BRS_Territory
 go
-
 */
 
--- Load info
+-- Prod Load
 -- BRS_BE_Dimension_load_proc 0
 
 -- Cleanup info

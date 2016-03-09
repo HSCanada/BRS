@@ -42,6 +42,7 @@ AS
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
 --  22 Feb 16	tmc		Undo Truncate to to simplify rights for non-admins
 --	24 Feb 16	tmc		Set Complete status to 15, indicating that a post process is required (20)
+--	09 Mar 16	tmc		Fixed bug here changes to customer was locking the specialty update
 **    
 *******************************************************************************/
 BEGIN
@@ -340,8 +341,9 @@ Begin
 		BillTo = BTADNO, 
 		Specialty = ISNULL(SPCCDID,''), 
 		VPA = ISNULL(SPCDID,''), 
-		TerritoryCd = ISNULL(AFTRCD,''),
-		StatusCd = 20
+		TerritoryCd = ISNULL(AFTRCD,'')
+--	09 Mar 16	tmc		Fixed bug here changes to customer was locking the specialty update
+--		StatusCd = 20
 
 
 	FROM         
