@@ -112,6 +112,7 @@ END
 GO
 
 
+-- Run with Prior Fiscal Month ref
 -- BRS_PL_SM_Cube_proc 201512
 
 
