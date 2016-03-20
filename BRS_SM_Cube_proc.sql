@@ -57,6 +57,20 @@ Select
 FROM
 	BRS_Rollup_Support02 g
 
+if (@nDebug <> 0 )
+Begin
+
+	Print @dtSalesDay				
+	Print @nFirstFiscalMonth		
+	Print @nPriorFiscalMonth		
+	Print @nFiscalMonth			
+	Print ''
+	Print @dtSalesDay_PY			
+	Print @nFirstFiscalMonth_PY	
+	Print @nPriorFiscalMonth_PY	
+	Print @nFiscalMonth_PY		
+
+End
 
 
 -- '1. MTD CY - Actual from Detail - (CY.MTD.ST.SM)'
