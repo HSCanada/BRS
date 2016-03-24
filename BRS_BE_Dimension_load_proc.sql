@@ -458,6 +458,8 @@ GO
 -- This must be run AFTER the Daily sales update (to catch any new FSC territories, 10 Nov 15
 
 /*
+
+-- 1 of 4:  Clear tables
 truncate table STAGE_BRS_CustomerFull
 truncate table STAGE_BRS_ItemFull
 
@@ -465,10 +467,12 @@ truncate table STAGE_BRS_Territory
 go
 */
 
--- Prod Load
--- BRS_BE_Dimension_load_proc 0
+-- 2 of 4:  run S:\Business Reporting\_BR_Sales\Upload BRS_Dimension_Load
 
--- Cleanup info
+-- 3 of 4:  Prod Load 
+-- Exec BRS_BE_Dimension_load_proc 0
+
+-- 4 of 4:  Cleanup info
 -- Exec BRS_BE_Transaction_post_proc 0
 
 
