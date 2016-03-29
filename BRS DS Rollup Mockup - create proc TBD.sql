@@ -23,6 +23,7 @@
 **	-----	----------	--------------------------------------------
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
 --	29 Feb 16	tmc		Updated documentation, pre automation
+--	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
 **    
 *******************************************************************************/
 /*
@@ -35,9 +36,6 @@ TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
 */
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
-
---SET NOCOUNT ON
-
 
 -- Get Params
 Select
@@ -201,6 +199,19 @@ GROUP BY
 	OrderSourceCode, 
 	Branch
 
+--------------------------------------------------------------------------------
+Print 'Mark month stataus as complete'
+--------------------------------------------------------------------------------
+--	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
+
+UPDATE    
+	BRS_FiscalMonth
+SET              
+	StatusCd = 10
+WHERE     
+	(FiscalMonth = @nFiscalTo)
+
+
 /*
 
 -- run manual until History tables in place, 2 Feb 16
@@ -328,7 +339,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth) AND
-	(t.FiscalMonth between 201602 and 201602) 
+	(t.FiscalMonth between 201603 and 201603) 
 
 
 -- True up the FSC to match last day (updated Month filter)
@@ -356,7 +367,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201602 and 201602) 
+	(t.FiscalMonth between 201603 and 201603) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -379,7 +390,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201602 and 201602) 
+	(t.FiscalMonth between 201603 and 201603) 
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
