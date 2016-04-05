@@ -109,32 +109,3 @@ FROM
 	ON  bu.GLBU_Class = buc.GLBU_Class
 
 
-/*
--- Fix FG flag, 14 Jan 16, tmc
-
-
-UPDATE    
-	BRS_TransactionDW
-SET              
-	FreeGoodsEstInd = CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 AND buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
-FROM         
-	BRS_TransactionDW 
-
-	LEFT OUTER JOIN BRS_DocType AS dt 
-	ON BRS_TransactionDW.DocType = dt.DocType 
-
-	LEFT OUTER JOIN BRS_ItemMPC AS mpc 
-	ON BRS_TransactionDW.MajorProductClass = mpc.MajorProductClass 
-
-	LEFT OUTER JOIN BRS_BusinessUnit AS bu 
-	ON ISNULL(BRS_TransactionDW.GLBusinessUnit, '') = bu.BusinessUnit 
-
-	LEFT OUTER JOIN BRS_BusinessUnitClass AS buc 
-	ON bu.GLBU_Class = buc.GLBU_Class
-
-WHERE     
-
---	(BRS_TransactionDW.CalMonth = 201512) AND 
-	(BRS_TransactionDW.FreeGoodsEstInd <> CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 AND 
-		buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END)
-*/

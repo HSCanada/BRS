@@ -260,9 +260,8 @@ SELECT
 FROM         
 	BRS_TransactionDW AS t
 WHERE     
---	(t.CalMonth BETWEEN @nFiscalFrom AND @nFiscalTo)
 -- Manual load
-	(t.CalMonth BETWEEN 201301 AND 201602)
+	(t.CalMonth BETWEEN 201603 AND 201603)
 
 GROUP BY 
 	Item,

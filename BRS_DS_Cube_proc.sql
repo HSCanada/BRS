@@ -33,6 +33,7 @@ AS
 **	23 Dec 15	tmc		Change E & P back -- needed for ME transition from Est to Act adj
 **  19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 report recon
 --	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 **    
 *******************************************************************************/
 
@@ -49,6 +50,8 @@ Declare @nWorkingDaysMonth int, @nDayNumber int
 Declare @dtSalesDate_LY datetime 
 Declare @nFiscalMonth_LY int, @nFirstFiscalMonth_LY int
 
+Declare @nDS_FreeGoodsEstInd int
+
 SET NOCOUNT ON
  
 Select
@@ -59,7 +62,11 @@ Select
 	@nDayNumber				= DayNumber,
 	@dtSalesDate_LY			= SalesDate_LY,
 	@nFiscalMonth_LY		= FiscalMonth_LY,
-	@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY
+	@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY,
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	@nDS_FreeGoodsEstInd	= DS_FreeGoodsEstInd
+
+
 
 FROM
 	BRS_Rollup_Support02 g
@@ -112,7 +119,12 @@ FROM
 
 WHERE
 	t.FiscalMonth = @nFiscalMonth AND
-	t.SalesDate = @dtSalesDay
+	t.SalesDate = @dtSalesDay AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -170,7 +182,12 @@ FROM
 
 WHERE
 	t.FiscalMonth = @nFiscalMonth_LY AND
-	t.SalesDate = @dtSalesDate_LY
+	t.SalesDate = @dtSalesDate_LY AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -219,7 +236,12 @@ FROM
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
-	(a.MTDEstInd = 1)
+	(a.MTDEstInd = 1) AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -269,7 +291,12 @@ FROM
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
-	(a.MTDEstInd = 1)
+	(a.MTDEstInd = 1) AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -331,7 +358,12 @@ FROM
 
 WHERE
 	t.SalesDate < @dtSalesDay AND 
-		t.FiscalMonth = @nFiscalMonth 
+		t.FiscalMonth = @nFiscalMonth AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -388,7 +420,12 @@ FROM
 
 WHERE 
 	t.SalesDate < @dtSalesDate_LY AND 
-		t.FiscalMonth = @nFiscalMonth_LY 
+		t.FiscalMonth = @nFiscalMonth_LY AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -439,7 +476,12 @@ FROM
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
-	(a.MTDEstInd = 1)
+	(a.MTDEstInd = 1) AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
@@ -489,7 +531,13 @@ FROM
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
-	(a.MTDEstInd = 1)
+	(a.MTDEstInd = 1) AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
 GROUP BY 
 	t.FiscalMonth
 	,t.Branch
@@ -535,7 +583,13 @@ FROM
 
 WHERE
 	t.FiscalMonth < @nFiscalMonth AND 
-		t.FiscalMonth >= @nFirstFiscalMonth_TY 
+		t.FiscalMonth >= @nFirstFiscalMonth_TY AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
 
 GROUP BY 
 	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth % 100 - 1) / 3) + 1) AND 
@@ -583,7 +637,13 @@ FROM
 
 WHERE
 	t.FiscalMonth < @nFiscalMonth_LY AND 
-		t.FiscalMonth >= @nFirstFiscalMonth_LY 
+		t.FiscalMonth >= @nFirstFiscalMonth_LY AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
 
 GROUP BY 
 	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
@@ -641,7 +701,13 @@ WHERE
 -- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
 	t.FiscalMonth = (@nFiscalMonth_LY-1) AND
 
-	(a.MTDEstInd = 1)
+	(a.MTDEstInd = 1) AND
+
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
 
 GROUP BY 
 	t.FiscalMonth
