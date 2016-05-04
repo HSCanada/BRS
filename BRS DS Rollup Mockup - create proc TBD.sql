@@ -29,6 +29,8 @@
 /*
 -- TODO:  fix summary hist /vs rebuild logic; add email alert when complete
 
+-- Step 1.  Clear appropriate tables
+
 TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
 
@@ -261,7 +263,7 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 -- Manual load
-	(t.CalMonth BETWEEN 201603 AND 201603)
+	(t.CalMonth BETWEEN 201604 AND 201604)
 
 GROUP BY 
 	Item,
@@ -269,6 +271,7 @@ GROUP BY
 	SalesDivision, 
 	FreeGoodsEstInd, 
 	OrderSourceCode
+
 */
 
 
@@ -338,7 +341,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth) AND
-	(t.FiscalMonth between 201603 and 201603) 
+	(t.FiscalMonth between 201604 and 201604) 
 
 
 -- True up the FSC to match last day (updated Month filter)
@@ -366,7 +369,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201603 and 201603) 
+	(t.FiscalMonth between 201604 and 201604) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -389,7 +392,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201603 and 201603) 
+	(t.FiscalMonth between 201604 and 201604) 
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
