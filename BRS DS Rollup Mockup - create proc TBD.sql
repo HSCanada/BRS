@@ -24,6 +24,8 @@
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
 --	29 Feb 16	tmc		Updated documentation, pre automation
 --	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
+--	6 May 16	tmc		Fixed missing FSC for adjustments
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
 **    
 *******************************************************************************/
 /*
@@ -91,7 +93,9 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+		t.AdjCode, 
+--		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
 
 		SalesDivision, 
 		t.Shipto, 
@@ -122,8 +126,9 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 			c.FiscalMonth = t.FiscalMonth
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-		LEFT JOIN BRS_ItemMPC as mpc
-		ON mpc.MajorProductClass = t.MajorProductClass
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+--		LEFT JOIN BRS_ItemMPC as mpc
+--		ON mpc.MajorProductClass = t.MajorProductClass
 
 	WHERE     
 		(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
@@ -134,7 +139,9 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+		t.AdjCode,	
+--		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
 
 		SalesDivision, 
 		t.Shipto, 
@@ -166,8 +173,12 @@ SELECT
 	Shipto, 
 	Branch, 
 	t.GLBU_Class, 
+
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+	t.AdjCode,	
+--	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
+
 	SalesDivision, 
 	t.FreeGoodsEstInd, 
 	OrderSourceCode, 
@@ -179,8 +190,9 @@ FROM
 	BRS_Transaction AS t
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-	LEFT JOIN BRS_ItemMPC as mpc
-	ON mpc.MajorProductClass = t.MajorProductClass
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+--	LEFT JOIN BRS_ItemMPC as mpc
+--	ON mpc.MajorProductClass = t.MajorProductClass
 
 WHERE     
 	(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
@@ -194,7 +206,9 @@ GROUP BY
 	t.GLBU_Class, 
 
 -- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
-	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+	t.AdjCode,
+--	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
 
 	SalesDivision, 
 	t.FreeGoodsEstInd, 
@@ -326,6 +340,7 @@ GO
 
 
 -- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
+-- Fixed to capture Adj Accounts
 SELECT DISTINCT    
 	t.Shipto, 
 	t.FiscalMonth, 
@@ -338,10 +353,13 @@ SELECT DISTINCT
 FROM         BRS_Transaction t
 
 where 
-	(t.Shipto > 0) And
-	(DocType <> 'AA') And
-	NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth) AND
-	(t.FiscalMonth between 201604 and 201604) 
+	(t.Shipto > 0) And 
+--	6 May 16	tmc		Fixed missing FSC for adjustments
+--	(DocType <> 'AA') And
+	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
+	(t.FiscalMonth between 201401 and 201604) 
+
+
 
 
 -- True up the FSC to match last day (updated Month filter)

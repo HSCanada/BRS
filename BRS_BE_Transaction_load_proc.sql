@@ -43,6 +43,7 @@ AS
 --  22 Feb 16	tmc		Undo Truncate to to simplify rights for non-admins
 --	24 Feb 16	tmc		Set Complete status to 15, indicating that a post process is required (20)
 --	09 Mar 16	tmc		Fixed bug here changes to customer was locking the specialty update
+--	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
 **    
 *******************************************************************************/
 BEGIN
@@ -445,7 +446,12 @@ Begin
 		BusinessUnitCost, 
 		GLAcctNumberObjSales, 
 		GLAcctNumberObjCost,
-		FreeGoodsEstInd
+		FreeGoodsEstInd,
+
+--	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
+		AdjCode
+
+
 	)
 	SELECT     
 		FiscalMonth, 
@@ -483,7 +489,11 @@ Begin
 		GLAcctNumberObjSales, 
 		GLAcctNumberObjCost,
 
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd
+		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
+--	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
+		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjCode
+
 	FROM         
 		STAGE_BRS_Transaction_Load as l
 
