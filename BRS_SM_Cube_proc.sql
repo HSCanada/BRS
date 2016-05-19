@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	19 Mar 16	tmc		Added MTD and PY MTD logic
 --	21 Mar 16	tmc		Minor change to test GIT
+--  06 May 16	tmc		Replaced Free Goods flag with Adjustments
 *******************************************************************************/
 
 BEGIN
@@ -82,7 +83,9 @@ SELECT
 	t.SalesDivision, 
 
 	t.Shipto,
-	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
+	t.AdjCode,
+--	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 	t.OrderSourceCode,
 	'A' AS TrxSrc, 
 
@@ -138,10 +141,11 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
+	,t.AdjCode
 	,t.SalesDivision
 
 	,t.Shipto
-	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
+--	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
 	,t.OrderSourceCode
 
 UNION ALL
@@ -155,7 +159,10 @@ SELECT
 	t.SalesDivision, 
 
 	0 AS Shipto,
-	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
+	t.AdjCode,
+--	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
 	t.OrderSourceCode,
 	'A' AS TrxSrc, 
 
@@ -211,9 +218,10 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
+	,t.AdjCode
 	,t.SalesDivision
 
-	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
+--	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
 	,t.OrderSourceCode
 
 	,c.Specialty
@@ -230,7 +238,10 @@ SELECT
 	t.SalesDivision, 
 
 	t.Shipto,
-	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
+	t.AdjCode,
+--	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
 	t.OrderSourceCode,
 	'A' AS TrxSrc, 
 
@@ -290,10 +301,11 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
+	,t.AdjCode
 	,t.SalesDivision
 
 	,t.Shipto
-	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
+--	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
 	,t.OrderSourceCode
 
 UNION ALL
@@ -307,7 +319,10 @@ SELECT
 	t.SalesDivision, 
 
 	0 AS Shipto,
-	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
+	t.AdjCode,
+--	CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+
 	t.OrderSourceCode,
 	'A' AS TrxSrc, 
 
@@ -367,9 +382,10 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-	,t.SalesDivision
+	,t.AdjCode
 
-	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
+	,t.SalesDivision
+--	,CASE WHEN t.NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and bu.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END
 	,t.OrderSourceCode
 
 	,ch.HIST_Specialty
@@ -386,7 +402,10 @@ SELECT
 	t.SalesDivision, 
 
 	t.Shipto,
-	t.FreeGoodsEstInd,
+
+	t.AdjCode,
+--	t.FreeGoodsEstInd,
+
 	t.OrderSourceCode,
 	'A' AS TrxSrc, 
 
@@ -437,10 +456,12 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
+	,t.AdjCode
+
 	,t.SalesDivision
 
 	,t.Shipto
-	,t.FreeGoodsEstInd
+--	,t.FreeGoodsEstInd
 	,t.OrderSourceCode
 
 
@@ -455,7 +476,9 @@ SELECT
 
 	0 AS Shipto,
 
-	t.FreeGoodsEstInd,
+	t.AdjCode,
+--	t.FreeGoodsEstInd,
+
 	t.OrderSourceCode,
 
 	'A' AS TrxSrc, 
@@ -510,7 +533,7 @@ GROUP BY
 	,t.AdjCode
 	,t.SalesDivision
 
-	,t.FreeGoodsEstInd
+--	,t.FreeGoodsEstInd
 	,t.OrderSourceCode
 
 	,t.HIST_MarketClass
