@@ -36,6 +36,7 @@ AS
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	06 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
+--	26 May 16	tmc		Fixed bug where FG EST and ACT are double-counted (see 17 May 16)
 
 **    
 *******************************************************************************/
@@ -276,7 +277,8 @@ WHERE
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -337,7 +339,8 @@ WHERE
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -541,7 +544,8 @@ WHERE
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -602,7 +606,8 @@ WHERE
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -662,7 +667,8 @@ WHERE
 		t.FiscalMonth >= @nFirstFiscalMonth_TY AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -728,7 +734,8 @@ WHERE
 		t.FiscalMonth >= @nFirstFiscalMonth_LY AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -798,7 +805,8 @@ WHERE
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+--	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
 --	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
