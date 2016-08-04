@@ -463,12 +463,11 @@ GO
 truncate table STAGE_BRS_CustomerFull
 truncate table STAGE_BRS_ItemFull
 
-truncate table STAGE_BRS_Territory
 go
 */
 
 -- 2 of 4:  run S:\Business Reporting\_BR_Sales\Upload BRS_Dimension_Load
-
+ 
 -- 3 of 4:  Prod Load 
 -- Exec BRS_BE_Dimension_load_proc 0
 

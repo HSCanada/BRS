@@ -36,7 +36,6 @@
 TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
 
--- TRUNCATE TABLE BRS_AGG_IMD_Sales
 */
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
@@ -132,7 +131,7 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 
 	WHERE     
 		(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
---		(t.FiscalMonth BETWEEN 201501 AND 201602)
+--		(t.FiscalMonth BETWEEN 201301 AND 201312)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
@@ -228,66 +227,6 @@ WHERE
 	(FiscalMonth = @nFiscalTo)
 
 
-/*
-
--- run manual until History tables in place, 2 Feb 16
-
---------------------------------------------------------------------------------
-Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
---------------------------------------------------------------------------------
-
-INSERT INTO BRS_AGG_IMD_Sales
-(
-	Item,
-	t.CalMonth, 
-	SalesDivision, 
-	FreeGoodsEstInd, 
-	OrderSourceCode, 
-
-	ShippedQty,
-	NetSalesAmt, 
-	GPAmt, 
-	GPAtFileCostAmt, 
-	GPAtCommCostAmt, 
-	ExtChargebackAmt, 
-	ExtDiscAmt, 
-
-	FactCount
-)
-SELECT     
-	Item,
-	CalMonth, 
-	SalesDivision, 
-
-	FreeGoodsEstInd, 
-
-	OrderSourceCode, 
-
-	SUM(ShippedQty) AS ShippedQty,
-	SUM(NetSalesAmt) AS SalesAmt, 
-	SUM(GPAmt) AS GPAmt, 
-	SUM(GPAtFileCostAmt) AS GPAtFileCostAmt, 
-	SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
-	SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
-	SUM(ExtDiscAmt) AS ExtDiscAmt, 
-
-	COUNT(*) AS FactCount
-
-FROM         
-	BRS_TransactionDW AS t
-WHERE     
--- Manual load
-	(t.CalMonth BETWEEN 201604 AND 201604)
-
-GROUP BY 
-	Item,
-	CalMonth, 
-	SalesDivision, 
-	FreeGoodsEstInd, 
-	OrderSourceCode
-
-*/
-
 
 /*
 -- Below needs to be streamlined and possibly moved
@@ -357,7 +296,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201401 and 201604) 
+	(t.FiscalMonth between 201607 and 201607) 
 
 
 
@@ -387,7 +326,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201604 and 201604) 
+	(t.FiscalMonth between 201607 and 201607) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -410,7 +349,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201604 and 201604) 
+	(t.FiscalMonth between 201607 and 201607) 
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published

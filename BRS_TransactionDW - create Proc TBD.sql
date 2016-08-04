@@ -109,3 +109,62 @@ FROM
 	ON  bu.GLBU_Class = buc.GLBU_Class
 
 
+/*
+
+-- run manual until History tables in place, 2 Feb 16
+
+--------------------------------------------------------------------------------
+Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
+--------------------------------------------------------------------------------
+
+INSERT INTO BRS_AGG_IMD_Sales
+(
+	Item,
+	t.CalMonth, 
+	SalesDivision, 
+	FreeGoodsEstInd, 
+	OrderSourceCode, 
+
+	ShippedQty,
+	NetSalesAmt, 
+	GPAmt, 
+	GPAtFileCostAmt, 
+	GPAtCommCostAmt, 
+	ExtChargebackAmt, 
+	ExtDiscAmt, 
+
+	FactCount
+)
+SELECT     
+	Item,
+	CalMonth, 
+	SalesDivision, 
+
+	FreeGoodsEstInd, 
+
+	OrderSourceCode, 
+
+	SUM(ShippedQty) AS ShippedQty,
+	SUM(NetSalesAmt) AS SalesAmt, 
+	SUM(GPAmt) AS GPAmt, 
+	SUM(GPAtFileCostAmt) AS GPAtFileCostAmt, 
+	SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
+	SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
+	SUM(ExtDiscAmt) AS ExtDiscAmt, 
+
+	COUNT(*) AS FactCount
+
+FROM         
+	BRS_TransactionDW AS t
+WHERE     
+-- Manual load
+	(t.CalMonth BETWEEN 201607 AND 201607)
+
+GROUP BY 
+	Item,
+	CalMonth, 
+	SalesDivision, 
+	FreeGoodsEstInd, 
+	OrderSourceCode
+
+*/
