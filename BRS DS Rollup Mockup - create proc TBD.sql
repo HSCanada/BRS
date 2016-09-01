@@ -296,7 +296,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201607 and 201607) 
+	(t.FiscalMonth between 201608 and 201608) 
 
 
 
@@ -326,7 +326,9 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201607 and 201607) 
+	(t.FiscalMonth between 201608 and 201608) 
+
+-- AND (b.Branch <> 'NWFLD')
 
 -- Fix FSC & Branch - DO IT!
 
@@ -349,7 +351,9 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201607 and 201607) 
+	(t.FiscalMonth between 201608 and 201608) 
+
+--AND (b.Branch <> 'NWFLD')
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
