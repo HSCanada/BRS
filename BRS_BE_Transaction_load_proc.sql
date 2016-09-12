@@ -44,6 +44,8 @@ AS
 --	24 Feb 16	tmc		Set Complete status to 15, indicating that a post process is required (20)
 --	09 Mar 16	tmc		Fixed bug here changes to customer was locking the specialty update
 --	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
+--	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+
 **    
 *******************************************************************************/
 BEGIN
@@ -464,7 +466,7 @@ Begin
 		l.GLBUClass, 
 		NetSalesAmt, 
 		ExtendedCostAmt, 
-		Item, 
+		l.Item, 
 		Shipto, 
 		SalesDivision, 
 		TerritoryCd, 
@@ -489,10 +491,13 @@ Begin
 		GLAcctNumberObjSales, 
 		GLAcctNumberObjCost,
 
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+--	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 'XXXFGE' ELSE '' END AS AdjCode
+--		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 
 --	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjCode
+--		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjCode
 
 	FROM         
 		STAGE_BRS_Transaction_Load as l
@@ -505,6 +510,10 @@ Begin
 
 		INNER JOIN BRS_ItemMPC AS mpc 
 		ON l.MajorProductClass= mpc.MajorProductClass
+
+--		Add Item to lookup so that P&G Vendor can be identified for Free Goods exception rule (above), tmc, 12 Sep 16	
+		INNER JOIN BRS_Item AS itm 
+		ON l.Item= itm.Item
 
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
 

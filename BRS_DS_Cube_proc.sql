@@ -83,14 +83,14 @@ FROM
 if (@bDebug <> 0)
 Begin
 	Select
-		@dtSalesDay				AS dtSalesDay,
-		@nFiscalMonth			AS nFiscalMonth,
-		@nFirstFiscalMonth_TY	AS nFirstFiscalMonth_TY,
-		@nWorkingDaysMonth		AS nWorkingDaysMonth,
-		@nDayNumber				AS nDayNumber,
-		@dtSalesDate_LY			AS dtSalesDate_LY,
-		@nFiscalMonth_LY		AS nFiscalMonth_LY,
-		@nFirstFiscalMonth_LY	AS nFirstFiscalMonth_LY
+		dtSalesDay,
+		nFiscalMonth,
+		nFirstFiscalMonth_TY,
+		nWorkingDaysMonth,
+		nDayNumber,
+		dtSalesDate_LY,
+		nFiscalMonth_LY,
+		nFirstFiscalMonth_LY
 End
 */
 
@@ -138,21 +138,12 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
--- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	LEFT JOIN BRS_ItemMPC as mpc
---	ON mpc.MajorProductClass = t.MajorProductClass
-
-
 WHERE
 	t.FiscalMonth = @nFiscalMonth AND
 	t.SalesDate = @dtSalesDay AND
 
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
---  MUST use estimates for this case 
+--	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -215,12 +206,8 @@ WHERE
 	t.FiscalMonth = @nFiscalMonth_LY AND
 	t.SalesDate = @dtSalesDate_LY AND
 
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
---  MUST use estimates for this case 
+--	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -401,9 +388,6 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
--- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	LEFT JOIN BRS_ItemMPC as mpc
---	ON mpc.MajorProductClass = t.MajorProductClass
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = t.FiscalMonth
@@ -413,12 +397,9 @@ WHERE
 	t.SalesDate < @dtSalesDay AND 
 		t.FiscalMonth = @nFiscalMonth AND
 
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
---  MUST use estimates for this case 
+--	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
 
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
