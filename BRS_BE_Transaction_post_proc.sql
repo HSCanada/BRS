@@ -32,6 +32,8 @@ AS
 **	-----	----------	--------------------------------------------
 --	25 Feb 16	tmc		Fix Branch change bug
 --	01 Mar 16	tmc		Fixed Customer Segment update bug
+--	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
+--	13 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 **    
 *******************************************************************************/
 BEGIN
@@ -109,6 +111,9 @@ Begin
 	Print ''
 End
 
+-- Fix VPA
+
+-- Fix Free Goods
 
 If (@nErrorCode = 0) 
 Begin
@@ -255,6 +260,27 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+
+--	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Customer Update Step 6x - Exception Fix SAIT - BT 1528736'
+
+	UPDATE    
+		BRS_Customer
+	SET              
+		Specialty = 'GENP',
+		CustGrpWrk = ''
+
+	WHERE     
+		BillTo = 1528736
+
+	Set @nErrorCode = @@Error
+End
+
+
+
 ----
 -- BRS23_qrySpec09-UpdateCustSeg
 If (@nErrorCode = 0) 
@@ -330,6 +356,44 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+
+--	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+If (@bDebug <> 0)
+Begin
+	Print '------------------------------------------------------------------------------------------------------------'
+	Print 'Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
+	Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
+	Print '------------------------------------------------------------------------------------------------------------'
+	Print ''
+End
+
+If (@nErrorCode = 0) 
+Begin
+
+	UPDATE    
+		BRS_Transaction
+	SET              
+		AdjCode = '', 
+		FreeGoodsEstInd = 0
+	FROM         
+		BRS_Transaction 
+		
+		INNER JOIN BRS_Item AS i 
+		ON BRS_Transaction.Item = i.Item
+
+	WHERE     
+		(i.Supplier = 'PROCGA') AND 
+		(BRS_Transaction.SalesDate > '1 Sep 2016') AND 
+		(BRS_Transaction.SalesDate = @dtSalesDay) AND 
+		(BRS_Transaction.AdjCode = 'XXXFGE') AND
+		(1 = 1)
+
+	Set @nErrorCode = @@Error
+
+End
+--		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+--		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 'XXXFGE' ELSE '' END AS AdjCode
+
 
 
 If (@bDebug <> 0)
