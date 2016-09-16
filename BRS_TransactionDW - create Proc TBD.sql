@@ -10,6 +10,8 @@ truncate table STAGE_BRS_TransactionDW
 
 -- Step 4:  run summary 
 
+--	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+
 INSERT INTO BRS_TransactionDW
 (
 	SalesOrderNumber, 
@@ -108,6 +110,45 @@ FROM
 	LEFT OUTER JOIN BRS_BusinessUnitClass as buc
 	ON  bu.GLBU_Class = buc.GLBU_Class
 
+--	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+
+
+--If (@bDebug <> 0)
+--Begin
+	Print '------------------------------------------------------------------------------------------------------------'
+	Print 'Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
+	Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
+	Print '------------------------------------------------------------------------------------------------------------'
+	Print ''
+--End
+
+--	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+
+--If (@nErrorCode = 0) 
+--Begin
+
+	UPDATE    
+		BRS_TransactionDW
+	SET              
+--		AdjCode = '', 
+		FreeGoodsEstInd = 0
+	FROM         
+		BRS_TransactionDW 
+		
+		INNER JOIN BRS_Item AS i 
+		ON BRS_TransactionDW.Item = i.Item
+
+	WHERE     
+		(BRS_TransactionDW.CalMonth = (SELECT MIN(CMID) FROM STAGE_BRS_TransactionDW) ) AND 
+		(i.Supplier = 'PROCGA') AND 
+		(BRS_TransactionDW.Date > '1 Sep 2016') AND 
+		(BRS_TransactionDW.FreeGoodsEstInd = 1) AND
+		(1 = 1)
+
+--	Set @nErrorCode = @@Error
+
+-- End
+--SELECT     MIN(CMID) FROM STAGE_BRS_TransactionDW
 
 /*
 
