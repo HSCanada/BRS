@@ -34,6 +34,7 @@ AS
 **	28 May 15	tmc		Added Parent field to update
 **	04 Dec 15	tmc		Corrected for widened Desc and Strect field (added Left(...).  Due to French corruption of output
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
+--	20 Sep 16	tmc		added TS territory load
 **    
 *******************************************************************************/
 
@@ -77,6 +78,40 @@ BEGIN
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new FSC (from Cust FULL)...'
+
+			INSERT INTO BRS_FSC_Rollup
+								  (TerritoryCd, FSCRollup, Branch)
+			SELECT DISTINCT TerritoryCd, TerritoryCd, '' AS br
+			FROM         STAGE_BRS_CustomerFull AS c
+			WHERE     (NOT EXISTS
+									  (SELECT     *
+										FROM          BRS_FSC_Rollup AS BRS_TS_Rollup_1
+										WHERE       TerritoryCd = c.TerritoryCd ))
+		Set @nErrorCode = @@Error
+	End
+
+--	20 Sep 16	tmc		added TS territory load
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new TS (from Cust FULL)...'
+
+			INSERT INTO BRS_TS_Rollup
+								  (TsTerritoryCd)
+			SELECT DISTINCT TsTerritoryCd
+			FROM         STAGE_BRS_CustomerFull AS c
+			WHERE     (NOT EXISTS
+									  (SELECT     *
+										FROM          BRS_TS_Rollup AS BRS_TS_Rollup_1
+										WHERE       TsTerritoryCd = c.TsTerritoryCd ))
+		Set @nErrorCode = @@Error
+	End
+
 
 	If (@nErrorCode = 0) 
 	Begin
@@ -107,7 +142,10 @@ BEGIN
 			SalesDivision = ISNULL(s.SalesDivision, ''), 
 			FlyerMailOutFlag = ISNULL(s.FlyerMailOutFlag, ''), 
 			SpecialHandlingInstCd = ISNULL(s.SpecialHandlingInstCd, ''),
-			ParentCustomerNumber = ISNULL(s.ParentCustomerNumber, 0)
+			ParentCustomerNumber = ISNULL(s.ParentCustomerNumber, 0),
+
+			TsTerritoryCd = ISNULL(s.TsTerritoryCd, 0)  
+
 
 		FROM         
 			STAGE_BRS_CustomerFull AS s 
@@ -138,8 +176,9 @@ BEGIN
 			BRS_Customer.SalesDivision <> ISNULL(s.SalesDivision, '') OR  
 			BRS_Customer.FlyerMailOutFlag <> ISNULL(s.FlyerMailOutFlag, '') OR  
 			BRS_Customer.SpecialHandlingInstCd <> ISNULL(s.SpecialHandlingInstCd, '') OR
-			BRS_Customer.ParentCustomerNumber <> ISNULL(s.ParentCustomerNumber, 0)  
+			BRS_Customer.ParentCustomerNumber <> ISNULL(s.ParentCustomerNumber, 0) OR
 
+			BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  
 
 		Set @nErrorCode = @@Error
 	End
@@ -198,7 +237,10 @@ BEGIN
 			SalesDivision, 
 			FlyerMailOutFlag, 
 			SpecialHandlingInstCd,
-			ParentCustomerNumber
+			ParentCustomerNumber,
+
+			TsTerritoryCd
+
 		)
 
 		SELECT 
@@ -224,9 +266,9 @@ BEGIN
 			ISNULL(s.SalesDivision, '') AS SalesDivision, 
 			ISNULL(s.FlyerMailOutFlag, '') AS FlyerMailOutFlag, 
 			ISNULL(s.SpecialHandlingInstCd, '') AS SpecialHandlingInstCd,
-			ISNULL(s.ParentCustomerNumber, 0) AS ParentCustomerNumber
+			ISNULL(s.ParentCustomerNumber, 0) AS ParentCustomerNumber,
 
-
+			ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd
 
 		FROM         
 			STAGE_BRS_CustomerFull AS s
