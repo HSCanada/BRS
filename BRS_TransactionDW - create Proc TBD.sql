@@ -12,6 +12,15 @@ truncate table STAGE_BRS_TransactionDW
 
 --	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 
+-- 22 Sep 16, tmc		Load BRS_TransactionDW
+
+
+
+
+--
+
+
+
 INSERT INTO BRS_TransactionDW
 (
 	SalesOrderNumber, 
