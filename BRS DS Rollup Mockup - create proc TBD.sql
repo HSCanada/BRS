@@ -26,6 +26,7 @@
 --	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+-- 23 Sep 16	tmc		Add TS territory to snapshot
 **    
 *******************************************************************************/
 /*
@@ -257,7 +258,10 @@ INSERT INTO BRS_CustomerFSC_History
 	HIST_VPA,
 	HIST_Specialty,
 	HIST_MarketClass,
-	HIST_SegCd
+	HIST_SegCd,
+
+	-- 23 Sep 16	tmc		Add TS territory to snapshot
+	HIST_TsTerritoryCd
 
 )
 SELECT     
@@ -267,7 +271,10 @@ SELECT
 	c.VPA,
 	c.Specialty,
 	c.MarketClass,
-	c.SegCd
+	c.SegCd,
+
+	-- 23 Sep 16	tmc		Add TS territory to snapshot
+	c.TsTerritoryCd
 
 FROM         
 	BRS_Customer c

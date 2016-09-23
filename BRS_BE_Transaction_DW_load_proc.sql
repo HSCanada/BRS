@@ -31,6 +31,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+--	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 
 **    
 *******************************************************************************/
@@ -113,7 +114,46 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+--	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Map Promo tagged TS to Order-level TS Code...'
+
+	UPDATE    
+		BRS_TransactionDW_Ext
+	SET              
+		TsTerritoryOrgCd = BRS_TS_Rollup.TsTerritoryCd,
+		TsTerritoryCd = BRS_TS_Rollup.TsTerritoryCd
+
+	FROM         
+		BRS_TransactionDW_Ext 
+
+		INNER JOIN BRS_TS_Rollup 
+		ON SUBSTRING(BRS_TransactionDW_Ext.CustomerPOText1, PATINDEX('%TS__%', BRS_TransactionDW_Ext.CustomerPOText1), 4) 
+			= BRS_TS_Rollup.PoTag
+
+	WHERE     
+		(BRS_TransactionDW_Ext.CustomerPOText1 LIKE '%TS__%') AND
+		EXISTS
+		(
+			Select 
+				* 
+			From 
+				STAGE_BRS_TransactionDW s
+			Where 
+				SalesOrderNumber = s.JDEORNO And
+				DocType = s.ORDOTYCD And
+				LineNumber = ROUND(s.LNNO * 1000,0) 
+		) AND
+		(1 = 1)
+
+
+	Set @nErrorCode = @@Error
+End
+
+--
 
 If (@nErrorCode = 0) 
 Begin
@@ -232,7 +272,6 @@ Begin
 	)
 
 	Set @nErrorCode = @@Error
-
 End
 
 
