@@ -38,6 +38,7 @@
 
 TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
 
 */
 
@@ -247,20 +248,22 @@ INSERT INTO BRS_AGG_CMI_DW_Sales
 	FreeGoodsEstInd, 
 	SalesCategory,
 
-	HIST_TsTerritoryCd,
-	HIST_TerritoryCd,
-	HIST_Specialty,
-	HIST_MarketClass,
-	HIST_VPA,
-	HIST_SegCd
-
+	TAG_TsTerritoryCd,
 
 	Item,
 	PriceMethod, 
 	OrderSourceCode, 
 
+	HIST_TsTerritoryCd,
+	HIST_TerritoryCd,
+	HIST_Specialty,
+	HIST_MarketClass,
+	HIST_VPA,
+	HIST_SegCd,
+
+
 	ShippedQty,
-	NetSalesAmt, 
+	SalesAmt, 
 	GPAmt, 
 	GPAtFileCostAmt, 
 	GPAtCommCostAmt, 
@@ -268,25 +271,27 @@ INSERT INTO BRS_AGG_CMI_DW_Sales
 	ExtDiscAmt, 
 
 	FactCount,
-	ID_MAX,
-
+	ID_MAX
 )
-SELECT
+
+SELECT 
+
 	t.Shipto,     
 	d.FiscalMonth, 
 	t.FreeGoodsEstInd, 
 	i.SalesCategory,
+	t2.TsTerritoryCd,
+
+	t.Item,
+	t.PriceMethod,
+	t.OrderSourceCode, 
 
 	ISNULL( MAX(c.HIST_TsTerritoryCd),'') AS HIST_TsTerritoryCd,
 	ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
 	ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
 	ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
 	ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
-	ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd
-
-	t.Item,
-	t.PriceMethod,
-	t.OrderSourceCode, 
+	ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd,
 
 
 	SUM(t.ShippedQty) AS ShippedQty,
@@ -300,30 +305,35 @@ SELECT
 	COUNT(*) AS FactCount,
 	MAX(T.ID) AS ID_MAX
 
-
 FROM         
 	BRS_TransactionDW AS t
-
-	INNER JOIN BRS_CustomerFSC_History AS c 
-	ON c.ShipTo = t.Shipto   AND
-		c.FiscalMonth = t.FiscalMonth
 
 	INNER JOIN BRS_SalesDay AS d 
 	ON d.SalesDate = t.Date 
 
+	INNER JOIN BRS_CustomerFSC_History AS c 
+	ON c.ShipTo = t.Shipto   AND
+		c.FiscalMonth = d.FiscalMonth
+
 	INNER JOIN BRS_Item AS i 
 	ON i.Item = t.Item 
 
+    INNER JOIN BRS_TransactionDW_Ext AS t2 
+	ON t.SalesOrderNumber = t2.SalesOrderNumber AND 
+		t.DocType = t2.DocType AND 
+		t.LineNumber = t2.LineNumber 
 
 WHERE     
 -- Manual load
-	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
+	(d.FiscalMonth BETWEEN 201501 AND 201609 )
+--	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
 
 GROUP BY 
 	t.Shipto,     
 	d.FiscalMonth, 
 	t.FreeGoodsEstInd, 
 	i.SalesCategory,
+	t2.TsTerritoryCd,
 	t.Item,
 	t.PriceMethod,
 	t.OrderSourceCode
