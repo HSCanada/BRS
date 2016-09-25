@@ -27,6 +27,8 @@
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
 -- 23 Sep 16	tmc		Add TS territory to snapshot
+-- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
+
 **    
 *******************************************************************************/
 /*
@@ -227,6 +229,104 @@ SET
 WHERE     
 	(FiscalMonth = @nFiscalTo)
 
+
+---
+
+-- Takes 10min to run, 19 Jan 16
+-- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
+
+--------------------------------------------------------------------------------
+Print 'Building DW Summary (BRS_AGG_CMI_DW_Sales) ...'
+--------------------------------------------------------------------------------
+
+INSERT INTO BRS_AGG_CMI_DW_Sales
+(
+	Shipto, 
+	FiscalMonth,
+
+	FreeGoodsEstInd, 
+	SalesCategory,
+
+	HIST_TsTerritoryCd,
+	HIST_TerritoryCd,
+	HIST_Specialty,
+	HIST_MarketClass,
+	HIST_VPA,
+	HIST_SegCd
+
+
+	Item,
+	PriceMethod, 
+	OrderSourceCode, 
+
+	ShippedQty,
+	NetSalesAmt, 
+	GPAmt, 
+	GPAtFileCostAmt, 
+	GPAtCommCostAmt, 
+	ExtChargebackAmt, 
+	ExtDiscAmt, 
+
+	FactCount,
+	ID_MAX,
+
+)
+SELECT
+	t.Shipto,     
+	d.FiscalMonth, 
+	t.FreeGoodsEstInd, 
+	i.SalesCategory,
+
+	ISNULL( MAX(c.HIST_TsTerritoryCd),'') AS HIST_TsTerritoryCd,
+	ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
+	ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
+	ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
+	ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
+	ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd
+
+	t.Item,
+	t.PriceMethod,
+	t.OrderSourceCode, 
+
+
+	SUM(t.ShippedQty) AS ShippedQty,
+	SUM(t.NetSalesAmt) AS SalesAmt, 
+	SUM(t.GPAmt) AS GPAmt, 
+	SUM(t.GPAtFileCostAmt) AS GPAtFileCostAmt, 
+	SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt, 
+	SUM(t.ExtChargebackAmt) AS ExtChargebackAmt, 
+	SUM(t.ExtDiscAmt) AS ExtDiscAmt, 
+
+	COUNT(*) AS FactCount,
+	MAX(T.ID) AS ID_MAX
+
+
+FROM         
+	BRS_TransactionDW AS t
+
+	INNER JOIN BRS_CustomerFSC_History AS c 
+	ON c.ShipTo = t.Shipto   AND
+		c.FiscalMonth = t.FiscalMonth
+
+	INNER JOIN BRS_SalesDay AS d 
+	ON d.SalesDate = t.Date 
+
+	INNER JOIN BRS_Item AS i 
+	ON i.Item = t.Item 
+
+
+WHERE     
+-- Manual load
+	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
+
+GROUP BY 
+	t.Shipto,     
+	d.FiscalMonth, 
+	t.FreeGoodsEstInd, 
+	i.SalesCategory,
+	t.Item,
+	t.PriceMethod,
+	t.OrderSourceCode
 
 
 /*
