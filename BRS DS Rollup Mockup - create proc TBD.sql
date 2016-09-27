@@ -76,7 +76,7 @@ WHERE
 	FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
 
 DECLARE c CURSOR 
-	LOCAL STATUS FORWARD_ONLY READ_ONLY
+	LOCAL STATIC FORWARD_ONLY READ_ONLY
 	FOR 
 		SELECT 
 			FiscalMonth
@@ -200,7 +200,7 @@ BEGIN
 		BRS_Transaction AS t
 
 	WHERE     
-		(t.FiscalMonth BETWEEN @nFiscalCurrent )
+		(t.FiscalMonth = @nFiscalCurrent )
 	--	(t.FiscalMonth BETWEEN 201401 AND 201412 )
 
 	GROUP BY 
@@ -298,8 +298,8 @@ BEGIN
 
 	    INNER JOIN BRS_TransactionDW_Ext AS t2 
 		ON t.SalesOrderNumber = t2.SalesOrderNumber AND 
-			t.DocType = t2.DocType AND 
-			t.LineNumber = t2.LineNumber 
+			t.DocType = t2.DocType 
+
 
 	WHERE     
 		(d.FiscalMonth = @nFiscalCurrent )
