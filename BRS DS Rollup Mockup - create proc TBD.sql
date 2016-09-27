@@ -21,26 +21,33 @@
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
+-- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 
+--							380 recon
+
 --	29 Feb 16	tmc		Updated documentation, pre automation
---	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
+--	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic 
+--							still TBD)
+
 --	6 May 16	tmc		Fixed missing FSC for adjustments
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+--	6 May 16	tmc		Remove X code shawdow track (not used & conflicts 
+--							with FG est logic)
+
 -- 23 Sep 16	tmc		Add TS territory to snapshot
 -- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
+-- 26 Sep 16	tmc		Add Cursor summary logic to reduce transaction load
 
 **    
 *******************************************************************************/
-/*
--- TODO:  fix summary hist /vs rebuild logic; add email alert when complete
+
+
 
 -- Step 1.  Clear appropriate tables
 
-TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
+-- TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+-- TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+-- TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
 
-*/
+-- Step 2. Run this script
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
@@ -68,13 +75,25 @@ FROM
 WHERE 
 	FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
 
+DECLARE c CURSOR 
+	LOCAL STATUS FORWARD_ONLY READ_ONLY
+	FOR 
+		SELECT 
+			FiscalMonth
+		FROM 
+			BRS_FiscalMonth
+		WHERE 
+			FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
+		ORDER BY 
+			FiscalMonth
+OPEN c;
 
+FETCH NEXT FROM c INTO @nFiscalCurrent;
 
---------------------------------------------------------------------------------
-Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
---------------------------------------------------------------------------------
--- Takes 10min to run, 19 Jan 16
+WHILE @@FETCH_STATUS = 0
+BEGIN
 
+	Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales...'
 
 	INSERT INTO BRS_AGG_CMBGAD_Sales
 	(
@@ -103,12 +122,7 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
-
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
 		t.AdjCode, 
---		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
-
 		SalesDivision, 
 		t.Shipto, 
 		t.FreeGoodsEstInd, 
@@ -116,7 +130,8 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
+			- SUM(ExtendedCostAmt) END AS GPAmt, 
 
 		COUNT(*) AS FactCount,
 		MAX(t.ID) as ID_MAX,
@@ -137,100 +152,181 @@ Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
 		ON c.ShipTo = t.Shipto   AND
 			c.FiscalMonth = t.FiscalMonth
 
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---		LEFT JOIN BRS_ItemMPC as mpc
---		ON mpc.MajorProductClass = t.MajorProductClass
-
 	WHERE     
-		(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
+		(t.FiscalMonth = @nFiscalCurrent)
 --		(t.FiscalMonth BETWEEN 201301 AND 201312)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
-
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
 		t.AdjCode,	
---		CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
-
 		SalesDivision, 
 		t.Shipto, 
 		t.FreeGoodsEstInd, 
 		OrderSourceCode
 
---------------------------------------------------------------------------------
-Print 'Building Item Summary (BRS_AGG_ICMBGAD_Sales), used by Vendor Sales ...'
---------------------------------------------------------------------------------
+	Print 'Building Item Summary (BRS_AGG_ICMBGAD_Sales), Vendor Sales ...'
 
-INSERT INTO BRS_AGG_ICMBGAD_Sales
-(
-	Item,
-	FiscalMonth, 
-	Shipto, 
-	Branch, 
-	GLBU_Class, 
-	AdjCode, 
-	SalesDivision, 
-	FreeGoodsEstInd, 
-	OrderSourceCode, 
-	SalesAmt, 
-	GPAmt, 
-	FactCount
-)
-SELECT     
-	Item,
-	FiscalMonth, 
-	Shipto, 
-	Branch, 
-	t.GLBU_Class, 
+	INSERT INTO BRS_AGG_ICMBGAD_Sales
+	(
+		Item,
+		FiscalMonth, 
+		Shipto, 
+		Branch, 
+		GLBU_Class, 
+		AdjCode, 
+		SalesDivision, 
+		FreeGoodsEstInd, 
+		OrderSourceCode, 
+		SalesAmt, 
+		GPAmt, 
+		FactCount
+	)
+	SELECT     
+		Item,
+		FiscalMonth, 
+		Shipto, 
+		Branch, 
+		t.GLBU_Class, 
+		t.AdjCode,	
+		SalesDivision, 
+		t.FreeGoodsEstInd, 
+		OrderSourceCode, 
+		SUM(NetSalesAmt) AS SalesAmt, 
+		SUM(NetSalesAmt) - SUM(ExtendedCostAmt) AS GPAmt, 
+		COUNT(*) AS FactCount
 
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
-	t.AdjCode,	
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END  as AdjCode, 
+	FROM         
+		BRS_Transaction AS t
 
-	SalesDivision, 
-	t.FreeGoodsEstInd, 
-	OrderSourceCode, 
-	SUM(NetSalesAmt) AS SalesAmt, 
-	SUM(NetSalesAmt) - SUM(ExtendedCostAmt) AS GPAmt, 
-	COUNT(*) AS FactCount
+	WHERE     
+		(t.FiscalMonth BETWEEN @nFiscalCurrent )
+	--	(t.FiscalMonth BETWEEN 201401 AND 201412 )
 
-FROM         
-	BRS_Transaction AS t
-
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	LEFT JOIN BRS_ItemMPC as mpc
---	ON mpc.MajorProductClass = t.MajorProductClass
-
-WHERE     
-	(t.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
---	(t.FiscalMonth BETWEEN 201401 AND 201412 )
-
-GROUP BY 
-	Item,
-	FiscalMonth, 
-	Shipto, 
-	Branch, 
-	t.GLBU_Class, 
-
--- 	19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 recon
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
-	t.AdjCode,
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE ISNULL(mpc.AdjCode,'') END, 
-
-	SalesDivision, 
-	t.FreeGoodsEstInd, 
-	OrderSourceCode, 
-	Branch
+	GROUP BY 
+		Item,
+		FiscalMonth, 
+		Shipto, 
+		Branch, 
+		t.GLBU_Class, 
+		t.AdjCode,
+		SalesDivision, 
+		t.FreeGoodsEstInd, 
+		OrderSourceCode, 
+		Branch
  
+	-- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
+	Print 'Building DW Summary (BRS_AGG_CMI_DW_Sales) ...'
+
+	INSERT INTO BRS_AGG_CMI_DW_Sales
+	(
+		Shipto, 
+		FiscalMonth,
+
+		FreeGoodsEstInd, 
+		SalesCategory,
+
+		TAG_TsTerritoryCd,
+
+		Item,
+		PriceMethod, 
+		OrderSourceCode, 
+
+		HIST_TsTerritoryCd,
+		HIST_TerritoryCd,
+		HIST_Specialty,
+		HIST_MarketClass,
+		HIST_VPA,
+		HIST_SegCd,
+
+
+		ShippedQty,
+		SalesAmt, 
+		GPAmt, 
+		GPAtFileCostAmt, 
+		GPAtCommCostAmt, 
+		ExtChargebackAmt, 
+		ExtDiscAmt, 
+
+		FactCount,
+		ID_MAX
+	)
+
+	SELECT 
+
+		t.Shipto,     
+		d.FiscalMonth, 
+		t.FreeGoodsEstInd, 
+		i.SalesCategory,
+		t2.TsTerritoryCd,
+
+		t.Item,
+		t.PriceMethod,
+		t.OrderSourceCode, 
+
+		ISNULL( MAX(c.HIST_TsTerritoryCd),'') AS HIST_TsTerritoryCd,
+		ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
+		ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
+		ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
+		ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
+		ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd,
+
+
+		SUM(t.ShippedQty) AS ShippedQty,
+		SUM(t.NetSalesAmt) AS SalesAmt, 
+		SUM(t.GPAmt) AS GPAmt, 
+		SUM(t.GPAtFileCostAmt) AS GPAtFileCostAmt, 
+		SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt, 
+		SUM(t.ExtChargebackAmt) AS ExtChargebackAmt, 
+		SUM(t.ExtDiscAmt) AS ExtDiscAmt, 
+
+		COUNT(*) AS FactCount,
+		MAX(T.ID) AS ID_MAX
+
+	FROM         
+		BRS_TransactionDW AS t
+
+		INNER JOIN BRS_SalesDay AS d 
+		ON d.SalesDate = t.Date 
+
+		INNER JOIN BRS_CustomerFSC_History AS c 
+		ON c.ShipTo = t.Shipto   AND
+			c.FiscalMonth = d.FiscalMonth
+
+		INNER JOIN BRS_Item AS i 
+		ON i.Item = t.Item 
+
+	    INNER JOIN BRS_TransactionDW_Ext AS t2 
+		ON t.SalesOrderNumber = t2.SalesOrderNumber AND 
+			t.DocType = t2.DocType AND 
+			t.LineNumber = t2.LineNumber 
+
+	WHERE     
+		(d.FiscalMonth = @nFiscalCurrent )
+	--	(d.FiscalMonth BETWEEN 201501 AND 201609 )
+
+	GROUP BY 
+		t.Shipto,     
+		d.FiscalMonth, 
+		t.FreeGoodsEstInd, 
+		i.SalesCategory,
+		t2.TsTerritoryCd,
+		t.Item,
+		t.PriceMethod,
+		t.OrderSourceCode
+
+	FETCH NEXT FROM c INTO @nFiscalCurrent;
+
+END 
+
+CLOSE c;
+DEALLOCATE c;
+
 --------------------------------------------------------------------------------
 Print 'Mark month stataus as complete'
 --------------------------------------------------------------------------------
---	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic still TBD)
+--	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic 
+--		still TBD)
 
 UPDATE    
 	BRS_FiscalMonth
@@ -238,114 +334,6 @@ SET
 	StatusCd = 10
 WHERE     
 	(FiscalMonth = @nFiscalTo)
-
-
----
-
--- Takes 10min to run, 19 Jan 16
--- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
-
---------------------------------------------------------------------------------
-Print 'Building DW Summary (BRS_AGG_CMI_DW_Sales) ...'
---------------------------------------------------------------------------------
-
-INSERT INTO BRS_AGG_CMI_DW_Sales
-(
-	Shipto, 
-	FiscalMonth,
-
-	FreeGoodsEstInd, 
-	SalesCategory,
-
-	TAG_TsTerritoryCd,
-
-	Item,
-	PriceMethod, 
-	OrderSourceCode, 
-
-	HIST_TsTerritoryCd,
-	HIST_TerritoryCd,
-	HIST_Specialty,
-	HIST_MarketClass,
-	HIST_VPA,
-	HIST_SegCd,
-
-
-	ShippedQty,
-	SalesAmt, 
-	GPAmt, 
-	GPAtFileCostAmt, 
-	GPAtCommCostAmt, 
-	ExtChargebackAmt, 
-	ExtDiscAmt, 
-
-	FactCount,
-	ID_MAX
-)
-
-SELECT 
-
-	t.Shipto,     
-	d.FiscalMonth, 
-	t.FreeGoodsEstInd, 
-	i.SalesCategory,
-	t2.TsTerritoryCd,
-
-	t.Item,
-	t.PriceMethod,
-	t.OrderSourceCode, 
-
-	ISNULL( MAX(c.HIST_TsTerritoryCd),'') AS HIST_TsTerritoryCd,
-	ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
-	ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
-	ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
-	ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
-	ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd,
-
-
-	SUM(t.ShippedQty) AS ShippedQty,
-	SUM(t.NetSalesAmt) AS SalesAmt, 
-	SUM(t.GPAmt) AS GPAmt, 
-	SUM(t.GPAtFileCostAmt) AS GPAtFileCostAmt, 
-	SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt, 
-	SUM(t.ExtChargebackAmt) AS ExtChargebackAmt, 
-	SUM(t.ExtDiscAmt) AS ExtDiscAmt, 
-
-	COUNT(*) AS FactCount,
-	MAX(T.ID) AS ID_MAX
-
-FROM         
-	BRS_TransactionDW AS t
-
-	INNER JOIN BRS_SalesDay AS d 
-	ON d.SalesDate = t.Date 
-
-	INNER JOIN BRS_CustomerFSC_History AS c 
-	ON c.ShipTo = t.Shipto   AND
-		c.FiscalMonth = d.FiscalMonth
-
-	INNER JOIN BRS_Item AS i 
-	ON i.Item = t.Item 
-
-    INNER JOIN BRS_TransactionDW_Ext AS t2 
-	ON t.SalesOrderNumber = t2.SalesOrderNumber AND 
-		t.DocType = t2.DocType AND 
-		t.LineNumber = t2.LineNumber 
-
-WHERE     
--- Manual load
---	(d.FiscalMonth BETWEEN 201501 AND 201609 )
-	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
-
-GROUP BY 
-	t.Shipto,     
-	d.FiscalMonth, 
-	t.FreeGoodsEstInd, 
-	i.SalesCategory,
-	t2.TsTerritoryCd,
-	t.Item,
-	t.PriceMethod,
-	t.OrderSourceCode
 
 
 /*
