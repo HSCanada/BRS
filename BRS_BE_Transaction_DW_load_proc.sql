@@ -32,6 +32,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 --	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
+--	26 Sep 16	tmc		Design fix:  BRS_TransactionDW_Ext stored at order level, not line level
 
 **    
 *******************************************************************************/
@@ -83,14 +84,11 @@ Begin
 		BRS_TransactionDW_Ext (
 			SalesOrderNumber, 
 			DocType, 
-			LineNumber, 
 			CustomerPOText1
 		)
 	SELECT     
 			JDEORNO as SalesOrderNumber, 
 			ORDOTYCD, 
-			ROUND(LNNO * 1000,0) AS LineNumber, 
---			Left((RF1TT), 25) AS CustomerPOText1
 			Left(MIN(RF1TT), 25) AS CustomerPOText1
 	FROM         
 			STAGE_BRS_TransactionDW
@@ -102,14 +100,12 @@ Begin
 			BRS_TransactionDW_Ext s
 		Where 
 			JDEORNO = s.SalesOrderNumber And
-			ORDOTYCD = s.DocType And
-			ROUND(LNNO * 1000,0) = s.LineNumber
+			ORDOTYCD = s.DocType 
 	)
 
 	GROUP BY 
 		JDEORNO, 
-		ORDOTYCD, 
-		LNNO
+		ORDOTYCD 
 
 	Set @nErrorCode = @@Error
 End
@@ -144,8 +140,7 @@ Begin
 				STAGE_BRS_TransactionDW s
 			Where 
 				SalesOrderNumber = s.JDEORNO And
-				DocType = s.ORDOTYCD And
-				LineNumber = ROUND(s.LNNO * 1000,0) 
+				DocType = s.ORDOTYCD 
 		) AND
 		(1 = 1)
 

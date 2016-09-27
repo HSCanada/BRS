@@ -60,6 +60,15 @@ SELECT
 FROM 
 	BRS_Rollup_Support02 
 
+-- list months
+SELECT 
+	FiscalMonth
+FROM 
+	BRS_FiscalMonth
+WHERE 
+	FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
+
+
 
 --------------------------------------------------------------------------------
 Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales ...'
@@ -325,8 +334,8 @@ FROM
 
 WHERE     
 -- Manual load
-	(d.FiscalMonth BETWEEN 201501 AND 201609 )
---	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
+--	(d.FiscalMonth BETWEEN 201501 AND 201609 )
+	(d.FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo )
 
 GROUP BY 
 	t.Shipto,     
@@ -413,7 +422,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201608 and 201608) 
+	(t.FiscalMonth between 201609 and 201609) 
 
 
 
@@ -443,7 +452,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201608 and 201608) 
+	(t.FiscalMonth between 201609 and 201609) 
 
 -- AND (b.Branch <> 'NWFLD')
 
@@ -468,7 +477,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201608 and 201608) 
+	(t.FiscalMonth between 201609 and 201609) 
 
 --AND (b.Branch <> 'NWFLD')
 
