@@ -35,21 +35,21 @@
 -- 23 Sep 16	tmc		Add TS territory to snapshot
 -- 25 Sep 16	tmc		Add DW Summary (BRS_AGG_CMI_DW_Sales) builder
 -- 26 Sep 16	tmc		Add Cursor summary logic to reduce transaction load
+-- 27 Sep 16	tmc		Optimize cursors for DS - 1h 15m for full update...
+-- 03 Oct 16	tmc		moved manual BRS_AGG_IMD_Sales script end.  Needs to 
+--							be added to proc
 
 **    
 *******************************************************************************/
 
 
-
--- Step 1.  Clear appropriate tables
-
--- TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
--- TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
--- TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
-
--- Step 2. Run this script
-
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
+
+
+--------------------------------------------------------------------------------
+Print 'Init'
+--------------------------------------------------------------------------------
+
 
 -- Get Params
 Select
@@ -58,22 +58,6 @@ Select
 	@nFiscalTo			= PriorFiscalMonth
 FROM
 	BRS_Rollup_Support02 g
-
--- Echo Params
-SELECT 
-	FiscalMonth, 
-	FirstFiscalMonth_LY, 
-	PriorFiscalMonth
-FROM 
-	BRS_Rollup_Support02 
-
--- list months
-SELECT 
-	FiscalMonth
-FROM 
-	BRS_FiscalMonth
-WHERE 
-	FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
 
 DECLARE c CURSOR 
 	LOCAL STATIC FORWARD_ONLY READ_ONLY
@@ -86,6 +70,24 @@ DECLARE c CURSOR
 			FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
 		ORDER BY 
 			FiscalMonth
+
+
+UPDATE    
+	BRS_FiscalMonth
+SET              
+	StatusCd = -1
+WHERE     
+	(FiscalMonth = @nFiscalTo)
+
+
+TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+
+
+--------------------------------------------------------------------------------
+Print 'Primary Update *****'
+--------------------------------------------------------------------------------
+
+
 OPEN c;
 
 FETCH NEXT FROM c INTO @nFiscalCurrent;
@@ -164,6 +166,45 @@ BEGIN
 		t.Shipto, 
 		t.FreeGoodsEstInd, 
 		OrderSourceCode
+
+	FETCH NEXT FROM c INTO @nFiscalCurrent;
+
+END 
+
+CLOSE c;
+-- DEALLOCATE c;
+
+
+--------------------------------------------------------------------------------
+Print 'Mark month stataus as complete'
+--------------------------------------------------------------------------------
+--	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic 
+--		still TBD)
+
+UPDATE    
+	BRS_FiscalMonth
+SET              
+	StatusCd = 10
+WHERE     
+	(FiscalMonth = @nFiscalTo)
+
+
+
+--------------------------------------------------------------------------------
+Print 'Secondary Update *****'
+--------------------------------------------------------------------------------
+
+
+
+TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
+TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
+
+OPEN c;
+
+FETCH NEXT FROM c INTO @nFiscalCurrent;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
 
 	Print 'Building Item Summary (BRS_AGG_ICMBGAD_Sales), Vendor Sales ...'
 
@@ -322,18 +363,6 @@ END
 CLOSE c;
 DEALLOCATE c;
 
---------------------------------------------------------------------------------
-Print 'Mark month stataus as complete'
---------------------------------------------------------------------------------
---	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic 
---		still TBD)
-
-UPDATE    
-	BRS_FiscalMonth
-SET              
-	StatusCd = 10
-WHERE     
-	(FiscalMonth = @nFiscalTo)
 
 
 /*
@@ -478,4 +507,62 @@ WHERE
 */
 
 
+/*
 
+-- run manual until History tables in place, 2 Feb 16
+
+--------------------------------------------------------------------------------
+Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
+--------------------------------------------------------------------------------
+
+INSERT INTO BRS_AGG_IMD_Sales
+(
+	Item,
+	t.CalMonth, 
+	SalesDivision, 
+	FreeGoodsEstInd, 
+	OrderSourceCode, 
+
+	ShippedQty,
+	NetSalesAmt, 
+	GPAmt, 
+	GPAtFileCostAmt, 
+	GPAtCommCostAmt, 
+	ExtChargebackAmt, 
+	ExtDiscAmt, 
+
+	FactCount
+)
+SELECT     
+	Item,
+	CalMonth, 
+	SalesDivision, 
+
+	FreeGoodsEstInd, 
+
+	OrderSourceCode, 
+
+	SUM(ShippedQty) AS ShippedQty,
+	SUM(NetSalesAmt) AS SalesAmt, 
+	SUM(GPAmt) AS GPAmt, 
+	SUM(GPAtFileCostAmt) AS GPAtFileCostAmt, 
+	SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
+	SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
+	SUM(ExtDiscAmt) AS ExtDiscAmt, 
+
+	COUNT(*) AS FactCount
+
+FROM         
+	BRS_TransactionDW AS t
+WHERE     
+-- Manual load
+	(t.CalMonth BETWEEN 201609 AND 201609)
+
+GROUP BY 
+	Item,
+	CalMonth, 
+	SalesDivision, 
+	FreeGoodsEstInd, 
+	OrderSourceCode
+
+*/

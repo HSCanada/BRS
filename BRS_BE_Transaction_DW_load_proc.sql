@@ -372,18 +372,19 @@ GO
 
 -- Step 1:  clear tables (run below)
 
--- truncate table STAGE_BRS_Promotion 
--- truncate table STAGE_BRS_TransactionDW
-
+/*
+truncate table STAGE_BRS_Promotion 
+truncate table STAGE_BRS_TransactionDW
+*/
 -- Step 2:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_TransactionDW_Load.bat"
 
 -- Step 3:  run below script
 
--- debug run
--- [BRS_BE_Transaction_DW_load_proc] 
-
 -- prod run
 -- Exec [BRS_BE_Transaction_DW_load_proc] 0
+
+-- debug run
+-- [BRS_BE_Transaction_DW_load_proc] 
 
 
 
