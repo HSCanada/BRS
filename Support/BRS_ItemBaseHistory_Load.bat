@@ -1,7 +1,11 @@
 @ECHO OFF
 
-ECHO LOAD BRS_ItemBase...
+SET DB_DST=DEV_BRSales
+IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
 
-bcp BRSales..STAGE_BRS_ItemBaseHistory in ItemBaseHistory.txt -c -T -S CAHSIONNLSQL1 -e STAGE_BRS_ItemBase_ERR.txt -F 1
+ECHO LOAD BRS_ItemBaseHistory to %DB_DST% 
+PAUSE
 
-pause
+bcp %DB_DST%..STAGE_BRS_ItemBaseHistory in ItemBaseHistory.txt -c -T -S CAHSIONNLSQL1 -e STAGE_BRS_ItemBase_ERR.txt -F 1
+
+PAUSE
