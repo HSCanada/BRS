@@ -10,8 +10,6 @@ AS
 **	File: 
 **	Name: BRS_DS_CubeAcq_proc
 **	Desc: BRS_DS_Cube_proc with Acquisition rates added for DSL
-
-**		** MUST FIX THE group by ST rate problem !! ***
 **
 **              
 **	Return values:  @@Error
@@ -30,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	14 Oct 16	tmc		Add Acq rate logic: Sum(amount * rate) (0 rate where null)
 **    
 *******************************************************************************/
 
@@ -46,7 +45,6 @@ Declare @nWorkingDaysMonth int, @nDayNumber int
 Declare @dtSalesDate_LY datetime 
 Declare @nFiscalMonth_LY int, @nFirstFiscalMonth_LY int
 
---Declare @nDS_FreeGoodsEstInd int
 
 SET NOCOUNT ON
 
@@ -65,26 +63,9 @@ Select
 	@dtSalesDate_LY			= SalesDate_LY,
 	@nFiscalMonth_LY		= FiscalMonth_LY,
 	@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	@nDS_FreeGoodsEstInd	= DS_FreeGoodsEstInd
 FROM
 	BRS_Rollup_Support02 g
 
-/*
--- Debug extr data not work with PowPiv!!
-if (@bDebug <> 0)
-Begin
-	Select
-		dtSalesDay,
-		nFiscalMonth,
-		nFirstFiscalMonth_TY,
-		nWorkingDaysMonth,
-		nDayNumber,
-		dtSalesDate_LY,
-		nFiscalMonth_LY,
-		nFirstFiscalMonth_LY
-End
-*/
 
 
 --PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT)'
@@ -99,9 +80,6 @@ SELECT
 	t.Branch,
 	t.GLBU_Class, 
 
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
 	t.AdjCode,
 
 	t.SalesDivision, 
@@ -114,14 +92,14 @@ SELECT
 	'CY.DAY.ACT' AS Status,
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
-	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) - SUM(ExtendedCostAmt * ISNULL(af.Aqu_sales_rt, 0) ) END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 
@@ -187,14 +165,14 @@ SELECT
 	'PY.DAY.ACT' AS Status,
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
-	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) - SUM(ExtendedCostAmt * ISNULL(af.Aqu_sales_rt, 0) ) END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 
@@ -261,10 +239,9 @@ SELECT
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 1 * 1024 as UniqueID,	
 
--- xx
 	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
-	0 * ISNULL(af.Aqu_sales_rt, 0) AS SalesAcqAmt, 
-	0 * ISNULL(af.Aqu_sales_rt, 0) AS GPAcqAmt
+	SUM(t.SalesAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
+	SUM(t.GPAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt
 
 
 FROM         
@@ -333,9 +310,12 @@ SELECT
 
 	@dtSalesDay  AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 3 * 1024 as UniqueID	
+	MIN(t.ID_MAX) * 7 + 3 * 1024 as UniqueID,	
 
--- xx
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
+
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -405,14 +385,14 @@ SELECT
 	'CY.MTD.ACT' AS Status,
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
-	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) - SUM(ExtendedCostAmt * ISNULL(af.Aqu_sales_rt, 0) ) END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 
@@ -483,14 +463,14 @@ SELECT
 	'PY.MTD.ACT' AS Status,
 	                      
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
-	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) - SUM(ExtendedCostAmt * ISNULL(af.Aqu_sales_rt, 0) ) END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 
@@ -559,9 +539,12 @@ SELECT
 
 	@dtSalesDay  AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID	
+	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID,
 
--- xx
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS SalesAcqAmt, 
+	SUM(t.GPAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS GPAcqAmt 
+
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -628,10 +611,13 @@ SELECT
 
 	SUM(t.SalesAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS SalesAmt, 
 	SUM(t.GPAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAmt, 
-	@dtSalesDay AS SalesDate,
-	MIN(t.ID_MAX) * 7 + 4 * 1024 as UniqueID	
 
--- xx
+	@dtSalesDay AS SalesDate,
+	MIN(t.ID_MAX) * 7 + 4 * 1024 as UniqueID,	
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -699,10 +685,13 @@ SELECT
 
 	SUM(t.SalesAmt) AS SalesAmt, 
 	SUM(t.GPAmt) AS GPAmt, 
-	@dtSalesDay AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID
 
--- xx2
+	@dtSalesDay AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -774,10 +763,14 @@ SELECT
 
 	SUM(t.SalesAmt) AS SalesAmt, 
 	SUM(t.GPAmt) AS GPAmt, 
-	@dtSalesDay AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID
 
--- xx
+	@dtSalesDay AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -849,7 +842,11 @@ SELECT
 
 	@dtSalesDay  AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID	
+	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID,	
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0))  AS SalesAcqAmt, 
+	SUM(t.GPAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0))  AS GPAcqAmt 
 
 
 FROM         
@@ -892,10 +889,6 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,t.HIST_SegCd 
-
-
----- xxx
----- xxx
 
 END
 
