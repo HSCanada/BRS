@@ -75,7 +75,7 @@ Else
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Add new Supplier (ItemFull) ...'
+		Print 'Add new items (STAGE_BRS_ItemBase) ...'
 
 	INSERT INTO STAGE_BRS_ItemBaseHistory (
 		Item,
@@ -313,8 +313,8 @@ GO
 
 -- Step 1:  clear tables (run below)
 
--- truncate table STAGE_BRS_ItemBaseHistory 
 -- truncate table dbo.STAGE_BRS_ItemBase
+-- truncate table STAGE_BRS_ItemBaseHistory 
 
 -- Step 2a:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBase_Load.bat"
 -- Step 2b:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBaseHistory_Load.bat"

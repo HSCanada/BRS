@@ -114,7 +114,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
 	t.FiscalMonth = @nFiscalMonth AND
@@ -188,7 +189,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
 	t.FiscalMonth = @nFiscalMonth_LY AND
@@ -257,7 +259,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
@@ -330,7 +333,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
@@ -411,7 +415,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 
 WHERE
@@ -486,7 +491,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE 
 	t.SalesDate < @dtSalesDate_LY AND 
@@ -559,7 +565,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
@@ -632,7 +639,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
 	t.FiscalMonth = @nFiscalMonth_LY AND
@@ -703,7 +711,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 
 WHERE
@@ -782,7 +791,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 
 WHERE
@@ -862,7 +872,8 @@ FROM
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL'
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE    
 -- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
