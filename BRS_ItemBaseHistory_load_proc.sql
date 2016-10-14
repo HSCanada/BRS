@@ -30,6 +30,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+-- 14 Oct 16	tmc		Added Current Base Update logic
 **    
 *******************************************************************************/
 BEGIN
@@ -70,7 +71,53 @@ Else
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
 
--- pull current
+-- 14 Oct 16	tmc		Added Current Base Update logic
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Update items (STAGE_BRS_ItemBase) ...'
+
+UPDATE    
+	STAGE_BRS_ItemBaseHistory
+SET
+	FamilySetLeader		= b.QIRPRC,
+	Supplier			= b2.QI$SPC,
+	Currency			= CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END,
+	SupplierCost		= ISNULL(b2.QI$CP1,0),
+	CorporatePrice		= ISNULL(b2.QI$PR1,0),
+	SellPrcBrk2			= ISNULL(b2.QI$PR2,0),
+	SellPrcBrk3			= ISNULL(b2.QI$PR3,0),
+	SellQtyBrk2			= ISNULL(b2.QI$QB2,0),
+	SellQtyBrk3			= ISNULL(b2.QI$QB3,0)
+
+FROM         
+	STAGE_BRS_ItemBase AS b 
+
+	INNER JOIN STAGE_BRS_ItemBase AS b2 
+	ON b.QIRPRC = b2.QILITM 
+
+	INNER JOIN STAGE_BRS_ItemBaseHistory ON 
+	b.QILITM = STAGE_BRS_ItemBaseHistory.Item
+
+WHERE     
+	(STAGE_BRS_ItemBaseHistory.CalMonth = 0) AND
+	(
+		(FamilySetLeader	<> b.QIRPRC) OR
+		(Supplier			<> b2.QI$SPC) OR
+		(Currency			<> CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END) OR
+		(SupplierCost		<> ISNULL(b2.QI$CP1,0) ) OR
+		(CorporatePrice		<> ISNULL(b2.QI$PR1,0) ) OR
+		(SellPrcBrk2		<> ISNULL(b2.QI$PR2,0) ) OR
+		(SellPrcBrk3		<> ISNULL(b2.QI$PR3,0) ) OR
+		(SellQtyBrk2		<> ISNULL(b2.QI$QB2,0) ) OR
+		(SellQtyBrk3		<> ISNULL(b2.QI$QB3,0) )
+	) AND
+	(1 = 1) 
+
+	Set @nErrorCode = @@Error
+End
+
 
 If (@nErrorCode = 0) 
 Begin
@@ -95,8 +142,9 @@ Begin
 		b.QILITM AS Item, 
 		0 AS CalMonth, 
 		b.QIRPRC as FamilySetLeader, 
-		b.QI$SPC as Supplier, 
-		CASE WHEN b.QI$FEC = '' THEN 'CAD' ELSE b.QI$FEC END as Currency, 
+
+		b2.QI$SPC as Supplier, 
+		CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END as Currency, 
 		ISNULL(b2.QI$CP1,0) SupplierCost, 
 		ISNULL(b2.QI$PR1,0) CorporatePrice, 
 		ISNULL(b2.QI$PR2,0) SellPrcBrk2, 
@@ -110,9 +158,8 @@ Begin
 		INNER JOIN STAGE_BRS_ItemBase b2
 		ON b.QIRPRC = b2.QILITM 
 
-		
-
-	WHERE     
+	WHERE 
+		NOT EXISTS (SELECT * FROM STAGE_BRS_ItemBaseHistory WHERE   Item = b.QILITM) AND
 	--	(QI$SPC like 'DENT%') AND
 		(1=1)
 		
