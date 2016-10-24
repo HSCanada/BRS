@@ -38,6 +38,7 @@
 -- 27 Sep 16	tmc		Optimize cursors for DS - 1h 15m for full update...
 -- 03 Oct 16	tmc		moved manual BRS_AGG_IMD_Sales script end.  Needs to 
 --							be added to proc
+-- 24 Oct 16	tmc		Record last build date
 
 **    
 *******************************************************************************/
@@ -181,10 +182,11 @@ Print 'Mark month stataus as complete'
 --	29 Mar 16	tmc		Set month flag to 10 after rebuild (ME adj and logic 
 --		still TBD)
 
+-- 24 Oct 16	tmc		Record last build date
 UPDATE    
 	BRS_FiscalMonth
 SET              
-	StatusCd = 10
+	StatusCd = 10, LastSummaryUpdateDt = GetDate()
 WHERE     
 	(FiscalMonth = @nFiscalTo)
 
