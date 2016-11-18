@@ -39,6 +39,7 @@
 -- 03 Oct 16	tmc		moved manual BRS_AGG_IMD_Sales script end.  Needs to 
 --							be added to proc
 -- 24 Oct 16	tmc		Record last build date
+-- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
 
 **    
 *******************************************************************************/
@@ -368,7 +369,7 @@ DEALLOCATE c;
 
 
 /*
--- Below needs to be streamlined and possibly moved
+-- Below needs to be streamlined and possibly moved (W/F Gary!  27 Oct 16)
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
 
@@ -420,32 +421,6 @@ FROM
 
 GO
 
--- Run only FIRST day of month, after Dimension loaded and SM corrections run
-
-
--- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
--- Fixed to capture Adj Accounts
-SELECT DISTINCT    
-	t.Shipto, 
-	t.FiscalMonth, 
-	t.TerritoryCd as HIST_TerritoryCd, 
-	t.VPA as HIST_VPA,
-	'' as HIST_Specialty,
-	'' as HIST_MarketClass,
-	'' as HIST_SegCd
-
-FROM         BRS_Transaction t
-
-where 
-	(t.Shipto > 0) And 
---	6 May 16	tmc		Fixed missing FSC for adjustments
---	(DocType <> 'AA') And
-	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201609 and 201609) 
-
-
-
-
 -- True up the FSC to match last day (updated Month filter)
 SELECT     
 	SalesOrderNumberKEY, 
@@ -471,9 +446,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201609 and 201609) 
-
--- AND (b.Branch <> 'NWFLD')
+	(t.FiscalMonth between 201610 and 201610) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -496,9 +469,35 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201609 and 201609) 
+	(t.FiscalMonth between 201610 and 201610) 
 
---AND (b.Branch <> 'NWFLD')
+
+-- Run only FIRST day of month, after Dimension loaded and SM corrections run
+
+
+-- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
+-- Fixed to capture Adj Accounts
+SELECT DISTINCT    
+	t.Shipto, 
+	t.FiscalMonth, 
+	t.TerritoryCd as HIST_TerritoryCd, 
+	t.VPA as HIST_VPA,
+	'' as HIST_Specialty,
+	'' as HIST_MarketClass,
+	'' as HIST_SegCd
+
+FROM         BRS_Transaction t
+
+where 
+	(t.Shipto > 0) And 
+--	6 May 16	tmc		Fixed missing FSC for adjustments
+--	(DocType <> 'AA') And
+	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
+	(t.FiscalMonth between 201610 and 201610) 
+
+
+
+
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
@@ -558,7 +557,7 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 -- Manual load
-	(t.CalMonth BETWEEN 201609 AND 201609)
+	(t.CalMonth BETWEEN 201610 AND 201610)
 
 GROUP BY 
 	Item,

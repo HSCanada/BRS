@@ -28,6 +28,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	07 Nov 16	tmc		Added additional metrics
+--  08 Nov 16	tmc		Clarified Tag coding Y/N -> TS_TAG / NO
 **    
 *******************************************************************************/
 
@@ -59,7 +61,7 @@ BEGIN
 	SELECT     
 		t.FiscalMonth, 
 		t.SalesCategory, 
-		CASE WHEN MIN(TAG_TsTerritoryCd) = '' THEN 'N' ELSE 'Y' END AS TsTagInd,
+		CASE WHEN MIN(TAG_TsTerritoryCd) = '' THEN 'TS Not Tagged' ELSE 'TS Tagged' END AS TsTagInd,
 		t.TAG_TsTerritoryCd TsTagTerritoryCd, 
 		t.Shipto,
 		
@@ -67,7 +69,11 @@ BEGIN
 
 		SUM(t.SalesAmt) AS SalesAmt, 
 		SUM(t.GPAtCommCostAmt) AS GPcommAmt,
-		SUM(t.ExtDiscAmt) AS ExtDiscAmt
+		SUM(t.ExtDiscAmt) AS ExtDiscAmt,
+
+--	07 Nov 16	tmc		Added additional metrics
+		SUM(t.GPAmt) AS ExtGPAmt,
+		SUM(t.ExtChargebackAmt) AS ExtChargebackAmt
 
 	FROM         
 		BRS_AGG_CMI_DW_Sales AS t 
