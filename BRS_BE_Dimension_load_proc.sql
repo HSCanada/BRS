@@ -1,4 +1,4 @@
-		SET ANSI_NULLS ON
+﻿		SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
@@ -515,6 +515,7 @@ truncate table STAGE_BRS_ItemFull
 
 -- 4 of 4:  Cleanup info
 -- Exec BRS_BE_Transaction_post_proc 0
+
 
 
 

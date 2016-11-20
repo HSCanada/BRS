@@ -1,4 +1,4 @@
-SET ANSI_NULLS ON
+﻿SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
@@ -119,5 +119,6 @@ GO
 
 -- Run with Prior Fiscal Month ref (results to text)
 -- BRS_PL_SM_Cube_proc 201512
+
 
 

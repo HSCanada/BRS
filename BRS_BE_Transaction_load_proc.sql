@@ -1,4 +1,4 @@
-
+﻿
 
 set ANSI_NULLS ON
 set QUOTED_IDENTIFIER ON
@@ -597,4 +597,5 @@ GO
 
 -- prod run
 -- [BRS_BE_Transaction_load_proc] 0, 0
+
 

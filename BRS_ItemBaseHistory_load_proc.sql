@@ -1,4 +1,4 @@
-
+﻿
 
 set ANSI_NULLS ON
 set QUOTED_IDENTIFIER ON
@@ -452,6 +452,7 @@ truncate table STAGE_BRS_ItemBaseHistory
 
 -- prod run
 -- Exec [BRS_ItemBaseHistory_load_proc] 0
+
 
 
 

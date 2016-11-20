@@ -1,4 +1,4 @@
-SET ANSI_NULLS ON
+﻿SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
@@ -818,3 +818,4 @@ GO
 
 -- Prod
 -- BRS_DS_Cube_proc 0
+

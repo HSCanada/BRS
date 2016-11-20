@@ -1,4 +1,4 @@
-
+﻿
 
 set ANSI_NULLS ON
 set QUOTED_IDENTIFIER ON
@@ -384,6 +384,7 @@ truncate table STAGE_BRS_TransactionDW
 
 -- prod run
 -- Exec [BRS_BE_Transaction_DW_load_proc] 0
+
 
 
 
