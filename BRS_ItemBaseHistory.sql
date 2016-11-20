@@ -69,7 +69,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM BRS_ItemBaseHistory WHERE Item = '1001420' And	(CalMonth in (201606, 201605, 201506)) 
+-- SELECT * FROM BRS_ItemBaseHistory WHERE Item = '7770136' And	(CalMonth in (0, 201608, 201607, 201508)) 
+
+
 
 
 

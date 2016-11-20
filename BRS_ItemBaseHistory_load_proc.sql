@@ -31,6 +31,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 -- 14 Oct 16	tmc		Added Current Base Update logic
+-- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
 **    
 *******************************************************************************/
 BEGIN
@@ -71,58 +72,13 @@ Else
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
 
--- 14 Oct 16	tmc		Added Current Base Update logic
+--
+-- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Update items (STAGE_BRS_ItemBase) ...'
-
-UPDATE    
-	STAGE_BRS_ItemBaseHistory
-SET
-	FamilySetLeader		= b.QIRPRC,
-	Supplier			= b2.QI$SPC,
-	Currency			= CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END,
-	SupplierCost		= ISNULL(b2.QI$CP1,0),
-	CorporatePrice		= ISNULL(b2.QI$PR1,0),
-	SellPrcBrk2			= ISNULL(b2.QI$PR2,0),
-	SellPrcBrk3			= ISNULL(b2.QI$PR3,0),
-	SellQtyBrk2			= ISNULL(b2.QI$QB2,0),
-	SellQtyBrk3			= ISNULL(b2.QI$QB3,0)
-
-FROM         
-	STAGE_BRS_ItemBase AS b 
-
-	INNER JOIN STAGE_BRS_ItemBase AS b2 
-	ON b.QIRPRC = b2.QILITM 
-
-	INNER JOIN STAGE_BRS_ItemBaseHistory ON 
-	b.QILITM = STAGE_BRS_ItemBaseHistory.Item
-
-WHERE     
-	(STAGE_BRS_ItemBaseHistory.CalMonth = 0) AND
-	(
-		(FamilySetLeader	<> b.QIRPRC) OR
-		(Supplier			<> b2.QI$SPC) OR
-		(Currency			<> CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END) OR
-		(SupplierCost		<> ISNULL(b2.QI$CP1,0) ) OR
-		(CorporatePrice		<> ISNULL(b2.QI$PR1,0) ) OR
-		(SellPrcBrk2		<> ISNULL(b2.QI$PR2,0) ) OR
-		(SellPrcBrk3		<> ISNULL(b2.QI$PR3,0) ) OR
-		(SellQtyBrk2		<> ISNULL(b2.QI$QB2,0) ) OR
-		(SellQtyBrk3		<> ISNULL(b2.QI$QB3,0) )
-	) AND
-	(1 = 1) 
-
-	Set @nErrorCode = @@Error
-End
-
-
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Add new items (STAGE_BRS_ItemBase) ...'
+		Print 'Add Current Base and Supplier Cost to STAGE_BRS_ItemBaseHistory ...'
 
 	INSERT INTO STAGE_BRS_ItemBaseHistory (
 		Item,
@@ -133,44 +89,99 @@ Begin
 		SupplierCost,
 		CorporatePrice,
 		SellPrcBrk2,
-		SellPrcBrk3,
 		SellQtyBrk2,
+		SellPrcBrk3,
 		SellQtyBrk3
 	)
 
-	SELECT     
-		b.QILITM AS Item, 
-		0 AS CalMonth, 
-		b.QIRPRC as FamilySetLeader, 
-
-		b2.QI$SPC as Supplier, 
-		CASE WHEN b2.QI$FEC = '' THEN 'CAD' ELSE b2.QI$FEC END as Currency, 
-		ISNULL(b2.QI$CP1,0) SupplierCost, 
-		ISNULL(b2.QI$PR1,0) CorporatePrice, 
-		ISNULL(b2.QI$PR2,0) SellPrcBrk2, 
-		ISNULL(b2.QI$PR3,0) SellPrcBrk3, 
-		ISNULL(b2.QI$QB2,0) SellQtyBrk2, 
-		ISNULL(b2.QI$QB3,0) SellQtyBrk3
-
+	SELECT 
+		i.Item,																			-- Item
+		0																				AS CalMonth,
+		MIN(FamilySetLeader)															as FamilySetLeader, 
+		MIN(Supplier)																	as Supplier, 
+		MIN(CASE WHEN Currency = 'CAN' THEN 'CAD' ELSE Currency END)					as Currency, 
+		MIN(SupplierCost)																as SupplierCost, 
+		SUM(CASE WHEN (ROW_ID - ROW_ID_ITEM + 1) = 1 THEN CorporatePrice ELSE 0 END)	AS CorporatePrice,
+		SUM(CASE WHEN (ROW_ID - ROW_ID_ITEM + 1) = 2 THEN CorporatePrice ELSE 0 END)	AS SellPrcBrk2,
+		SUM(CASE WHEN (ROW_ID - ROW_ID_ITEM + 1) = 2 THEN SellQtyBreak ELSE 0 END)		AS SellQtyBrk2,
+		SUM(CASE WHEN (ROW_ID - ROW_ID_ITEM + 1) = 3 THEN CorporatePrice ELSE 0 END)	AS SellPrcBrk3,
+		SUM(CASE WHEN (ROW_ID - ROW_ID_ITEM + 1) = 3 THEN SellQtyBreak ELSE 0 END)		AS SellQtyBrk3
+	 
 	FROM         
-		STAGE_BRS_ItemBase b
+		STAGE_BRS_ItemSellPrice i
+		INNER JOIN (SELECT Item, MIN(ROW_ID) AS ROW_ID_BR FROM STAGE_BRS_ItemSellPrice GROUP BY Item, SellQtyBreak ) as subq_br
+			ON i.ROW_ID = subq_br.ROW_ID_BR
 
-		INNER JOIN STAGE_BRS_ItemBase b2
-		ON b.QIRPRC = b2.QILITM 
+		INNER JOIN (SELECT Item, MIN(ROW_ID) AS ROW_ID_ITEM FROM STAGE_BRS_ItemSellPrice GROUP BY Item ) as subq_item
+			ON i.Item = subq_item.Item
 
-	WHERE 
-		NOT EXISTS (SELECT * FROM STAGE_BRS_ItemBaseHistory WHERE   Item = b.QILITM) AND
-	--	(QI$SPC like 'DENT%') AND
-		(1=1)
-		
+		INNER JOIN (
+			SELECT     ic.Item, FamilySetLeader, Supplier, Currency, SupplierCost, CostQtyBreak 
+			FROM         
+				STAGE_BRS_ItemSupplierCost ic
+				
+				INNER JOIN (SELECT Item, MIN(ROW_ID) AS ROW_ID_BR FROM STAGE_BRS_ItemSupplierCost GROUP BY Item) as ic_subq_br
+				ON ic.ROW_ID = ic_subq_br.ROW_ID_BR
+		) as subq_cost
+			ON i.Item = subq_cost.Item
 
+	WHERE
+--		i.Item = '6008159' AND
+		1=1
+	GROUP BY 
+		i.Item
 
 	Set @nErrorCode = @@Error
 End
 
--- update FX for RI
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Add new FX ...'
 
--- Update Current Base where diff
+	INSERT INTO BRS_Currency (
+		Currency
+	)
+	SELECT     
+		Distinct c.Currency
+	FROM         
+		STAGE_BRS_ItemBaseHistory AS c 
+
+	WHERE 
+		NOT EXISTS (SELECT * FROM BRS_Currency WHERE Currency=c.Currency)
+	
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Add new FX History ...'
+
+	INSERT INTO BRS_CurrencyHistory (
+		Currency,
+		FiscalMonth,
+		FX_per_USD_bal_rt,
+		FX_per_USD_pnl_rt,
+		FX_per_USD_mrk_rt
+	)
+	SELECT     
+		c.Currency, 
+		f.FiscalMonth, 
+		-1 AS FX_per_USD_bal_rt, 
+		-1 AS FX_per_USD_pnl_rt, 
+		-1 FX_per_USD_mrk_rt
+	FROM         
+		BRS_Currency AS c 
+		CROSS JOIN BRS_FiscalMonth AS f
+
+	WHERE 
+		NOT EXISTS (SELECT * FROM BRS_CurrencyHistory WHERE Currency=c.Currency AND FiscalMonth = f.FiscalMonth)
+	
+	Set @nErrorCode = @@Error
+End
 
 
 If (@nErrorCode = 0) 
@@ -249,24 +260,86 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'UPDATE BRS_ItemBaseHistoryLNK with changes ...'
+
+	UPDATE 
+		BRS_ItemBaseHistoryLNK 
+	SET 
+		FamilySetLeaderID	= ifs.ID,
+		PriceID				= d.PriceID
+/*
+	SELECT     
+		s.CalMonth, 
+		i.ID					AS ItemID, 
+
+		ilnk.FamilySetLeaderID	AS CUR_FamilySetLeaderID,
+		ilnk.PriceID			AS CUR_PriceID,
+
+		ifs.ID					AS NEW_FamilySetLeaderID,
+		d.PriceID				AS NEW_PriceID
+*/
+
+	FROM         
+		STAGE_BRS_ItemBaseHistory AS s 
+
+		INNER JOIN BRS_ItemBaseHistoryDAT AS d 
+		ON s.Supplier = d.Supplier AND 
+			s.Currency = d.Currency AND 
+			s.SupplierCost = d.SupplierCost AND 
+			s.CorporatePrice = d.CorporatePrice AND 
+			s.SellPrcBrk2 = d.SellPrcBrk2 AND 
+			s.SellPrcBrk3 = d.SellPrcBrk3 AND 
+			s.SellQtyBrk2 = d.SellQtyBrk2 AND 
+			s.SellQtyBrk3 = d.SellQtyBrk3 
+
+		INNER JOIN BRS_Item AS i 
+		ON s.Item = i.Item
+
+		INNER JOIN BRS_Item AS ifs 
+		ON s.FamilySetLeader = ifs.Item
+
+		INNER JOIN BRS_ItemBaseHistoryLNK AS ilnk 
+		ON ilnk.CalMonth = s.CalMonth AND 
+			ilnk.ItemID = i.ID
+
+	WHERE
+		-- only update current for performance reasons
+		(s.CalMonth between 0 and 0) AND
+		( 
+			(ilnk.FamilySetLeaderID <> ifs.ID) OR 
+			(ilnk.PriceID <> d.PriceID ) OR
+			(1<>1)
+		) AND
+		(1=1)
+
+
+	Set @nErrorCode = @@Error
+End
+
+--
 
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'LOAD BRS_ItemBaseHistoryLNK ...'
+		Print 'LOAD NEW BRS_ItemBaseHistoryLNK ...'
 
 	INSERT INTO BRS_ItemBaseHistoryLNK (
 		CalMonth,
 		ItemID,
+
 		FamilySetLeaderID,
 		PriceID
 	)
 
-
 	SELECT     
 		s.CalMonth, 
 		i.ID AS ItemID, 
+
 		ifs.ID as FamilySetLeaderID,
 		d.PriceID
 
@@ -290,7 +363,7 @@ Begin
 		ON s.FamilySetLeader = ifs.Item
 	WHERE
 		NOT EXISTS (SELECT * FROM BRS_ItemBaseHistoryLNK WHERE CalMonth = s.CalMonth AND ItemID = I.ID) AND
-	--	s.CalMonth between 201601 and 201612 AND
+--		s.CalMonth between 201601 and 201612 AND
 		(1=1)
 
 
@@ -310,15 +383,6 @@ Begin
 End
 
 
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Clear STAGE_BRS_ItemBase'	
-
-	Delete FROM STAGE_BRS_ItemBase
-
-	Set @nErrorCode = @@Error
-End
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
@@ -356,23 +420,38 @@ Return @nErrorCode
 END
 GO
 
+/*
+-- TEST JDE vs DW
+
+SELECT     i.Item, i.CurrentCorporatePrice, h.CorporatePrice
+FROM         BRS_ItemBaseHistory AS h INNER JOIN
+                      BRS_Item AS i ON h.Item = i.Item
+WHERE     
+	(h.CalMonth = 0) AND
+	ROUND(CorporatePrice,2) <> ROUND(CurrentCorporatePrice,2)
+
+*/
 
 
 -- Step 1:  clear tables (run below)
+/*
 
--- truncate table dbo.STAGE_BRS_ItemBase
--- truncate table STAGE_BRS_ItemBaseHistory 
+-- Weekly / on demand
+truncate table STAGE_BRS_ItemSupplierCost
+truncate table STAGE_BRS_ItemSellPrice
 
--- Step 2a:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBase_Load.bat"
+-- Monthly / one-time
+truncate table STAGE_BRS_ItemBaseHistory 
+
+*/
+
+-- Step 2a:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBaseCost_Load.bat"
 -- Step 2b:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBaseHistory_Load.bat"
 
 -- Step 3:  run below script
 
 -- prod run
 -- Exec [BRS_ItemBaseHistory_load_proc] 0
-
--- debug run
--- [BRS_ItemBaseHistory_load_proc] 
 
 
 

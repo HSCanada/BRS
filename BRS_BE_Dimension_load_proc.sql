@@ -502,10 +502,10 @@ GO
 /*
 
 -- 1 of 4:  Clear tables
+
 truncate table STAGE_BRS_CustomerFull
 truncate table STAGE_BRS_ItemFull
 
-go
 */
 
 -- 2 of 4:  run S:\Business Reporting\_BR_Sales\Upload BRS_Dimension_Load
