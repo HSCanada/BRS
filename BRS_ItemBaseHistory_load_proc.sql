@@ -437,9 +437,9 @@ WHERE
 /*
 
 -- Weekly / on demand
+
 truncate table STAGE_BRS_ItemSupplierCost
 truncate table STAGE_BRS_ItemSellPrice
-
 -- Monthly / one-time
 truncate table STAGE_BRS_ItemBaseHistory 
 

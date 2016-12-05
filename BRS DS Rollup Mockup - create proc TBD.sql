@@ -556,7 +556,7 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 -- Manual load
-	(t.CalMonth BETWEEN 201610 AND 201610)
+	(t.CalMonth BETWEEN 201611 AND 201611)
 
 GROUP BY 
 	Item,
