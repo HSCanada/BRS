@@ -35,21 +35,26 @@ AS
 **	04 Dec 15	tmc		Corrected for widened Desc and Strect field (added Left(...).  Due to French corruption of output
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
 --	20 Sep 16	tmc		added TS territory load
+--	07 Dec 16	tmc		Moved new BT for RI logic 
 **    
 *******************************************************************************/
 
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
---	SET NOCOUNT ON;
-
-    -- Insert statements for procedure here
 
 	Declare @nErrorCode int, @nTranCount int
 	Declare @sMessage varchar(255)
 
 	Set @nErrorCode = @@Error
 	Set @nTranCount = @@Trancount
+
+------------------------------------------------------------------------------------------------------------
+-- Init routines.  
+------------------------------------------------------------------------------------------------------------
+
+	SET NOCOUNT ON;
+
+	if (@bDebug <> 0)
+		SET NOCOUNT OFF;
 
 	-- Start transaction
 	if (@nTranCount = 0)
@@ -58,9 +63,12 @@ BEGIN
 		Save Tran mytran
 
 
+------------------------------------------------------------------------------------------------------------
+-- Update routines.  
+------------------------------------------------------------------------------------------------------------
+
 	if (@bDebug <> 0)
 		Print 'DEBUG MODE.'
-
 
 	If (@nErrorCode = 0) 
 	Begin
@@ -109,6 +117,30 @@ BEGIN
 									  (SELECT     *
 										FROM          BRS_TS_Rollup AS BRS_TS_Rollup_1
 										WHERE       TsTerritoryCd = c.TsTerritoryCd ))
+		Set @nErrorCode = @@Error
+	End
+
+
+	--	07 Dec 16	tmc		Moved new BT for RI logic 
+	-- added 24 Aug 15, tmc
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new BT (from Stage)...'
+
+			INSERT INTO BRS_CustomerBT
+								  (BillTo, ShipToPrimary)
+			SELECT     
+				BillTo AS BillTo, 
+				MIN(ShipTo) AS ShipToPrimary
+			FROM         
+				STAGE_BRS_CustomerFull AS t
+			WHERE     (NOT EXISTS
+									  (SELECT     *
+										FROM          BRS_CustomerBT AS BRS_Customer_1
+										WHERE      (BillTo = t.BillTo)))
+			GROUP BY BillTo	
+
 		Set @nErrorCode = @@Error
 	End
 
@@ -182,30 +214,6 @@ BEGIN
 
 		Set @nErrorCode = @@Error
 	End
-
-
-	-- added 24 Aug 15, tmc
-	If (@nErrorCode = 0) 
-	Begin
-		if (@bDebug <> 0)
-			Print 'Add new BT (from Stage)...'
-
-			INSERT INTO BRS_CustomerBT
-								  (BillTo, ShipToPrimary)
-			SELECT     
-				BillTo AS BillTo, 
-				MIN(ShipTo) AS ShipToPrimary
-			FROM         
-				STAGE_BRS_CustomerFull AS t
-			WHERE     (NOT EXISTS
-									  (SELECT     *
-										FROM          BRS_CustomerBT AS BRS_Customer_1
-										WHERE      (BillTo = t.BillTo)))
-			GROUP BY BillTo	
-
-		Set @nErrorCode = @@Error
-	End
-
 
 
 	If (@nErrorCode = 0) 
@@ -467,6 +475,9 @@ BEGIN
 		Set @nErrorCode = @@Error
 	End
 
+------------------------------------------------------------------------------------------------------------
+-- Wrap-up routines.  
+------------------------------------------------------------------------------------------------------------
 
 	if (@bDebug <> 0)
 		Set @nErrorCode = 512

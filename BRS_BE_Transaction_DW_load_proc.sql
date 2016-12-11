@@ -33,6 +33,8 @@ AS
 --	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 --	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 --	26 Sep 16	tmc		Design fix:  BRS_TransactionDW_Ext stored at order level, not line level
+--	07 Dec 06	tmc		Added Ext Price and Disc to correct Advance Price Order Promo
+--  09 Dec 16	tmc		Update Metrics load logic, Disc TBD
 
 **    
 *******************************************************************************/
@@ -73,6 +75,22 @@ Else
 ------------------------------------------------------------------------------------------------------------
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Add new BU...'
+
+		INSERT INTO BRS_BusinessUnit
+							  (BusinessUnit)
+		SELECT DISTINCT LEFT(ISNULL(t.GLBUNO,''), 12) AS bu
+		FROM         STAGE_BRS_TransactionDW AS t
+		WHERE     (NOT EXISTS
+								  (SELECT     *
+									FROM          BRS_BusinessUnit AS BRS_BusinessUnit_1
+									WHERE       BusinessUnit = ISNULL(t.GLBUNO,'') ))
+	Set @nErrorCode = @@Error
+End
 
 
 If (@nErrorCode = 0) 
@@ -178,14 +196,18 @@ Begin
 		GLBusinessUnit, 
 		OrderFirstShipDate, 
 		InvoiceNumber, 
+
+		--  09 Dec 16	tmc		Update Metrics load logic
 		ShippedQty, 
-		NetSalesAmt, 
 		GPAmt, 
 		GPAtFileCostAmt, 
 		GPAtCommCostAmt, 
 		ExtChargebackAmt, 
+		NetSalesAmt, 
+		ExtPrice,
+		ExtListPrice,
+
 		ExtDiscAmt, 
-		UnitListPrice,
 		PromotionCode,
 		OrderPromotionCode,
 		BackorderInd,
@@ -213,23 +235,27 @@ Begin
 		ISNULL(s.GLBUNO,'') AS GLBusinessUnit, 
 		ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
 		s.IVNO AS InvoiceNumber, 
+
+		--  09 Dec 16	tmc		Update Metrics load logic
 		s.WJXBFS1 AS ShippedQty, 
-		s.WJXBFS2 AS NetSalesAmt, 
-		s.WJXBFS3 AS GPAmt, 
-		s.WJXBFS4 AS GPAtFileCostAmt, 
-		s.WJXBFS5 AS GPAtCommCostAmt, 
-		s.WJXBFS6 AS ExtChargebackAmt, 
+		s.WJXBFS2 AS GPAmt, 
+		s.WJXBFS3 AS GPAtFileCostAmt, 
+		s.WJXBFS4 AS GPAtCommCostAmt, 
+		s.WJXBFS5 AS ExtChargebackAmt, 
+		s.WJXBFS6 AS NetSalesAmt, 
+		s.WJXBFS7 AS ExtPrice, 
+		s.WJXBFS8 AS ExtListPrice,
 
-		CASE WHEN s.LNTY = 'CP' THEN (0 - s.WJXBFS2) ELSE s.WJXBFS7 END  AS ExtDiscAmt, 
+		-- TB fixed, 07 Dec 16 *****
+		0  AS ExtDiscAmt, 
+--		CASE WHEN s.LNTY = 'CP' THEN (0 - s.WJXBFS2) ELSE s.WJXBFS7 END  AS ExtDiscAmt, 
 
-		s.WJXBFS8 AS UnitListPrice, 
 		ISNULL(p1.PMCD, '') AS PromotionCode, 
 		ISNULL(p2.PMCD, '') AS OrderPromotionCode,
 
 		CASE WHEN s.PDDT = s.ORFISHDT THEN 0 ELSE 1 END as BackorderInd,		
-	--	0 as BackorderInd,		
 		CASE WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd
-	--	CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd
+
 
 
 	FROM         
@@ -288,7 +314,6 @@ Begin
 	UPDATE    
 		BRS_TransactionDW
 	SET              
---		AdjCode = '', 
 		FreeGoodsEstInd = 0
 	FROM         
 		BRS_TransactionDW 
