@@ -35,6 +35,7 @@ AS
 --	26 Sep 16	tmc		Design fix:  BRS_TransactionDW_Ext stored at order level, not line level
 --	07 Dec 06	tmc		Added Ext Price and Disc to correct Advance Price Order Promo
 --  09 Dec 16	tmc		Update Metrics load logic, Disc TBD
+--	13 Dec 16	tmc		Added Update Promo logic
 
 **    
 *******************************************************************************/
@@ -75,6 +76,62 @@ Else
 ------------------------------------------------------------------------------------------------------------
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
+
+--	13 Dec 16	tmc		Added Update Promo logic
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Add new Promo...'
+
+	INSERT INTO BRS_Promotion
+		(PromotionCode)
+	SELECT	DISTINCT PMCD 
+	FROM	STAGE_BRS_Promotion 
+	WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion WHERE PMCD=PromotionCode) 
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Updated Changed Promo...'
+
+	UPDATE    
+		BRS_Promotion
+	SET              
+		PromotionDescription		= p.PMDE0,
+		PromotionId					= p.PMID,
+		MarketingProgramIndicator	= MKTPGIN,
+		PromotionStartDate			= PMSTDT,
+		PromotionEndDate			= PMENDT,
+		PromotionSalesDivision		= SDCD0,
+		PromotionStatus				= PMSTCD,
+		PromotionType				= PMTYDE
+
+	FROM         
+		STAGE_BRS_Promotion p
+
+		INNER JOIN (SELECT     PMCD, MAX(PMID) AS PMID FROM STAGE_BRS_Promotion GROUP BY PMCD) ps
+		ON p.PMID = ps.PMID
+
+	WHERE 
+		(PromotionCode = p.PMCD) AND 
+		(
+			(PromotionDescription		<> PMDE0)	OR
+			(PromotionId				<> p.PMID)	OR
+			(MarketingProgramIndicator	<> MKTPGIN)	OR
+			(PromotionStartDate			<> PMSTDT)	OR
+			(PromotionEndDate			<> PMENDT)	OR
+			(PromotionSalesDivision		<> SDCD0)	OR
+			(PromotionStatus			<> PMSTCD)	OR
+			(PromotionType				<> PMTYDE)
+		)
+	Set @nErrorCode = @@Error
+End
+
+
 
 If (@nErrorCode = 0) 
 Begin
