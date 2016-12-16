@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	14 Dec 16	tmc		Add Historical FSC associated Branch 
 **    
 *******************************************************************************/
 
@@ -36,6 +37,10 @@ SELECT
 	f.ShipTo, 
 	c.SalesCategory_FreeGoodsRedeem_Rollup AS SalesCategory_Rollup, 
 	f.FiscalMonth, 
+
+--	14 Dec 16	tmc		Add Historical FSC associated Branch 
+	MIN(h.HIST_TerritoryCd) as HIST_TerritoryCd,
+
 	SUM(f.ExtFileCostAmt) AS FreeGoodsRedeem_ExtFileCostAmt
 
 FROM         
@@ -46,6 +51,10 @@ FROM
 
 	INNER JOIN BRS_ItemSalesCategory AS c 
 	ON i.SalesCategory = c.SalesCategory
+
+	LEFT JOIN BRS_CustomerFSC_History AS h 
+	ON f.Shipto = h.Shipto AND
+		f.FiscalMonth = h.FiscalMonth
 
 WHERE     
 	(f.FiscalMonth =
