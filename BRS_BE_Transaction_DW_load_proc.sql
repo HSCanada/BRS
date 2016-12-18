@@ -34,8 +34,9 @@ AS
 --	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 --	26 Sep 16	tmc		Design fix:  BRS_TransactionDW_Ext stored at order level, not line level
 --	07 Dec 06	tmc		Added Ext Price and Disc to correct Advance Price Order Promo
---  09 Dec 16	tmc		Update Metrics load logic, Disc TBD
---	13 Dec 16	tmc		Added Update Promo logic
+--  09 Dec 16	tmc		Update Metrics load logic, Disc ***TBD***
+--	13 Dec 16	tmc		Added Update Promo logic,
+--	18 Dec 16	tmc		Added Freegood auto and Astea fields
 
 **    
 *******************************************************************************/
@@ -268,7 +269,21 @@ Begin
 		PromotionCode,
 		OrderPromotionCode,
 		BackorderInd,
-		FreeGoodsEstInd
+		FreeGoodsEstInd,
+
+		--	18 Dec 16	tmc		Added Freegood auto and Astea fields
+		[OriginalSalesOrderNumber],		-- [OORN]		
+		[OriginalOrderDocumentType],	-- [OORTY]		
+		[OriginalOrderLineNumber],		-- [OORLINO]	
+		[PricingAdjustmentLine],		-- [PCADLINO]	
+		[SalesOrderBilltoNumber],		-- [BTADNO]	
+		[EssCode],						-- [ESSCD]		
+		[CcsCode],						-- [CCSCD]		
+		[EstCode],						-- [ESTCD]		
+		[TssCode],						-- [TSSCD]		
+		[CagCode],						-- [CAGREPCD]	
+		[EquipmentOrderNumber],			-- [EQORDNO]	
+		[EquipmentOrderType]			-- [EQORDTYCD]	
 
 		)
 		SELECT     
@@ -303,7 +318,7 @@ Begin
 		s.WJXBFS7 AS ExtPrice, 
 		s.WJXBFS8 AS ExtListPrice,
 
-		-- TB fixed, 07 Dec 16 *****
+		-- TB fixed, 07 Dec 16 ***TBD!***
 		0  AS ExtDiscAmt, 
 --		CASE WHEN s.LNTY = 'CP' THEN (0 - s.WJXBFS2) ELSE s.WJXBFS7 END  AS ExtDiscAmt, 
 
@@ -311,14 +326,26 @@ Begin
 		ISNULL(p2.PMCD, '') AS OrderPromotionCode,
 
 		CASE WHEN s.PDDT = s.ORFISHDT THEN 0 ELSE 1 END as BackorderInd,		
-		CASE WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd
+		CASE WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 
-
+		--	18 Dec 16	tmc		Added Freegood auto and Astea fields
+		CASE WHEN s.OORNO = 0 THEN s.JDEORNO					ELSE s.OORNO  END						AS	OriginalSalesOrderNumber,		 
+		CASE WHEN s.OORNO = 0 THEN s.ORDOTYCD					ELSE s.OORTY  END						AS	OriginalOrderDocumentType,	 
+		CASE WHEN s.OORNO = 0 THEN ROUND(s.LNNO * 1000, 0)	ELSE ROUND(ISNULL(s.OORLINO,0) * 1000, 0)  END	AS 	OriginalOrderLineNumber,	
+	 
+		ISNULL(s.PCADLINO,'')	AS	PricingAdjustmentLine,		 
+		ISNULL(s.BTADNO,0)		AS	SalesOrderBilltoNumber,		 
+		ISNULL(s.ESSCD,'')		AS	EssCode,						 
+		ISNULL(s.CCSCD,'')		AS	CcsCode,						 
+		ISNULL(s.ESTCD,0)		AS	EstCode,						 
+		ISNULL(s.TSSCD,'')		AS	TssCode,						 
+		ISNULL(s.CAGREPCD,'')	AS	CagCode,						 
+		ISNULL(s.EQORDNO,'')	AS	EquipmentOrderNumber,			 
+		ISNULL(s.EQORDTYCD,'')	AS	EquipmentOrderType			 
 
 	FROM         
 		STAGE_BRS_TransactionDW AS s 
 
-	--	LEFT OUTER JOIN 
 		LEFT OUTER JOIN STAGE_BRS_Promotion AS p2 
 		ON s.OPMID = p2.PMID 
 
@@ -399,7 +426,19 @@ Begin
 	Set @nErrorCode = @@Error
 
 End
---SELECT     MIN(CMID) FROM STAGE_BRS_TransactionDW
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Update SalesDateLastWeekly'	
+
+	UPDATE    
+		BRS_Config
+	SET              
+		SalesDateLastWeekly = (SELECT     MAX(PDDT) FROM         STAGE_BRS_TransactionDW)
+	
+	Set @nErrorCode = @@Error
+End
 
 
 
@@ -462,7 +501,7 @@ truncate table STAGE_BRS_TransactionDW
 */
 -- Step 2:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_TransactionDW_Load.bat"
 
--- Step 3:  run below script
+-- Step 3:  run below script, after Dimension load.
 
 -- prod run
 -- Exec [BRS_BE_Transaction_DW_load_proc] 0
