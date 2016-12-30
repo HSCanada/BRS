@@ -53,6 +53,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+-- TRUNCATE TABLE STAGE_BRS_FreeGoodsRedeem
+
+
 -- Select * from STAGE_BRS_FreeGoodsRedeem_Load
 
 

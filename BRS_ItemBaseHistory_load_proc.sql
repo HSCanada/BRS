@@ -423,7 +423,7 @@ GO
 /*
 -- TEST JDE vs DW
 
-SELECT     i.Item, i.CurrentCorporatePrice, h.CorporatePrice
+SELECT     i.Item, i.CurrentCorporatePrice, i.Label, h.CorporatePrice
 FROM         BRS_ItemBaseHistory AS h INNER JOIN
                       BRS_Item AS i ON h.Item = i.Item
 WHERE     

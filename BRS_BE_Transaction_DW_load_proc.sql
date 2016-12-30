@@ -34,7 +34,7 @@ AS
 --	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 --	26 Sep 16	tmc		Design fix:  BRS_TransactionDW_Ext stored at order level, not line level
 --	07 Dec 06	tmc		Added Ext Price and Disc to correct Advance Price Order Promo
---  09 Dec 16	tmc		Update Metrics load logic, Disc ***TBD***
+--  09 Dec 16	tmc		Update Metrics load logic, Disc, Zero load skip ***TBD***
 --	13 Dec 16	tmc		Added Update Promo logic,
 --	18 Dec 16	tmc		Added Freegood auto and Astea fields
 
@@ -503,7 +503,7 @@ truncate table STAGE_BRS_TransactionDW
 
 -- Step 3:  run below script, after Dimension load.
 
--- prod run
+-- prod run - 6min
 -- Exec [BRS_BE_Transaction_DW_load_proc] 0
 
 
