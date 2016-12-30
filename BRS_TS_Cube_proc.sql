@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	07 Nov 16	tmc		Added additional metrics
 --  08 Nov 16	tmc		Clarified Tag coding Y/N -> TS_TAG / NO
+--	29 Dec 16	tmc		Add MTD Logic
 **    
 *******************************************************************************/
 
@@ -38,7 +39,9 @@ BEGIN
 	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
-	Declare @nFiscalMonth int, @nFirstFiscalMonth_LY int
+	Declare @nFiscalMonth int, @nPriorFiscalMonth int, @nFirstFiscalMonth_LY int
+	Declare @dtLastDay datetime
+
 
 	SET NOCOUNT ON
 
@@ -51,10 +54,12 @@ BEGIN
 	--Get Params
 	 
 	Select
-		@nFiscalMonth			= PriorFiscalMonth,
-		@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY
+		@nFiscalMonth			= FiscalMonth,
+		@nPriorFiscalMonth		= PriorFiscalMonth,
+		@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY,
+		@dtLastDay				= SalesDateLastWeekly
 	FROM
-		BRS_Rollup_Support02 g
+		BRS_TS_Config g
 
 	--Pull Cube based on Params
 
@@ -87,9 +92,7 @@ BEGIN
 
 	WHERE     
 		(t.FreeGoodsEstInd = 0) AND
-
-		(t.FiscalMonth BETWEEN @nFirstFiscalMonth_LY AND @nFiscalMonth) AND 
-
+		(t.FiscalMonth BETWEEN @nFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND 
 		(1=1)
 
 	GROUP BY 
@@ -98,6 +101,58 @@ BEGIN
 		t.TAG_TsTerritoryCd, 
 		t.Shipto,
 		ic.CategoryRollup
+
+--	29 Dec 16	tmc		Add MTD Logic
+	UNION ALL
+
+	SELECT     
+		d.FiscalMonth, 
+		i.SalesCategory, 
+		CASE WHEN MIN(t2.TsTerritoryCd) = '' THEN 'TS Not Tagged' ELSE 'TS Tagged' END AS TsTagInd,
+		t2.TsTerritoryCd TsTagTerritoryCd, 
+		t.Shipto,
+		
+		ic.CategoryRollup,
+
+		SUM(t.NetSalesAmt) AS SalesAmt, 
+		SUM(t.GPAtCommCostAmt) AS GPcommAmt,
+		SUM(t.ExtDiscAmt) AS ExtDiscAmt,
+
+--	07 Nov 16	tmc		Added additional metrics
+		SUM(t.GPAmt) AS ExtGPAmt,
+		SUM(t.ExtChargebackAmt) AS ExtChargebackAmt
+
+	FROM         
+		dbo.BRS_TransactionDW AS t 
+
+		INNER JOIN BRS_Item i
+		ON t.Item = i.Item
+
+		INNER JOIN BRS_ItemCategory ic
+		ON i.MinorProductClass = ic.MinorProductClass
+
+		INNER JOIN BRS_SalesDay AS d 
+		ON d.SalesDate = t.Date 
+
+	    INNER JOIN BRS_TransactionDW_Ext AS t2 
+		ON t.SalesOrderNumber = t2.SalesOrderNumber AND 
+			t.DocType = t2.DocType 
+
+
+	WHERE     
+		(t.FreeGoodsEstInd = 0) AND
+		(d.FiscalMonth = @nFiscalMonth ) AND 
+		(t.Date <= @dtLastDay ) AND
+		
+		(1=1)
+
+	GROUP BY 
+		d.FiscalMonth, 
+		i.SalesCategory, 
+		t2.TsTerritoryCd, 
+		t.Shipto,
+		ic.CategoryRollup
+
 END
 
 GO

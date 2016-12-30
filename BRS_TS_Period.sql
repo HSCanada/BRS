@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	29 Dec 16	tmc		moved from prior monthend to current month (weekly upd)
 **    
 *******************************************************************************/
 
@@ -53,7 +54,7 @@ FROM
 
 WHERE     
 
-	(m.FiscalMonth BETWEEN c.FirstFiscalMonth AND c.PriorFiscalMonth)
+	(m.FiscalMonth BETWEEN c.FirstFiscalMonth AND c.FiscalMonth)
 
 
 GO
