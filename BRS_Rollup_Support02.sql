@@ -37,7 +37,11 @@ SELECT
 	g.SalesDate, 
 	g.FiscalMonth, 
 	g.FirstFiscalMonth_TY, 
+
 	d.SalesDate AS SalesDate_LY, 
+--  04 Jan 17	tmc		Add LY Override date logic for testing.  DO NOT USE in production.
+--	CAST ('29 Dec 15' as datetime) AS SalesDate_LY, 
+
 	m.FiscalMonth AS FiscalMonth_LY, 
 	m2.FiscalMonth AS FirstFiscalMonth_LY, 
 	g.DayNumber, 
@@ -50,6 +54,7 @@ SELECT
 FROM         
 
 	dbo.BRS_Rollup_Support01 AS g 
+
 	INNER JOIN dbo.BRS_SalesDay AS d 
 	ON g.SalesDateSeq - g.DaySeq_LY_OFFSET = d.DaySeq 
 
