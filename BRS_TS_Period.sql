@@ -49,12 +49,12 @@ SELECT
 
 FROM         
 
-	dbo.BRS_FiscalMonth m CROSS JOIN
-	dbo.BRS_Config c
+	dbo.BRS_FiscalMonth m 
 
 WHERE     
 
-	(m.FiscalMonth BETWEEN c.FirstFiscalMonth AND c.FiscalMonth)
+	(m.FiscalMonth BETWEEN (SELECT FirstFiscalMonth_LY FROM BRS_TS_Config) AND 
+							(SELECT FiscalMonth FROM BRS_TS_Config) )
 
 
 GO
