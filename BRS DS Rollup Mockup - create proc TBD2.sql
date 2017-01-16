@@ -40,6 +40,7 @@
 --							be added to proc
 -- 24 Oct 16	tmc		Record last build date
 -- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
+-- 11 Jan 17    tmc     build BRS_AGG_CDBGAD_Sales by day for same day rollup
 
 **    
 *******************************************************************************/
@@ -99,8 +100,11 @@ BEGIN
 
 	Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales...'
 
-	INSERT INTO BRS_AGG_CMBGAD_Sales
+	INSERT INTO BRS_AGG_CDBGAD_Sales
+--	INSERT INTO BRS_AGG_CMBGAD_Sales
 	(
+        SalesDate,
+
 		FiscalMonth, 
 		Branch, 
 		GLBU_Class, 
@@ -112,6 +116,10 @@ BEGIN
 
 		SalesAmt, 
 		GPAmt, 
+
+        GP_Org_Amt,
+        ExtChargebackAmt,
+
 		FactCount,
 		ID_MAX,
 
@@ -123,6 +131,8 @@ BEGIN
 
 	)
 	SELECT     
+        t.SalesDate,
+
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
@@ -135,7 +145,12 @@ BEGIN
 		SUM(NetSalesAmt) AS SalesAmt, 
 
 		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) END AS GPAmt, 
+			- SUM(ExtendedCostAmt) - SUM(ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
+			- SUM(ExtendedCostAmt) END AS GP_Org_Amt, 
+
+		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 
 		COUNT(*) AS FactCount,
 		MAX(t.ID) as ID_MAX,
@@ -160,6 +175,8 @@ BEGIN
 		(t.FiscalMonth = @nFiscalCurrent)
 --		(t.FiscalMonth BETWEEN 201301 AND 201312)
 	GROUP BY 
+        t.SalesDate,
+
 		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
@@ -177,6 +194,7 @@ CLOSE c;
 -- DEALLOCATE c;
 
 
+
 --------------------------------------------------------------------------------
 Print 'Mark month stataus as complete'
 --------------------------------------------------------------------------------
@@ -191,12 +209,12 @@ SET
 WHERE     
 	(FiscalMonth = @nFiscalTo)
 
-/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 
 --------------------------------------------------------------------------------
 Print 'Secondary Update *****'
 --------------------------------------------------------------------------------
-
+/*
 
 
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
@@ -366,7 +384,6 @@ END
 CLOSE c;
 DEALLOCATE c;
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 
 
@@ -570,4 +587,6 @@ GROUP BY
 */
 
 
--- Select FiscalMonth, FirstFiscalMonth_LY, PriorFiscalMonth FROM BRS_Rollup_Support02 
+-- Select FiscalMonth, FirstFiscalMonth_LY, PriorFiscalMonth FROM BRS_Rollup_Support02
+
+

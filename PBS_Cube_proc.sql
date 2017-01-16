@@ -127,7 +127,7 @@ FROM
 
 WHERE     
     (d.FiscalMonth between  @dtFrom and @dtTo) AND
-    (t.Shipto = 1643036) AND
+--    (t.Shipto = 1643036) AND
     (1=1)
 
 GROUP BY 
@@ -179,8 +179,11 @@ Return @nErrorCode
 END
 GO
 
+GRANT EXECUTE ON [dbo].[PBS_Cube_proc] TO [CAHSI\kansell]
+GO
 
--- Exec [PBS_Cube_proc] 201301, 201612
+
+-- Exec [PBS_Cube_proc] 201301, 201301
 
 
 

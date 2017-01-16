@@ -157,6 +157,8 @@ END
 
 GO
 
+--	Select FiscalMonth, PriorFiscalMonth, FirstFiscalMonth_LY, SalesDateLastWeekly FROM BRS_TS_Config g
+
 -- Debug
 -- BRS_TS_Cube_proc 
 

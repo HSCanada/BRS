@@ -430,6 +430,9 @@ WHERE
 	(h.CalMonth = 0) AND
 	ROUND(CorporatePrice,2) <> ROUND(CurrentCorporatePrice,2)
 
+
+SELECT COUNT(*) FROM STAGE_BRS_ItemBaseHistory 
+
 */
 
 

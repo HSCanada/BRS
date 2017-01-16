@@ -37,6 +37,7 @@ AS
 --  09 Dec 16	tmc		Update Metrics load logic, Disc, Zero load skip ***TBD***
 --	13 Dec 16	tmc		Added Update Promo logic,
 --	18 Dec 16	tmc		Added Freegood auto and Astea fields
+--  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
 
 **    
 *******************************************************************************/
@@ -303,7 +304,11 @@ Begin
 		s.LNTY AS LineTypeOrder, 
 		s.HSDCDID AS SalesDivision, 
 		s.MJPRCLID AS MajorProductClass, 
-		ISNULL(s.CBCONTRNO,0) AS ChargebackContractNumber, 
+
+        --  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
+		CASE WHEN s.CBCONTRNO = '*' THEN 0 ELSE ISNULL(s.CBCONTRNO,0) END AS ChargebackContractNumber, 
+--		ISNULL(s.CBCONTRNO,0) AS ChargebackContractNumber, 
+
 		ISNULL(s.GLBUNO,'') AS GLBusinessUnit, 
 		ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
 		s.IVNO AS InvoiceNumber, 
