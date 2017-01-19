@@ -47,7 +47,8 @@
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
-
+-- change to build up #months do decouple DS from history logig (same day sales)
+-- Add Daily summary to logic
 --------------------------------------------------------------------------------
 Print 'Init'
 --------------------------------------------------------------------------------

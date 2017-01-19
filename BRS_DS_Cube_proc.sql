@@ -42,8 +42,6 @@ AS
 *******************************************************************************/
 
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
 Declare @dtSalesDay datetime, @nFiscalMonthBeginDt datetime 
@@ -54,7 +52,6 @@ Declare @nWorkingDaysMonth int, @nDayNumber int
 Declare @dtSalesDate_LY datetime 
 Declare @nFiscalMonth_LY int, @nFirstFiscalMonth_LY int
 
---Declare @nDS_FreeGoodsEstInd int
 
 SET NOCOUNT ON
 
@@ -73,29 +70,9 @@ Select
 	@dtSalesDate_LY			= SalesDate_LY,
 	@nFiscalMonth_LY		= FiscalMonth_LY,
 	@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	@nDS_FreeGoodsEstInd	= DS_FreeGoodsEstInd
 FROM
 	BRS_Rollup_Support02 g
 
-/*
--- Debug extr data not work with PowPiv!!
-if (@bDebug <> 0)
-Begin
-	Select
-		dtSalesDay,
-		nFiscalMonth,
-		nFirstFiscalMonth_TY,
-		nWorkingDaysMonth,
-		nDayNumber,
-		dtSalesDate_LY,
-		nFiscalMonth_LY,
-		nFirstFiscalMonth_LY
-End
-*/
-
----- xxx
----- xxx
 
 --PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT)'
 
@@ -109,9 +86,6 @@ SELECT
 	t.Branch,
 	t.GLBU_Class, 
 
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
 	t.AdjCode,
 
 	t.SalesDivision, 
@@ -125,7 +99,7 @@ SELECT
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID
 
@@ -151,14 +125,8 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
 	,t.AdjCode
-
 	,t.SalesDivision
-
 	,c.MarketClass
 	,c.SegCd 
 
@@ -188,7 +156,7 @@ SELECT
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID
 
@@ -265,10 +233,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -278,7 +242,6 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
-
 	,t.HIST_MarketClass
 	,t.HIST_SegCd 
 
@@ -327,10 +290,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -358,12 +317,7 @@ SELECT
 	t.FiscalMonth, 
 	t.Branch,
 	t.GLBU_Class, 
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
 	t.AdjCode,
-
 	t.SalesDivision, 
 	'A' AS TrxSrc, 
 
@@ -375,7 +329,7 @@ SELECT
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID
 
@@ -400,17 +354,12 @@ WHERE
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
 
-
 	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
 	,t.AdjCode
 
 	,t.SalesDivision
@@ -443,7 +392,7 @@ SELECT
 	                      
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) - SUM(ExtendedCostAmt) END AS GPAmt, 
---	SUM(t.NetSalesAmt) - SUM(t.ExtendedCostAmt) AS GPAmt, 
+
 	@dtSalesDay AS SalesDate,
 	MIN(t.ID) as UniqueID
 
@@ -465,9 +414,6 @@ WHERE
 --  MUST use estimates for this case 
 	(t.FreeGoodsEstInd =  0 ) AND
 
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
 	(1=1)
 
 GROUP BY 
@@ -476,7 +422,6 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
-
 	,c.HIST_MarketClass
 	,c.HIST_SegCd 
 
@@ -526,10 +471,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -544,8 +485,6 @@ GROUP BY
 	,t.HIST_SegCd 
 
 UNION ALL
-
--- 7 end
 
 --PRINT '8. MTD PY - Pro-rated from LY Aggregate - (PY.MTD.PRO)'
 
@@ -588,10 +527,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -649,10 +584,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -716,10 +647,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -787,10 +714,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -804,10 +727,6 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,t.HIST_SegCd 
-
-
----- xxx
----- xxx
 
 END
 

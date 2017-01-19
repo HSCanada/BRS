@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	16 Feb 16	tmc		Added Holiday & Exception notes
+--  19 Jan 17   tmc     Updated naming from BRS_Rollup_Support01 refactor
 **    
 *******************************************************************************/
 
@@ -48,7 +49,9 @@ SELECT
 	p.YearNum, 
 	p.LastWorkingDt, 
 	s.PriorFiscalMonth, 
-	s.FirstFiscalMonth_TY,
+
+    --  19 Jan 17   tmc     Updated naming from BRS_Rollup_Support01 refactor
+	s.YearFirstFiscalMonth,
 
 --	16 Feb 16	tmc		Added Holiday & Exception notes
 	s.DayComment
