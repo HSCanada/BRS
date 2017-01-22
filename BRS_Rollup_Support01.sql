@@ -30,7 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	16 Feb 16	tmc		Added Holiday & Exception notes
 --	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---  19 Jan 17   tmc     Refactored date logic accomodate different YoY schemes
+--  22 Jan 17   tmc     Refactored date logic accomodate different YoY schemes
 **    
 *******************************************************************************/
 
@@ -44,22 +44,22 @@ SELECT
 
 	cy_jan.FiscalMonth      AS YearFirstFiscalMonth,
 
-	pd.SalesDate            AS SalesDate_LY,
+	d.SalesDate_LY,
 	pm.FiscalMonth          AS FiscalMonth_LY, 
 
 	py_jan.FiscalMonth      AS YearFirstFiscalMonth_LY, 
 
-	cd.DayNumber,
-	cd.DayType, 
-	cd.StatusCd             AS DayStatusCd, 
-	cd.Comment              AS DayComment,
+	d.DayNumber,
+	d.DayType, 
+	d.StatusCd             AS DayStatusCd, 
+	d.Comment              AS DayComment,
 
 	c.ExceptionCd, 
 	c.ExceptionNote, 
 
 --  Support fields
 
-	cd.DaySeq,           
+	d.DaySeq,           
 
 	cm.MonthSeq,          
 	cm.WorkingDaysMonth     AS MonthWorkingDays, 
@@ -70,15 +70,18 @@ SELECT
 
 	cm.FirstMonthSeqInYear  AS YearFirstFiscalSeq, 
 
-	c.YoyOffsetDaySeq_Fiscal,
-    c.YoyOffsetDaySeq_SameDay
+	c.OffsetDaySeq_Yoy_Fiscal,
+    c.OffsetDaySeq_Yoy_Fiscal_SameDay,
+    c.OffsetDaySeq_Yoy_Fiscal_SameDay_Default,
+
+    hist.FiscalMonth        AS YearFirstFiscalMonth_HIST    
 
 FROM         
 
 	dbo.BRS_Config AS c 
 	
-	INNER JOIN dbo.BRS_SalesDay AS cd 
-	ON c.SalesDate = cd.SalesDate 
+	INNER JOIN BRS_DS_Day_Yoy AS d 
+	ON c.SalesDate = d.SalesDate 
 
 	INNER JOIN dbo.BRS_FiscalMonth AS cm 
 	ON c.FiscalMonth = cm.FiscalMonth 
@@ -86,15 +89,14 @@ FROM
 	INNER JOIN dbo.BRS_FiscalMonth AS cy_jan 
 	ON (cm.FirstMonthSeqInYear) = cy_jan.MonthSeq
 
-    -- Change Fiscal vs Sameday lookup logic here
-	INNER JOIN dbo.BRS_SalesDay AS pd 
-	ON (cd.DaySeq - c.YoyOffsetDaySeq_Fiscal) = pd.DaySeq 
-
 	INNER JOIN dbo.BRS_FiscalMonth AS pm 
 	ON (cm.MonthSeq - 12) = pm.MonthSeq 
 
 	INNER JOIN dbo.BRS_FiscalMonth AS py_jan 
 	ON (cm.FirstMonthSeqInYear - 12) = py_jan.MonthSeq
+
+	INNER JOIN dbo.BRS_FiscalMonth AS hist
+	ON (cm.FirstMonthSeqInYear - c.HistorySummaryMonths) = hist.MonthSeq
 
 GO
 

@@ -31,6 +31,8 @@ AS
 **	21 Dec 15	tmc		Refine fields and set NSA GP to 0    
 --	12 Feb 16	tmc		Removed comment ref to legacy code
 --	09 May 16	tmc		Added Adjustment for Free Goods
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
+
 *******************************************************************************/
 
 BEGIN
@@ -45,9 +47,9 @@ SET NOCOUNT ON
  
 Select
 	@nPriorFiscalMonth		= PriorFiscalMonth,
-	@nFirstFiscalMonth_TY	= FirstFiscalMonth_TY
+	@nFirstFiscalMonth_TY	= YearFirstFiscalMonth
 FROM
-	BRS_Rollup_Support02 g
+	BRS_Rollup_Support01 g
 
 SELECT     
 	t.FiscalMonth, 

@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
 **    
 *******************************************************************************/
 
@@ -35,13 +36,13 @@ SELECT
 	c.SalesDateLastWeekly, 
 	d.FiscalMonth, 
 	c.PriorFiscalMonth,
-	(c.FirstFiscalMonth_TY-100) AS FirstFiscalMonth_LY,
+	c.YearFirstFiscalMonth_LY AS FirstFiscalMonth_LY,
 	d.DayType, 
 	d.DayNumber, 
 	m.WorkingDaysMonth
 
 FROM         
-	BRS_Config c INNER JOIN
+	BRS_Rollup_Support01 c INNER JOIN
 
 	BRS_SalesDay AS d 
 	ON c.SalesDateLastWeekly = d.SalesDate 

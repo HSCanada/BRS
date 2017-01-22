@@ -25,6 +25,8 @@ GO
 **	-----	----------	--------------------------------------------
 --	08 Jan 16	tmc		fix rollup
 --	26 Feb 16	tmc		Updated test params
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
+
 **    
 *******************************************************************************/
 
@@ -42,10 +44,10 @@ BEGIN
 	if (@StartMonth = 0)
 	begin	
 		SELECT     
-			@StartMonth = FirstFiscalMonth, 
+			@StartMonth = YearFirstFiscalMonth_LY, 
 			@EndMonth = PriorFiscalMonth
 		FROM         
-			BRS_Config
+			BRS_Rollup_Support01
 	end
 
     -- Insert statements for procedure here

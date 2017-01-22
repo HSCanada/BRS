@@ -22,20 +22,28 @@ AS
 **	@bDebug
 **
 **	Auth: tmc
-**	Date: 13 Oct 16
+**	Date: 19 Dec 15
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	21 Dec 15	tmc		Change Prior Estimate (P) to (E)stimate -- CY Est removed
+--						Set NSA sales to 0 GP for Transactions (already adj in AGG)
+--	23 Dec 15	tmc		Change E & P back -- needed for ME transition from Est to Act adj
+--  19 Jan 16	tmc		Added Shadow adjustments to sales to track X codes for 380 report recon
+--	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
+--	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
+--	06 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
+--	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
+--	26 May 16	tmc		Fixed bug where FG EST and ACT are double-counted (see 17 May 16)
 --	14 Oct 16	tmc		Add Acq rate logic: Sum(amount * rate) (0 rate where null)
+--  19 Jan 17   tmc     Merged prior Acq notes rom BRS_DS_Cube_proc into *THIS* proc
 **    
 *******************************************************************************/
 
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
+	SET NOCOUNT ON;  
 
 Declare @dtSalesDay datetime, @nFiscalMonthBeginDt datetime 
 
@@ -56,16 +64,19 @@ if (@bDebug <> 0)
  
 Select
 	@dtSalesDay				= SalesDate,
-	@nFiscalMonth			= FiscalMonth,
-	@nFirstFiscalMonth_TY	= FirstFiscalMonth_TY,
-	@nWorkingDaysMonth		= WorkingDaysMonth,
-	@nDayNumber				= DayNumber,
 	@dtSalesDate_LY			= SalesDate_LY,
-	@nFiscalMonth_LY		= FiscalMonth_LY,
-	@nFirstFiscalMonth_LY	= FirstFiscalMonth_LY
-FROM
-	BRS_Rollup_Support02 g
 
+	@nFiscalMonth			= FiscalMonth,
+	@nFiscalMonth_LY		= FiscalMonth_LY,
+
+	@nFirstFiscalMonth_TY	= YearFirstFiscalMonth,
+	@nFirstFiscalMonth_LY	= YearFirstFiscalMonth_LY,
+
+	@nDayNumber				= DayNumber,
+	@nWorkingDaysMonth		= MonthWorkingDays
+
+FROM
+	BRS_Rollup_Support01 g
 
 
 --PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT)'
@@ -130,12 +141,7 @@ GROUP BY
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
 	,t.AdjCode
-
 	,t.SalesDivision
 
 	,c.MarketClass
@@ -198,7 +204,6 @@ WHERE
 
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
-
 
 	(1=1)
 
@@ -268,10 +273,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -342,10 +343,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -373,10 +370,6 @@ SELECT
 	t.FiscalMonth, 
 	t.Branch,
 	t.GLBU_Class, 
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END  as AdjCode, 
 	t.AdjCode,
 
 	t.SalesDivision, 
@@ -426,19 +419,13 @@ WHERE
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
 
-
 	(1=1)
 
 GROUP BY 
 	t.FiscalMonth
 	,t.Branch
 	,t.GLBU_Class
-
-	-- Added Shadow adjustments to sales to track X codes for 380 recon, tmc, 19 Jan 16
---	6 May 16	tmc		Remove X code shawdow track (not used & conflicts with FG est logic)
---	,CASE WHEN  t.DocType = 'AA' THEN t.AdjCode ELSE mpc.AdjCode END
 	,t.AdjCode
-
 	,t.SalesDivision
 
 	,c.MarketClass
@@ -501,9 +488,6 @@ WHERE
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 --  MUST use estimates for this case 
 	(t.FreeGoodsEstInd =  0 ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -574,10 +558,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -648,10 +628,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -666,7 +642,6 @@ GROUP BY
 	,t.HIST_SegCd 
 
 UNION ALL
-
 
 
 --PRINT '9. YTD CY - Actual from Aggregate - (CY.YTD.ACT)'
@@ -721,17 +696,11 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
 
 GROUP BY 
---	t.FiscalMonth
-
 	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth % 100 - 1) / 3) + 1) AND 
 		t.FiscalMonth <= @nFiscalMonth THEN 'QTD' ELSE '' END
 
@@ -801,10 +770,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -883,10 +848,6 @@ WHERE
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
---	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
---	05 Apr 16	tmc		Add Global Free Goods Estimate logic 
---	(t.FreeGoodsEstInd = CASE WHEN @nDS_FreeGoodsEstInd = 1 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
 
 	(1=1)
 
@@ -905,7 +866,7 @@ END
 
 GO
 
--- Debug
+-- Debug - 2790 rows in 23s 
 -- BRS_DS_CubeAcq_proc 
 
 -- Prod

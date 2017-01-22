@@ -10,7 +10,7 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_Period
-**	Desc:  
+**	Desc:   Show months in current and last month, based on FiscalMonth
 **
 **              
 **	Return values:  @@Error

@@ -2,7 +2,7 @@
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_AGG_Build_proc
-**	Desc: Rebuild aggragate tables
+**	Desc: Rebuild aggragate tables NEW
 **
 **              
 **	Return values:  @@Error
@@ -40,6 +40,7 @@
 --							be added to proc
 -- 24 Oct 16	tmc		Record last build date
 -- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
+-- 11 Jan 17    tmc     build BRS_AGG_CDBGAD_Sales by day for same day rollup
 
 **    
 *******************************************************************************/
@@ -47,20 +48,22 @@
 
 Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 
--- change to build up #months do decouple DS from history logig (same day sales)
+-- change to build up #months do decouple DS from history logig (same day sales)		
 -- Add Daily summary to logic
+
 --------------------------------------------------------------------------------
 Print 'Init'
 --------------------------------------------------------------------------------
 
 
--- Get Params
+-- Get Params to pull 25 Fiscal months to cover for Fiscal / Same Day / Calendar		-- Get Params
+
 Select
 	@nFiscalCurrent 	= FiscalMonth,
-	@nFiscalFrom		= FirstFiscalMonth_LY,
+	@nFiscalFrom		= YearFirstFiscalMonth_HIST,
 	@nFiscalTo			= PriorFiscalMonth
 FROM
-	BRS_Rollup_Support02 g
+	BRS_Rollup_Support01 g
 
 DECLARE c CURSOR 
 	LOCAL STATIC FORWARD_ONLY READ_ONLY
@@ -83,12 +86,12 @@ WHERE
 	(FiscalMonth = @nFiscalTo)
 
 
-TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
-
-
 --------------------------------------------------------------------------------
 Print 'Primary Update *****'
 --------------------------------------------------------------------------------
+
+TRUNCATE TABLE BRS_AGG_CDBGAD_Sales
+TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
 
 
 OPEN c;
@@ -98,7 +101,96 @@ FETCH NEXT FROM c INTO @nFiscalCurrent;
 WHILE @@FETCH_STATUS = 0
 BEGIN
 
-	Print 'Building Core summary (BRS_AGG_CMBGAD_Sales), used by Daily Sales...'
+	Print 'Building Core summary by *DAY* - BRS_AGG_CDBGAD_Sales, used by Daily Sales...'
+
+	INSERT INTO BRS_AGG_CDBGAD_Sales
+	(
+        SalesDate,
+
+		FiscalMonth, 
+		Branch, 
+		GLBU_Class, 
+		AdjCode, 
+		SalesDivision, 
+		Shipto, 
+		FreeGoodsEstInd, 
+		OrderSourceCode, 
+
+		SalesAmt, 
+		GPAmt, 
+
+        GP_Org_Amt,
+        ExtChargebackAmt,
+
+		FactCount,
+		ID_MAX,
+
+		HIST_Specialty,
+		HIST_MarketClass,
+		HIST_TerritoryCd,
+		HIST_VPA,
+		HIST_SegCd
+
+	)
+	SELECT     
+        t.SalesDate,
+
+		t.FiscalMonth, 
+		Branch, 
+		t.GLBU_Class, 
+		t.AdjCode, 
+		SalesDivision, 
+		t.Shipto, 
+		t.FreeGoodsEstInd, 
+		OrderSourceCode, 
+
+		SUM(NetSalesAmt) AS SalesAmt, 
+
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
+			- SUM(ExtendedCostAmt) - SUM(ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
+			- SUM(ExtendedCostAmt) END AS GP_Org_Amt, 
+
+		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
+
+		COUNT(*) AS FactCount,
+		MAX(t.ID) as ID_MAX,
+
+		ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
+		ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
+		ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
+		ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
+		ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd
+
+	FROM         
+		BRS_Transaction AS t
+
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
+
+		LEFT JOIN BRS_CustomerFSC_History AS c 
+		ON c.ShipTo = t.Shipto   AND
+			c.FiscalMonth = t.FiscalMonth
+
+	WHERE     
+		(t.FiscalMonth = @nFiscalCurrent)
+
+	GROUP BY 
+        t.SalesDate,
+
+		t.FiscalMonth, 
+		Branch, 
+		t.GLBU_Class, 
+		t.AdjCode,	
+		SalesDivision, 
+		t.Shipto, 
+		t.FreeGoodsEstInd, 
+		OrderSourceCode
+
+--
+
+	Print 'Building Core summary by *MONTH* - BRS_AGG_CMBGAD_Sales, used by Daily Sales...'
 
 	INSERT INTO BRS_AGG_CMBGAD_Sales
 	(
@@ -113,6 +205,10 @@ BEGIN
 
 		SalesAmt, 
 		GPAmt, 
+
+        GP_Org_Amt,
+        ExtChargebackAmt,
+
 		FactCount,
 		ID_MAX,
 
@@ -136,7 +232,12 @@ BEGIN
 		SUM(NetSalesAmt) AS SalesAmt, 
 
 		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) END AS GPAmt, 
+			- SUM(ExtendedCostAmt) - SUM(ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
+			- SUM(ExtendedCostAmt) END AS GP_Org_Amt, 
+
+		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 
 		COUNT(*) AS FactCount,
 		MAX(t.ID) as ID_MAX,
@@ -159,7 +260,7 @@ BEGIN
 
 	WHERE     
 		(t.FiscalMonth = @nFiscalCurrent)
---		(t.FiscalMonth BETWEEN 201301 AND 201312)
+
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
@@ -170,12 +271,14 @@ BEGIN
 		t.FreeGoodsEstInd, 
 		OrderSourceCode
 
+
 	FETCH NEXT FROM c INTO @nFiscalCurrent;
 
 END 
 
 CLOSE c;
--- DEALLOCATE c;
+
+
 
 
 --------------------------------------------------------------------------------
@@ -192,13 +295,11 @@ SET
 WHERE     
 	(FiscalMonth = @nFiscalTo)
 
-/* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 
 --------------------------------------------------------------------------------
 Print 'Secondary Update *****'
 --------------------------------------------------------------------------------
-
-
 
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
@@ -348,7 +449,6 @@ BEGIN
 
 	WHERE     
 		(d.FiscalMonth = @nFiscalCurrent )
-	--	(d.FiscalMonth BETWEEN 201501 AND 201609 )
 
 	GROUP BY 
 		t.Shipto,     
@@ -367,8 +467,7 @@ END
 CLOSE c;
 DEALLOCATE c;
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-*/
+
 
 
 /*
@@ -571,4 +670,7 @@ GROUP BY
 */
 
 
--- Select FiscalMonth, FirstFiscalMonth_LY, PriorFiscalMonth FROM BRS_Rollup_Support02 
+-- Select FiscalMonth, YearFirstFiscalMonth_HIST, PriorFiscalMonth FROM BRS_Rollup_Support01 
+
+
+

@@ -11,7 +11,8 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: BRS_DS_Cube_proc
-**	Desc: Load Weekly Customer & Item Dimensions 
+**	Desc: Provide sales information for Vendor reporting.
+**          Added Chargeback **TBD*** 22 Jan 17
 **
 **              
 **	Return values:  @@Error
@@ -33,20 +34,19 @@ AS
 -- 05 Jan 16	tmc		Fixed category rollup to use item level, not GLBU
 -- 12 Feb 16	tmc		Cleanup metadata (confirmed dynamice Segment)
 -- 15 Sep 16	tmc		Added Label to cube for private label cuts
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
 *******************************************************************************/
 
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
 	if (@StartMonth = 0)
 	begin	
 		SELECT     
-			@StartMonth = FirstFiscalMonth, 
+			@StartMonth = YearFirstFiscalMonth_LY, 
 			@EndMonth = PriorFiscalMonth
 		FROM         
-			BRS_Config
+			BRS_Rollup_Support01
 	end
 
     -- Insert statements for procedure here
@@ -69,9 +69,6 @@ BEGIN
 -- UPDATED 5 Jan 16, tmc, Fixed category rollup to use item level, not GLBU
 		MAX(icr.CategoryClass_Rollup) as CategoryClass_Rollup,
 		s.GLBU_Class as CategoryClass_GLBU,
-
---		GLBU_ClassVN_L1 as CategoryClass_Rollup,
---		GLBU_ClassDS_L1 as CategoryClass_GLBU,
 
 		SUM(s.SalesAmt) AS TotalSalesAmt, 
 		SUM(s.GPAmt) AS TotalGPAmt
@@ -113,10 +110,6 @@ BEGIN
 	WHERE     
 		(s.FiscalMonth between  @StartMonth and @EndMonth ) AND 
 		(s.FreeGoodsEstInd = 0) AND
-	--	(AdjCode <> '') AND
-	--	(icat.CategoryRollup <> '') AND
-
---		(c.MarketClass = '') AND
 
 		1=1
 
@@ -143,3 +136,4 @@ END
 
 -- exec [BRS_VendorCube_proc] 0 
 
+select * from dbo.BRS_Rollup_Support01

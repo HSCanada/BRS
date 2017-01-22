@@ -38,16 +38,19 @@ AS
 --	13 Dec 16	tmc		Added Update Promo logic,
 --	18 Dec 16	tmc		Added Freegood auto and Astea fields
 --  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
+--  22 Jan 17   tmc     Added logic so that empty update does not fail
 
 **    
 *******************************************************************************/
 BEGIN
 
 Declare @nErrorCode int, @nTranCount int
+Declare @nRowCount int
 Declare @sMessage varchar(255)
 
 Set @nErrorCode = @@Error
 Set @nTranCount = @@Trancount
+Set @nRowCount = 0
 
 if (@bDebug <> 0) 
 Begin
@@ -381,24 +384,31 @@ Begin
 			ROUND(LNNO * 1000,0) = s.LineNumber
 	)
 
-	Set @nErrorCode = @@Error
+	Select @nErrorCode = @@Error, @nRowCount = @@Rowcount
+End
+
+If (@bDebug <> 0 And @nRowCount = 0)
+Begin
+    Print '------------------------------------------------------------------------------------------------------------'
+    Print 'No transactions to load.  Skipping to end. '
+    Print '------------------------------------------------------------------------------------------------------------'
+    Print ''
 End
 
 
 --	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 
-If (@bDebug <> 0)
+If (@nErrorCode = 0 And @nRowCount > 0) 
 Begin
-	Print '------------------------------------------------------------------------------------------------------------'
-	Print 'Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
-	Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
-	Print '------------------------------------------------------------------------------------------------------------'
-	Print ''
-End
 
-
-If (@nErrorCode = 0) 
-Begin
+    If (@bDebug <> 0)
+    Begin
+	    Print '------------------------------------------------------------------------------------------------------------'
+	    Print 'Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
+	    Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
+	    Print '------------------------------------------------------------------------------------------------------------'
+	    Print ''
+    End
 
 	UPDATE    
 		BRS_TransactionDW
@@ -432,7 +442,7 @@ Begin
 
 End
 
-If (@nErrorCode = 0) 
+If (@nErrorCode = 0 And @nRowCount > 0) 
 Begin
 	if (@bDebug <> 0)
 		Print 'Update SalesDateLastWeekly'	

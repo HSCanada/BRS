@@ -31,6 +31,8 @@ AS
 --	19 Mar 16	tmc		Added MTD and PY MTD logic
 --	21 Mar 16	tmc		Minor change to test GIT
 --  06 May 16	tmc		Replaced Free Goods flag with Adjustments
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
+
 *******************************************************************************/
 
 BEGIN
@@ -51,13 +53,13 @@ Select
 	@nFiscalMonth			= FiscalMonth,
 	@nFiscalMonth_PY		= FiscalMonth_LY,
 
-	@nFirstFiscalMonth		= FirstFiscalMonth_TY,
-	@nFirstFiscalMonth_PY	= FirstFiscalMonth_LY,
+	@nFirstFiscalMonth		= YearFirstFiscalMonth,
+	@nFirstFiscalMonth_PY	= YearFirstFiscalMonth_LY,
 
 	@nPriorFiscalMonth		= PriorFiscalMonth,
 	@nPriorFiscalMonth_PY	= (PriorFiscalMonth-100)
 FROM
-	BRS_Rollup_Support02 g
+	BRS_Rollup_Support01 g
 
 if (@nDebug <> 0 )
 Begin

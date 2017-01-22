@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
 **    
 *******************************************************************************/
 
@@ -47,12 +48,11 @@ SELECT
 
 FROM         
 
-	dbo.BRS_FiscalMonth m CROSS JOIN
-	dbo.BRS_Config c
+	dbo.BRS_FiscalMonth m
 
 WHERE     
 
-	(m.FiscalMonth BETWEEN c.FirstFiscalMonth AND c.PriorFiscalMonth)
+	(m.FiscalMonth BETWEEN (SELECT YearFirstFiscalMonth_LY FROM BRS_Rollup_Support01) AND (SELECT PriorFiscalMonth FROM BRS_Rollup_Support01) )
 
 GO
 

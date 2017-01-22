@@ -32,6 +32,7 @@ AS
 --	25 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 --	26 May 16	tmc		Fixed bug where FG EST and ACT are double-counted (see 25 May 16)
 --  20 Oct 16	tmc		Set active month filter 
+-- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
 **    
 *******************************************************************************/
 
@@ -78,7 +79,7 @@ WHERE
 --	25 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(s.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE s.FreeGoodsEstInd END ) AND
 --  20 Oct 16	tmc		Set active month filter 
-	(s.FiscalMonth Between (Select FirstFiscalMonth_LY FROM BRS_Rollup_Support02) AND (Select PriorFiscalMonth FROM BRS_Rollup_Support02) ) AND
+	(s.FiscalMonth Between (Select YearFirstFiscalMonth_LY FROM BRS_Rollup_Support01) AND (Select PriorFiscalMonth FROM BRS_Rollup_Support01) ) AND
 
 
 	(1=1)
