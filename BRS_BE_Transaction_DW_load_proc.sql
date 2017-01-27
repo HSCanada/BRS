@@ -11,7 +11,7 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: BRS_BE_Transaction_DW_load_proc
-**	Desc: Load DW Transactions 
+**	Desc: Load DW Transactions, in prod 27 Jan 17 
 **
 **              
 **	Return values:  @@Error
@@ -39,6 +39,7 @@ AS
 --	18 Dec 16	tmc		Added Freegood auto and Astea fields
 --  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
 --  22 Jan 17   tmc     Added logic so that empty update does not fail
+--  27 Jan 17   tmc     Finalized Discount and Free Goods logic
 
 **    
 *******************************************************************************/
@@ -245,15 +246,18 @@ Begin
 		Date, 
 		Shipto, 
 		Item, 
+
 		EnteredBy, 
 		OrderTakenBy, 
 		OrderSourceCode, 
 		CustomerPOText1, 
 		PriceMethod, 
 		VPA, 
+
 		LineTypeOrder, 
 		SalesDivision, 
 		MajorProductClass, 
+
 		ChargebackContractNumber, 
 		GLBusinessUnit, 
 		OrderFirstShipDate, 
@@ -266,19 +270,32 @@ Begin
 		GPAtCommCostAmt, 
 		ExtChargebackAmt, 
 		NetSalesAmt, 
-		ExtPriceORG,
-		ExtListPriceORG,
-
-		ExtDiscAmt, 
 		PromotionCode,
 		OrderPromotionCode,
-		BackorderInd,
-		FreeGoodsEstInd,
 
-		--	18 Dec 16	tmc		Added Freegood auto and Astea fields
+        -- Custom Logic Section BEGIN -----------------------------------------
+
+		ExtPriceORG,                    
+		ExtListPriceORG, 
+               
+		BackorderInd,                 
+        FreeGoodsRedeemedInd,
+
 		[OriginalSalesOrderNumber],		-- [OORN]		
 		[OriginalOrderDocumentType],	-- [OORTY]		
 		[OriginalOrderLineNumber],		-- [OORLINO]	
+
+        FreeGoodsInvoicedInd,   
+		FreeGoodsEstInd,  
+              
+        ExtListPrice,
+        ExtPrice,
+
+		ExtDiscAmt,                     
+
+
+        -- Custom Logic Section END -------------------------------------------
+
 		[PricingAdjustmentLine],		-- [PCADLINO]	
 		[SalesOrderBilltoNumber],		-- [BTADNO]	
 		[EssCode],						-- [ESSCD]		
@@ -298,12 +315,14 @@ Begin
 		s.PDDT AS Date, 
 		s.ADNOID AS Shipto, 
 		s.ITLONO AS Item, 
+
 		s.ENBYNA AS EnteredBy, 
 		s.ORTKBYID AS OrderTakenBy, 
 		s.ORSCCD AS OrderSourceCode, 
 		LEFT(s.RF1TT,25) AS CustomerPOText1, 
 		s.PRMDCD AS PriceMethod, 
 		ISNULL(s.SPCDID,'') AS VPA, 
+
 		s.LNTY AS LineTypeOrder, 
 		s.HSDCDID AS SalesDivision, 
 		s.MJPRCLID AS MajorProductClass, 
@@ -311,7 +330,6 @@ Begin
         --  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
 		CASE WHEN s.CBCONTRNO = '*' THEN 0 ELSE ISNULL(s.CBCONTRNO,0) END AS ChargebackContractNumber, 
 --		ISNULL(s.CBCONTRNO,0) AS ChargebackContractNumber, 
-
 		ISNULL(s.GLBUNO,'') AS GLBusinessUnit, 
 		ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
 		s.IVNO AS InvoiceNumber, 
@@ -322,24 +340,86 @@ Begin
 		s.WJXBFS3 AS GPAtFileCostAmt, 
 		s.WJXBFS4 AS GPAtCommCostAmt, 
 		s.WJXBFS5 AS ExtChargebackAmt, 
-		s.WJXBFS6 AS NetSalesAmt, 
-		s.WJXBFS7 AS ExtPriceORG, 
-		s.WJXBFS8 AS ExtListPriceORG,
-
-		-- TB fixed, 07 Dec 16 ***TBD!***
-		0  AS ExtDiscAmt, 
---		CASE WHEN s.LNTY = 'CP' THEN (0 - s.WJXBFS2) ELSE s.WJXBFS7 END  AS ExtDiscAmt, 
-
+		s.WJXBFS6 AS NetSalesAmt,
 		ISNULL(p1.PMCD, '') AS PromotionCode, 
 		ISNULL(p2.PMCD, '') AS OrderPromotionCode,
 
-		CASE WHEN s.PDDT = s.ORFISHDT THEN 0 ELSE 1 END as BackorderInd,		
-		CASE WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+        -- Custom Logic Section BEGIN -----------------------------------------
 
-		--	18 Dec 16	tmc		Added Freegood auto and Astea fields
-		CASE WHEN s.OORNO = 0 THEN s.JDEORNO					ELSE s.OORNO  END						AS	OriginalSalesOrderNumber,		 
-		CASE WHEN s.OORNO = 0 THEN s.ORDOTYCD					ELSE s.OORTY  END						AS	OriginalOrderDocumentType,	 
-		CASE WHEN s.OORNO = 0 THEN ROUND(s.LNNO * 1000, 0)	ELSE ROUND(ISNULL(s.OORLINO,0) * 1000, 0)  END	AS 	OriginalOrderLineNumber,	
+        -- store ORG, ~ORG will be modified to follow
+		s.WJXBFS7                                       AS ExtPriceORG,         
+		s.WJXBFS8                                       AS ExtListPriceORG,     
+
+		CASE 
+            WHEN s.PDDT = s.ORFISHDT 
+            THEN 0 ELSE 1 
+
+        END                                             AS BackorderInd,		
+        0                                               AS FreeGoodsRedeemedInd,
+
+        -- Copy SO where Original SO missing to make Credit rebill matching easy
+		CASE    
+            WHEN s.OORNO = 0   
+            THEN s.JDEORNO		
+            ELSE s.OORNO    
+        END                                             AS OriginalSalesOrderNumber,		 
+
+		CASE    
+            WHEN s.OORNO = 0   
+            THEN s.ORDOTYCD		
+            ELSE s.OORTY    
+        END	                                            AS OriginalOrderDocumentType,	 
+
+		CASE    
+            WHEN s.OORNO = 0   
+            THEN ROUND(s.LNNO * 1000, 0)	
+            ELSE ROUND(ISNULL(s.OORLINO,0) * 1000, 0)   
+        END	                                            AS OriginalOrderLineNumber,	
+
+        CASE    
+            WHEN s.WJXBFS1 <> 0 AND s.WJXBFS6 = 0.0 AND 
+                ABS(s.WJXBFS3) > 0.02 * s.WJXBFS1 
+            THEN 1 ELSE 0 
+        END                                             AS FreeGoodsInvoicedInd,
+--      CASE WHEN ShippedQty <> 0 AND NetSalesAmt = 0 AND ABS(GPAtFileCostAmt) > 0.02 * ShippedQty THEN 1 ELSE 0 END AS FreeGoodsInvoicedInd
+
+        -- Free goods estimate model can be improved, 27 Jan 17
+		CASE 
+            WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 AND 
+                buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 
+            THEN 1 ELSE 0 
+        END                                             AS FreeGoodsEstInd,
+
+        -- Correct Ext List on price adjusmtent as the DW field incorrect
+        CASE 
+            WHEN s.LNTY = 'CP'                    
+            THEN s.WJXBFS6 
+            ELSE s.WJXBFS8 
+        END                                             AS ExtListPrice,
+
+        -- Correct Ext Price for non Advanced price as the DW field incorrect
+        CASE 
+            WHEN s.ORSCCD IN ('A', 'L', 'K')    
+            THEN s.WJXBFS6 
+            ELSE s.WJXBFS7 
+        END                                             AS ExtPrice,
+
+        -- Calc Total Discount based on correct fields.  Ugly Dup code needed?
+        -- SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt) AS ExtDiscTotal,
+
+        CASE 
+            WHEN s.LNTY = 'CP'                    
+            THEN s.WJXBFS6 
+            ELSE s.WJXBFS8 
+        END  +
+            CASE 
+                WHEN s.ORSCCD IN ('A', 'L', 'K')    
+                THEN s.WJXBFS6 
+                ELSE s.WJXBFS7 
+            END - 2.0 * s.WJXBFS6                       AS ExtDiscAmt,
+
+
+        -- Custom Logic Section END -------------------------------------------
 	 
 		ISNULL(s.PCADLINO,'')	AS	PricingAdjustmentLine,		 
 		ISNULL(s.BTADNO,0)		AS	SalesOrderBilltoNumber,		 
@@ -505,6 +585,7 @@ END
 GO
 
 
+-- Test logic
 
 -- Step 1:  clear tables (run below)
 
