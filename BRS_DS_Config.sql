@@ -53,8 +53,8 @@ SELECT
     --  19 Jan 17   tmc     Updated naming from BRS_Rollup_Support01 refactor
 	s.YearFirstFiscalMonth,
 
---	16 Feb 16	tmc		Added Holiday & Exception notes
-	s.DayComment
+	s.DayComment,
+    s.OffsetDaySeq_Yoy_Fiscal_SameDay
 
 FROM         
 

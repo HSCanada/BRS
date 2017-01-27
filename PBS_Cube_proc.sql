@@ -37,6 +37,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--  26 Jan 17   tmc     Finalize dicount logic
 **    
 *******************************************************************************/
 BEGIN
@@ -98,18 +99,19 @@ SELECT
     d.FiscalMonth, 
     t.Shipto, 
     t.Item, 
-    MAX (i.SalesCategory)               AS SalesCategory, 
+    MAX (i.SalesCategory)                               AS SalesCategory, 
     t.OrderSourceCode,
     t.OrderTakenBy, 
     t.FreeGoodsInvoicedInd, 
 
-    p.PromotionTrackingCode             AS PromotionTrackingCode, 
+    p.PromotionTrackingCode                             AS PromotionTrackingCode, 
 
-    SUM(t.ShippedQty)                   AS ShippedQty, 
-    SUM(t.NetSalesAmt)                  AS NetSalesAmt, 
-    SUM(t.ExtListPrice - t.NetSalesAmt) AS ExtDiscAmt, 
-    SUM(t.ExtListPrice)                 AS ExtListPrice, 
-    SUM(t.ExtPrice)                     AS ExtPrice
+    SUM(t.ShippedQty)                                   AS ShippedQty, 
+    SUM(t.NetSalesAmt)                                  AS NetSalesAmt, 
+
+    SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)    AS ExtDiscAmt,
+    SUM(t.ExtListPrice)                                 AS ExtListPrice,
+    SUM(t.ExtPrice)                                     AS ExtPrice
 
 
 FROM         
@@ -126,8 +128,9 @@ FROM
     ON t.OrderPromotionCode = p.PromotionCode
 
 WHERE     
+
     (d.FiscalMonth between  @dtFrom and @dtTo) AND
---    (t.Shipto = 1643036) AND
+--    (t.SalesOrderNumber = 9531088) AND
     (1=1)
 
 GROUP BY 
@@ -138,7 +141,7 @@ GROUP BY
     t.OrderTakenBy, 
     t.FreeGoodsInvoicedInd,
     p.PromotionTrackingCode
- 
+
 	Set @nErrorCode = @@Error
 End
 
@@ -183,7 +186,7 @@ GRANT EXECUTE ON [dbo].[PBS_Cube_proc] TO [CAHSI\kansell]
 GO
 
 
--- Exec [PBS_Cube_proc] 201301, 201301
+-- Exec [PBS_Cube_proc] 201606, 201606
 
 
 

@@ -266,8 +266,8 @@ Begin
 		GPAtCommCostAmt, 
 		ExtChargebackAmt, 
 		NetSalesAmt, 
-		ExtPrice,
-		ExtListPrice,
+		ExtPriceORG,
+		ExtListPriceORG,
 
 		ExtDiscAmt, 
 		PromotionCode,
@@ -323,8 +323,8 @@ Begin
 		s.WJXBFS4 AS GPAtCommCostAmt, 
 		s.WJXBFS5 AS ExtChargebackAmt, 
 		s.WJXBFS6 AS NetSalesAmt, 
-		s.WJXBFS7 AS ExtPrice, 
-		s.WJXBFS8 AS ExtListPrice,
+		s.WJXBFS7 AS ExtPriceORG, 
+		s.WJXBFS8 AS ExtListPriceORG,
 
 		-- TB fixed, 07 Dec 16 ***TBD!***
 		0  AS ExtDiscAmt, 

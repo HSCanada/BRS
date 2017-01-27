@@ -2,13 +2,13 @@
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE BRS_DS_CubeAcq_proc 
+ALTER PROCEDURE BRS_DS_Cube_proc 
 	@bDebug as smallint = 1
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: BRS_DS_CubeAcq_proc
+**	Name: BRS_DS_Cube_proc
 **	Desc: BRS_DS_Cube_proc with Acquisition rates added for DSL
 **
 **              
@@ -39,15 +39,16 @@ AS
 --	26 May 16	tmc		Fixed bug where FG EST and ACT are double-counted (see 17 May 16)
 --	14 Oct 16	tmc		Add Acq rate logic: Sum(amount * rate) (0 rate where null)
 --  19 Jan 17   tmc     Merged prior Acq notes rom BRS_DS_Cube_proc into *THIS* proc
+--  22 Jan 17   tmc     Refactored to accomodate same date YoY sales
 **    
 *******************************************************************************/
 
 BEGIN
 	SET NOCOUNT ON;  
 
-Declare @dtSalesDay datetime, @nFiscalMonthBeginDt datetime 
+Declare @dtSalesDate datetime, @nFiscalMonthBeginDt datetime 
 
-Declare @nFiscalMonth int, @nFirstFiscalMonth_TY int
+Declare @nFiscalMonth int, @nFirstFiscalMonth int
 Declare @nWorkingDaysMonth int, @nDayNumber int
 
 Declare @dtSalesDate_LY datetime 
@@ -60,16 +61,16 @@ if (@bDebug <> 0)
 	SET NOCOUNT OFF;
 
 if (@bDebug <> 0)
-	Print 'BRS_DS_CubeAcq_proc - DEBUG MODE.'
+	Print 'BRS_DS_Cube_proc - DEBUG MODE.'
  
 Select
-	@dtSalesDay				= SalesDate,
+	@dtSalesDate    		= SalesDate,
 	@dtSalesDate_LY			= SalesDate_LY,
 
 	@nFiscalMonth			= FiscalMonth,
 	@nFiscalMonth_LY		= FiscalMonth_LY,
 
-	@nFirstFiscalMonth_TY	= YearFirstFiscalMonth,
+	@nFirstFiscalMonth  	= YearFirstFiscalMonth,
 	@nFirstFiscalMonth_LY	= YearFirstFiscalMonth_LY,
 
 	@nDayNumber				= DayNumber,
@@ -79,7 +80,7 @@ FROM
 	BRS_Rollup_Support01 g
 
 
---PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT)'
+--PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT) - OK'
 
 SELECT     
 	'CY' AS TimePeriod, 
@@ -105,7 +106,7 @@ SELECT
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
@@ -129,8 +130,9 @@ FROM
 		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
+
 	t.FiscalMonth = @nFiscalMonth AND
-	t.SalesDate = @dtSalesDay AND
+	t.SalesDate = @dtSalesDate AND
 
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
@@ -150,7 +152,7 @@ GROUP BY
 UNION ALL
 
 
---PRINT '2. Current Day PY - Actual from Detail - (PY.DAY.ACT)' 
+--PRINT '2. Current Day PY - Actual from Detail - (PY.DAY.ACT) - OK' 
 
 SELECT     
 	'PY' AS TimePeriod, 
@@ -159,7 +161,7 @@ SELECT
 	'QTD' AS QTD, 
 	'YTD' AS YTD, 
 
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -171,22 +173,25 @@ SELECT
 
 	'PY.DAY.ACT' AS Status,
 
-	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+	SUM(t.SalesAmt) AS SalesAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( GPAmt ) END AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
-	MIN(t.ID) as UniqueID,
+	@dtSalesDate AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
-	BRS_Transaction AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_CustomerFSC_History AS c 
 	ON c.ShipTo = t.Shipto   AND
-		c.FiscalMonth = t.FiscalMonth
+		c.FiscalMonth = m.FiscalMonth_LY
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
@@ -196,11 +201,11 @@ FROM
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
-	t.FiscalMonth = @nFiscalMonth_LY AND
-	t.SalesDate = @dtSalesDate_LY AND
+	m.FiscalMonth = @nFiscalMonth AND
+	m.SalesDate = @dtSalesDate AND
 
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
 	(t.FreeGoodsEstInd =  0 ) AND
@@ -208,7 +213,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -220,14 +225,14 @@ GROUP BY
 
 UNION ALL
 
---PRINT '3. Current Day CY - Estimate from LY Aggregate - (CY.DAY.EST)'
+--PRINT '3. Current Day CY - Estimate from LY Aggregate - (CY.DAY.EST) - OK'
 SELECT     
 	'CY' AS TimePeriod, 
 	'DAY' AS DAY, 
 	'' AS MTD, -- avoid double day counting, tmc, 29 Jan 15
 	'' AS QTD, -- avoid double day counting, tmc, 29 Jan 15
 	'' AS YTD, -- avoid double day counting, tmc, 30 Jan 15
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -242,7 +247,7 @@ SELECT
 	SUM(t.SalesAmt * a.MTDEst_rt) * (1.0 / @nWorkingDaysMonth) AS SalesAmt, 
 	SUM(t.GPAmt * a.MTDEst_rt) * (1.0 / @nWorkingDaysMonth) AS GPAmt, 
 
-	@dtSalesDay  AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 1 * 1024 as UniqueID,	
 
@@ -252,24 +257,28 @@ SELECT
 
 
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
-	t.FiscalMonth = @nFiscalMonth_LY AND
+	m.FiscalMonth = @nFiscalMonth AND
 	(a.MTDEstInd = 1) AND
+
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -277,7 +286,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -288,8 +297,7 @@ GROUP BY
 
 UNION ALL
 
---PRINT '4. Current Day PY - Pro-rated from LY Aggregate - (PY.DAY.PRO)'
---PRINT GETDATE()
+--PRINT '4. Current Day PY - Pro-rated from LY Aggregate - (PY.DAY.PRO) - OK'
 
 SELECT     
 	'PY' AS TimePeriod, 
@@ -297,7 +305,7 @@ SELECT
 	'' AS MTD, -- avoid double day counting, tmc, 29 Jan 15
 	'' AS QTD, -- avoid double day counting, tmc, 29 Jan 15
 	'' AS YTD, -- avoid double day counting, tmc, 30 Jan 15
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -312,7 +320,7 @@ SELECT
 	SUM(t.SalesAmt) * (1.0 / @nWorkingDaysMonth) AS SalesAmt, 
 	SUM(t.GPAmt) * (1.0 / @nWorkingDaysMonth) AS GPAmt, 
 
-	@dtSalesDay  AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 3 * 1024 as UniqueID,	
 
@@ -320,25 +328,27 @@ SELECT
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
 
-
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
-	t.FiscalMonth = @nFiscalMonth_LY AND
+	m.FiscalMonth = @nFiscalMonth AND
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
@@ -347,7 +357,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -359,7 +369,7 @@ GROUP BY
 UNION ALL
 
 
---PRINT '5. MTD CY - Actual from Detail - (CY.MTD.ACT)'
+--PRINT '5. MTD CY - Actual from Detail - (CY.MTD.ACT) - OK'
 SELECT     
 	'CY' AS TimePeriod, 
 	'' AS DAY, 
@@ -384,7 +394,7 @@ SELECT
 	SUM(t.NetSalesAmt) AS SalesAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
@@ -413,7 +423,7 @@ FROM
 
 
 WHERE
-	t.SalesDate < @dtSalesDay AND 
+	t.SalesDate < @dtSalesDate AND 
 		t.FiscalMonth = @nFiscalMonth AND
 
 --	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
@@ -434,7 +444,7 @@ GROUP BY
 UNION ALL
 
 
---PRINT '6. MTD PY - Actual from LY Detail - (PY.MTD.ACT)'
+--PRINT '6. MTD PY - Actual from LY Detail - (PY.MTD.ACT) - OK'
 SELECT     
 	'PY' AS TimePeriod, 
 	'' AS DAY, 
@@ -442,7 +452,7 @@ SELECT
 	'QTD' AS QTD, 
 	'YTD' AS YTD, 
 
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -454,22 +464,25 @@ SELECT
 
 	'PY.MTD.ACT' AS Status,
 	                      
-	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+	SUM(t.SalesAmt) AS SalesAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(GPAmt) END AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
-	MIN(t.ID) as UniqueID,
+	@dtSalesDate AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
-	BRS_Transaction AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_CustomerFSC_History AS c 
 	ON c.ShipTo = t.Shipto   AND
-		c.FiscalMonth = t.FiscalMonth
+		c.FiscalMonth = m.FiscalMonth_LY
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
@@ -479,11 +492,11 @@ FROM
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE 
-	t.SalesDate < @dtSalesDate_LY AND 
-		t.FiscalMonth = @nFiscalMonth_LY AND
+	m.SalesDate < @dtSalesDate AND 
+	m.FiscalMonth = @nFiscalMonth AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 --  MUST use estimates for this case 
@@ -492,7 +505,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -503,7 +516,8 @@ GROUP BY
 
 UNION ALL
 
--- 7. MTD CY - Estimate from LY Aggregate - (CY.MTD.EST)
+-- 7. MTD CY - Estimate from LY Aggregate - (CY.MTD.EST) - OK
+
 SELECT     
 	'CY' AS TimePeriod, 
 	'' AS DAY, 
@@ -511,7 +525,7 @@ SELECT
 	'QTD' AS QTD, 
 	'YTD' AS YTD, 
 
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -527,7 +541,7 @@ SELECT
 	SUM(t.GPAmt * a.MTDEst_rt) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS GPAmt, 
 
 
-	@dtSalesDay  AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID,
 
@@ -537,23 +551,27 @@ SELECT
 
 
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode 
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
-	t.FiscalMonth = @nFiscalMonth_LY AND
+	m.FiscalMonth = @nFiscalMonth AND
+
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
@@ -562,7 +580,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -573,9 +591,7 @@ GROUP BY
 
 UNION ALL
 
--- 7 end
-
---PRINT '8. MTD PY - Pro-rated from LY Aggregate - (PY.MTD.PRO)'
+--PRINT '8. MTD PY - Pro-rated from LY Aggregate - (PY.MTD.PRO) - OK'
 
 SELECT     
 	'PY' AS TimePeriod, 
@@ -584,7 +600,7 @@ SELECT
 	'QTD' AS QTD, 
 	'YTD' AS YTD, 
 
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -599,7 +615,7 @@ SELECT
 	SUM(t.SalesAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS SalesAmt, 
 	SUM(t.GPAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) * 7 + 4 * 1024 as UniqueID,	
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
@@ -607,23 +623,27 @@ SELECT
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
 
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN dbo.BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
-	t.FiscalMonth = @nFiscalMonth_LY AND
+	m.FiscalMonth = @nFiscalMonth AND
+
 	(a.MTDEstInd = 1) AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
@@ -632,7 +652,7 @@ WHERE
 	(1=1)
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -644,7 +664,7 @@ GROUP BY
 UNION ALL
 
 
---PRINT '9. YTD CY - Actual from Aggregate - (CY.YTD.ACT)'
+--PRINT '9. YTD CY - Actual from Aggregate - (CY.YTD.ACT) - OK'
 
 SELECT     
 	'CY' AS TimePeriod, 
@@ -669,7 +689,7 @@ SELECT
 	SUM(t.SalesAmt) AS SalesAmt, 
 	SUM(t.GPAmt) AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
@@ -692,7 +712,7 @@ FROM
 
 WHERE
 	t.FiscalMonth < @nFiscalMonth AND 
-		t.FiscalMonth >= @nFirstFiscalMonth_TY AND
+		t.FiscalMonth >= @nFirstFiscalMonth AND
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -717,17 +737,17 @@ GROUP BY
 UNION ALL
 
 
---PRINT '10. LYTD PY - Actual from Aggregate - (PY.YTD.ACT)'
+--PRINT '10. LYTD PY - Actual from Aggregate - (PY.YTD.ACT) - OK'
 
 SELECT     
 	'PY' AS TimePeriod, 
 	'' AS DAY, 
 	'' AS MTD, 
-	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
-		t.FiscalMonth <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
+	CASE WHEN (((m.FiscalMonth_LY % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
+		m.FiscalMonth_LY <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
 	'YTD' AS YTD, 
 
-	MIN(t.FiscalMonth) AS FiscalMonth, 
+	MIN(m.FiscalMonth_LY) AS FiscalMonth, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -742,7 +762,7 @@ SELECT
 	SUM(t.SalesAmt) AS SalesAmt, 
 	SUM(t.GPAmt) AS GPAmt, 
 
-	@dtSalesDay AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
@@ -751,22 +771,25 @@ SELECT
 
 
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
-
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
-	t.FiscalMonth < @nFiscalMonth_LY AND 
-		t.FiscalMonth >= @nFirstFiscalMonth_LY AND
+	m.FiscalMonth < @nFiscalMonth AND 
+	m.FiscalMonth >= @nFirstFiscalMonth AND
+
 
 --	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
@@ -775,8 +798,8 @@ WHERE
 
 
 GROUP BY 
-	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
-		t.FiscalMonth <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END
+	CASE WHEN (((m.FiscalMonth_LY % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
+		m.FiscalMonth_LY <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -789,17 +812,17 @@ UNION ALL
 
 --	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
 
--- 11. MTD-1 CY - Estimate from LY Aggregate - (CY.PMTD.EST)
+-- 11. MTD-1 CY - Estimate from LY Aggregate - (CY.PMTD.EST) - FIX from LY to MTD-1
 SELECT     
 	'CY' AS TimePeriod, 
 	'' AS DAY, 
 	'' AS MTD, 
 --  PM logic:  pull the last year's monthend - 1 data and set the appropriate quarter logic
-	CASE WHEN (((t.FiscalMonth % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
-		t.FiscalMonth <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
+	CASE WHEN (((m.FiscalMonth_LY % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
+		m.FiscalMonth_LY <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
 	'YTD' AS YTD, 
 
-	t.FiscalMonth, 
+	m.FiscalMonth_LY, 
 	t.Branch, 
 	t.GLBU_Class, 
 	t.AdjCode,
@@ -815,7 +838,7 @@ SELECT
 	SUM(t.GPAmt * a.MTDEst_rt)  AS GPAmt, 
 
 
-	@dtSalesDay  AS SalesDate,
+	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID,	
 
@@ -825,24 +848,29 @@ SELECT
 
 
 FROM         
-	BRS_AGG_CMBGAD_Sales AS t 
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate
 
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode 
 
 	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = t.FiscalMonth
+	ON fm.FiscalMonth = m.FiscalMonth_LY
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
 		t.GLBU_Class = af.GLBU_Class  AND 
 		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE    
+
 -- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
-	t.FiscalMonth = (@nFiscalMonth_LY-1) AND
+
+	m.FiscalMonth = (@nFiscalMonth-1) AND
 
 	(a.MTDEstInd = 1) AND
 
@@ -853,7 +881,7 @@ WHERE
 
 
 GROUP BY 
-	t.FiscalMonth
+	m.FiscalMonth_LY
 	,t.Branch
 	,t.GLBU_Class
 	,t.AdjCode
@@ -866,9 +894,12 @@ END
 
 GO
 
--- Debug - 2790 rows in 23s 
--- BRS_DS_CubeAcq_proc 
+-- Debug - 2790 rows in 11s 
+-- Debug - 2727 rows in 30s 
+
+-- BRS_DS_Cube_proc 
 
 -- Prod
--- BRS_DS_CubeAcq_proc 0
+-- BRS_DS_Cube_proc 0
+
 

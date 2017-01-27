@@ -102,12 +102,12 @@ WHILE @@FETCH_STATUS = 0
 BEGIN
 
 	Print 'Building Core summary by *DAY* - BRS_AGG_CDBGAD_Sales, used by Daily Sales...'
+    Print @nFiscalCurrent
 
 	INSERT INTO BRS_AGG_CDBGAD_Sales
 	(
         SalesDate,
 
-		FiscalMonth, 
 		Branch, 
 		GLBU_Class, 
 		AdjCode, 
@@ -135,7 +135,6 @@ BEGIN
 	SELECT     
         t.SalesDate,
 
-		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
 		t.AdjCode, 
@@ -179,7 +178,6 @@ BEGIN
 	GROUP BY 
         t.SalesDate,
 
-		t.FiscalMonth, 
 		Branch, 
 		t.GLBU_Class, 
 		t.AdjCode,	
@@ -295,6 +293,8 @@ SET
 WHERE     
 	(FiscalMonth = @nFiscalTo)
 
+
+/*
 
 
 --------------------------------------------------------------------------------
@@ -467,6 +467,9 @@ END
 CLOSE c;
 DEALLOCATE c;
 
+
+
+*********************************************/
 
 
 

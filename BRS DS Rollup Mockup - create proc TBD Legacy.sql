@@ -159,7 +159,7 @@ BEGIN
 
 	WHERE     
 		(t.FiscalMonth = @nFiscalCurrent)
---		(t.FiscalMonth BETWEEN 201301 AND 201312)
+--		(t.FiscalMonth BETWEEN 201511 AND 201512)
 	GROUP BY 
 		t.FiscalMonth, 
 		Branch, 
@@ -559,7 +559,7 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 -- Manual load
-	(t.CalMonth BETWEEN 201611 AND 201611)
+	(t.CalMonth BETWEEN 201612 AND 201612)
 
 GROUP BY 
 	Item,

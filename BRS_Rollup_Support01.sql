@@ -38,22 +38,21 @@ AS
 SELECT    
 	c.id, 
 	c.SalesDate, 
+	d.SalesDate_LY,
 
 	c.FiscalMonth, 
-	c.PriorFiscalMonth, 
-
-	cy_jan.FiscalMonth      AS YearFirstFiscalMonth,
-
-	d.SalesDate_LY,
 	pm.FiscalMonth          AS FiscalMonth_LY, 
 
+	cy_jan.FiscalMonth      AS YearFirstFiscalMonth,
 	py_jan.FiscalMonth      AS YearFirstFiscalMonth_LY, 
+
+	c.PriorFiscalMonth, 
+    c.SalesDateLastWeekly,
 
 	d.DayNumber,
 	d.DayType, 
 	d.StatusCd             AS DayStatusCd, 
 	d.Comment              AS DayComment,
-
 	c.ExceptionCd, 
 	c.ExceptionNote, 
 

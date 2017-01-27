@@ -586,11 +586,33 @@ Return @nErrorCode
 END
 GO
 
+/*
+-- Look for dups in case the load date and extract date were not set correctly
+-- added 25 Jan 17 to trouble-shoot issue 
+
+	SELECT SHDOCO as stageORD, t.SalesOrderNumberKEY,SalesDate as JDE_load_date
+	FROM         
+		STAGE_BRS_Transaction 
+			INNER JOIN BRS_Transaction AS t 
+			ON STAGE_BRS_Transaction.SHDOCO = t.SalesOrderNumberKEY AND 
+				STAGE_BRS_Transaction.SHDCTO = t.DocType AND 
+				ROUND(STAGE_BRS_Transaction.SDLNID * 1000, 0)  = t.LineNumber
+
+-- check if the same data was loaded for two days.  380 test would catch this.
+
+SELECT     SUM(NetSalesAmt) AS Expr1, COUNT(DocType) AS Expr2
+FROM         BRS_Transaction
+WHERE     (SalesDate >= CONVERT(DATETIME, '2017-01-23 00:00:00', 102))
+GROUP BY SalesDate
+
+*/
+
 
 -- debug run
 -- [BRS_BE_Transaction_load_proc] 
 
 -- prod run
 -- [BRS_BE_Transaction_load_proc] 0, 0
+
 
 
