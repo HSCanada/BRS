@@ -101,6 +101,6 @@ ORDER BY 2
 -- update History, 3 min
 UPDATE    BRS_TransactionDW 
 SET              ExtDiscAmt = ExtListPrice  + ExtPrice -2.0*NetSalesAmt
-WHERE     (CalMonth between 201601 and 201612)
+WHERE     (CalMonth between 201201 and 201712)
 
 

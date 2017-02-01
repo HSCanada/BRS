@@ -40,6 +40,7 @@ AS
 --	14 Oct 16	tmc		Add Acq rate logic: Sum(amount * rate) (0 rate where null)
 --  19 Jan 17   tmc     Merged prior Acq notes rom BRS_DS_Cube_proc into *THIS* proc
 --  22 Jan 17   tmc     Refactored to accomodate same date YoY sales
+--	31 Jan 17	tmc		Fixed GP MTD issue where Chargeback missing
 **    
 *******************************************************************************/
 
@@ -104,14 +105,14 @@ SELECT
 	'CY.DAY.ACT' AS Status,
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 
@@ -392,14 +393,14 @@ SELECT
 	'CY.MTD.ACT' AS Status,
 
 	SUM(t.NetSalesAmt) AS SalesAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - ExtendedCostAmt ) END AS GPAmt, 
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID,
 
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - ExtendedCostAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
 
 FROM         
 	BRS_Transaction AS t 

@@ -40,6 +40,7 @@
 --							be added to proc
 -- 24 Oct 16	tmc		Record last build date
 -- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
+-- 30 Jan 17	tmc		Changed Flyer free goods from Est to invoice method
 
 **    
 *******************************************************************************/
@@ -514,16 +515,29 @@ where
 
 -- run manual until History tables in place, 2 Feb 16
 
+truncate table BRS_AGG_IMD_Sales
+
+BEGIN TRANSACTION
+GO
+EXECUTE sp_rename N'dbo.BRS_AGG_IMD_Sales.FreeGoodsEstInd', N'Tmp_FreeGoodsInvoicedInd', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_AGG_IMD_Sales.Tmp_FreeGoodsInvoicedInd', N'FreeGoodsInvoicedInd', 'COLUMN' 
+GO
+COMMIT
+
+
 --------------------------------------------------------------------------------
 Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
 --------------------------------------------------------------------------------
+
+
 
 INSERT INTO BRS_AGG_IMD_Sales
 (
 	Item,
 	t.CalMonth, 
 	SalesDivision, 
-	FreeGoodsEstInd, 
+	FreeGoodsInvoicedInd, 
 	OrderSourceCode, 
 
 	ShippedQty,
@@ -541,7 +555,7 @@ SELECT
 	CalMonth, 
 	SalesDivision, 
 
-	FreeGoodsEstInd, 
+	FreeGoodsInvoicedInd, 
 
 	OrderSourceCode, 
 
@@ -559,13 +573,13 @@ FROM
 	BRS_TransactionDW AS t
 WHERE     
 -- Manual load
-	(t.CalMonth BETWEEN 201612 AND 201612)
+	(t.CalMonth BETWEEN 201412 AND 201612)
 
 GROUP BY 
 	Item,
 	CalMonth, 
 	SalesDivision, 
-	FreeGoodsEstInd, 
+	FreeGoodsInvoicedInd, 
 	OrderSourceCode
 
 */
