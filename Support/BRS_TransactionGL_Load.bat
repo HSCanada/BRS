@@ -7,6 +7,6 @@ IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
 ECHO LOAD STAGE_BRS_TransactionGL to %DB_DST% 
 PAUSE
 
-bcp %DB_DST%..STAGE_BRS_TransactionGL in BRS_TransactionGL.txt -c -T -S CAHSIONNLSQL1 -e BRS_TransactionGL_ERR.txt -F 2
+bcp %DB_DST%..STAGE_BRS_TransactionGL in BRS_TransactionGL.txt -c -T -S CAHSIONNLSQL2 -e BRS_TransactionGL_ERR.txt -F 2
 
 PAUSE

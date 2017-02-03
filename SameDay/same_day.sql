@@ -114,6 +114,7 @@ GO
 
 -- update fiscal months
 
+
 UPDATE    BRS_SalesDay
 SET              FiscalMonth = BRS_FiscalMonth.FiscalMonth
 FROM         BRS_SalesDay CROSS JOIN
@@ -126,11 +127,9 @@ SET              FiscalWeek = STAGE_BRS_SalesDay.FiscalWeek, FiscalQuarter = STA
 FROM         STAGE_BRS_SalesDay INNER JOIN
                       BRS_SalesDay ON STAGE_BRS_SalesDay.SalesDate = BRS_SalesDay.SalesDate
 
--- Add 2018-20 Fiscal info for Fiscal Month and push to day ...
--- ADD 0 entry for map to nowhere
--- Set default dates based on DEV (manually added in dev)
+-- Set default *Override* dates based on DEV (manually added in dev)
 
--- Delete old Free Goods (22m)
+-- Delete old Free Goods (22m) / 23s in PROD
 
 DELETE FROM BRS_Transaction
 WHERE     (FiscalMonth BETWEEN 201401 AND 201610) AND (DocType = 'AA') AND (AdjCode = 'FREEGD') AND (AdjNum <> 'AM-250') AND (AdjNote = 'FG.ACT.COM')
@@ -146,6 +145,8 @@ WHERE     (BRS_Transaction.SalesDate = CONVERT(DATETIME, '29 Jul 2016', 102)) AN
 
 /*
 Fix 
+6. Create 
+    BRS_DS_Day_Yoy
 
 1. BRS_Rollup_Support01
 2. BRS_DS_Config
@@ -157,26 +158,25 @@ Fix
     BRS_Rollup_Support02
     BRS_DS_Cube_proc
 
-5. Apply Charback 201501 to currentt 
+5. Apply Charback 201501 to current
     Chargeback_Add
 
-5.  Build Daily Summary AGG
-
-6. Create 
-    BRS_DS_Day_Yoy
-
 7. Test / Fix DS depedancies using
-
 
 SELECT OBJECT_NAME(OBJECT_ID),definition
 FROM sys.sql_modules
 WHERE definition LIKE '%' + 'BRS_AGG_CMBGAD_Sales_DS' + '%'
 Order by 1
 
-
 8. Update BRS_DS_CubeAcq_proc
 rename Aqu to DScube in Git
 Update dscube
+
+
+8. Run BRS_AGG_CDBGAD_Sales file from Sameday
+
+5.  Build Daily Summary AGG
+
 
 9. Fix weeks 
 
