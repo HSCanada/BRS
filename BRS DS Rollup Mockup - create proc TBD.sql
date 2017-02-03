@@ -41,6 +41,7 @@
 -- 24 Oct 16	tmc		Record last build date
 -- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
 -- 11 Jan 17    tmc     build BRS_AGG_CDBGAD_Sales by day for same day rollup
+-- 02 Feb 17	tmc		Consolidate, add Discount and Chargeback
 
 **    
 *******************************************************************************/
@@ -145,11 +146,11 @@ BEGIN
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) - SUM(ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
+			- ExtendedCostAmt - ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) END AS GP_Org_Amt, 
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
+			- ExtendedCostAmt) END AS GP_Org_Amt, 
 
 		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 
@@ -185,8 +186,6 @@ BEGIN
 		t.Shipto, 
 		t.FreeGoodsEstInd, 
 		OrderSourceCode
-
---
 
 	Print 'Building Core summary by *MONTH* - BRS_AGG_CMBGAD_Sales, used by Daily Sales...'
 
@@ -229,11 +228,11 @@ BEGIN
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) - SUM(ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
+			- ExtendedCostAmt - ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt) 
-			- SUM(ExtendedCostAmt) END AS GP_Org_Amt, 
+		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
+			- ExtendedCostAmt) END AS GP_Org_Amt, 
 
 		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 
@@ -276,9 +275,6 @@ END
 
 CLOSE c;
 
-
-
-
 --------------------------------------------------------------------------------
 Print 'Mark month stataus as complete'
 --------------------------------------------------------------------------------
@@ -294,15 +290,13 @@ WHERE
 	(FiscalMonth = @nFiscalTo)
 
 
-/*
-
-
 --------------------------------------------------------------------------------
 Print 'Secondary Update *****'
 --------------------------------------------------------------------------------
 
 TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
 TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
+TRUNCATE TABLE BRS_AGG_IMD_Sales
 
 OPEN c;
 
@@ -339,7 +333,9 @@ BEGIN
 		t.FreeGoodsEstInd, 
 		OrderSourceCode, 
 		SUM(NetSalesAmt) AS SalesAmt, 
-		SUM(NetSalesAmt) - SUM(ExtendedCostAmt) AS GPAmt, 
+		SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL(ExtChargebackAmt,0))) AS  GPAmt, 
+
+
 		COUNT(*) AS FactCount
 
 	FROM         
@@ -347,7 +343,6 @@ BEGIN
 
 	WHERE     
 		(t.FiscalMonth = @nFiscalCurrent )
-	--	(t.FiscalMonth BETWEEN 201401 AND 201412 )
 
 	GROUP BY 
 		Item,
@@ -392,7 +387,11 @@ BEGIN
 		GPAtFileCostAmt, 
 		GPAtCommCostAmt, 
 		ExtChargebackAmt, 
+
 		ExtDiscAmt, 
+		[ExtBase],
+		[ExtDiscLine],
+		[ExtDiscOrder],
 
 		FactCount,
 		ID_MAX
@@ -420,14 +419,21 @@ BEGIN
 
 		SUM(t.ShippedQty) AS ShippedQty,
 		SUM(t.NetSalesAmt) AS SalesAmt, 
-		SUM(t.GPAmt) AS GPAmt, 
+		SUM(GPAmt + ISNULL(t.ExtChargebackAmt,0)) AS  GPAmt, 
 		SUM(t.GPAtFileCostAmt) AS GPAtFileCostAmt, 
 		SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt, 
 		SUM(t.ExtChargebackAmt) AS ExtChargebackAmt, 
-		SUM(t.ExtDiscAmt) AS ExtDiscAmt, 
+
+		SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)    AS ExtDiscTotal,
+		SUM(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)    AS ExtBase,
+		SUM(t.ExtListPrice  + 0          -  NetSalesAmt)    AS ExtDiscLine,
+		SUM(0               + t.ExtPrice -  NetSalesAmt)    AS ExtDiscOrder,
+
 
 		COUNT(*) AS FactCount,
 		MAX(T.ID) AS ID_MAX
+
+
 
 	FROM         
 		BRS_TransactionDW AS t
@@ -460,16 +466,73 @@ BEGIN
 		t.PriceMethod,
 		t.OrderSourceCode
 
+
+	--------------------------------------------------------------------------------
+	Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
+	--------------------------------------------------------------------------------
+
+	INSERT INTO BRS_AGG_IMD_Sales
+	(
+		Item,
+		t.CalMonth, 
+		SalesDivision, 
+		FreeGoodsInvoicedInd, 
+		OrderSourceCode, 
+
+		ShippedQty,
+		NetSalesAmt, 
+		GPAmt, 
+		GPAtFileCostAmt, 
+		GPAtCommCostAmt, 
+		ExtChargebackAmt, 
+
+		ExtDiscAmt, 
+		[ExtBase],
+		[ExtDiscLine],
+		[ExtDiscOrder],
+
+		FactCount
+	)
+	SELECT     
+		Item,
+		CalMonth, 
+		SalesDivision, 
+		FreeGoodsInvoicedInd, 
+		OrderSourceCode, 
+
+		SUM(ShippedQty) AS ShippedQty,
+		SUM(NetSalesAmt) AS SalesAmt, 
+		SUM(GPAmt + ISNULL(t.ExtChargebackAmt,0)) AS  GPAmt, 
+		SUM(GPAtFileCostAmt) AS GPAtFileCostAmt, 
+		SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
+		SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
+
+		SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)    AS ExtDiscTotal,
+		SUM(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)    AS ExtBase,
+		SUM(t.ExtListPrice  + 0          -  NetSalesAmt)    AS ExtDiscLine,
+		SUM(0               + t.ExtPrice -  NetSalesAmt)    AS ExtDiscOrder,
+
+		COUNT(*) AS FactCount
+
+	FROM         
+		BRS_TransactionDW AS t
+	WHERE     
+		(t.CalMonth = @nFiscalCurrent)
+
+	GROUP BY 
+		Item,
+		CalMonth, 
+		SalesDivision, 
+		FreeGoodsInvoicedInd, 
+		OrderSourceCode
+
+
 	FETCH NEXT FROM c INTO @nFiscalCurrent;
 
 END 
 
 CLOSE c;
 DEALLOCATE c;
-
-
-
-*********************************************/
 
 
 
@@ -506,7 +569,6 @@ INSERT INTO BRS_CustomerFSC_History
 
 	-- 23 Sep 16	tmc		Add TS territory to snapshot
 	HIST_TsTerritoryCd
-
 )
 SELECT     
 	c.ShipTo, 
@@ -602,74 +664,11 @@ where
 
 
 
-
-
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
 -- 2. Run this script Summary builds (1 of 2) prior ME adj  
 --		a) set dates
 --		c) run script (about 12 min, for DS first table, 90min for full run )
-*/
-
-
-/*
-
--- run manual until History tables in place, 2 Feb 16
-
---------------------------------------------------------------------------------
-Print 'Building DW Summary (BRS_AGG_IMD_Sales), used by Promo and Datamining...'
---------------------------------------------------------------------------------
-
-INSERT INTO BRS_AGG_IMD_Sales
-(
-	Item,
-	t.CalMonth, 
-	SalesDivision, 
-	FreeGoodsEstInd, 
-	OrderSourceCode, 
-
-	ShippedQty,
-	NetSalesAmt, 
-	GPAmt, 
-	GPAtFileCostAmt, 
-	GPAtCommCostAmt, 
-	ExtChargebackAmt, 
-	ExtDiscAmt, 
-
-	FactCount
-)
-SELECT     
-	Item,
-	CalMonth, 
-	SalesDivision, 
-
-	FreeGoodsEstInd, 
-
-	OrderSourceCode, 
-
-	SUM(ShippedQty) AS ShippedQty,
-	SUM(NetSalesAmt) AS SalesAmt, 
-	SUM(GPAmt) AS GPAmt, 
-	SUM(GPAtFileCostAmt) AS GPAtFileCostAmt, 
-	SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
-	SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
-	SUM(ExtDiscAmt) AS ExtDiscAmt, 
-
-	COUNT(*) AS FactCount
-
-FROM         
-	BRS_TransactionDW AS t
-WHERE     
--- Manual load
-	(t.CalMonth BETWEEN 201611 AND 201611)
-
-GROUP BY 
-	Item,
-	CalMonth, 
-	SalesDivision, 
-	FreeGoodsEstInd, 
-	OrderSourceCode
-
 */
 
 

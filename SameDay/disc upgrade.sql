@@ -104,3 +104,21 @@ SET              ExtDiscAmt = ExtListPrice  + ExtPrice -2.0*NetSalesAmt
 WHERE     (CalMonth between 201201 and 201712)
 
 
+
+
+---
+
+ALTER TABLE BRS_AGG_CMI_DW_Sales ADD
+	ExtBase money NOT NULL CONSTRAINT DF_BRS_AGG_CMI_DW_Sales_ExtBase DEFAULT (0),
+	ExtDiscLine money NOT NULL CONSTRAINT DF_BRS_AGG_CMI_DW_Sales_ExtDiscLine DEFAULT (0),
+	ExtDiscOrder money NOT NULL CONSTRAINT DF_BRS_AGG_CMI_DW_Sales_ExtDiscOrder DEFAULT (0)
+GO
+
+ALTER TABLE BRS_AGG_IMD_Sales ADD
+	ExtBase money NOT NULL CONSTRAINT DF_BRS_AGG_IMD_Sales_ExtBase DEFAULT (0),
+	ExtDiscLine money NOT NULL CONSTRAINT DF_BRS_AGG_IMD_Sales_ExtDiscLine DEFAULT (0),
+	ExtDiscOrder money NOT NULL CONSTRAINT DF_BRS_AGG_IMD_Sales_ExtDiscOrder DEFAULT (0)
+GO
+
+
+
