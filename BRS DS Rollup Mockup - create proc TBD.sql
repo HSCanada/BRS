@@ -364,7 +364,7 @@ BEGIN
 		Shipto, 
 		FiscalMonth,
 
-		FreeGoodsEstInd, 
+		FreeGoodsInvoicedInd, 
 		SalesCategory,
 
 		TAG_TsTerritoryCd,
@@ -401,7 +401,7 @@ BEGIN
 
 		t.Shipto,     
 		d.FiscalMonth, 
-		t.FreeGoodsEstInd, 
+		t.FreeGoodsInvoicedInd, 
 		i.SalesCategory,
 		t2.TsTerritoryCd,
 
@@ -459,7 +459,7 @@ BEGIN
 	GROUP BY 
 		t.Shipto,     
 		d.FiscalMonth, 
-		t.FreeGoodsEstInd, 
+		t.FreeGoodsInvoicedInd, 
 		i.SalesCategory,
 		t2.TsTerritoryCd,
 		t.Item,
@@ -507,7 +507,7 @@ BEGIN
 		SUM(GPAtCommCostAmt) AS GPAtCommCostAmt, 
 		SUM(ExtChargebackAmt) AS ExtChargebackAmt, 
 
-		SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)    AS ExtDiscTotal,
+	SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)    AS ExtDiscTotal,
 		SUM(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)    AS ExtBase,
 		SUM(t.ExtListPrice  + 0          -  NetSalesAmt)    AS ExtDiscLine,
 		SUM(0               + t.ExtPrice -  NetSalesAmt)    AS ExtDiscOrder,
@@ -613,7 +613,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201612 and 201612) 
+	(t.FiscalMonth between 201701 and 201701) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -636,7 +636,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201612 and 201612) 
+	(t.FiscalMonth between 201701 and 201701) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -660,7 +660,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201612 and 201612) 
+	(t.FiscalMonth between 201701 and 201701) 
 
 
 

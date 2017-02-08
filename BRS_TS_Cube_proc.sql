@@ -31,6 +31,7 @@ AS
 --	07 Nov 16	tmc		Added additional metrics
 --  08 Nov 16	tmc		Clarified Tag coding Y/N -> TS_TAG / NO
 --	29 Dec 16	tmc		Add MTD Logic
+--	05 Feb 17	tmc		Changed from goods logic from Est to Billed at zero
 **    
 *******************************************************************************/
 
@@ -91,7 +92,7 @@ BEGIN
 
 
 	WHERE     
-		(t.FreeGoodsEstInd = 0) AND
+		(t.FreeGoodsInvoicedInd = 0) AND
 		(t.FiscalMonth BETWEEN @nFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND 
 		(1=1)
 
@@ -140,7 +141,7 @@ BEGIN
 
 
 	WHERE     
-		(t.FreeGoodsEstInd = 0) AND
+		(t.FreeGoodsInvoicedInd = 0) AND
 		(d.FiscalMonth = @nFiscalMonth ) AND 
 		(t.Date <= @dtLastDay ) AND
 		

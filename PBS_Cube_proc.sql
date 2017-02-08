@@ -186,7 +186,7 @@ GRANT EXECUTE ON [dbo].[PBS_Cube_proc] TO [CAHSI\kansell]
 GO
 
 
--- Exec [PBS_Cube_proc] 201606, 201606
+-- Exec [PBS_Cube_proc] 201612, 201612
 
 
 
