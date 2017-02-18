@@ -40,7 +40,7 @@ WHERE
 UPDATE    
     BRS_TransactionDW
 SET              
-    ExtListPrice    = CASE WHEN LineTypeOrder IN ('CP', 'CE')          THEN NetSalesAmt ELSE ExtListPriceORG END	
+	ExtListPrice    = CASE WHEN LineTypeOrder IN ('CP', 'CL', 'CE')     THEN CASE WHEN LineTypeOrder = 'CE' THEN NetSalesAmt ELSE 0 END ELSE ExtListPriceORG END	
     , ExtPrice        = CASE WHEN OrderSourceCode IN ('A', 'L', 'K')    THEN NetSalesAmt ELSE ExtPriceORG END
 WHERE     
     (CalMonth between 201201 and 201712)
@@ -51,7 +51,6 @@ UPDATE    BRS_TransactionDW
 SET              ExtDiscAmt = ExtListPrice  + ExtPrice -2.0*NetSalesAmt
 WHERE     
     (CalMonth between 201201 and 201712)
-
 
 
 --
@@ -191,6 +190,7 @@ ORDER BY 16 ASC
 
 -- 2 Show Detail
 SELECT 
+	t.Date,
 	t.[SalesOrderNumber],
 	t.[LineNumber],
 
@@ -224,11 +224,11 @@ FROM
     INNER JOIN BRS_OrderSource AS s 
     ON t.OrderSourceCode = s.OrderSourceCode
 WHERE     
-    (t.CalMonth between 201606 and 201612) AND 
-	(t.SalesOrderNumber=9627267) AND
+    (t.CalMonth between 201702 and 201702) AND 
+--	(t.SalesOrderNumber=9627267) AND
 --    (t.FreeGoodsInvoicedInd <> 1) AND
 --    (t.DocType <>'SL') AND
---    (t.LineTypeOrder NOT IN ('CP','CL')) AND
+    (t.LineTypeOrder  IN ('CP','CL')) AND
 --    (s.AdvancedPricingInd = 1) AND
 --    (t.ExtPriceORG) = 0 AND
 --	(t.NetSalesAmt <> 0) AND
@@ -236,6 +236,7 @@ WHERE
 --	(NetSalesAmt) <> (ExtListPrice) AND
     (1=1)
 GROUP BY 
+	t.Date,
 	t.[SalesOrderNumber],
 	t.[LineNumber],
 	t.[DocType],
@@ -245,7 +246,7 @@ GROUP BY
     t.LineTypeOrder,
     t.PriceMethod,
 	t.[OrderPromotionCode]
-ORDER BY 16 DESC
+ORDER BY 1 ASC
 
 
 -- Price lookup
@@ -253,8 +254,13 @@ SELECT        CalMonth, Item, CorporatePrice
 FROM            BRS_ItemBaseHistory
 WHERE        (Item = '6317801')
 
-SELECT top 10
+
+
+----- here
+SELECT 
 	t.[SalesOrderNumber],
+	t.[LineNumber],
+    t.LineTypeOrder,
 	t.[OrderPromotionCode],
     t.FreeGoodsInvoicedInd,
 
@@ -280,23 +286,25 @@ FROM
     INNER JOIN BRS_OrderSource AS s 
     ON t.OrderSourceCode = s.OrderSourceCode
 
-	INNER JOIN [zzzShipto] as c
-	ON t.Shipto = c.ST
 	
 WHERE     
-    (t.CalMonth between 201601 and 201601) AND
+    (t.CalMonth between 201601 and 201612) AND
+	(t.Shipto = 2676113) AND
     (t.FreeGoodsInvoicedInd =0 ) AND
+    (t.LineTypeOrder IN ('CE')) AND   -- CP, CE, CL
+
 --	(t.SalesOrderNumber = 9552509) AND
     (1=1)
 GROUP BY 
 	t.[SalesOrderNumber],
-    t.FreeGoodsInvoicedInd,
+	t.[LineNumber],
+    t.LineTypeOrder,
+	t.FreeGoodsInvoicedInd,
 	t.[OrderPromotionCode]
 HAVING 
 --	SUM(0               + t.ExtPrice -  NetSalesAmt) <>0 AND
 	1=1
-ORDER BY 
-ExtDiscLine DESC
+ORDER by 2 ASC
 
 
 /*

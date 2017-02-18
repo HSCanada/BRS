@@ -42,6 +42,7 @@
 -- 28 Oct 16	tmc		re-org to true-up FSC on last day of month
 -- 11 Jan 17    tmc     build BRS_AGG_CDBGAD_Sales by day for same day rollup
 -- 02 Feb 17	tmc		Consolidate, add Discount and Chargeback
+-- 17 Feb 17	tmc		Fix Summary Bug caught by Gary W
 
 **    
 *******************************************************************************/
@@ -146,11 +147,17 @@ BEGIN
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
-			- ExtendedCostAmt - ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL(ExtChargebackAmt,0))) 
+		END  AS GPAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
-			- ExtendedCostAmt) END AS GP_Org_Amt, 
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - ExtendedCostAmt) 
+		END AS GP_Org_Amt, 
 
 		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 
@@ -228,11 +235,17 @@ BEGIN
 
 		SUM(NetSalesAmt) AS SalesAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
-			- ExtendedCostAmt - ISNULL(ExtChargebackAmt,0)) END  AS GPAmt, 
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL(ExtChargebackAmt,0))) 
+		END  AS GPAmt, 
 
-		CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt 
-			- ExtendedCostAmt) END AS GP_Org_Amt, 
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - ExtendedCostAmt) 
+		END AS GP_Org_Amt, 
 
 		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
 

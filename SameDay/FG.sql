@@ -31,10 +31,10 @@ SET               FreeGoodsRedeemedInd = 1
 FROM         BRS_FreeGoodsRedeem INNER JOIN
                       BRS_TransactionDW ON BRS_FreeGoodsRedeem.SalesOrderNumber = BRS_TransactionDW.SalesOrderNumber AND 
                       BRS_FreeGoodsRedeem.Item = BRS_TransactionDW.Item
-WHERE     (BRS_FreeGoodsRedeem.FiscalMonth >= 201610) AND (BRS_TransactionDW.ShippedQty <> 0) AND (BRS_TransactionDW.NetSalesAmt = 0) AND 
+WHERE     (BRS_FreeGoodsRedeem.FiscalMonth BETWEEN 201701 AND 201712) AND (BRS_TransactionDW.ShippedQty <> 0) AND (BRS_TransactionDW.NetSalesAmt = 0) AND 
                       (BRS_TransactionDW.FreeGoodsRedeemedInd <> 1)
 
-
+/*
 -- Update flag - FreeGoodsInvoicedInd
 UPDATE    BRS_TransactionDW
 SET               FreeGoodsRedeemedInd = 1
@@ -43,6 +43,7 @@ FROM         BRS_FreeGoodsRedeem INNER JOIN
                       BRS_FreeGoodsRedeem.Item = BRS_TransactionDW.Item
 WHERE     (BRS_FreeGoodsRedeem.FiscalMonth >= 201610) AND (BRS_TransactionDW.ShippedQty <> 0) AND (BRS_TransactionDW.NetSalesAmt = 0) AND 
                       (BRS_TransactionDW.FreeGoodsRedeemedInd <> 1)
+*/
 
 
 -- Check flag - FreeGoodsRedeemedInd

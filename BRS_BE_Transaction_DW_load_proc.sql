@@ -40,7 +40,8 @@ AS
 --  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
 --  22 Jan 17   tmc     Added logic so that empty update does not fail
 --  27 Jan 17   tmc     Finalized Discount and Free Goods logic
---  06 Feb 17	tmc		Adde restock to price adj correction
+--  06 Feb 17	tmc		Add restock to price adj correction
+--	13 Feb 17	tmc		Final Discount logic fix
 
 **    
 *******************************************************************************/
@@ -393,10 +394,21 @@ Begin
 
         -- Correct Ext List on price adjusmtent as the DW field incorrect
         CASE 
-            WHEN s.LNTY IN('CP', 'CE' )
-            THEN s.WJXBFS6 
+            WHEN s.LNTY IN ('CP', 'CL', 'CE')
+            THEN 
+				CASE 
+					WHEN s.LNTY = 'CE'
+					THEN s.WJXBFS6	
+					ELSE 0
+				END
             ELSE s.WJXBFS8 
         END                                             AS ExtListPrice,
+
+		/*
+SET              
+	ExtListPrice    = CASE WHEN LineTypeOrder IN ('CP', 'CL', 'CE')     THEN CASE WHEN LineTypeOrder = 'CE' THEN NetSalesAmt ELSE 0 END ELSE ExtListPriceORG END	
+    , ExtPrice        = CASE WHEN OrderSourceCode IN ('A', 'L', 'K')    THEN NetSalesAmt ELSE ExtPriceORG END
+*/
 
         -- Correct Ext Price for non Advanced price as the DW field incorrect
         CASE 
@@ -409,15 +421,23 @@ Begin
         -- SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt) AS ExtDiscTotal,
 
         CASE 
-            WHEN s.LNTY IN('CP', 'CE' )
-            THEN s.WJXBFS6 
+            WHEN s.LNTY IN ('CP', 'CL', 'CE')
+            THEN 
+				CASE 
+					WHEN s.LNTY = 'CE'
+					THEN s.WJXBFS6	
+					ELSE 0
+				END
             ELSE s.WJXBFS8 
-        END  +
-            CASE 
-                WHEN s.ORSCCD IN ('A', 'L', 'K')    
-                THEN s.WJXBFS6 
-                ELSE s.WJXBFS7 
-            END - 2.0 * s.WJXBFS6                       AS ExtDiscAmt,
+        END 
+		+
+        CASE 
+            WHEN s.ORSCCD IN ('A', 'L', 'K')    
+            THEN s.WJXBFS6 
+            ELSE s.WJXBFS7 
+        END 
+		- 
+		2.0 * s.WJXBFS6                       AS ExtDiscAmt,
 
 
         -- Custom Logic Section END -------------------------------------------
