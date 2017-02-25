@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 ALTER PROCEDURE BRS_PL_SM_Cube_proc 
-	@nFiscalMonth_LY as int = 201412
+	@nFiscalMonth_LY as int = 201612
 AS
 
 /******************************************************************************
@@ -31,96 +31,108 @@ AS
 **	21 Dec 15	tmc		Refine fields and set NSA GP to 0    
 --	12 Feb 16	tmc		Removed comment ref to legacy code
 --	09 May 16	tmc		Added Adjustment for Free Goods
--- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
+--	22 Jan 17   tmc     Referenced BRS_Rollup_Support01 for conistent logic
+--	20 Feb 17	tmc		Updated for new 2017 SM P&L
+--	22 Feb 17	tmc		Added Chargebacks to pull
+--  23 Feb 17	tmc		Unsplit Teeth from AAD AAL
 
 *******************************************************************************/
 
 BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
 
-Declare @nPriorFiscalMonth int, @nFirstFiscalMonth_TY int
+	Declare @nPriorFiscalMonth int, @nYearFirstFiscalMonth_LY int
 
-SET NOCOUNT ON
+	SET NOCOUNT ON
  
-Select
-	@nPriorFiscalMonth		= PriorFiscalMonth,
-	@nFirstFiscalMonth_TY	= YearFirstFiscalMonth
-FROM
-	BRS_Rollup_Support01 g
+	Select
+		@nYearFirstFiscalMonth_LY	= YearFirstFiscalMonth_LY,
+		@nPriorFiscalMonth	= PriorFiscalMonth
+	FROM
+		BRS_Rollup_Support01 g
 
-SELECT     
-	t.FiscalMonth, 
-	t.Branch, 
-	t.GLBU_Class, 
---	09 May 16	tmc		Added Adjustment for Free Goods
-	t.AdjCode, 
+	SELECT     
+		t.FiscalMonth
+		,MIN(f.YearNum)						AS YearNum
+		,MIN(f.MonthNum)					AS MonthNum
+		,RTrim(t.HIST_SegCd) + ' -'
+		 + MIN(glru.GLBU_ClassSM_L3)		AS lookup_key_sm
+		,SalesDivision						AS SalesDivision
+		,t.Branch
+		,t.GLBU_Class
+		,MIN(glru.GLBU_ClassSM_L3)			AS GLBU_Class_Rollup 
+		,t.AdjCode
+		,t.HIST_SegCd						AS SegCd
+		,t.HIST_MarketClass					AS MarketClass
+		,MIN(m.MarketRollup_L2)				AS MarketClass_Rollup
 
-	t.SalesDivision, 
-	'A' AS TrxSrc, 
+		,ISNULL(c_ly.HIST_SegCd,'')			AS SegCd_PY
+		,ISNULL(c_ly.HIST_MarketClass, '')	AS MarketClass_PY
+		,MIN(m_ly.MarketRollup_L2)			AS MarketClass_Rollup_PY
 
-	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd, 
+		,@nFiscalMonth_LY					AS FiscalMonth_PY_Ref
 
-	ISNULL(c_ly.HIST_MarketClass, '') as MarketClass_PY, 
-	ISNULL(c_ly.HIST_SegCd,'') as SegCd_PY,
+		,MIN(glru.ReportingClass)			AS ReportingClass
+		,'A'								AS TrxSrc
+		,'SM.YTD.ACT'						AS Status
 
-	MIN(bu.ReportingClass) AS GLBU_ReportingClass,
+		,SUM(t.SalesAmt)					AS SalesAmt
+		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' 
+				THEN 0 
+				ELSE SUM(t.GPAmt) 
+		 END								AS GPAmt
+		 ,SUM(t.ExtChargebackAmt)			AS ExtChargebackAmt
 
-	MIN(glru.GLBU_ClassDS_L1)AS DS_L1,
-	MIN(glru.ReportingClass)AS ReportingClass,
+		,MIN(t.ID_MAX)						AS UniqueID
 
-	'SM.YTD.ACT' AS Status,
+	FROM         
 
-	SUM(t.SalesAmt) AS SalesAmt, 
+		BRS_AGG_CMBGAD_Sales AS t 
 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(t.GPAmt) END AS GPAmt, 
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
 
-	@nFiscalMonth_LY AS FiscalMonth_PY_Ref,
-	MIN(t.ID_MAX) as UniqueID
+		INNER JOIN BRS_BusinessUnitClass as bu
+		ON bu.GLBU_Class = t.GLBU_Class
 
-FROM         
+		INNER JOIN BRS_FiscalMonth as f
+		ON t.FiscalMonth = f.FiscalMonth
 
-	BRS_AGG_CMBGAD_Sales AS t 
+		INNER JOIN [BRS_CustomerMarketClass] m
+		ON t.HIST_MarketClass = m.MarketClass
 
+		LEFT JOIN BRS_CustomerFSC_History AS c_ly
+		ON c_ly.ShipTo = t.Shipto   AND
+			c_ly.FiscalMonth = @nFiscalMonth_ly
+			
+		INNER JOIN [BRS_CustomerMarketClass] m_ly
+		ON ISNULL(c_ly.HIST_MarketClass, '') = m_ly.MarketClass
 
-	INNER JOIN BRS_DS_GLBU_Rollup AS glru
-	ON	t.GLBU_Class = glru.GLBU_Class
+	WHERE
+		(t.FiscalMonth between @nYearFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND
+--		(bu.GLBU_Class='TEETH') AND
+		(1=1)
 
-	INNER JOIN BRS_BusinessUnitClass as bu
-	ON bu.GLBU_Class = t.GLBU_Class
-
-	LEFT JOIN BRS_CustomerFSC_History AS c_ly
-	ON c_ly.ShipTo = t.Shipto   AND
-		c_ly.FiscalMonth = @nFiscalMonth_LY
-
-WHERE
-	t.FiscalMonth between @nFirstFiscalMonth_TY AND @nPriorFiscalMonth
-
-GROUP BY 
-	t.FiscalMonth
-	,t.Branch
-	,t.GLBU_Class
-	,t.AdjCode
-	,t.SalesDivision
-
-	,t.HIST_MarketClass
-	,t.HIST_SegCd 
-
-	,c_ly.HIST_MarketClass
-	,c_ly.HIST_SegCd
-
-
+	GROUP BY 
+		t.FiscalMonth
+		,t.Branch
+		,t.GLBU_Class
+		,t.AdjCode
+		,t.SalesDivision 
+		,t.HIST_MarketClass
+		,t.HIST_SegCd 
+		,c_ly.HIST_MarketClass
+		,c_ly.HIST_SegCd
 
 END
 
 GO
 
 
--- Run with Prior Fiscal Month ref (results to text)
--- BRS_PL_SM_Cube_proc 201512
+-- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
+-- Run with PrioBRS_PL_SM_Cube_procr Fiscal Month ref (results to text)
+-- BRS_PL_SM_Cube_proc 20112
 
 

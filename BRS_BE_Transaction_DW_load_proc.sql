@@ -620,7 +620,7 @@ truncate table STAGE_BRS_TransactionDW
 
 -- Step 3:  run below script, after Dimension load.
 
--- prod run - 6min
+-- prod run 
 -- Exec [BRS_BE_Transaction_DW_load_proc] 0
 
 

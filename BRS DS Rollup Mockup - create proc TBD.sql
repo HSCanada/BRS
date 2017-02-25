@@ -43,6 +43,8 @@
 -- 11 Jan 17    tmc     build BRS_AGG_CDBGAD_Sales by day for same day rollup
 -- 02 Feb 17	tmc		Consolidate, add Discount and Chargeback
 -- 17 Feb 17	tmc		Fix Summary Bug caught by Gary W
+-- 20 Feb 17	tmc		Make BRS_AGG_ICMBGAD_Sales symetrical ...
+--							to BRS_AGG_CMBGAD_Sales
 
 **    
 *******************************************************************************/
@@ -331,36 +333,77 @@ BEGIN
 		SalesDivision, 
 		FreeGoodsEstInd, 
 		OrderSourceCode, 
+
+
 		SalesAmt, 
 		GPAmt, 
-		FactCount
+
+        GP_Org_Amt,
+        ExtChargebackAmt,
+
+		FactCount,
+		ID_MAX,
+
+		HIST_Specialty,
+		HIST_MarketClass,
+		HIST_TerritoryCd,
+		HIST_VPA,
+		HIST_SegCd
+
 	)
 	SELECT     
 		Item,
-		FiscalMonth, 
-		Shipto, 
+		t.FiscalMonth, 
+		t.Shipto, 
 		Branch, 
 		t.GLBU_Class, 
 		t.AdjCode,	
 		SalesDivision, 
 		t.FreeGoodsEstInd, 
 		OrderSourceCode, 
+
 		SUM(NetSalesAmt) AS SalesAmt, 
-		SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL(ExtChargebackAmt,0))) AS  GPAmt, 
 
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL(ExtChargebackAmt,0))) 
+		END  AS GPAmt, 
 
-		COUNT(*) AS FactCount
+		CASE 
+			WHEN MIN(glru.ReportingClass) = 'NSA' 
+			THEN 0 
+			ELSE SUM(NetSalesAmt - ExtendedCostAmt) 
+		END AS GP_Org_Amt, 
+
+		SUM(ISNULL(ExtChargebackAmt,0)) AS ExtChargebackAmt, 
+
+		COUNT(*) AS FactCount,
+		MAX(t.ID) as ID_MAX,
+
+		ISNULL( MAX(c.HIST_Specialty), '') AS HIST_Specialty,
+		ISNULL( MAX(c.HIST_MarketClass), '') AS HIST_MarketClass,
+		ISNULL( MAX(c.HIST_TerritoryCd),'') AS HIST_TerritoryCd,
+		ISNULL( MAX(c.HIST_VPA), '') AS HIST_VPA,
+		ISNULL( MAX(c.HIST_SegCd), '') AS HIST_SegCd
 
 	FROM         
 		BRS_Transaction AS t
+
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
+
+		LEFT JOIN BRS_CustomerFSC_History AS c 
+		ON c.ShipTo = t.Shipto   AND
+			c.FiscalMonth = t.FiscalMonth
 
 	WHERE     
 		(t.FiscalMonth = @nFiscalCurrent )
 
 	GROUP BY 
 		Item,
-		FiscalMonth, 
-		Shipto, 
+		t.FiscalMonth, 
+		t.Shipto, 
 		Branch, 
 		t.GLBU_Class, 
 		t.AdjCode,

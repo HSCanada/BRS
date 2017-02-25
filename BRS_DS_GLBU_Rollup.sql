@@ -28,7 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+--	20 Feb 17	tmc		Added extra level of SM rollup for SM P&L 
 *******************************************************************************/
 
 SELECT     
@@ -39,7 +39,8 @@ SELECT
 	GLBU_ClassSM_L1, 
 	GLBU_ClassUS_L1, 
 	CorpParticipationFactor, 
-	ReportingClass
+	ReportingClass,
+	GLBU_ClassSM_L3
 
 FROM         
 
