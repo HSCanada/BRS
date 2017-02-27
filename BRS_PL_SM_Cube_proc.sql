@@ -35,6 +35,7 @@ AS
 --	20 Feb 17	tmc		Updated for new 2017 SM P&L
 --	22 Feb 17	tmc		Added Chargebacks to pull
 --  23 Feb 17	tmc		Unsplit Teeth from AAD AAL
+--	26 Feb 17	tmc		Add top Customer Group breakout
 
 *******************************************************************************/
 
@@ -58,7 +59,7 @@ BEGIN
 		,MIN(f.MonthNum)					AS MonthNum
 		,RTrim(t.HIST_SegCd) + ' -'
 		 + MIN(glru.GLBU_ClassSM_L3)		AS lookup_key_sm
-		,SalesDivision						AS SalesDivision
+		,t.SalesDivision						AS SalesDivision
 		,t.Branch
 		,t.GLBU_Class
 		,MIN(glru.GLBU_ClassSM_L3)			AS GLBU_Class_Rollup 
@@ -70,6 +71,8 @@ BEGIN
 		,ISNULL(c_ly.HIST_SegCd,'')			AS SegCd_PY
 		,ISNULL(c_ly.HIST_MarketClass, '')	AS MarketClass_PY
 		,MIN(m_ly.MarketRollup_L2)			AS MarketClass_Rollup_PY
+
+		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END AS CustGrp
 
 		,@nFiscalMonth_LY					AS FiscalMonth_PY_Ref
 
@@ -109,6 +112,13 @@ BEGIN
 		INNER JOIN [BRS_CustomerMarketClass] m_ly
 		ON ISNULL(c_ly.HIST_MarketClass, '') = m_ly.MarketClass
 
+		INNER JOIN [BRS_Customer] c
+		ON c.Shipto = t.Shipto
+
+		INNER JOIN [BRS_CustomerGroup] cg
+		ON cg.CustGrp = c.CustGrpWrk
+		
+
 	WHERE
 		(t.FiscalMonth between @nYearFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND
 --		(bu.GLBU_Class='TEETH') AND
@@ -124,6 +134,7 @@ BEGIN
 		,t.HIST_SegCd 
 		,c_ly.HIST_MarketClass
 		,c_ly.HIST_SegCd
+		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END
 
 END
 
