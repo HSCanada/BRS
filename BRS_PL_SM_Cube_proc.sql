@@ -36,6 +36,7 @@ AS
 --	22 Feb 17	tmc		Added Chargebacks to pull
 --  23 Feb 17	tmc		Unsplit Teeth from AAD AAL
 --	26 Feb 17	tmc		Add top Customer Group breakout
+--	28 Feb 17	tmc		Moved Market rollup from level 2 to 3 to avoid overlap
 
 *******************************************************************************/
 
@@ -66,11 +67,11 @@ BEGIN
 		,t.AdjCode
 		,t.HIST_SegCd						AS SegCd
 		,t.HIST_MarketClass					AS MarketClass
-		,MIN(m.MarketRollup_L2)				AS MarketClass_Rollup
+		,MIN(m.MarketRollup_L3)				AS MarketClass_Rollup
 
 		,ISNULL(c_ly.HIST_SegCd,'')			AS SegCd_PY
 		,ISNULL(c_ly.HIST_MarketClass, '')	AS MarketClass_PY
-		,MIN(m_ly.MarketRollup_L2)			AS MarketClass_Rollup_PY
+		,MIN(m_ly.MarketRollup_L3)			AS MarketClass_Rollup_PY
 
 		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END AS CustGrp
 
@@ -122,6 +123,7 @@ BEGIN
 	WHERE
 		(t.FiscalMonth between @nYearFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND
 --		(bu.GLBU_Class='TEETH') AND
+--		(t.Shipto=3370427) AND
 		(1=1)
 
 	GROUP BY 

@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	28 Feb 17	tmc		Added extrac roll-up for planning 
 **    
 *******************************************************************************/
 
@@ -36,6 +37,7 @@ SELECT
 	MarketClassDesc, 
 	MarketRollup_L1, 
 	MarketRollup_L2
+	MarketRollup_L3
 
 FROM         
 	dbo.BRS_CustomerMarketClass
