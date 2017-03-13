@@ -35,6 +35,7 @@ AS
 -- 15 Sep 16	tmc		Added Label to cube for private label cuts
 -- 22 Jan 17    tmc     Referenced BRS_Rollup_Support01 for conistent logic
 -- 20 Feb 17	tmc		Made SM static for new 2017 SM P&L
+-- 13 Mar 17	tmc		Add Chargeback and original GP for greater transparency
 *******************************************************************************/
 
 BEGIN
@@ -55,19 +56,31 @@ BEGIN
 		,t.GLBU_Class
 		,t.AdjCode
 		,t.SalesDivision
-		,t.HIST_MarketClass AS MarketClass
-		,t.HIST_SegCd		AS CustSeg
+		,t.HIST_MarketClass					AS MarketClass
+		,t.HIST_SegCd						AS CustSeg
 
 		,i.label
 
-		,CASE WHEN isupf.ReportInd = 1		THEN isupf.SupplierFamily	ELSE 'ZOTHER'				END AS SupplierFamily
-		,CASE WHEN icat.CategoryRollup = ''	THEN 'ADJUST'				ELSE icat.CategoryRollup	END AS CategoryRollup
+		,CASE 
+			WHEN isupf.ReportInd = 1		
+			THEN isupf.SupplierFamily	
+			ELSE 'ZOTHER'				
+		END									AS SupplierFamily
+		,CASE 
+			WHEN icat.CategoryRollup = ''	
+			THEN 'ADJUST'				
+			ELSE icat.CategoryRollup	
+		END									AS CategoryRollup
 
-		,MIN(icr.CategoryClass_Rollup) as CategoryClass_Rollup
-		,t.GLBU_Class as CategoryClass_GLBU
+		,MIN(icr.CategoryClass_Rollup)		as CategoryClass_Rollup
+		,t.GLBU_Class						as CategoryClass_GLBU
 
-		,SUM(t.SalesAmt) AS TotalSalesAmt
-		,SUM(t.GPAmt) AS TotalGPAmt
+		,SUM(t.SalesAmt)					AS TotalSalesAmt
+		,SUM(t.GPAmt)						AS TotalGPAmt
+
+		-- 13 Mar 17	tmc		Add Chargeback and original GP for greater transparency
+		,SUM(t.GP_Org_Amt)					AS TotalGPExclCBAmt
+		,SUM(ISNULL(ExtChargebackAmt,0))	AS ExtChargebackAmt
 	FROM         
 		BRS_AGG_ICMBGAD_Sales AS t 
 
