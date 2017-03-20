@@ -36,9 +36,9 @@ FROM
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
---	(c.BillTo = 2613256) AND
+	(c.MarketClass in ('ELITE', 'INSTIT', 'MIDMKT')) AND
 	(t.FiscalMonth BETWEEN 
-		(Select [YearFirstFiscalMonth_HIST] FROM BRS_Rollup_Support01 ) and 
+		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 ) and 
 		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 )
 	)
 

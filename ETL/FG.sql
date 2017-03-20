@@ -36,9 +36,9 @@ WHERE     (BRS_FreeGoodsRedeem.FiscalMonth BETWEEN 201701 AND 201712) AND (BRS_T
 
 
 -- Check flag - FreeGoodsRedeemedInd
-SELECT     CalMonth, SUM( NetSalesAmt), sum(GPAtFileCostAmt)
+SELECT     CalMonth, COUNT( CalMonth), sum(GPAtFileCostAmt)
 FROM         BRS_TransactionDW
 WHERE     (FreeGoodsRedeemedInd = 1)
-AND    (CalMonth >= 201608)
+AND    (CalMonth >= 201601)
 GROUP BY CalMonth
 
