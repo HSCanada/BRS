@@ -65,7 +65,7 @@ SELECT
 	,ADPID__program_id						AS program_id
 	,DATEADD (day , ADUPMJ_date_updated_JDT%1000-1, 
 		DATEADD(year,ADUPMJ_date_updated_JDT/1000, 0 ) ) 
-											AS ADUPMJ_date_updated
+											AS date_updated
 
 FROM            
 	etl.F4072_price_adjustment_detail p
@@ -92,5 +92,5 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM etl.price_adjustment_detail WHERE billto = 2314421
+-- SELECT * FROM etl.price_adjustment_detail WHERE billto = 1587178
 
