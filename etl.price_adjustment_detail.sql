@@ -48,6 +48,11 @@ SELECT
 
 	,ADAN8__billto							AS billto
 	,ADSDV1_sales_detail_value_01			AS marketing_program
+	,CASE ADAST__adjustment_name
+		WHEN 'SPLPRICE' THEN	'S'
+		WHEN 'PRPRICE ' THEN	'P'
+		ELSE					'C'
+	END 									AS PriceMethod
 	,ADMNQ__quantity_from					AS quantity_from
 	,ADEFTJ_effective_date					AS effective_date
 	,ADEXDJ_expired_date					AS expired_date
@@ -87,7 +92,5 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM etl.price_adjustment_detail where item_number_short =789459 and billto =1530070
--- SELECT * FROM etl.price_adjustment_detail where item_number_short =792350 and adjustment_name ='ADC01COR'
--- SELECT * FROM etl.price_adjustment_detail where item_number_short = 812841 and marketing_program ='E2'
+-- SELECT * FROM etl.price_adjustment_detail WHERE billto = 2314421
 

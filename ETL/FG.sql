@@ -19,6 +19,8 @@ INSERT INTO BRS_FreeGoodsRedeem
 SELECT     Item, SalesOrderNumber, FiscalMonth, ExtFileCostAmt, ShipTo, Supplier
 FROM         STAGE_BRS_FreeGoodsRedeem_Load
 
+-- check back SO
+
 SELECT     STAGE_BRS_FreeGoodsRedeem_Load.SalesOrderNumber
 FROM         STAGE_BRS_FreeGoodsRedeem_Load LEFT OUTER JOIN
                       BRS_TransactionDW_Ext ON STAGE_BRS_FreeGoodsRedeem_Load.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber

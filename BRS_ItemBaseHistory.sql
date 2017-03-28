@@ -28,22 +28,26 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	28 Mar 17	tmc		Added Marketing FX and broke out Financail FX
 **    
 *******************************************************************************/
 
 
 SELECT     
-	l.CalMonth, 
-	i.Item, 
-	d.Supplier, 
-	d.Currency, 
-	d.SupplierCost, 
-	d.SupplierCost * (fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS SupplierCostCAD, 
-	d.CorporatePrice, 
-	d.SellPrcBrk2, 
-	d.SellPrcBrk3, 
-	d.SellQtyBrk2, 
-	d.SellQtyBrk3
+	l.CalMonth
+	,i.Item
+	,d.Supplier
+	,d.Currency
+	,d.SupplierCost
+	,d.SupplierCost * (fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS SupplierCostCAD
+	,d.CorporatePrice
+	,d.SellPrcBrk2
+	,d.SellPrcBrk3
+	,d.SellQtyBrk2
+	,d.SellQtyBrk3
+
+	,(fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS [FX_per_CAD_pnl_rt]
+	,fx.FX_per_CAD_mrk_rt
 FROM         
 	BRS_ItemBaseHistoryLNK AS l 
 
@@ -69,7 +73,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM BRS_ItemBaseHistory WHERE Item = '7770136' And	(CalMonth in (0, 201608, 201607, 201508)) 
+-- SELECT top 10 * FROM BRS_ItemBaseHistory order by CalMonth DESC
 
 
 
