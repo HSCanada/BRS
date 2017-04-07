@@ -50,9 +50,9 @@ SELECT
 	,ADSDV1_sales_detail_value_01			AS marketing_program
 	,CASE ADAST__adjustment_name
 		WHEN 'SPLPRICE' THEN	'S'
-		WHEN 'PRPRICE ' THEN	'P'
+		WHEN 'PRPRICE'	THEN	'P'
 		ELSE					'C'
-	END 									AS PriceMethod
+	END 									AS price_method
 	,ADMNQ__quantity_from					AS quantity_from
 	,ADEFTJ_effective_date					AS effective_date
 	,ADEXDJ_expired_date					AS expired_date
@@ -82,6 +82,7 @@ FROM
 WHERE
 	n.ATPRFR_preference_type IN ('C', 'IG') AND
 	p.ADBSCD_basis = 5 AND
+--	ADAST__adjustment_name = 'PRPRICE' AND
 	(1=1)
 
 
@@ -92,5 +93,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM etl.price_adjustment_detail WHERE billto = 1587178
+-- SELECT top 15 * FROM etl.price_adjustment_detail WHERE preference_type <>'IG' AND  PriceMethod <> 'S'
 
+-- SELECT COUNT(*) FROM etl.price_adjustment_detail
+-- org 484 142 

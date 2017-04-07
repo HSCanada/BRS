@@ -32,6 +32,7 @@ AS
 **	-----	----------	--------------------------------------------
 -- 14 Oct 16	tmc		Added Current Base Update logic
 -- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
+-- 29 Mar 17	tmc		Updated logic to recognise new CAD market rate
 **    
 *******************************************************************************/
 BEGIN
@@ -165,14 +166,14 @@ Begin
 		FiscalMonth,
 		FX_per_USD_bal_rt,
 		FX_per_USD_pnl_rt,
-		FX_per_USD_mrk_rt
+		FX_per_CAD_mrk_rt
 	)
 	SELECT     
 		c.Currency, 
 		f.FiscalMonth, 
 		-1 AS FX_per_USD_bal_rt, 
 		-1 AS FX_per_USD_pnl_rt, 
-		-1 FX_per_USD_mrk_rt
+		-1 AS FX_per_CAD_mrk_rt
 	FROM         
 		BRS_Currency AS c 
 		CROSS JOIN BRS_FiscalMonth AS f

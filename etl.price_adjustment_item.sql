@@ -52,6 +52,9 @@ SELECT
 	,[FreightAdjPct]
 	,[SupplierCost]
 	,[Currency]
+	,FX_per_CAD_pnl_rt		
+	,FX_per_CAD_mrk_rt		
+
 
 FROM            
 	BRS_Item as i

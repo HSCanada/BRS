@@ -33,20 +33,31 @@ AS
 
 SELECT        
 	i.IMITM__item_number_short	AS item_number_short
-	-- NOTE Ai:  Group Class Contract and Market enrollment to Price method, not BT
-	,CASE WHEN sub.ADAN8__billto IS NULL THEN 0 ELSE c.BillTo END AS BillTo
+	-- Class Contract and Market Program roll to adjustment not BT
+	,CASE WHEN sub.billto IS NOT NULL THEN 0 ELSE c.BillTo END AS billto
+	,CASE t.PriceMethod 
+		WHEN 'P' THEN MIN(ISNULL(sub.adjustment_name,'')) 
+		WHEN 'S' THEN 'SPLPRICE' 
+		WHEN 'C' THEN MIN(ISNULL(sub.adjustment_name, 'CUSCONTR')) 
+		ELSE ''
+	END							AS adjustment_name
 
-	,MIN(ii.SalesCategory)		AS SalesCategory
-	,t.PriceMethod
+	,t.PriceMethod				AS price_method
+
+	-- since we are using Marketing program to link sales, 
+	-- ONLY show Marketing program if being used as a promo
 	,CASE 
 		WHEN t.PriceMethod = 'P' 
-		THEN t.PromotionCode 
-		ELSE '' 
-	END							AS PromotionCodeActive
+		THEN ISNULL(marketing_program,'') 
+		ELSE ''
+	END							AS marketing_program
+	,MIN(ii.SalesCategory)		AS SalesCategory
+
 	,SUM(t.ShippedQty)			AS ShippedQty
 	,SUM(t.NetSalesAmt)			AS NetSalesAmt
 	,SUM(GPAtFileCostAmt)		AS GPAtFileCostAmt
 	,SUM(ExtChargebackAmt)		AS ExtChargebackAmt
+	,COUNT(*)					AS HitsQty
 FROM            
 	BRS_Customer AS c 
 
@@ -59,45 +70,50 @@ FROM
 	INNER JOIN BRS_Item AS ii 
 	ON i.IMLITM_item_number = ii.Item
 
-	-- NOTE Aii:  identify Billto specific accounts so that 
-	-- Class Contract and Market Adjustment can be consolidated
+	-- Class Contract and Market Program roll to adjustment not BT
 	LEFT JOIN (
-		SELECT DISTINCT       
-			ADAN8__billto	
+		SELECT        
+			billto,
+			price_method,
+			marketing_program,
+			adjustment_name,
+			enroll_src
 		FROM            
-			etl.F4072_price_adjustment_detail p
-
-			INNER JOIN etl.F4071_price_adjustment_name n
-			ON p.ADAST__adjustment_name = n.ATAST__adjustment_name
-
-		WHERE
-			-- C means Customer Contract OR Special Price
-			n.ATPRFR_preference_type IN ('C') AND
-
-			ADAN8__billto > 0 AND
-			-- 5 means pricing set, not % rate
-			p.ADBSCD_basis = 5 AND
+			etl.price_adjustment_customer
+		WHERE 
+			enroll_src IN ('CLACTR', 'MRKPRG') AND
 			(1=1)
 	) sub
-	ON c.BillTo = sub.ADAN8__billto
-
+	ON	c.BillTo = sub.billto AND
+		t.PriceMethod = sub.price_method AND
+		sub.marketing_program = CASE WHEN t.PriceMethod = 'P' THEN t.PromotionCode ELSE '' END
 
 
 WHERE        
 	-- remove Equipment orders as they do not use Advanced Pricing
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
+
+	-- show sales history for accounts with special pricing
 	EXISTS (SELECT * FROM etl.price_adjustment_customer where billto = c.Billto) AND
 
 	-- TODO make this dynamic with function
-	(t.CalMonth BETWEEN 201508 AND 201702 )
+	(t.CalMonth BETWEEN 201509 AND 201703 )
 
 GROUP BY 
 	i.IMITM__item_number_short
-	,CASE WHEN sub.ADAN8__billto IS NULL THEN 0 ELSE c.BillTo END
+	-- Class Contract and Market Program roll to adjustment not BT
+	,CASE WHEN sub.billto IS NOT NULL THEN 0 ELSE c.BillTo END
 	,t.PriceMethod
+	,CASE t.PriceMethod 
+		WHEN 'P' THEN (ISNULL(sub.adjustment_name,'')) 
+		WHEN 'S' THEN 'SPLPRICE' 
+		WHEN 'C' THEN (ISNULL(sub.adjustment_name, 'CUSCONTR')) 
+		ELSE ''
+	END
+
 	-- since we are using Marketing program to link sales, 
 	-- ONLY show Marketing program if being used as a promo
-	,CASE WHEN t.PriceMethod = 'P' THEN t.PromotionCode ELSE '' END
+	,CASE WHEN t.PriceMethod = 'P' THEN ISNULL(marketing_program,'') ELSE '' END
 	
 GO
 
@@ -106,5 +122,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM etl.price_adjustment_sales
+-- SELECT TOP 5 * FROM etl.price_adjustment_sales WHERE billto in( 2613256, 1678299) and marketing_program = 'GS' AND 
+--SELECT * FROM etl.price_adjustment_sales WHERE billto in( 2613256) adjustment_name = 'ADC02COR'  AND price_method = 'C'
 
+-- SELECT COUNT(*) FROM etl.price_adjustment_sales 
+-- full 1 487 431
+-- ORG 565 415

@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	28 Mar 17	tmc		Added Marketing FX and broke out Financail FX
+--  07 Apr 17	tmc		Added Internal IDs to allow manual maintenance
 **    
 *******************************************************************************/
 
@@ -48,6 +49,11 @@ SELECT
 
 	,(fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS [FX_per_CAD_pnl_rt]
 	,fx.FX_per_CAD_mrk_rt
+
+	,l.ItemID	
+	,l.FamilySetLeaderID
+	,l.PriceID
+
 FROM         
 	BRS_ItemBaseHistoryLNK AS l 
 
