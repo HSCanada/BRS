@@ -61,10 +61,13 @@ SELECT
 	,p.[final_price]				AS locked_price
 	,i.[CurrentCorporatePrice]		AS CUR_Base
 	,i.[FreightAdjPct]				AS CUR_FreightFactor
+
+	,i.[Supplier]					AS CUR_Supplier
 	,i.[SupplierCost]				AS CUR_SupplierCost
 	,i.[Currency]					AS CUR_Currency
 	,i.FX_per_CAD_mrk_rt			AS CUR_FX_per_CAD_mrk_rt
 
+	,h.Supplier						AS ORG_Supplier
 	,h.SupplierCost					AS ORG_SupplierCost
 	,h.Currency						AS ORG_Currency
 	,h.FX_per_CAD_mrk_rt			AS ORG_FX_per_CAD_mrk_rt
@@ -74,7 +77,6 @@ SELECT
 
 	,i.[FamilySetLeader]
 	,i.[ItemDescription]
-	,i.[Supplier]
 	,i.[ItemStatus]
 	,i.[Label]
 	,i.[SalesCategory]
