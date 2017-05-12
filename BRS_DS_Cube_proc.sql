@@ -41,6 +41,7 @@ AS
 --  19 Jan 17   tmc     Merged prior Acq notes rom BRS_DS_Cube_proc into *THIS* proc
 --  22 Jan 17   tmc     Refactored to accomodate same date YoY sales
 --	31 Jan 17	tmc		Fixed GP MTD issue where Chargeback missing
+--	05 Apr 17	tmc		Adding Monthend mode (FiscalMonth=PriorFiscalMonth)
 **    
 *******************************************************************************/
 
@@ -50,6 +51,8 @@ BEGIN
 Declare @dtSalesDate datetime, @nFiscalMonthBeginDt datetime 
 
 Declare @nFiscalMonth int, @nFirstFiscalMonth int
+Declare @nPriorFiscalMonth int
+
 Declare @nWorkingDaysMonth int, @nDayNumber int
 
 Declare @dtSalesDate_LY datetime 
@@ -70,6 +73,7 @@ Select
 
 	@nFiscalMonth			= FiscalMonth,
 	@nFiscalMonth_LY		= FiscalMonth_LY,
+	@nPriorFiscalMonth		= PriorFiscalMonth,
 
 	@nFirstFiscalMonth  	= YearFirstFiscalMonth,
 	@nFirstFiscalMonth_LY	= YearFirstFiscalMonth_LY,
@@ -131,11 +135,13 @@ FROM
 		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
 
 	t.FiscalMonth = @nFiscalMonth AND
 	t.SalesDate = @dtSalesDate AND
 
---	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
+	--	Current Day ALWAYS used the Free Goods estimate as actuals are not availible, 17 May 16	tmc		
 	(t.FreeGoodsEstInd =  0 ) AND
 
 	(1=1)
@@ -205,10 +211,13 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.FiscalMonth = @nFiscalMonth AND
 	m.SalesDate = @dtSalesDate AND
 
---	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
+	--	Current Day ALWAYS used the Free Goods estimate as actuals are not availible, 17 May 16	tmc
 	(t.FreeGoodsEstInd =  0 ) AND
 
 	(1=1)
@@ -277,6 +286,9 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.FiscalMonth = @nFiscalMonth AND
 	(a.MTDEstInd = 1) AND
 
@@ -349,6 +361,9 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.FiscalMonth = @nFiscalMonth AND
 	(a.MTDEstInd = 1) AND
 
@@ -424,10 +439,15 @@ FROM
 
 
 WHERE
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
+	@nFiscalMonth <> @nPriorFiscalMonth AND
+
 	t.SalesDate < @dtSalesDate AND 
 		t.FiscalMonth = @nFiscalMonth AND
 
---	17 May 16	tmc		Current Day ALWAYS used the Free Goods estimate as actuals are not availible 
+	--	Current Day ALWAYS used the Free Goods estimate as actuals are not availible, 17 May 16	tmc
 	(t.FreeGoodsEstInd =  0 ) AND
 
 	(1=1)
@@ -496,6 +516,9 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE 
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.SalesDate < @dtSalesDate AND 
 	m.FiscalMonth = @nFiscalMonth AND
 
@@ -516,6 +539,151 @@ GROUP BY
 	,c.HIST_SegCd 
 
 UNION ALL
+
+
+-- MONTHEND MODE - BEGIN
+
+--PRINT '5m. ME CY - Actual from Summary - (CY.ME.ACT)'
+SELECT     
+	'CY' AS TimePeriod, 
+	'' AS DAY, 
+	'MTD' AS MTD, 
+	'QTD' AS QTD, 
+	'YTD' AS YTD, 
+
+	t.FiscalMonth, 
+	t.Branch,
+	t.GLBU_Class, 
+	t.AdjCode,
+
+	t.SalesDivision, 
+	'A' AS TrxSrc, 
+
+	t.HIST_MarketClass AS MarketClass, 
+	t.HIST_SegCd AS SegCd,
+
+	'CY.ME.ACT' AS Status,
+
+	SUM(t.SalesAmt) AS SalesAmt, 
+	SUM(t.GPAmt) AS GPAmt, 
+
+	@dtSalesDate AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+
+FROM         
+	BRS_AGG_CMBGAD_Sales AS t 
+
+	INNER JOIN BRS_FiscalMonth as fm
+	ON fm.FiscalMonth = t.FiscalMonth
+
+	-- Add Acquistion rates, tmc, 13 Oct 16
+	LEFT JOIN BRS_Aqu_Sales_Factor AS af
+	ON t.ShipTo = af.ShipTo AND 
+		t.GLBU_Class = af.GLBU_Class  AND 
+		af.Aqu_cd = 'DSL' AND
+		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
+
+
+
+WHERE
+	-- Enabled when IN monthend mode
+	(@nFiscalMonth = @nPriorFiscalMonth) AND
+
+	(t.FiscalMonth = @nFiscalMonth) AND
+
+--	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
+GROUP BY 
+	t.FiscalMonth
+	,t.Branch
+	,t.GLBU_Class
+	,t.AdjCode
+	,t.SalesDivision
+
+	,t.HIST_MarketClass
+	,t.HIST_SegCd 
+
+UNION ALL
+
+
+--PRINT '6m. ME PY - Actual from LY Summary - (PY.ME.ACT)'
+SELECT     
+	'PY' AS TimePeriod, 
+	'' AS DAY, 
+	'MTD' AS MTD, 
+	'QTD' AS QTD, 
+	'YTD' AS YTD, 
+
+	MIN(m.FiscalMonth_LY) AS FiscalMonth, 
+	t.Branch, 
+	t.GLBU_Class, 
+	t.AdjCode,
+	t.SalesDivision, 
+	'A' AS TrxSrc, 
+
+	t.HIST_MarketClass AS MarketClass, 
+	t.HIST_SegCd AS SegCd,
+
+	'PY.ME.ACT' AS Status,
+	                      
+	SUM(t.SalesAmt) AS SalesAmt, 
+	SUM(t.GPAmt) AS GPAmt, 
+
+	@dtSalesDate AS SalesDate,
+	MIN(t.ID_MAX) as UniqueID,
+
+	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
+	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
+	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+
+FROM         
+	BRS_AGG_CDBGAD_Sales AS t 
+
+    INNER JOIN BRS_DS_Day_Yoy AS m 
+    ON t.SalesDate = m.SalesDate_LY
+
+	INNER JOIN BRS_FiscalMonth as fm
+	ON fm.FiscalMonth = m.FiscalMonth_LY
+
+	-- Add Acquistion rates, tmc, 13 Oct 16
+	LEFT JOIN BRS_Aqu_Sales_Factor AS af
+	ON t.ShipTo = af.ShipTo AND 
+		t.GLBU_Class = af.GLBU_Class  AND 
+		af.Aqu_cd = 'DSL' AND
+		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
+
+WHERE 
+	-- Enabled when IN monthend mode
+	(@nFiscalMonth = @nPriorFiscalMonth) AND
+
+	m.FiscalMonth = @nFiscalMonth AND 
+
+--	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
+	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
+
+	(1=1)
+
+GROUP BY 
+	m.FiscalMonth_LY
+	,t.Branch
+	,t.GLBU_Class
+	,t.AdjCode
+	,t.SalesDivision
+
+	,t.HIST_MarketClass
+	,t.HIST_SegCd 
+
+UNION ALL
+
+
+-- MONTHEND MODE - END
 
 -- 7. MTD CY - Estimate from LY Aggregate - (CY.MTD.EST) - OK
 
@@ -571,6 +739,9 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.FiscalMonth = @nFiscalMonth AND
 
 	(a.MTDEstInd = 1) AND
@@ -643,6 +814,9 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE     
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
+
 	m.FiscalMonth = @nFiscalMonth AND
 
 	(a.MTDEstInd = 1) AND
@@ -868,9 +1042,10 @@ FROM
 		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE    
+	-- Enabled when NOT in monthend mode
+	(@nFiscalMonth <> @nPriorFiscalMonth) AND
 
--- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
-
+	-- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
 	m.FiscalMonth = (@nFiscalMonth-1) AND
 
 	(a.MTDEstInd = 1) AND
@@ -895,8 +1070,9 @@ END
 
 GO
 
--- Debug - 2790 rows in 11s 
--- Debug - 2727 rows in 30s 
+-- ME Normal pre 9147 rows in 3s
+-- ME New Normal 9147 in 4s
+-- ME New ME	 7931 in 2s
 
 -- BRS_DS_Cube_proc 
 
@@ -904,3 +1080,4 @@ GO
 -- BRS_DS_Cube_proc 0
 
 
+-- Select SalesDate, SalesDate_LY, FiscalMonth, PriorFiscalMonth, FiscalMonth_LY, YearFirstFiscalMonth, YearFirstFiscalMonth_LY, DayNumber, MonthWorkingDays FROM BRS_Rollup_Support01 g
