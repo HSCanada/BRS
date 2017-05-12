@@ -37,7 +37,7 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 --	(c.MarketClass in ('ELITE', 'INSTIT', 'MIDMKT')) AND
-	(c.BillTo=2613256 ) AND
+--	(c.BillTo=2613256 ) AND
 	(t.FiscalMonth BETWEEN 
 		(Select [YearFirstFiscalMonth_LY] FROM BRS_Rollup_Support01 ) and 
 		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 )
@@ -53,4 +53,6 @@ GROUP BY
 	t.PriceMethod, 
 	c.SalesDivision, 
 	c.SegCd
+
+ORDER BY 1
 

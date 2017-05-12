@@ -3,7 +3,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 ALTER PROCEDURE BRS_PL_SM_Cube_proc 
-	@nFiscalMonth_LY as int = 201612
+	@nFiscalMonth_LY as int = 201612,
+	@ShowShipto as int = 0
 AS
 
 /******************************************************************************
@@ -37,6 +38,7 @@ AS
 --  23 Feb 17	tmc		Unsplit Teeth from AAD AAL
 --	26 Feb 17	tmc		Add top Customer Group breakout
 --	28 Feb 17	tmc		Moved Market rollup from level 2 to 3 to avoid overlap
+--	04 Apr 17	tmc		Added shipto detail mode 
 
 *******************************************************************************/
 
@@ -73,7 +75,8 @@ BEGIN
 		,ISNULL(c_ly.HIST_MarketClass, '')	AS MarketClass_PY
 		,MIN(m_ly.MarketRollup_L3)			AS MarketClass_Rollup_PY
 
-		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END AS CustGrp
+		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END			AS CustGrp
+		,CASE WHEN @ShowShipto = 0			THEN 0			ELSE t.Shipto END	AS Shipto
 
 		,@nFiscalMonth_LY					AS FiscalMonth_PY_Ref
 
@@ -136,7 +139,8 @@ BEGIN
 		,t.HIST_SegCd 
 		,c_ly.HIST_MarketClass
 		,c_ly.HIST_SegCd
-		,CASE WHEN cg.Report_SML3_ind = 1 THEN cg.CustGrp ELSE '' END
+		,CASE WHEN cg.Report_SML3_ind = 1	THEN cg.CustGrp ELSE '' END
+		,CASE WHEN @ShowShipto = 0			THEN 0			ELSE t.Shipto END 
 
 END
 
@@ -146,6 +150,9 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_PL_SM_Cube_procr Fiscal Month ref (results to text)
--- BRS_PL_SM_Cube_proc 20112
+-- BRS_PL_SM_Cube_proc 201612, 1
+
+-- ORG = 29323 rows, 11 sec
+
 
 
