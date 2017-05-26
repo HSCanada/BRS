@@ -32,7 +32,7 @@ AS
 --	25 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
 --	26 May 16	tmc		Fixed bug where FG EST and ACT are double-counted (see 25 May 16)
 --  20 Oct 16	tmc		Set active month filter 
--- 22 Jan 17    tmc     Reverenced BRS_Rollup_Support01 for conistent logic
+-- 22 Jan 17    tmc     Referenced BRS_Rollup_Support01 for conistent logic
 **    
 *******************************************************************************/
 
