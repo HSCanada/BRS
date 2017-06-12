@@ -35,7 +35,8 @@ AS
 **	04 Dec 15	tmc		Corrected for widened Desc and Strect field (added Left(...).  Due to French corruption of output
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
 --	20 Sep 16	tmc		added TS territory load
---	07 Dec 16	tmc		Moved new BT for RI logic 
+--	07 Dec 16	tmc		Moved new BT for RI logic
+--	25 May 17	tmc		Added FSA for GEO ranking
 **    
 *******************************************************************************/
 
@@ -144,6 +145,25 @@ BEGIN
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new FSA (from Stage)...'
+
+			INSERT INTO BRS_Customer_FSA
+								  (FSA)
+			SELECT     
+				DISTINCT LEFT(ISNULL(s.PostalCode, ''), 3) AS FSA
+			FROM         
+				STAGE_BRS_CustomerFull AS s
+			WHERE     (NOT EXISTS
+									  (SELECT     *
+										FROM          BRS_Customer_FSA AS BRS_Customer_FSA_1
+										WHERE      (FSA  = LEFT(ISNULL(s.PostalCode, ''), 3))))
+
+		Set @nErrorCode = @@Error
+	End
+
 
 	If (@nErrorCode = 0) 
 	Begin
@@ -176,7 +196,9 @@ BEGIN
 			SpecialHandlingInstCd = ISNULL(s.SpecialHandlingInstCd, ''),
 			ParentCustomerNumber = ISNULL(s.ParentCustomerNumber, 0),
 
-			TsTerritoryCd = ISNULL(s.TsTerritoryCd, 0)  
+			TsTerritoryCd = ISNULL(s.TsTerritoryCd, 0),
+
+			FSA = LEFT(ISNULL(s.PostalCode, ''), 3)
 
 
 		FROM         
@@ -210,7 +232,8 @@ BEGIN
 			BRS_Customer.SpecialHandlingInstCd <> ISNULL(s.SpecialHandlingInstCd, '') OR
 			BRS_Customer.ParentCustomerNumber <> ISNULL(s.ParentCustomerNumber, 0) OR
 
-			BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  
+			BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  OR
+			BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3)
 
 		Set @nErrorCode = @@Error
 	End
@@ -246,8 +269,8 @@ BEGIN
 			FlyerMailOutFlag, 
 			SpecialHandlingInstCd,
 			ParentCustomerNumber,
-
-			TsTerritoryCd
+			TsTerritoryCd,
+			FSA
 
 		)
 
@@ -276,7 +299,8 @@ BEGIN
 			ISNULL(s.SpecialHandlingInstCd, '') AS SpecialHandlingInstCd,
 			ISNULL(s.ParentCustomerNumber, 0) AS ParentCustomerNumber,
 
-			ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd
+			ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd,
+			LEFT(ISNULL(s.PostalCode, ''), 3) AS FSA
 
 		FROM         
 			STAGE_BRS_CustomerFull AS s

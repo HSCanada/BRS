@@ -34,6 +34,7 @@ AS
 --	01 Mar 16	tmc		Fixed Customer Segment update bug
 --	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
 --	13 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
+--	07 Jun 17	tmc		REVERSED - Fix SAIT. Proper fix once new VPA in place
 **    
 *******************************************************************************/
 BEGIN
@@ -260,7 +261,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-
+/*
 --	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
 If (@nErrorCode = 0) 
 Begin
@@ -278,7 +279,7 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
-
+*/
 
 
 ----
