@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F40308_preference_profile_grade_and_potency]    Script Date: 6/13/2017 5:29:55 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F40308_preference_profile_grade_and_potency](
+CREATE TABLE [Integration].[F40308_preference_profile_grade_and_potency_Staging](
 	[GSAN8__billto] [numeric](8, 0) NOT NULL,
 	[GSCS08_customer_group_grade_and_potency] [char](8) NOT NULL,
 	[GSITM__item_number_short] [numeric](8, 0) NOT NULL,
@@ -45,8 +44,8 @@ CREATE TABLE [etl].[F40308_preference_profile_grade_and_potency](
 	[GSEXDJ_expired_date] ASC,
 	[GSMXQ__quantity_thru] ASC,
 	[GSUOM__um] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 

@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F5613_product_extension_file]    Script Date: 6/13/2017 5:40:12 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F5613_product_extension_file](
+CREATE TABLE [Integration].[F5613_product_extension_file_Staging](
 	[QNITM__item_number_short] [numeric](8, 0) NOT NULL,
 	[QNLITM_item_number] [char](25) NOT NULL,
 	[QNAITM__3rd_item_number] [char](25) NOT NULL,
@@ -37,8 +36,8 @@ CREATE TABLE [etl].[F5613_product_extension_file](
  CONSTRAINT [PK_F5613_product_extension_file] PRIMARY KEY CLUSTERED 
 (
 	[QNITM__item_number_short] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 

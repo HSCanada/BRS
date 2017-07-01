@@ -1,5 +1,3 @@
-USE [BRSales]
-GO
 
 /****** Object:  Table [etl].[F41061_supplier_catalog_price_file]    Script Date: 6/13/2017 5:39:48 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F41061_supplier_catalog_price_file](
+CREATE TABLE [Integration].[F41061_supplier_catalog_price_file_Staging](
 	[CBMCU__business_unit] [char](12) NOT NULL,
 	[CBAN8__billto] [numeric](8, 0) NOT NULL,
 	[CBITM__item_number_short] [numeric](8, 0) NOT NULL,
@@ -32,8 +30,25 @@ CREATE TABLE [etl].[F41061_supplier_catalog_price_file](
 	[CBJOBN_work_station_id] [char](10) NOT NULL,
 	[CBUPMJ_date_updated] [date] NULL,
 	[CBTDAY_time_of_day] [numeric](6, 0) NOT NULL
-) ON [PRIMARY]
+) ON [USERDATA]
 
 GO
 
 
+GO
+/*
+ALTER TABLE Integration.F41061_supplier_catalog_price_file_Staging ADD CONSTRAINT
+	PK_F41061_supplier_catalog_price_file_Staging PRIMARY KEY CLUSTERED 
+	(
+	CBMCU__business_unit,
+	CBAN8__billto,
+	CBITM__item_number_short,
+	CBCATN_catalog,
+	CBCRCD_currency_code,
+	CBUOM__um,
+	CBUORG_quantity,
+	CBEXDJ_expired_date,
+	[CBEFTJ_effective_date]
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	*/
+GO

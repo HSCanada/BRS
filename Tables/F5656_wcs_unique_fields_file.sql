@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F5656_wcs_unique_fields_file]    Script Date: 6/13/2017 5:40:30 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F5656_wcs_unique_fields_file](
+CREATE TABLE [Integration].[F5656_wcs_unique_fields_file_Staging](
 	[QVITM__item_number_short] [numeric](8, 0) NOT NULL,
 	[QVLITM_item_number] [char](25) NOT NULL,
 	[QVAITM__3rd_item_number] [char](25) NOT NULL,
@@ -37,8 +36,8 @@ CREATE TABLE [etl].[F5656_wcs_unique_fields_file](
  CONSTRAINT [PK_F5656_wcs_unique_fields_file] PRIMARY KEY CLUSTERED 
 (
 	[QVITM__item_number_short] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 

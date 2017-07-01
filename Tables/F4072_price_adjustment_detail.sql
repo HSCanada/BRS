@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F4072_price_adjustment_detail]    Script Date: 6/13/2017 5:31:13 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F4072_price_adjustment_detail](
+CREATE TABLE [Integration].[F4072_price_adjustment_detail_Staging](
 	[ADAST__adjustment_name] [char](8) NOT NULL,
 	[ADITM__item_number_short] [numeric](8, 0) NOT NULL,
 	[ADLITM_item_number] [char](25) NOT NULL,
@@ -57,8 +56,8 @@ CREATE TABLE [etl].[F4072_price_adjustment_detail](
 	[ADATID_price_adjustment_key_id] ASC,
 	[ADUPMJ_date_updated_JDT] ASC,
 	[ADTDAY_time_of_day] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 
@@ -67,24 +66,24 @@ SET ANSI_PADDING ON
 GO
 
 /****** Object:  Index [F4072_price_adjustment_detail_idx_01]    Script Date: 6/13/2017 5:31:13 PM ******/
-CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_01] ON [etl].[F4072_price_adjustment_detail]
+CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_01] ON [Integration].[F4072_price_adjustment_detail_Staging]
 (
 	[ADLITM_item_number] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 GO
 
 /****** Object:  Index [F4072_price_adjustment_detail_idx_02]    Script Date: 6/13/2017 5:31:13 PM ******/
-CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_02] ON [etl].[F4072_price_adjustment_detail]
+CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_02] ON [Integration].[F4072_price_adjustment_detail_Staging]
 (
 	[ADAN8__billto] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 GO
 
 /****** Object:  Index [F4072_price_adjustment_detail_idx_03]    Script Date: 6/13/2017 5:31:13 PM ******/
-CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_03] ON [etl].[F4072_price_adjustment_detail]
+CREATE NONCLUSTERED INDEX [F4072_price_adjustment_detail_idx_03] ON [Integration].[F4072_price_adjustment_detail_Staging]
 (
 	[ADICID_itemcustomer_key_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 GO
 
 

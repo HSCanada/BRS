@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F4073_free_goods_master_file]    Script Date: 6/13/2017 5:36:56 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F4073_free_goods_master_file](
+CREATE TABLE [Integration].[F4073_free_goods_master_file_Staging](
 	[FGAST__adjustment_name] [char](8) NOT NULL,
 	[FGATID_price_adjustment_key_id] [numeric](8, 0) NOT NULL,
 	[FGITMR_related_short_item_number] [numeric](8, 0) NOT NULL,
@@ -35,8 +34,8 @@ CREATE TABLE [etl].[F4073_free_goods_master_file](
 	[FGAST__adjustment_name] ASC,
 	[FGATID_price_adjustment_key_id] ASC,
 	[FGLITM_item_number] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 

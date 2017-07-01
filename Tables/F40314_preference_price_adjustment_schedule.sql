@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F40314_preference_price_adjustment_schedule]    Script Date: 6/13/2017 5:30:16 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F40314_preference_price_adjustment_schedule](
+CREATE TABLE [Integration].[F40314_preference_price_adjustment_schedule_Staging](
 	[PJAN8__billto] [numeric](8, 0) NOT NULL,
 	[PJCS14_customer_group_price_adjustment_sched] [char](8) NOT NULL,
 	[PJITM__item_number_short] [numeric](8, 0) NOT NULL,
@@ -43,8 +42,8 @@ CREATE TABLE [etl].[F40314_preference_price_adjustment_schedule](
 	[PJMXQ__quantity_thru] ASC,
 	[PJUOM__um] ASC,
 	[PJOSEQ_sequence_number] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 

@@ -1,5 +1,4 @@
-USE [BRSales]
-GO
+
 
 /****** Object:  Table [etl].[F0101_address_book_master]    Script Date: 6/13/2017 5:29:28 PM ******/
 SET ANSI_NULLS ON
@@ -8,7 +7,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [etl].[F0101_address_book_master](
+CREATE TABLE [Integration].[F0101_address_book_master_Staging](
 	[ABAN8__billto] [numeric](8, 0) NOT NULL,
 	[ABALKY_long_address_number] [char](20) NOT NULL,
 	[ABTAX__tax_id] [char](20) NOT NULL,
@@ -104,8 +103,8 @@ CREATE TABLE [etl].[F0101_address_book_master](
  CONSTRAINT [PK_F0101_address_book_master] PRIMARY KEY CLUSTERED 
 (
 	[ABAN8__billto] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
 GO
 
