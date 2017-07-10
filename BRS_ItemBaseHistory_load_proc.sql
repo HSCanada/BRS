@@ -33,6 +33,7 @@ AS
 -- 14 Oct 16	tmc		Added Current Base Update logic
 -- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
 -- 29 Mar 17	tmc		Updated logic to recognise new CAD market rate
+--	10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
 **    
 *******************************************************************************/
 BEGIN
@@ -270,7 +271,7 @@ Begin
 	UPDATE 
 		BRS_ItemBaseHistoryLNK 
 	SET 
-		FamilySetLeaderID	= ifs.ID,
+		FamilySetLeaderID	= ifs.ItemKey,
 		PriceID				= d.PriceID
 /*
 	SELECT     
@@ -305,13 +306,13 @@ Begin
 
 		INNER JOIN BRS_ItemBaseHistoryLNK AS ilnk 
 		ON ilnk.CalMonth = s.CalMonth AND 
-			ilnk.ItemID = i.ID
+			ilnk.ItemID = i.ItemKey
 
 	WHERE
 		-- only update current for performance reasons
 		(s.CalMonth between 0 and 0) AND
 		( 
-			(ilnk.FamilySetLeaderID <> ifs.ID) OR 
+			(ilnk.FamilySetLeaderID <> ifs.ItemKey) OR 
 			(ilnk.PriceID <> d.PriceID ) OR
 			(1<>1)
 		) AND
@@ -339,9 +340,9 @@ Begin
 
 	SELECT     
 		s.CalMonth, 
-		i.ID AS ItemID, 
+		i.ItemKey AS ItemID, 
 
-		ifs.ID as FamilySetLeaderID,
+		ifs.ItemKey as FamilySetLeaderID,
 		d.PriceID
 
 	FROM         
@@ -363,7 +364,7 @@ Begin
 		INNER JOIN BRS_Item AS ifs 
 		ON s.FamilySetLeader = ifs.Item
 	WHERE
-		NOT EXISTS (SELECT * FROM BRS_ItemBaseHistoryLNK WHERE CalMonth = s.CalMonth AND ItemID = I.ID) AND
+		NOT EXISTS (SELECT * FROM BRS_ItemBaseHistoryLNK WHERE CalMonth = s.CalMonth AND ItemID = i.ItemKey) AND
 --		s.CalMonth between 201601 and 201612 AND
 		(1=1)
 

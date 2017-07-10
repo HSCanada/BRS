@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	28 Mar 17	tmc		Added Marketing FX and broke out Financail FX
 --  07 Apr 17	tmc		Added Internal IDs to allow manual maintenance
+--	10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
 **    
 *******************************************************************************/
 
@@ -61,7 +62,7 @@ FROM
 	ON l.PriceID = d.PriceID 
 
 	INNER JOIN BRS_Item AS i 
-	ON l.ItemID = i.ID 
+	ON l.ItemID = i.ItemKey 
 
 	INNER JOIN BRS_CurrencyHistory AS fx 
 	ON d.Currency = fx.Currency AND 

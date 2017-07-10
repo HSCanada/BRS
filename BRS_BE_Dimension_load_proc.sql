@@ -538,6 +538,8 @@ GO
 
 -- 1 of 4:  Clear tables
 
+
+
 truncate table STAGE_BRS_CustomerFull
 truncate table STAGE_BRS_ItemFull
 
