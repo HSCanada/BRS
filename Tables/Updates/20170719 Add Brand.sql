@@ -1,0 +1,76 @@
+-- Add Brand
+-- 19 Jul 17, tmc
+
+ALTER TABLE dbo.STAGE_BRS_ItemFull ADD
+	Brand char(6) NULL
+GO
+
+ALTER TABLE dbo.BRS_Item ADD
+	Brand char(6) NOT NULL CONSTRAINT DF_BRS_Item_Brand DEFAULT ('')
+GO
+
+CREATE NONCLUSTERED INDEX BRS_Item_idx_03 ON dbo.BRS_Item
+	(
+	Brand
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+--
+
+CREATE TABLE [dbo].[BRS_ItemBaseHistoryDayLNK](
+	[SalesDate] [date] NOT NULL,
+	[ItemKey] [int] NOT NULL,
+	[FamilySetLeaderKey] [int] NOT NULL,
+	[PriceKey] [int] NOT NULL,
+	[ID] [bigint] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [BRS_ItemBaseHistoryDay_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[SalesDate] ASC,
+	[ItemKey] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemBaseHistoryDAT SET (LOCK_ESCALATION = TABLE)
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDayLNK ADD CONSTRAINT
+	FK_BRS_ItemBaseHistoryDayLNK_BRS_Item FOREIGN KEY
+	(
+	ItemKey
+	) REFERENCES dbo.BRS_Item
+	(
+	ItemKey
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDayLNK ADD CONSTRAINT
+	FK_BRS_ItemBaseHistoryDayLNK_BRS_Item1 FOREIGN KEY
+	(
+	FamilySetLeaderKey
+	) REFERENCES dbo.BRS_Item
+	(
+	ItemKey
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDayLNK ADD CONSTRAINT
+	FK_BRS_ItemBaseHistoryDayLNK_BRS_ItemBaseHistoryDAT FOREIGN KEY
+	(
+	PriceKey
+	) REFERENCES dbo.BRS_ItemBaseHistoryDAT
+	(
+	PriceID
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+
+GO
+COMMIT
+
+
+

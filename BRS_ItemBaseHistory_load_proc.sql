@@ -33,13 +33,15 @@ AS
 -- 14 Oct 16	tmc		Added Current Base Update logic
 -- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
 -- 29 Mar 17	tmc		Updated logic to recognise new CAD market rate
---	10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
+-- 10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
+-- 19 Jul 17	tmc		added daily snapshot for Pricing
 **    
 *******************************************************************************/
 BEGIN
 
 Declare @nErrorCode int, @nTranCount int
 Declare @sMessage varchar(255)
+Declare @dtSalesDate Date
 
 Set @nErrorCode = @@Error
 Set @nTranCount = @@Trancount
@@ -68,14 +70,16 @@ if (@nTranCount = 0)
 Else
 	Save Tran mytran
 
+-- Get current date
+Select
+	@dtSalesDate = SalesDate
 
+FROM
+	[BRS_Config]
 
 ------------------------------------------------------------------------------------------------------------
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
-
---
--- 20 Nov 16	tmc		Swap out JDE direct extract in place of broken NEO extract
 
 If (@nErrorCode = 0) 
 Begin
@@ -136,7 +140,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
---
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -262,28 +266,17 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
---
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'UPDATE BRS_ItemBaseHistoryLNK with changes ...'
+		Print 'UPDATE BRS_ItemBaseHistoryLNK Current with changes ...'
 
 	UPDATE 
 		BRS_ItemBaseHistoryLNK 
 	SET 
 		FamilySetLeaderID	= ifs.ItemKey,
 		PriceID				= d.PriceID
-/*
-	SELECT     
-		s.CalMonth, 
-		i.ID					AS ItemID, 
-
-		ilnk.FamilySetLeaderID	AS CUR_FamilySetLeaderID,
-		ilnk.PriceID			AS CUR_PriceID,
-
-		ifs.ID					AS NEW_FamilySetLeaderID,
-		d.PriceID				AS NEW_PriceID
-*/
 
 	FROM         
 		STAGE_BRS_ItemBaseHistory AS s 
@@ -321,8 +314,6 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
-
---
 
 
 If (@nErrorCode = 0) 
@@ -372,6 +363,50 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'LOAD BRS_ItemBaseHistoryDayLNK ...'
+
+	INSERT INTO BRS_ItemBaseHistoryDayLNK (
+		SalesDate,
+		ItemKey,
+		FamilySetLeaderKey,
+		PriceKey
+	)
+
+	SELECT     
+		@dtSalesDate	AS SalesDate, 
+		i.ItemKey		AS ItemKey, 
+		ifs.ItemKey		AS FamilySetLeaderKey,
+		d.PriceID		AS PriceKey
+
+	FROM         
+		STAGE_BRS_ItemBaseHistory AS s 
+
+		INNER JOIN BRS_ItemBaseHistoryDAT AS d 
+	ON s.Supplier = d.Supplier AND 
+		s.Currency = d.Currency AND 
+		s.SupplierCost = d.SupplierCost AND 
+		s.CorporatePrice = d.CorporatePrice AND 
+		s.SellPrcBrk2 = d.SellPrcBrk2 AND 
+		s.SellPrcBrk3 = d.SellPrcBrk3 AND 
+		s.SellQtyBrk2 = d.SellQtyBrk2 AND 
+		s.SellQtyBrk3 = d.SellQtyBrk3 AND
+		s.CalMonth = 0 
+
+		INNER JOIN BRS_Item AS i 
+		ON s.Item = i.Item
+
+		INNER JOIN BRS_Item AS ifs 
+		ON s.FamilySetLeader = ifs.Item
+
+	WHERE
+		NOT EXISTS (SELECT * FROM BRS_ItemBaseHistoryDayLNK WHERE [SalesDate] = @dtSalesDate AND ItemKey = i.ItemKey)
+
+
+	Set @nErrorCode = @@Error
+End
 
 
 If (@nErrorCode = 0) 
@@ -379,7 +414,7 @@ Begin
 	if (@bDebug <> 0)
 		Print 'Clear STAGE_BRS_ItemBaseHistory'	
 
-	Delete FROM STAGE_BRS_ItemBaseHistory
+	TRUNCATE TABLE STAGE_BRS_ItemBaseHistory
 
 	Set @nErrorCode = @@Error
 End
@@ -441,17 +476,14 @@ SELECT COUNT(*) FROM STAGE_BRS_ItemBaseHistory
 -- Step 1:  clear tables (run below)
 /*
 
--- Weekly / on demand
+-- Clear Weekly / on demand
 
 truncate table STAGE_BRS_ItemSupplierCost
 truncate table STAGE_BRS_ItemSellPrice
--- Monthly / one-time
-truncate table STAGE_BRS_ItemBaseHistory 
 
 */
 
 -- Step 2a:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBaseCost_Load.bat"
--- Step 2b:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_ItemBaseHistory_Load.bat"
 
 -- Step 3:  run below script
 

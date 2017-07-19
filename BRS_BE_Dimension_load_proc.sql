@@ -37,6 +37,7 @@ AS
 --	20 Sep 16	tmc		added TS territory load
 --	07 Dec 16	tmc		Moved new BT for RI logic
 --	25 May 17	tmc		Added FSA for GEO ranking
+--	19 Jul 17	tmc		Added Brand to Item for Pricing
 **    
 *******************************************************************************/
 
@@ -397,7 +398,8 @@ BEGIN
 			FreightAdjPct= ISNULL(s.FreightAdjPct, 0), 
 			CorporateMarketAdjustmentPct= ISNULL(s.CorporateMarketAdjustmentPct, 0), 
 			DivisionalMarketAdjustmentPct= ISNULL(s.DivisionalMarketAdjustmentPct, 0), 
-			CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0)
+			CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0),
+			Brand = ISNULL(s.Brand, '')
              
 		FROM         
 			STAGE_BRS_ItemFull AS s 
@@ -427,7 +429,8 @@ BEGIN
 			BRS_Item.FreightAdjPct <> ISNULL(s.FreightAdjPct, 0) OR  
 			BRS_Item.CorporateMarketAdjustmentPct <> ISNULL(s.CorporateMarketAdjustmentPct, 0) OR  
 			BRS_Item.DivisionalMarketAdjustmentPct <> ISNULL(s.DivisionalMarketAdjustmentPct, 0) OR  
-			BRS_Item.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0)
+			BRS_Item.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0) OR
+			BRS_Item.Brand <> ISNULL(s.Brand, '')
 
 		Set @nErrorCode = @@Error
 	End
@@ -462,7 +465,8 @@ BEGIN
 			FreightAdjPct,  
 			CorporateMarketAdjustmentPct, 
 			DivisionalMarketAdjustmentPct,  
-			CurrentCorporatePrice
+			CurrentCorporatePrice,
+			Brand
 		)
 
 		SELECT 
@@ -487,7 +491,8 @@ BEGIN
 			ISNULL(s.FreightAdjPct, 0) FreightAdjPct,  
 			ISNULL(s.CorporateMarketAdjustmentPct, 0) CorporateMarketAdjustmentPct, 
 			ISNULL(s.DivisionalMarketAdjustmentPct, 0) DivisionalMarketAdjustmentPct,  
-			ISNULL(s.CurrentCorporatePrice, 0) CurrentCorporatePrice
+			ISNULL(s.CurrentCorporatePrice, 0) CurrentCorporatePrice,
+			ISNULL(Brand,'')
 		FROM         
 			STAGE_BRS_ItemFull AS s
 		WHERE	(NOT EXISTS
@@ -537,8 +542,6 @@ GO
 /*
 
 -- 1 of 4:  Clear tables
-
-
 
 truncate table STAGE_BRS_CustomerFull
 truncate table STAGE_BRS_ItemFull

@@ -125,8 +125,8 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @nYearFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND
---		(bu.GLBU_Class='TEETH') AND
---		(t.Shipto=3370427) AND
+		(bu.GLBU_Class='TEETH') AND
+		(t.Shipto=1528737) AND
 		(1=1)
 
 	GROUP BY 
