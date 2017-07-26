@@ -470,6 +470,8 @@ WHERE
 
 SELECT COUNT(*) FROM STAGE_BRS_ItemBaseHistory 
 
+-- select distinct [SalesDate] from [dbo].[BRS_ItemBaseHistoryDayLNK]
+
 */
 
 
@@ -477,7 +479,7 @@ SELECT COUNT(*) FROM STAGE_BRS_ItemBaseHistory
 /*
 
 -- Clear Weekly / on demand
-
+truncate table STAGE_BRS_ItemBaseHistory
 truncate table STAGE_BRS_ItemSupplierCost
 truncate table STAGE_BRS_ItemSellPrice
 
@@ -489,7 +491,6 @@ truncate table STAGE_BRS_ItemSellPrice
 
 -- prod run
 -- Exec [BRS_ItemBaseHistory_load_proc] 0
-
 
 
 
