@@ -31,47 +31,66 @@ AS
 --	28 Mar 17	tmc		Added Marketing FX and broke out Financail FX
 --  07 Apr 17	tmc		Added Internal IDs to allow manual maintenance
 --	10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
+--	27 Jul 17	tmc		swap out month with daily table
 **    
 *******************************************************************************/
 
 
 SELECT     
-	l.CalMonth
-	,i.Item
-	,d.Supplier
-	,d.Currency
-	,d.SupplierCost
-	,d.SupplierCost * (fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS SupplierCostCAD
-	,d.CorporatePrice
-	,d.SellPrcBrk2
-	,d.SellPrcBrk3
-	,d.SellQtyBrk2
-	,d.SellQtyBrk3
+	m.CalMonth
+	,l.Item
+	,l.Supplier
+	,l.Currency
+	,l.SupplierCost
+	,l.SupplierCostCAD
+	,l.CorporatePrice
+	,l.SellPrcBrk2
+	,l.SellPrcBrk3
+	,l.SellQtyBrk2
+	,l.SellQtyBrk3
 
-	,(fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS [FX_per_CAD_pnl_rt]
-	,fx.FX_per_CAD_mrk_rt
+	,l.[FX_per_CAD_pnl_rt]
+	,l.FX_per_CAD_mrk_rt
 
-	,l.ItemID	
-	,l.FamilySetLeaderID
-	,l.PriceID
+	,l.ItemKey	
+	,l.FamilySetLeaderKey
+	,l.PriceKey
 
 FROM         
-	BRS_ItemBaseHistoryLNK AS l 
+	[dbo].[BRS_ItemBaseHistoryDay] AS l 
 
-	INNER JOIN BRS_ItemBaseHistoryDAT AS d 
-	ON l.PriceID = d.PriceID 
+	INNER JOIN [dbo].[BRS_CalMonth] as m
+	ON l.FiscalMonth = m.CalMonth AND
+		l.SalesDate = m.BCI_BenchmarkDay
 
-	INNER JOIN BRS_Item AS i 
-	ON l.ItemID = i.ItemKey 
+-- latest update maps to 0 month
+UNION ALL 
 
-	INNER JOIN BRS_CurrencyHistory AS fx 
-	ON d.Currency = fx.Currency AND 
-		l.CalMonth = fx.FiscalMonth 
+SELECT     
+	0 AS CalMonth
+	,l.Item
+	,l.Supplier
+	,l.Currency
+	,l.SupplierCost
+	,l.SupplierCostCAD
+	,l.CorporatePrice
+	,l.SellPrcBrk2
+	,l.SellPrcBrk3
+	,l.SellQtyBrk2
+	,l.SellQtyBrk3
 
-	INNER JOIN BRS_CurrencyHistory AS fxcad 
-	ON l.CalMonth = fxcad.FiscalMonth AND 
-		fxcad.Currency = 'CAD'
+	,l.[FX_per_CAD_pnl_rt]
+	,l.FX_per_CAD_mrk_rt
 
+	,l.ItemKey	
+	,l.FamilySetLeaderKey
+	,l.PriceKey
+
+FROM         
+	[dbo].[BRS_ItemBaseHistoryDay] AS l 
+
+WHERE 
+	l.SalesDate = (SELECT MAX(salesdate) FROM [BRS_ItemBaseHistoryDay])
 
 GO
 
@@ -80,8 +99,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM BRS_ItemBaseHistory order by CalMonth DESC
+-- SELECT top 10 * FROM BRS_ItemBaseHistory order by CalMonth ASC
 
+-- SELECT * FROM BRS_ItemBaseHistory where calmonth = 0
 
 
 

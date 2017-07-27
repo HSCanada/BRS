@@ -85,7 +85,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM BRS_ItemBaseHistoryDay order by CalMonth DESC
+-- SELECT top 10 * FROM BRS_ItemBaseHistoryDay order by salesdate DESC
 
 
 
