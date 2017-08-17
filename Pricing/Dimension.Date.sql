@@ -29,18 +29,12 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	31 Jul 17	tmc		change from daily to monthly    
 *******************************************************************************/
 
 SELECT
 
-	d.SalesDate			AS DateKey,
-	d.DayNumber,
-	d.DayType,
-	d.DaySeq,
-
-	d.FiscalWeek,
-	d.FiscalMonth,
+	fm.FiscalMonth,
 	fm.MonthNum,
 	fm.MonthName,
 	fm.MonthSeq,
@@ -52,13 +46,12 @@ SELECT
 	fm.FirstMonthSeqInYear
 
 FROM
-	BRS_SalesDay AS d 
+	BRS_FiscalMonth AS fm 
 
-	INNER JOIN BRS_FiscalMonth AS fm 
-	ON d.FiscalMonth = fm.FiscalMonth
 
 WHERE
-	d.SalesDate <= (Select SalesDateLastWeekly from BRS_Config)
+	-- temp
+	fm.FiscalMonth BETWEEN 201401 AND 201706
 	
    
 

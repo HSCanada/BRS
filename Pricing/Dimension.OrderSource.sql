@@ -45,4 +45,4 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-SELECT top 10 * FROM Dimension.Ordersource order by 1
+-- SELECT top 10 * FROM Dimension.Ordersource order by 1

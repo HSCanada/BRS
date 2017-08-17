@@ -30,12 +30,13 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	10 Jul 17	tmc		updated ABC group
+--	02 Aug 17	tmc		added Brand
 **    
 *******************************************************************************/
 
 SELECT         
 
-	i.ID							AS ItemKey
+	i.ItemKey						AS ItemKey
 	,i.ItemDescription				AS Item
 	,sc.SalesCategoryName			AS SalesCategory
 	,mpc.MPC_Category				AS Abc_MpcItem
@@ -45,6 +46,7 @@ SELECT
 	,i.FamilySetLeader				AS FamilySet
 	,i.Item							AS ItemCode
 	,i.ItemStatus					AS Status
+	,i.Brand
 	,i.Label
 	,i.GLCategory					AS StockingCode
 	,mpc.CategoryManager			AS CategorySpecialist
@@ -55,7 +57,7 @@ SELECT
 	,ISNULL(b.FX_per_CAD_pnl_rt,0)	AS FxFinance
 	,ISNULL(b.CorporatePrice, 0)	AS BasePrice
 	,s.SupplierKey
-	,icomp.iD						AS CompetitiveMatchKey
+	,icomp.ItemKey					AS CompetitiveMatchKey
 
 FROM            
 	BRS_Item AS i 
@@ -88,4 +90,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.Item
+-- SELECT top 10 * FROM Dimension.Item

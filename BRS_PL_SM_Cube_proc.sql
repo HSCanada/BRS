@@ -39,6 +39,7 @@ AS
 --	26 Feb 17	tmc		Add top Customer Group breakout
 --	28 Feb 17	tmc		Moved Market rollup from level 2 to 3 to avoid overlap
 --	04 Apr 17	tmc		Added shipto detail mode 
+--  17 Aug 17	tmc		fix dev filter that made it into production
 
 *******************************************************************************/
 
@@ -125,8 +126,8 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @nYearFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND
-		(bu.GLBU_Class='TEETH') AND
-		(t.Shipto=1528737) AND
+--		(bu.GLBU_Class='TEETH') AND
+--		(t.Shipto=1528737) AND
 		(1=1)
 
 	GROUP BY 

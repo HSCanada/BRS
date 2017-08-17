@@ -29,16 +29,21 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	02 Aug 17	tmc		Added Rollup
 **    
 *******************************************************************************/
 
 SELECT
-	PriceMethodKey
-	,PriceMethodDescr	AS PriceMethod
+	pm.PriceMethodKey
+	,pm.PriceMethodDescr	AS PriceMethod
+	,pr.PriceMethodDescr	AS PriceMethodRollup
 FROM
-	BRS_PriceMethod
+	BRS_PriceMethod pm
+
+	JOIN BRS_PriceMethod pr
+	ON pm.PriceMethodRollup = pr.PriceMethod
 WHERE
-	StatusCd=1
+	pm.StatusCd=1
 
 GO
 

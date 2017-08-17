@@ -88,7 +88,23 @@ GO
 -- SELECT top 10 * FROM BRS_ItemBaseHistoryDay order by salesdate DESC
 
 
+/*
+SELECT     
+	fx.FiscalMonth
+	,fx.Currency
+	,(fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt) AS [FX_per_CAD_pnl_rt]
+FROM         
 
+	BRS_CurrencyHistory AS fx 
+
+	INNER JOIN BRS_CurrencyHistory AS fxcad 
+	ON fx.FiscalMonth = fxcad.FiscalMonth AND 
+		fxcad.Currency = 'CAD' 
+
+WHERE
+fx.FX_per_USD_pnl_rt > 0 AND fx.FiscalMonth = 201706
+
+*/
 
 
 

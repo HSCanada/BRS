@@ -40,7 +40,7 @@ SELECT
 
 	p.ADATID_price_adjustment_key_id		AS PriceAdjustmentKey
 	,n.AdjustmentNameKey					AS AdjustmentKey
-	,im3.ID									AS ItemKey
+	,im3.ItemKey							AS ItemKey
 	,p.ADFVTR_factor_value					AS FinalPrice
 
 	,ISNULL(h.Supplier,'')					AS Last_Supplier
@@ -127,16 +127,19 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-
+/*
 SELECT 
  top 10
 * FROM Dimension.Price
-
 order by 1 asc
 
-/*
+
+
 SELECT 
 distinct last_currency
  FROM Dimension.Price
 where last_fxmarketing = -1
 */
+
+
+-- Select * from Integration.F4072_price_adjustment_detail_Staging where ADAST__adjustment_name like 'AMC%'

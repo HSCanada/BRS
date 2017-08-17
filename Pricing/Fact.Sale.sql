@@ -36,6 +36,7 @@ SELECT
 	t.ID											AS FactKey
 	,fsc.FscKey
 	,fsa.FsaKey
+	,d.FiscalMonth									AS FiscalMonth	
 	,t.Date											AS DateKey
 	,t.SalesOrderNumber
 	,t.LineNumber
@@ -44,7 +45,7 @@ SELECT
 	,c.BillTo
 	,cg.CustGrpKey									AS CustomerGroupKey
 	,vpa.VpaKey										AS SalesplanKey
-	,i.ID											AS ItemKey
+	,i.ItemKey										AS ItemKey
 	,s.SupplierKey
 	,os.OrderSourceCodeKey
 	,pm.PriceMethodKey
@@ -106,7 +107,8 @@ FROM
 
 WHERE        
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
---	(t.CalMonth BETWEEN 201605 AND 201605) AND 
+	-- temp
+	(d.FiscalMonth BETWEEN 201407 AND 201706) AND 
 	(1 = 1)
 
 GO
@@ -117,4 +119,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Fact.Sale
+-- SELECT top 10 * FROM Fact.Sale

@@ -64,4 +64,6 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.PriceAdjustment order by 1
+-- SELECT  * FROM Dimension.PriceAdjustment order by 1
+
+-- SELECT  * FROM Dimension.PriceAdjustment WHERE Adjustment = 'AMC01UBC'

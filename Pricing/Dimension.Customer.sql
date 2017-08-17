@@ -86,5 +86,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.Customer order by 1
+-- SELECT top 10 * FROM Dimension.Customer order by 1
 

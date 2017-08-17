@@ -46,4 +46,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.DocType order by 1
+-- SELECT top 10 * FROM Dimension.DocType order by 1

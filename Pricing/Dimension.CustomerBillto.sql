@@ -47,4 +47,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
- SELECT top 10 * FROM Dimension.CustomerBillto order by 1
+ -- SELECT top 10 * FROM Dimension.CustomerBillto order by 1
