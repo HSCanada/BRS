@@ -30,16 +30,24 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	10 Jul 17	tmc		updated ABC group
+-- 18 Aug 17	tmc		Added Family seto for Supplier Tabular project
 **    
 *******************************************************************************/
 
-SELECT
-	SupplierKey,
-	supplier_nm AS Supplier,
-	Supplier_Category AS Abc_SupplierItem
-FROM
-	dbo.BRS_ItemSupplier
+SELECT        
+	s.SupplierKey,
+	s.supplier_nm			AS Supplier,
+	s.Supplier_Category		AS Abc_SupplierItem,
+	sf.supplier_family_nm	AS SupplierFamily,
+	sf.buying_group_cd		AS BuyingGroup,
+	sf.classificiation_cd	AS VendorClassification,
+	s.Supplier				AS SupplierCode
+FROM            
+	BRS_ItemSupplier AS s 
 
+	INNER JOIN BRS_ItemSupplierFamily AS sf 
+	ON s.SupplierFamily = sf.SupplierFamily
+						 
 GO
 
 SET ANSI_NULLS OFF

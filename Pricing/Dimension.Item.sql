@@ -50,14 +50,17 @@ SELECT
 	,i.Label
 	,i.GLCategory					AS StockingCode
 	,mpc.CategoryManager			AS CategorySpecialist
+/*
 	,ISNULL(b.Currency, '')			AS Currency
 	,ISNULL(b.SupplierCost,0)		AS SupplierCost
 	,ISNULL(i.FreightAdjPct,0)		As FreightFactor
 	,ISNULL(b.FX_per_CAD_mrk_rt,0)	AS FxMarketing
 	,ISNULL(b.FX_per_CAD_pnl_rt,0)	AS FxFinance
 	,ISNULL(b.CorporatePrice, 0)	AS BasePrice
+*/
 	,s.SupplierKey
 	,icomp.ItemKey					AS CompetitiveMatchKey
+	,c.CategoryRollup
 
 FROM            
 	BRS_Item AS i 
@@ -78,8 +81,10 @@ FROM
 	ON i.Item_Competitive_Match = icomp.Item
 
 	-- handle null case
+/*
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS b 
 	ON b.Item = i.Item AND b.CalMonth = 0
+*/
 
 
 GO

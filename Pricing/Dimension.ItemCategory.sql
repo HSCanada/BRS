@@ -4,12 +4,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Date]
+ALTER VIEW [Dimension].[ItemCategory]
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: Date
+**	Name: Item
 **	Desc:  
 **		
 **
@@ -23,37 +23,24 @@ AS
 **	----------				-----------
 **
 **	Auth: tmc
-**	Date: 15 Jun 17
+**	Date: 18 Aug 17
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	31 Jul 17	tmc		change from daily to monthly    
+**    
 *******************************************************************************/
 
-SELECT
+SELECT        
+	CategoryRollupKey
+	,CategoryRollup			AS CategoryRollupCode
+	,category_rollup_desc	AS CategoryRollup
+	,CategoryClass_Rollup
 
-	fm.FiscalMonth,
-	fm.MonthNum,
-	fm.MonthName,
-	fm.MonthSeq,
-	fm.WorkingDaysMonth,
+FROM            
+	BRS_ItemCategoryRollup
 
-	fm.QuarterNum,
-	fm.FirstMonthSeqInQtr,
-	fm.YearNum,
-	fm.FirstMonthSeqInYear
-
-FROM
-	BRS_FiscalMonth AS fm 
-
-
-WHERE
-	-- temp
-	fm.FiscalMonth BETWEEN 201401 AND 201707
-	
-   
 
 GO
 
@@ -63,4 +50,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Date
+-- SELECT top 10 * FROM Dimension.ItemCategory
