@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Date]
+ALTER VIEW [Dimension].[Period]
 AS
 
 /******************************************************************************
@@ -30,6 +30,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	31 Jul 17	tmc		change from daily to monthly    
+**	29 Aug 17	tmc		change to dynamic dat
+**  14 Sep 17	tmc		renamed to Period
 *******************************************************************************/
 
 SELECT
@@ -50,10 +52,9 @@ FROM
 
 
 WHERE
-	-- temp
-	fm.FiscalMonth BETWEEN 201401 AND 201707
-	
-   
+	fm.FiscalMonth BETWEEN 
+		(SELECT YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01) AND 
+		(SELECT PriorFiscalMonth FROM BRS_Rollup_Support01)
 
 GO
 
@@ -63,4 +64,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Date
+-- SELECT  * FROM Dimension.Period

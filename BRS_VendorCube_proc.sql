@@ -107,7 +107,12 @@ BEGIN
 		(t.FiscalMonth between  @StartMonth and @EndMonth ) AND 
 		--  need to use Estimate as it operates at the item level
 		(t.FreeGoodsEstInd = 0) AND
+		
+		-- test
+--		t.[item] = '5839700' and t.AdjCode='AGLTRN' and
+
 		1=1
+
 
 	GROUP BY 
 		t.FiscalMonth

@@ -51,7 +51,9 @@ SELECT
 	,pm.PriceMethodKey
 	,prom.PromotionId								AS PromotionKey
 	,t.FreeGoodsInvoicedInd
+	-- TBD !!
 	,0												AS PriceAdjustmentKey
+
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
 	,(GPAmt + ISNULL(t.ExtChargebackAmt,0))			AS GPAmt
@@ -105,10 +107,12 @@ FROM
 	INNER JOIN BRS_CustomerVPA AS vpa 
 	ON c.VPA = vpa.VPA
 
+
 WHERE        
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
 	-- temp
-	(d.FiscalMonth BETWEEN 201407 AND 201706) AND 
+	(EXISTS (SELECT * FROM [Dimension].[Date] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
+--	(d.FiscalMonth BETWEEN 201501 AND 201707) AND 
 	(1 = 1)
 
 GO
@@ -120,3 +124,8 @@ GO
 
 
 -- SELECT top 10 * FROM Fact.Sale
+
+-- SELECT count(*) FROM Fact.Sale 
+-- ORG 5846557 lines, 2 s 
+-- NEW 5846557 lines, 3 s
+

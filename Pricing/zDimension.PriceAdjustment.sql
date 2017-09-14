@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	29 Aug 17	tmc		source from Stage to Pricing Production
 **    
 *******************************************************************************/
 
@@ -39,7 +40,7 @@ SELECT
 	,ATUSER_user_id						AS UserId
 
 FROM            
-	Integration.F4071_price_adjustment_name_Staging AS n
+	Pricing.price_adjustment_name_F4071 AS n
 WHERE        
 	(ATPRFR_preference_type IN ('C', 'IG')) AND 
 	(ATPRGR_item_price_group = '') AND 
@@ -48,13 +49,6 @@ WHERE
 	(ATLBT__level_break_type = 1) AND 
 	(1 = 1)
 
-UNION ALL
-
-SELECT 
-	0				AS AdjustmentKey 
-	,'UNDEFINED'	AS Adjustment
-	,NULL			AS LastUpdatedDate
-	,''				AS UserId
 
 GO
 

@@ -29,7 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+--	30 Aug 17	tmc		source from Stage to Pricing Production
 *******************************************************************************/
 
 --------------------------------------------------------------------------------
@@ -51,25 +51,22 @@ SELECT
 
 	,p.ADEFTJ_effective_date				AS EffectiveDate
 	,p.ADEXDJ_expired_date					AS ExpiredDate
-	,DATEADD (day , p.ADUPMJ_date_updated_JDT%1000-1, 
-		DATEADD(year, p.ADUPMJ_date_updated_JDT/1000, 0 ) ) 
-											AS LastUpdatedDate
+	,p.ADUPMJ_date_updated					AS LastUpdatedDate
 	,p.ADUSER_user_id						AS UserId
-	,p.ADAN8__billto						AS BillTo_Pricing
 
 FROM            
-	Integration.F4072_price_adjustment_detail_Staging p
+	[Pricing].[price_adjustment_detail_F4072] p
 
-	INNER JOIN Integration.F4071_price_adjustment_name_Staging n
+	INNER JOIN [Pricing].[price_adjustment_name_F4071] n
 	ON p.ADAST__adjustment_name = n.ATAST__adjustment_name
 
-	LEFT JOIN Integration.F4094_item_customer_keyid_master_file_Staging Ki
+	LEFT JOIN [Pricing].item_customer_keyid_master_file_F4094 Ki
 	ON ki.KIICID_itemcustomer_key_id = p.ADICID_itemcustomer_key_id
 
-	LEFT JOIN Integration.F4101_item_master_Staging im
+	LEFT JOIN [Pricing].item_master_F4101 im
 	ON im.IMLITM_item_number = ki.KIPRGR_item_price_group
 
-	INNER JOIN [Integration].[F4101_item_master_Staging] im2
+	INNER JOIN [Pricing].item_master_F4101 im2
 	ON im2.IMITM__item_number_short =	CASE 
 											WHEN p.ADITM__item_number_short = 0 
 											THEN im.IMITM__item_number_short 
@@ -79,11 +76,11 @@ FROM
 	INNER JOIN [dbo].[BRS_Item] as im3
 	ON im3.Item = im2.IMLITM_item_number			
 
+	-- Speed this UP!!!
 	-- Cost info as of last update.  Use Jan 2015 (julian 115006) for historical if older, hack
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS h 
-	ON h.CalMonth = iif( p.ADUPMJ_date_updated_JDT >= 115006, 
-							FORMAT(	DATEADD (day , p.ADUPMJ_date_updated_JDT%1000-1, 
-								DATEADD(year, p.ADUPMJ_date_updated_JDT/1000, 0 ) ) , 'yyyyMM'
+	ON h.CalMonth = iif( p.ADUPMJ_date_updated >= '2015-01-01', 
+							FORMAT(p.ADUPMJ_date_updated , 'yyyyMM'
 							),
 							201501
 						) AND 
@@ -117,7 +114,6 @@ SELECT
 ,NULL	AS ExpiredDate 
 ,NULL	AS LastUpdatedDate         
 ,''		AS UserId     
-,0		AS BillTo_Pricing
 
 
 GO
