@@ -39,8 +39,8 @@ SELECT
 	c.ShipTo,
 	i.ItemKey,
 	mc.MarketClassKey				AS HIST_MarketClassKey,
-	s.SupplierKey					AS HIST_SupplierKey,
-	ic.CategoryRollupKey,
+	--s.SupplierKey					AS HIST_SupplierKey,
+	--ic.CategoryRollupKey,
 	t.SalesAmt						AS TotalSalesAmt,
 	t.GPAmt							AS TotalGPAmt,
 	t.GP_Org_Amt					AS TotalGPExclCBAmt,
@@ -53,14 +53,14 @@ FROM
 	INNER JOIN BRS_ItemHistory AS h 
 	ON t.Item = h.Item AND t.FiscalMonth = h.FiscalMonth 
 
-	INNER JOIN Dimension.Supplier AS s 
-	ON h.Supplier = s.SupplierCode 
+	--INNER JOIN Dimension.Supplier AS s 
+	--ON h.Supplier = s.SupplierCode 
 
 	INNER JOIN Dimension.Item AS i 
 	ON t.Item = i.ItemCode 
 
-	INNER JOIN Dimension.ItemCategory AS ic 
-	ON i.CategoryRollup = ic.CategoryRollupCode 
+	--INNER JOIN Dimension.ItemCategory AS ic 
+	--ON i.CategoryRollup = ic.CategoryRollupCode 
 
 	INNER JOIN BRS_Branch AS b 
 	ON t.Branch = b.Branch  

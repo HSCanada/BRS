@@ -63,8 +63,11 @@ FROM
 	ON l.FiscalMonth = m.CalMonth AND
 		l.SalesDate = m.BCI_BenchmarkDay
 
+
 -- latest update maps to 0 month
+
 UNION ALL 
+
 
 SELECT     
 	0 AS CalMonth
@@ -90,7 +93,8 @@ FROM
 	[dbo].[BRS_ItemBaseHistoryDay] AS l 
 
 WHERE 
-	l.SalesDate = (SELECT MAX(salesdate) FROM [BRS_ItemBaseHistoryDay])
+	l.SalesDate = (SELECT MAX(salesdate) FROM [dbo].[BRS_ItemBaseHistoryDayLNK])
+
 
 GO
 
@@ -101,10 +105,6 @@ GO
 
 -- SELECT top 10 * FROM BRS_ItemBaseHistory order by CalMonth ASC
 
--- SELECT * FROM BRS_ItemBaseHistory where calmonth = 0
-
-
-
-
+-- SELECT top 10 * FROM BRS_ItemBaseHistory where calmonth = 0
 
 

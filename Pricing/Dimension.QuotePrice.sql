@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Price]
+ALTER VIEW [Dimension].[QuotePrice]
 AS
 
 /******************************************************************************
@@ -30,6 +30,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	30 Aug 17	tmc		source from Stage to Pricing Production
+**	14 Sep 17	tmc		Simplified model
+
 *******************************************************************************/
 
 --------------------------------------------------------------------------------
@@ -38,16 +40,18 @@ AS
 
 SELECT
 
-	p.ADATID_price_adjustment_key_id		AS PriceAdjustmentKey
-	,n.AdjustmentNameKey					AS AdjustmentKey
+	p.ADATID_price_adjustment_key_id		AS QuotePriceKey
+	,p.ADAST__adjustment_name				AS Adjustment
 	,im3.ItemKey							AS ItemKey
 	,p.ADFVTR_factor_value					AS FinalPrice
 
-	,ISNULL(h.Supplier,'')					AS Last_Supplier
+	,ISNULL(h.Supplier,'')					AS Last_SupplierCode
+	,ISNULL(h.Currency,'')					AS Last_CurrencyCode
 	,ISNULL(h.SupplierCost,0)				AS Last_SupplierCost
-	,ISNULL(h.Currency,'')					AS Last_Currency
 	,ISNULL(h.FX_per_CAD_mrk_rt,0)			AS Last_FxMarketing
+	,ISNULL(h.FX_per_CAD_pnl_rt,0)			AS Last_FxFinance
 	,im3.FreightAdjPct						AS Last_FreightFactor
+	,ISNULL(h.[CorporatePrice],0)			AS Last_BasePrice
 
 	,p.ADEFTJ_effective_date				AS EffectiveDate
 	,p.ADEXDJ_expired_date					AS ExpiredDate
@@ -66,18 +70,18 @@ FROM
 	LEFT JOIN [Pricing].item_master_F4101 im
 	ON im.IMLITM_item_number = ki.KIPRGR_item_price_group
 
+	-- Speed this UP!!!
+	-- 1. put this logic in ETL
 	INNER JOIN [Pricing].item_master_F4101 im2
 	ON im2.IMITM__item_number_short =	CASE 
 											WHEN p.ADITM__item_number_short = 0 
 											THEN im.IMITM__item_number_short 
 											ELSE p.ADITM__item_number_short 
 										END
-										
 	INNER JOIN [dbo].[BRS_Item] as im3
 	ON im3.Item = im2.IMLITM_item_number			
 
-	-- Speed this UP!!!
-	-- Cost info as of last update.  Use Jan 2015 (julian 115006) for historical if older, hack
+	-- link date to fiscal instead of IIF
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS h 
 	ON h.CalMonth = iif( p.ADUPMJ_date_updated >= '2015-01-01', 
 							FORMAT(p.ADUPMJ_date_updated , 'yyyyMM'
@@ -85,13 +89,13 @@ FROM
 							201501
 						) AND 
 		h.Item = im3.item 
-	
+
 
 WHERE
 	n.ATPRFR_preference_type IN ('C', 'IG') AND
 	p.ADBSCD_basis = 5 AND
-	ADAST__adjustment_name <> 'PRPRICE' AND
-	ADMNQ__quantity_from = 1 AND
+	p.ADAST__adjustment_name <> 'PRPRICE' AND
+	p.ADMNQ__quantity_from = 1 AND
 
 --	ADITM__item_number_short <> 0 AND -- temp
 
@@ -101,19 +105,23 @@ WHERE
 UNION ALL
 
 SELECT 
-0		AS PriceAdjustmentKey
-,0		AS AdjustmentKey 
+0		AS QuotePriceKey
+,''		AS Adjustment 
 ,1		AS ItemKey     
 ,0.0	AS FinalPrice                              
-,''		AS Last_Supplier 
+,''		AS Last_SupplierCode 
+,''		AS Last_CurrencyCode
 ,0.0	AS Last_SupplierCost     
-,''		AS Last_Currency 
 ,0.0	AS Last_FxMarketing
+,0.0	AS Last_FxFinance
 ,0.0	AS Last_FreightFactor  
-,NULL	AS EffectiveDate 
-,NULL	AS ExpiredDate 
-,NULL	AS LastUpdatedDate         
-,''		AS UserId     
+,0.0	AS Last_BasePrice
+
+,'1980-01-01'	AS EffectiveDate 
+,'1980-01-01'	AS ExpiredDate 
+,'1980-01-01'	AS LastUpdatedDate         
+,''				AS UserId     
+
 
 
 GO
@@ -126,10 +134,12 @@ GO
 /*
 SELECT 
  top 10
-* FROM Dimension.Price
+* FROM Dimension.QuotePrice
 order by 1 asc
 
-
+-- 1s clean
+-- 45s with history
+-- 6s new
 
 SELECT 
 distinct last_currency

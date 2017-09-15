@@ -266,7 +266,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-
+/*
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -362,6 +362,7 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+*/
 
 If (@nErrorCode = 0) 
 Begin

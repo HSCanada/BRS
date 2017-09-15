@@ -30,37 +30,46 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	10 Jul 17	tmc		updated ABC group
---	02 Aug 17	tmc		added Brand
+**	02 Aug 17	tmc		added Brand
+**	14 Sep 17	tmc		Simplified model
 **    
 *******************************************************************************/
 
 SELECT         
 
 	i.ItemKey						AS ItemKey
-	,i.ItemDescription				AS Item
+	,i.ItemDescription + ' | ' + i.Item	AS Item
+
 	,sc.SalesCategoryName			AS SalesCategory
 	,mpc.MPC_Category				AS Abc_MpcItem
+	,cr.category_rollup_desc		AS CategoryRollup
 	,mpc.MajorProductClassDesc		AS Major
 	,c.submajor_desc				AS SubMajor	
 	,c.minor_desc					AS Minor
+
+	,s.Supplier + ' | ' + s.supplier_nm	AS Supplier
+	,s.Supplier_Category			AS Abc_SupplierItem
+	,sf.supplier_family_nm			AS SupplierFamily
+	,sf.buying_group_cd				AS BuyingGroup
+	,sf.classificiation_cd			AS VendorClassification
+	
 	,i.FamilySetLeader				AS FamilySet
 	,i.Item							AS ItemCode
-	,i.ItemStatus					AS Status
+	,i.ItemStatus					
 	,i.Brand
 	,i.Label
 	,i.GLCategory					AS StockingCode
 	,mpc.CategoryManager			AS CategorySpecialist
-/*
-	,ISNULL(b.Currency, '')			AS Currency
-	,ISNULL(b.SupplierCost,0)		AS SupplierCost
-	,ISNULL(i.FreightAdjPct,0)		As FreightFactor
-	,ISNULL(b.FX_per_CAD_mrk_rt,0)	AS FxMarketing
-	,ISNULL(b.FX_per_CAD_pnl_rt,0)	AS FxFinance
-	,ISNULL(b.CorporatePrice, 0)	AS BasePrice
-*/
-	,s.SupplierKey
+
+	,s.Supplier						AS Current_SupplierCode
+	,ISNULL(b.Currency, '')			AS Current_CurrencyCode
+	,ISNULL(b.SupplierCost,0)		AS Current_SupplierCost
+	,ISNULL(b.FX_per_CAD_mrk_rt,0)	AS Current_FxMarketing
+	,ISNULL(b.FX_per_CAD_pnl_rt,0)	AS Current_FxFinance
+	,ISNULL(i.FreightAdjPct,0)		As Current_FreightFactor
+	,ISNULL(b.CorporatePrice, 0)	AS Current_BasePrice
+
 	,icomp.ItemKey					AS CompetitiveMatchKey
-	,c.CategoryRollup
 
 FROM            
 	BRS_Item AS i 
@@ -68,8 +77,16 @@ FROM
 	INNER JOIN BRS_ItemSupplier AS s 
 	ON i.Supplier = s.Supplier 
 
+	INNER JOIN BRS_ItemSupplierFamily AS sf 
+	ON s.SupplierFamily = sf.SupplierFamily
+
 	INNER JOIN BRS_ItemCategory AS c 
 	ON i.MinorProductClass = c.MinorProductClass 
+
+
+	INNER JOIN [BRS_ItemCategoryRollup] as cr
+	ON c.CategoryRollup = cr.CategoryRollup 
+
 
 	INNER JOIN BRS_ItemSalesCategory AS sc 
 	ON i.SalesCategory = sc.SalesCategory 
@@ -80,12 +97,8 @@ FROM
 	INNER JOIN BRS_Item AS icomp 
 	ON i.Item_Competitive_Match = icomp.Item
 
-	-- handle null case
-/*
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS b 
 	ON b.Item = i.Item AND b.CalMonth = 0
-*/
-
 
 GO
 

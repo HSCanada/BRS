@@ -5,13 +5,12 @@
 
 -- Customer
 -- drop view [Dimension].[CustomerBillto]
--- drop view [Dimension].[CustomerGroup]
 -- drop view [Dimension].[CustomerPriceEnroll]
 -- drop view [Dimension].[Geography]
 -- drop view [Dimension].[Salesperson]
 -- drop view [Dimension].[SalesPlan]
 -- drop view [Dimension].[PriceAdjustment]
-
+-- drop view [Dimension].[CustomerGroup]
 -- Item
 -- drop view [Dimension].[ItemCategory]
 -- drop view [Dimension].[Supplier]
@@ -27,6 +26,122 @@
 -- QuotePrice
 -- drop view [Dimension].[Price]
 
+---
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDayLNK
+	DROP CONSTRAINT FK_BRS_ItemBaseHistoryDayLNK_BRS_ItemBaseHistoryDAT
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryLNK
+	DROP CONSTRAINT FK_BRS_ItemBaseHistoryLNK_BRS_ItemBaseHistoryDAT
+
+DROP INDEX BRS_ItemBaseHistoryDAT_cu_idx_1 ON dbo.BRS_ItemBaseHistoryDAT
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDAT
+	DROP CONSTRAINT BRS_ItemBaseHistoryDAT_pk
+
+
+BEGIN TRANSACTION
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDAT ADD CONSTRAINT
+	BRS_ItemBaseHistoryDAT_c_pk PRIMARY KEY CLUSTERED 
+	(
+	PriceID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+
+CREATE UNIQUE NONCLUSTERED INDEX BRS_ItemBaseHistoryDAT_u_idx_01 ON dbo.BRS_ItemBaseHistoryDAT
+	(
+	CorporatePrice,
+	SupplierCost,
+	SellPrcBrk2,
+	Supplier,
+	SellPrcBrk3,
+	SellQtyBrk2,
+	SellQtyBrk3,
+	Currency,
+	PriceID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDAT SET (LOCK_ESCALATION = TABLE)
+
+COMMIT
+
+/*
+SELECT        COUNT (distinct [SellQtyBrk3]) AS Expr1 FROM BRS_ItemBaseHistoryDAT
+
+[CorporatePrice] = 71 878
+[SupplierCost] = 46 383
+[SellPrcBrk2] = 6 925
+Supplier = 1 222
+[SellPrcBrk3] = 1 250
+[SellQtyBrk2] = 25
+[SellQtyBrk3] = 19
+[Currency] = 9
+[PriceID] = 591 808
+
+*/
+BEGIN TRANSACTION
+
+CREATE NONCLUSTERED INDEX BRS_ItemBaseHistoryDayLNK_idx_02 ON dbo.BRS_ItemBaseHistoryDayLNK
+	(
+	ItemKey,
+	SalesDate,
+	PriceKey
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+CREATE NONCLUSTERED INDEX BRS_ItemBaseHistoryDayLNK_idx_03 ON dbo.BRS_ItemBaseHistoryDayLNK
+	(
+	FamilySetLeaderKey
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryDayLNK SET (LOCK_ESCALATION = TABLE)
+
+COMMIT
+
+BEGIN TRANSACTION
+
+DROP INDEX BRS_ItemBaseHistory_idx_2 ON dbo.BRS_ItemBaseHistoryLNK
+
+DROP INDEX BRS_ItemBaseHistory_idx_1 ON dbo.BRS_ItemBaseHistoryLNK
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryLNK
+	DROP CONSTRAINT BRS_ItemBaseHistory_c_pk
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryLNK SET (LOCK_ESCALATION = TABLE)
+
+COMMIT
+
+ALTER TABLE dbo.BRS_ItemBaseHistoryLNK ADD CONSTRAINT
+	BRS_ItemBaseHistoryLNK_c_idx PRIMARY KEY CLUSTERED 
+	(
+	ItemID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+GO
+
+CREATE NONCLUSTERED INDEX BRS_ItemBaseHistoryDayLNK_idx_04 ON dbo.BRS_ItemBaseHistoryDayLNK
+	(
+	PriceKey
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+CREATE NONCLUSTERED INDEX BRS_ItemBaseHistoryDAT_idx_03 ON dbo.BRS_ItemBaseHistoryDAT
+	(
+	Currency
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+CREATE NONCLUSTERED INDEX BRS_CurrencyHistory_idx_02 ON dbo.BRS_CurrencyHistory
+	(
+	FiscalMonth,
+	Currency,
+	FX_per_USD_pnl_rt,
+	FX_per_CAD_mrk_rt
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+
+drop table BRS_ItemBaseHistoryLNK
 
 
 /****** Object:  Table [Integration].[F4071_price_adjustment_name_Staging]    Script Date: 8/29/2017 1:51:02 PM ******/
@@ -1172,20 +1287,21 @@ WHERE b.ATAST__adjustment_name = SNAST__adjustment_name
 -- do not load bad shipto enrolled (fix at source)
 
 INSERT INTO Pricing.price_adjustment_detail_F4072
-                         (ADAST__adjustment_name, ADITM__item_number_short, ADLITM_item_number, ADAITM__3rd_item_number, ADAN8__billto, ADICID_itemcustomer_key_id, 
-                         ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
-                         ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
-                         ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
-                         ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
-                         ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, ADUPMJ_date_updated, ADTDAY_time_of_day, 
-                         ADUPAJ_date_added, ADTENT_time_entered)
+(
+ADAST__adjustment_name, ADITM__item_number_short, ADLITM_item_number, ADAITM__3rd_item_number, ADAN8__billto, ADICID_itemcustomer_key_id, 
+ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
+ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
+ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
+ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
+ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, ADUPMJ_date_updated, ADTDAY_time_of_day, 
+ADUPAJ_date_added, ADTENT_time_entered)
 SELECT        ADAST__adjustment_name, ADITM__item_number_short, LEFT(ADLITM_item_number,10), ADAITM__3rd_item_number, ADAN8__billto, ADICID_itemcustomer_key_id, 
-                         ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
-                         ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
-                         ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
-                         ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
-                         ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, DATEADD (day , ADUPMJ_date_updated_JDT%1000-1, DATEADD(year, ADUPMJ_date_updated_JDT/1000, 0 ) ) AS ADUPMJ_date_updated, ADTDAY_time_of_day, 
-                         DATEADD (day , ADUPAJ_date_added_JDT%1000-1, DATEADD(year, ADUPAJ_date_added_JDT/1000, 0 ) ) AS ADUPAJ_date_added , ADTENT_time_entered
+ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
+ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
+ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
+ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
+ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, DATEADD (day , ADUPMJ_date_updated_JDT%1000-1, DATEADD(year, ADUPMJ_date_updated_JDT/1000, 0 ) ) AS ADUPMJ_date_updated, ADTDAY_time_of_day, 
+DATEADD (day , ADUPAJ_date_added_JDT%1000-1, DATEADD(year, ADUPAJ_date_added_JDT/1000, 0 ) ) AS ADUPAJ_date_added , ADTENT_time_entered
 FROM            Integration.F4072_price_adjustment_detail_Staging s
 WHERE
 EXISTS (SELECT * 

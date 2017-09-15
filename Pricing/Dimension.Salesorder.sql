@@ -4,12 +4,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Promotion]
+ALTER VIEW [Dimension].[Salesorder]
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: Promotion
+**	Name: DocType
 **	Desc:  
 **		
 **
@@ -29,21 +29,42 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	14 Sep 17	tmc		Simplified model
 **    
 *******************************************************************************/
 
 SELECT
-	p.PromotionId								AS PromotionKey
-	,p.PromotionDescription						AS Promotion
-	,p.PromotionType
-	,ISNULL(p2.PromotionDescription,'Other')	AS Convention
-	,p.PromotionCode
+	f.SalesOrderNumber
+
+	,f.DocType + ' | ' + dt.DocTypeDescr		AS DocType
+	,pr.PromotionDescription					AS Promotion
+	,pr.PromotionType
+	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
+	,os.OrderSourceCodeDescr	AS OrderSource
+
+	,f.FactKeyFirst
+	,f.EnteredBy
+	,f.OrderTakenBy
+
 FROM
-	BRS_Promotion p
-	
+	Fact.Sale AS f 
+
+	INNER JOIN BRS_DocType AS dt 
+	ON f.DocType = dt.DocType 
+
+	INNER JOIN BRS_Promotion AS pr 
+	ON f.OrderPromotionCode = pr.PromotionCode 
+
+	INNER JOIN BRS_OrderSource AS os 
+	ON f.OrderSourceCode = os.OrderSourceCode
+
 	LEFT JOIN BRS_Promotion p2 
-	ON p.PromotionTrackingCode = p2.PromotionCode AND
-		p.PromotionTrackingCode <>''
+	ON pr.PromotionTrackingCode = p2.PromotionCode AND
+		pr.PromotionTrackingCode <>''
+
+
+WHERE        
+	(f.FactKey = f.FactKeyFirst)
 
 GO
 
@@ -53,4 +74,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.Promotion order by 1
+-- SELECT top 10 * FROM Dimension.Salesorder order by 1

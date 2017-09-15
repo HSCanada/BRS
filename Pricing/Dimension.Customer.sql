@@ -29,13 +29,42 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	14 Sep 17	tmc		Simplified model
 **    
 *******************************************************************************/
 
 SELECT
 	c.ShipTo
-	,c.BillTo
-	,c.PracticeName			AS Customer
+	,c.Billto
+	,c.PracticeName + ' | ' + CAST(c.ShipTo as char)	AS Customer
+	,c2.PracticeName + ' | ' + CAST(c2.BillTo as char)	AS CustomerBillto
+
+	,VPADesc + ' | ' + RTRIM(v.VPA)  	AS SalesPlan
+	,RTRIM(v.VPA)  	AS SalesPlanCode
+	,VPATypeCd	AS SalesPlanType
+
+	,sroll.FSCName		AS FieldSales
+	,b.BranchName		AS Branch
+
+	,fsa.FSA
+	,fsa.City
+	,fsa.Region
+	,fsa.Province
+	,fsa.Country
+	,Geo_Category	AS Abc_GeoCustomer
+
+	,ISNULL([SNAST__adjustment_name],'')			AS Adjustment
+	,ISNULL([PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
+	,ISNULL([PJEXDJ_expired_date],'1980-01-01')		AS AdjExpiredDate
+	,ISNULL([PJUSER_user_id],'')					AS AdjUserId
+	,ISNULL([EnrollSource],'')						AS AdjEnrollSource
+	
+	,spend.Spend_Category		AS Abc_SpendCustomer
+	,cgrp.PotentialSpendAmt		AS Spend_PotentialAmt
+	,spend.Spend_Display		
+	,spend.Spend_Rank
+	,spend.Spend_Discount_Rate
+
 	,div.SalesDivisionDesc	AS SalesDivision
 	,mcroll.MarketClassDesc	AS MarketClassRollup
 	,mclass.MarketClassDesc	AS MarketClass
@@ -57,7 +86,7 @@ SELECT
 		'Focus'
 	)						As Focus
 	,c.DateAccountOpened
-	,cgrp.CustGrpKey		AS CustomerGroupKey
+
 
 FROM
 	BRS_Customer AS c 
@@ -78,6 +107,35 @@ FROM
 	INNER JOIN BRS_CustomerMarketClass AS mcroll
 	ON mclass.[MarketRollup_L1] = mcroll.MarketClass 
 
+	INNER JOIN BRS_CustomerVPA as v
+	ON c.[VPA] = v.[VPA]
+
+	INNER JOIN BRS_FSC_Rollup AS terr
+	ON c.TerritoryCd = terr.[TerritoryCd]
+
+	INNER JOIN BRS_Branch AS b 
+	ON terr.Branch = b.Branch
+
+	INNER JOIN BRS_FSC_Rollup sroll
+	ON terr.FSCRollup = sroll.TerritoryCd
+
+	INNER JOIN BRS_Customer_FSA AS fsa 
+	ON c.FSA = fsa.FSA 
+
+	INNER JOIN [dbo].[BRS_CustomerBT] as bt
+	ON c.BillTo = bt.BillTo
+
+	INNER JOIN [dbo].[BRS_Customer] as c2
+	on bt.ShipToPrimary = c2.ShipTo
+
+	LEFT JOIN [Pricing].[price_adjustment_enroll] AS padj
+	ON c.BillTo = padj.BillTo
+
+	CROSS JOIN BRS_Customer_Spend_Category AS spend
+WHERE 
+	cgrp.PotentialSpendAmt between [Spend_From] and [Spend_To]
+
+
 GO
 
 SET ANSI_NULLS OFF
@@ -86,5 +144,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Customer order by 1
+-- SELECT top 10 * FROM Dimension.Customer where  billto = 2613256 order by 1
 
