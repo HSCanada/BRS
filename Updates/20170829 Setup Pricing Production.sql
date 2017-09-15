@@ -405,6 +405,17 @@ CREATE TABLE [Pricing].[price_adjustment_enroll](
 
 GO
 
+CREATE NONCLUSTERED INDEX price_adjustment_enroll_idx_01 ON Pricing.price_adjustment_enroll
+	(
+	SNAST__adjustment_name,
+	EnrollSource,
+	PJEFTJ_effective_date,
+	PJEXDJ_expired_date,
+	PriceMethod,
+	BillTo
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
 -- SELECT count(distinct [BillTo]) FROM Pricing.price_adjustment_enroll
 
 
@@ -1354,18 +1365,8 @@ SELECT
 
 --	im.IMITM__item_number_short,
 
-	CASE 
-		WHEN ISNULL(ADITM__item_number_short,0)=0 AND ISNULL(im.IMITM__item_number_short,0)>0
-		THEN im.IMITM__item_number_short
-		ELSE ADITM__item_number_short
-	END	AS item_number_short,
-
-	CASE 
-		WHEN ISNULL(ADITM__item_number_short,0)=0 AND ISNULL(im.IMITM__item_number_short,0)>0
-		THEN LEFT(im.IMLITM_item_number,10)
-		ELSE LEFT(ADLITM_item_number,10)
-	END	AS item_number,
-
+	ADITM__item_number_short,
+	LEFT(ADLITM_item_number,10) AS item_number,
 	ADAITM__3rd_item_number,
 
 	ADAN8__billto,
@@ -1409,11 +1410,6 @@ SELECT
 FROM
 	Integration.F4072_price_adjustment_detail_Staging s
 
-	LEFT JOIN Integration.F4094_item_customer_keyid_master_file_Staging Ki
-	ON ki.KIICID_itemcustomer_key_id = s.ADICID_itemcustomer_key_id
-
-	LEFT JOIN Integration.F4101_item_master_Staging im
-	ON im.IMLITM_item_number = ki.KIPRGR_item_price_group
 
 WHERE
 	EXISTS (SELECT * FROM [dbo].[BRS_CustomerBT] b WHERE b.BillTo = s.[ADAN8__billto]) AND

@@ -46,7 +46,7 @@ SELECT
 	,t.FreeGoodsInvoicedInd
 
 	-- TBD !!
-	,0												AS QuotePriceKey
+	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
 
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
@@ -67,8 +67,8 @@ SELECT
 	,[EnteredBy]
 	,[OrderTakenBy]
 	,pm.PriceMethod
-	,enroll.EnrollSource
-	,enroll.SNAST__adjustment_name
+	,q.EnrollSource
+	
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -100,21 +100,62 @@ FROM
 	) AS hdr
 	ON t.SalesOrderNumber = hdr.SalesOrderNumber
 
-	LEFT JOIN [Pricing].[price_adjustment_enroll] AS enroll
-	ON (c.BillTo = enroll.BillTo) AND
-		(t.Date between enroll.PJEFTJ_effective_date and enroll.PJEXDJ_expired_date) AND
-		(t.PriceMethod = enroll.PriceMethod) 
-/*
-	LEFT JOIN [Dimension].[QuotePrice] AS quote
-	ON enroll.SNAST__adjustment_name = quote.[Adjustment] AND
-		i.ItemKey = quote.[ItemKey] AND
-		c.BillTo = enroll.[Billto]
-*/
+	-- match sales to QuotePrice line
+	LEFT JOIN
+	(
+		SELECT
+			quot.QuotePriceKey, 
+			quot.Adjustment, 
+			enr.Billto,
+			quot.ItemKey, 
+			quot.tempItemCode, 
+			enr.PJEFTJ_effective_date, 
+			enr.PJEXDJ_expired_date, 
+			enr.EnrollSource, 
+			enr.PriceMethod
+		FROM            
+			Pricing.price_adjustment_enroll AS enr 
 
+			INNER JOIN Dimension.QuotePrice AS quot 
+			ON
+			(
+				enr.SNAST__adjustment_name = quot.Adjustment AND
+				EnrollSource = 'CLACTR'
+			)	
+
+		UNION ALL
+
+		SELECT
+			quot.QuotePriceKey, 
+			quot.Adjustment, 
+			enr.Billto,
+			quot.ItemKey, 
+			quot.tempItemCode, 
+			enr.PJEFTJ_effective_date, 
+			enr.PJEXDJ_expired_date, 
+			enr.EnrollSource, 
+			enr.PriceMethod
+		FROM            
+			Pricing.price_adjustment_enroll AS enr 
+
+			INNER JOIN Dimension.QuotePrice AS quot 
+			ON
+			(
+				enr.SNAST__adjustment_name = quot.Adjustment AND
+				(EnrollSource <> 'CLACTR' AND quot.BillTo = enr.BillTo)
+			)
+		) as q
+		ON (c.BillTo = q.BillTo) AND
+			(i.ItemKey = q.ItemKey) AND
+			(t.Date BETWEEN q.PJEFTJ_effective_date AND q.PJEXDJ_expired_date) AND
+			(t.PriceMethod = q.PriceMethod)
 
 WHERE        
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
+
+	-- test
+
 	(1 = 1)
 
 GO
@@ -126,10 +167,74 @@ GO
 
 /*
 
+-- Test Sales dups
 SELECT        FactKey, COUNT(*) AS Expr1
 FROM            Fact.Sale
 GROUP BY FactKey
 HAVING        (COUNT(*) > 1)
+
+SELECT 
+TOP 10 
+* FROM Fact.Sale 
+WHERE FactKey = 25127039
+
+SELECT [BillTo]
+      ,[PJASN__adjustment_schedule]
+      ,[PJEFTJ_effective_date]
+      ,[PJEXDJ_expired_date]
+      ,[PJUPMJ_date_updated]
+      ,[PJUSER_user_id]
+      ,[SNAST__adjustment_name]
+      ,[EnrollSource]
+      ,[PriceMethod]
+  FROM [DEV_BRSales].[Pricing].[price_adjustment_enroll] WHERE SNAST__adjustment_name = 'ADC01ASP'
+
+-- join accounts
+SELECT
+	quot.QuotePriceKey, 
+	quot.Adjustment, 
+	enr.Billto,
+	quot.ItemKey, 
+	quot.tempItemCode, 
+	enr.PJEFTJ_effective_date, 
+	enr.PJEXDJ_expired_date, 
+	enr.EnrollSource, 
+	enr.PriceMethod
+FROM            
+	Pricing.price_adjustment_enroll AS enr 
+
+	INNER JOIN Dimension.QuotePrice AS quot 
+	ON
+	(
+		enr.SNAST__adjustment_name = quot.Adjustment AND
+		EnrollSource = 'CLACTR'
+	)	
+-- 2819903 rows in 26s
+UNION ALL
+
+SELECT
+	quot.QuotePriceKey, 
+	quot.Adjustment, 
+	enr.Billto,
+	quot.ItemKey, 
+	quot.tempItemCode, 
+	enr.PJEFTJ_effective_date, 
+	enr.PJEXDJ_expired_date, 
+	enr.EnrollSource, 
+	enr.PriceMethod
+FROM            
+	Pricing.price_adjustment_enroll AS enr 
+
+	INNER JOIN Dimension.QuotePrice AS quot 
+	ON
+	(
+		enr.SNAST__adjustment_name = quot.Adjustment AND
+		(EnrollSource <> 'CLACTR' AND quot.BillTo = enr.BillTo)
+	)
+
+-- 213361 rows in 4s
+
+-- 3033264 rows in 2:27
 
 */
 -- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
