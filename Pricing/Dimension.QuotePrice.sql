@@ -42,6 +42,7 @@ SELECT
 
 	p.ADATID_price_adjustment_key_id		AS QuotePriceKey
 	,p.ADAST__adjustment_name				AS Adjustment
+	,p.ADAN8__billto						AS Billto
 	,im3.ItemKey							AS ItemKey
 	,p.ADFVTR_factor_value					AS FinalPrice
 
@@ -64,22 +65,11 @@ FROM
 	INNER JOIN [Pricing].[price_adjustment_name_F4071] n
 	ON p.ADAST__adjustment_name = n.ATAST__adjustment_name
 
-	LEFT JOIN [Pricing].item_customer_keyid_master_file_F4094 Ki
-	ON ki.KIICID_itemcustomer_key_id = p.ADICID_itemcustomer_key_id
-
 	LEFT JOIN [Pricing].item_master_F4101 im
-	ON im.IMLITM_item_number = ki.KIPRGR_item_price_group
+	ON p.ADITM__item_number_short = im.IMITM__item_number_short
 
-	-- Speed this UP!!!
-	-- 1. put this logic in ETL
-	INNER JOIN [Pricing].item_master_F4101 im2
-	ON im2.IMITM__item_number_short =	CASE 
-											WHEN p.ADITM__item_number_short = 0 
-											THEN im.IMITM__item_number_short 
-											ELSE p.ADITM__item_number_short 
-										END
-	INNER JOIN [dbo].[BRS_Item] as im3
-	ON im3.Item = im2.IMLITM_item_number			
+	LEFT JOIN [dbo].[BRS_Item] as im3
+	ON im3.Item = im.IMLITM_item_number			
 
 	-- link date to fiscal instead of IIF
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS h 
@@ -107,6 +97,7 @@ UNION ALL
 SELECT 
 0		AS QuotePriceKey
 ,''		AS Adjustment 
+,0		AS Billto
 ,1		AS ItemKey     
 ,0.0	AS FinalPrice                              
 ,''		AS Last_SupplierCode 
@@ -133,19 +124,18 @@ GO
 
 /*
 SELECT 
- top 10
+top 10
 * FROM Dimension.QuotePrice
+--WHERE Adjustment = 'SPLPRICE'
+WHERE Adjustment = 'CUSCONTR'
 order by 1 asc
 
 -- 1s clean
 -- 45s with history
 -- 6s new
 
-SELECT 
-distinct last_currency
- FROM Dimension.Price
-where last_fxmarketing = -1
+
+
 */
 
 
--- Select * from Integration.F4072_price_adjustment_detail_Staging where ADAST__adjustment_name like 'AMC%'

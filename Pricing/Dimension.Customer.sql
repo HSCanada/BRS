@@ -53,11 +53,12 @@ SELECT
 	,fsa.Country
 	,Geo_Category	AS Abc_GeoCustomer
 
-	,ISNULL([SNAST__adjustment_name],'')			AS Adjustment
-	,ISNULL([PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
-	,ISNULL([PJEXDJ_expired_date],'1980-01-01')		AS AdjExpiredDate
-	,ISNULL([PJUSER_user_id],'')					AS AdjUserId
-	,ISNULL([EnrollSource],'')						AS AdjEnrollSource
+	,ISNULL(padj.[SNAST__adjustment_name],'')			AS Adjustment
+	,ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
+	,ISNULL(padj.[PJEXDJ_expired_date],'1980-01-01')	AS AdjExpiredDate
+	,ISNULL(padj.[PJUSER_user_id],'')					AS AdjUserId
+	,ISNULL(padj.[EnrollSource],'')						AS AdjEnrollSource
+	,ISNULL(padj.[PriceMethod],'')						AS AdjPriceMethod
 	
 	,spend.Spend_Category		AS Abc_SpendCustomer
 	,cgrp.PotentialSpendAmt		AS Spend_PotentialAmt

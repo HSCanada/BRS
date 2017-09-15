@@ -46,7 +46,6 @@ SELECT
 	,t.FreeGoodsInvoicedInd
 
 	-- TBD !!
-	-- use [price_adjustment_detail_F4072] filter & [Pricing].[price_adjustment_enroll]
 	,0												AS QuotePriceKey
 
 	,(t.ShippedQty)									AS Quantity
@@ -67,6 +66,9 @@ SELECT
 	,[OrderSourceCode]
 	,[EnteredBy]
 	,[OrderTakenBy]
+	,pm.PriceMethod
+	,enroll.EnrollSource
+	,enroll.SNAST__adjustment_name
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -98,6 +100,17 @@ FROM
 	) AS hdr
 	ON t.SalesOrderNumber = hdr.SalesOrderNumber
 
+	LEFT JOIN [Pricing].[price_adjustment_enroll] AS enroll
+	ON (c.BillTo = enroll.BillTo) AND
+		(t.Date between enroll.PJEFTJ_effective_date and enroll.PJEXDJ_expired_date) AND
+		(t.PriceMethod = enroll.PriceMethod) 
+/*
+	LEFT JOIN [Dimension].[QuotePrice] AS quote
+	ON enroll.SNAST__adjustment_name = quote.[Adjustment] AND
+		i.ItemKey = quote.[ItemKey] AND
+		c.BillTo = enroll.[Billto]
+*/
+
 
 WHERE        
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
@@ -111,10 +124,17 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+/*
 
--- SELECT top 10 * FROM Fact.Sale
+SELECT        FactKey, COUNT(*) AS Expr1
+FROM            Fact.Sale
+GROUP BY FactKey
+HAVING        (COUNT(*) > 1)
+
+*/
+-- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
 
 -- SELECT count(*) FROM Fact.Sale 
--- org 1570012
+-- org 1570012, 28s
 -- new 1570012
 

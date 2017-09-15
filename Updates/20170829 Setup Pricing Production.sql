@@ -295,6 +295,22 @@ CREATE UNIQUE NONCLUSTERED INDEX price_adjustment_detail_F4072_u_idx_04 ON Prici
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 
+CREATE NONCLUSTERED INDEX price_adjustment_detail_F4072_idx_05 ON Pricing.price_adjustment_detail_F4072
+	(
+	ADITM__item_number_short,
+	ADAST__adjustment_name,
+	ADAN8__billto,
+	ADATID_price_adjustment_key_id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+
+-- SELECT COUNT(DISTINCT [ADATID_price_adjustment_key_id]) FROM [Pricing].[price_adjustment_detail_F4072]
+-- [ADITM__item_number_short] = 200022
+-- [ADAN8__billto] = 3665
+-- [ADAST__adjustment_name] = 548
+-- [ADATID_price_adjustment_key_id] = 705925
+
 /****** Object:  Table [Integration].[F40314_preference_price_adjustment_schedule_Staging]    Script Date: 8/29/2017 2:34:38 PM ******/
 
 CREATE TABLE [Pricing].[price_adjustment_enroll_F40314](
@@ -388,6 +404,8 @@ CREATE TABLE [Pricing].[price_adjustment_enroll](
 ) ON [USERDATA]
 
 GO
+
+-- SELECT count(distinct [BillTo]) FROM Pricing.price_adjustment_enroll
 
 
 /****** Object:  Table [Integration].[F4094_item_customer_keyid_master_file_Staging]    Script Date: 8/30/2017 2:07:47 PM ******/
@@ -1284,33 +1302,130 @@ WHERE b.ATAST__adjustment_name = SNAST__adjustment_name
 1=1
 
 
--- do not load bad shipto enrolled (fix at source)
+-- TRUNCATE TABLE Pricing.price_adjustment_detail_F4072
 
+-- do not load bad shipto enrolled (fix at source)
 INSERT INTO Pricing.price_adjustment_detail_F4072
 (
-ADAST__adjustment_name, ADITM__item_number_short, ADLITM_item_number, ADAITM__3rd_item_number, ADAN8__billto, ADICID_itemcustomer_key_id, 
-ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
-ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
-ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
-ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
-ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, ADUPMJ_date_updated, ADTDAY_time_of_day, 
-ADUPAJ_date_added, ADTENT_time_entered)
-SELECT        ADAST__adjustment_name, ADITM__item_number_short, LEFT(ADLITM_item_number,10), ADAITM__3rd_item_number, ADAN8__billto, ADICID_itemcustomer_key_id, 
-ADSDGR_order_detail_group, ADSDV1_sales_detail_value_01, ADSDV2_sales_detail_value_02, ADSDV3_sales_detail_value_03, ADCRCD_currency_code, 
-ADUOM__um, ADMNQ__quantity_from, ADEFTJ_effective_date, ADEXDJ_expired_date, ADBSCD_basis, ADLEDG_cost_method, ADFRMN_formula_name, 
-ADFCNM_function_name, ADFVTR_factor_value, ADFGY__free_goods_yn, ADATID_price_adjustment_key_id, ADURCD_user_reserved_code, 
-ADURDT_user_reserved_date_JDT, ADURAT_user_reserved_amount, ADURAB_user_reserved_number, ADURRF_user_reserved_reference, 
-ADASTN_adjustment_for_net_price, ADUSER_user_id, ADPID__program_id, ADJOBN_work_station_id, DATEADD (day , ADUPMJ_date_updated_JDT%1000-1, DATEADD(year, ADUPMJ_date_updated_JDT/1000, 0 ) ) AS ADUPMJ_date_updated, ADTDAY_time_of_day, 
-DATEADD (day , ADUPAJ_date_added_JDT%1000-1, DATEADD(year, ADUPAJ_date_added_JDT/1000, 0 ) ) AS ADUPAJ_date_added , ADTENT_time_entered
-FROM            Integration.F4072_price_adjustment_detail_Staging s
+	ADAST__adjustment_name,
+	ADITM__item_number_short,
+	ADLITM_item_number,
+	ADAITM__3rd_item_number,
+	ADAN8__billto,
+	ADICID_itemcustomer_key_id,
+
+	ADSDGR_order_detail_group,
+	ADSDV1_sales_detail_value_01,
+	ADSDV2_sales_detail_value_02,
+	ADSDV3_sales_detail_value_03,
+	ADCRCD_currency_code,
+
+	ADUOM__um,
+	ADMNQ__quantity_from,
+	ADEFTJ_effective_date,
+	ADEXDJ_expired_date,
+	ADBSCD_basis,
+	ADLEDG_cost_method,
+	ADFRMN_formula_name,
+
+	ADFCNM_function_name,
+	ADFVTR_factor_value,
+	ADFGY__free_goods_yn,
+	ADATID_price_adjustment_key_id,
+	ADURCD_user_reserved_code,
+
+	ADURDT_user_reserved_date_JDT,
+	ADURAT_user_reserved_amount,
+	ADURAB_user_reserved_number,
+	ADURRF_user_reserved_reference,
+
+	ADASTN_adjustment_for_net_price,
+	ADUSER_user_id,
+	ADPID__program_id,
+	ADJOBN_work_station_id,
+	ADUPMJ_date_updated,
+	ADTDAY_time_of_day,
+
+	ADUPAJ_date_added,
+	ADTENT_time_entered)
+
+SELECT
+	ADAST__adjustment_name,
+
+--	im.IMITM__item_number_short,
+
+	CASE 
+		WHEN ISNULL(ADITM__item_number_short,0)=0 AND ISNULL(im.IMITM__item_number_short,0)>0
+		THEN im.IMITM__item_number_short
+		ELSE ADITM__item_number_short
+	END	AS item_number_short,
+
+	CASE 
+		WHEN ISNULL(ADITM__item_number_short,0)=0 AND ISNULL(im.IMITM__item_number_short,0)>0
+		THEN LEFT(im.IMLITM_item_number,10)
+		ELSE LEFT(ADLITM_item_number,10)
+	END	AS item_number,
+
+	ADAITM__3rd_item_number,
+
+	ADAN8__billto,
+	ADICID_itemcustomer_key_id,
+
+	ADSDGR_order_detail_group,
+	ADSDV1_sales_detail_value_01,
+	ADSDV2_sales_detail_value_02,
+	ADSDV3_sales_detail_value_03,
+	ADCRCD_currency_code,
+
+	ADUOM__um,
+	ADMNQ__quantity_from,
+	ADEFTJ_effective_date,
+	ADEXDJ_expired_date,
+	ADBSCD_basis,
+	ADLEDG_cost_method,
+	ADFRMN_formula_name,
+
+	ADFCNM_function_name,
+	ADFVTR_factor_value,
+	ADFGY__free_goods_yn,
+	ADATID_price_adjustment_key_id,
+	ADURCD_user_reserved_code,
+
+	ADURDT_user_reserved_date_JDT,
+	ADURAT_user_reserved_amount,
+	ADURAB_user_reserved_number,
+	ADURRF_user_reserved_reference,
+
+	ADASTN_adjustment_for_net_price,
+	ADUSER_user_id,
+	ADPID__program_id,
+	ADJOBN_work_station_id,
+	DATEADD (day,ADUPMJ_date_updated_JDT%1000-1,DATEADD(year,ADUPMJ_date_updated_JDT/1000,
+	0 ) ) AS ADUPMJ_date_updated,
+	ADTDAY_time_of_day,
+	DATEADD (day,ADUPAJ_date_added_JDT%1000-1,DATEADD(year,ADUPAJ_date_added_JDT/1000,0 ) ) AS ADUPAJ_date_added,
+	ADTENT_time_entered
+
+FROM
+	Integration.F4072_price_adjustment_detail_Staging s
+
+	LEFT JOIN Integration.F4094_item_customer_keyid_master_file_Staging Ki
+	ON ki.KIICID_itemcustomer_key_id = s.ADICID_itemcustomer_key_id
+
+	LEFT JOIN Integration.F4101_item_master_Staging im
+	ON im.IMLITM_item_number = ki.KIPRGR_item_price_group
+
 WHERE
-EXISTS (SELECT * 
-FROM [dbo].[BRS_CustomerBT] b 
-WHERE b.BillTo = s.[ADAN8__billto]
-) AND
-1=1
+	EXISTS (SELECT * FROM [dbo].[BRS_CustomerBT] b WHERE b.BillTo = s.[ADAN8__billto]) AND
 
+-- test
+--	ADITM__item_number_short <> im.IMITM__item_number_short AND
+--	ISNULL(ADITM__item_number_short,0) =0 AND
+--	ISNULL(im.IMITM__item_number_short,0)<>0 AND
 
+	1=1
+
+-- 705925 ORG
 
 /*
 SELECT        ADUPMJ_date_updated_JDT
@@ -1903,10 +2018,3 @@ ALTER TABLE Pricing.supplier_catalog_price_file_F41061 SET (LOCK_ESCALATION = TA
 
 COMMIT
 
-/*
--- linke to F0101?  vendor customer#
-SELECT        distinct (Pricing.supplier_catalog_price_file_F41061.CBAN8__billto) 
-FROM            Pricing.supplier_catalog_price_file_F41061 LEFT OUTER JOIN
-                         BRS_CustomerBT ON Pricing.supplier_catalog_price_file_F41061.CBAN8__billto = BRS_CustomerBT.BillTo
-WHERE        (BRS_CustomerBT.BillTo  IS  NULL)
-*/
