@@ -35,8 +35,8 @@ AS
 
 SELECT
 	pm.PriceMethodKey
-	,pm.PriceMethodDescr	AS PriceMethod
-	,pr.PriceMethodDescr	AS PriceMethodRollup
+	,RTRIM(pm.PriceMethodDescr) + ' | ' + pm.PriceMethod	AS PriceMethod
+	,RTRIM(pr.PriceMethodDescr)	AS PriceMethodRollup
 FROM
 	BRS_PriceMethod pm
 
@@ -53,4 +53,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.PriceMethod order by 1
+-- SELECT  * FROM Dimension.PriceMethod order by 1

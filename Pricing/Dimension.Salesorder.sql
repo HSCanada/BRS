@@ -36,13 +36,14 @@ AS
 SELECT
 	f.SalesOrderNumber
 
-	,f.DocType + ' | ' + dt.DocTypeDescr		AS DocType
-	,pr.PromotionDescription					AS Promotion
-	,pr.PromotionType
-	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
-	,os.OrderSourceCodeDescr	AS OrderSource
+	,os.OrderSourceCodeDescr					AS OrderSource
 
-	,f.FactKeyFirst
+	,pr.PromotionType
+	,pr.PromotionDescription					AS Promotion
+	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
+
+	,f.DocType + ' | ' + dt.DocTypeDescr		AS DocType
+
 	,f.EnteredBy
 	,f.OrderTakenBy
 

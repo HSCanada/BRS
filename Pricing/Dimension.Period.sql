@@ -36,16 +36,16 @@ AS
 
 SELECT
 
-	fm.FiscalMonth,
-	fm.MonthNum,
-	fm.MonthName,
-	fm.MonthSeq,
-	fm.WorkingDaysMonth,
+	fm.FiscalMonth
+	,RTRIM(fm.MonthName) AS MonthName
+	,fm.MonthNum
+	,fm.QuarterNum
+	,fm.YearNum
 
-	fm.QuarterNum,
-	fm.FirstMonthSeqInQtr,
-	fm.YearNum,
-	fm.FirstMonthSeqInYear
+	,fm.WorkingDaysMonth
+	,fm.MonthSeq
+	,fm.FirstMonthSeqInQtr
+	,fm.FirstMonthSeqInYear
 
 FROM
 	BRS_FiscalMonth AS fm 

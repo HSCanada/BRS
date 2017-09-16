@@ -86,7 +86,7 @@ SELECT
 		'Non-Focus',
 		'Focus'
 	)						As Focus
-	,c.DateAccountOpened
+	,CAST(c.DateAccountOpened AS date) AS DateAccountOpend
 
 
 FROM

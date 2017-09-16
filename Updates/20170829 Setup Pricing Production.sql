@@ -1280,6 +1280,7 @@ FROM            Integration.F4071_price_adjustment_name_Staging
 
 
 
+TRUNCATE TABLE Pricing.price_adjustment_enroll_F40314
 
 INSERT INTO Pricing.price_adjustment_enroll_F40314
                          (PJAN8__billto, PJCS14_customer_group_price_adjustment_sched, PJITM__item_number_short, PJIT14_item_group_price_adjustment_schedule, 
@@ -1430,6 +1431,7 @@ SELECT        ADUPMJ_date_updated_JDT
 FROM            Integration.F4072_price_adjustment_detail_Staging
 */
 
+-- truncate table Pricing.item_customer_keyid_master_file_F4094
 
 INSERT INTO Pricing.item_customer_keyid_master_file_F4094
                          (KIPRGR_item_price_group, KIIGP1_item_group_category_code_01, KIIGP2_item_group_category_code_02, KIIGP3_item_group_category_code_03, 
@@ -1440,6 +1442,7 @@ SELECT        KIPRGR_item_price_group, KIIGP1_item_group_category_code_01, KIIGP
                          KICGP3_customer_group_category_code_03, KICGP4_customer_group_category_code_04, KIICID_itemcustomer_key_id
 FROM            Integration.F4094_item_customer_keyid_master_file_Staging AS F4094_item_customer_keyid_master_file_Staging_1
 
+-- truncate table Pricing.item_extension_file_F5613
 
 INSERT INTO Pricing.item_extension_file_F5613
                          (QNITM__item_number_short, QNLITM_item_number, QNAITM__3rd_item_number, QN$FIN_force_item_notes, QN$FRT_freightable_item, 
@@ -1575,7 +1578,7 @@ WHERE
 GROUP BY
 	p.ADAN8__billto
 
-
+truncate table Pricing.item_master_F4101
 	
 INSERT INTO Pricing.item_master_F4101
 (IMITM__item_number_short, IMLITM_item_number, IMAITM__3rd_item_number, IMDSC1_description, IMDSC2_description_2, IMSRTX_search_text, 
@@ -1651,6 +1654,8 @@ IMITM__item_number_short, LEFT(IMLITM_item_number,10), IMAITM__3rd_item_number, 
 FROM            Integration.F4101_item_master_Staging AS F4101_item_master_Staging_1
 
 
+truncate table Pricing.supplier_catalog_price_file_F41061
+
 -- de-dup
 INSERT INTO Pricing.supplier_catalog_price_file_F41061
                          (CBMCU__business_unit, CBAN8__billto, CBITM__item_number_short, CBLITM_item_number, CBAITM__3rd_item_number, CBCATN_catalog, 
@@ -1696,7 +1701,7 @@ WHERE b.BillTo = [GSAN8__billto]
 1=1
 
 
-
+truncate table Pricing.free_goods_master_file_F4073
 
 INSERT INTO Pricing.free_goods_master_file_F4073
                          (FGAST__adjustment_name, FGATID_price_adjustment_key_id, FGITMR_related_short_item_number, FGLITM_item_number, FGAITM__3rd_item_number, 
@@ -1708,6 +1713,7 @@ SELECT        FGAST__adjustment_name, FGATID_price_adjustment_key_id, FGITMR_rel
                          FGFGTY_free_good_type, FGFP01_free_good_process_code_01, FGFP02_free_good_process_code_02, FGFP03_free_good_process_code_03, FGUSER_user_id, 
                          FGPID__program_id, FGJOBN_work_station_id, DATEADD (day , FGUPMJ_date_updated_JDT%1000-1, DATEADD(year, FGUPMJ_date_updated_JDT/1000, 0 ) ) AS FGUPMJ_date_updated, FGTDAY_time_of_day
 FROM            Integration.F4073_free_goods_master_file_Staging
+
 INSERT INTO BRS_CustomerVPA
 (VPA)
 SELECT        distinct (SNASN__adjustment_schedule)
@@ -1821,7 +1827,13 @@ ALTER TABLE Pricing.price_adjustment_detail_F4072 ADD CONSTRAINT
 	IMITM__item_number_short
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
-	
+
+	 --- XXX ---
+/*
+SELECT        ADATID_price_adjustment_key_id, ADAST__adjustment_name, ADITM__item_number_short
+FROM            Pricing.price_adjustment_detail_F4072
+where not exists (select * from Pricing.item_master_F4101 i where i.IMITM__item_number_short = ADITM__item_number_short)
+*/	
 
 ALTER TABLE Pricing.price_adjustment_detail_F4072 ADD CONSTRAINT
 	FK_price_adjustment_detail_F4072_BRS_CustomerBT FOREIGN KEY

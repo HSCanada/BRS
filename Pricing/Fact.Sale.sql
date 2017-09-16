@@ -35,18 +35,17 @@ AS
 
 SELECT        
 	t.ID											AS FactKey
+
+	,t.Shipto										AS ShipTo
+	,i.ItemKey										AS ItemKey
+	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
+	,pm.PriceMethodKey
 	,d.FiscalMonth									AS FiscalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
 	,t.LineNumber
-	,t.Shipto										AS ShipTo
-	,c.BillTo
-	,i.ItemKey										AS ItemKey
-	,pm.PriceMethodKey
 	,t.FreeGoodsInvoicedInd
 
-	-- TBD !!
-	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
 
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
@@ -61,6 +60,7 @@ SELECT
 	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
+	,c.BillTo
 	,[DocType]
 	,[OrderPromotionCode]
 	,[OrderSourceCode]
@@ -108,7 +108,6 @@ FROM
 			quot.Adjustment, 
 			enr.Billto,
 			quot.ItemKey, 
-			quot.tempItemCode, 
 			enr.PJEFTJ_effective_date, 
 			enr.PJEXDJ_expired_date, 
 			enr.EnrollSource, 
@@ -130,7 +129,6 @@ FROM
 			quot.Adjustment, 
 			enr.Billto,
 			quot.ItemKey, 
-			quot.tempItemCode, 
 			enr.PJEFTJ_effective_date, 
 			enr.PJEXDJ_expired_date, 
 			enr.EnrollSource, 
@@ -164,6 +162,8 @@ SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
+
+-- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
 
 /*
 
@@ -237,9 +237,8 @@ FROM
 -- 3033264 rows in 2:27
 
 */
--- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
 
 -- SELECT count(*) FROM Fact.Sale 
--- org 1570012, 28s
+-- org 1 570 012, 28s
 -- new 1570012
 

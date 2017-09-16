@@ -47,7 +47,7 @@ SELECT
 	,c.submajor_desc				AS SubMajor	
 	,c.minor_desc					AS Minor
 
-	,s.Supplier + ' | ' + s.supplier_nm	AS Supplier
+	,RTRIM(s.Supplier) + ' | ' + s.supplier_nm	AS Supplier
 	,s.Supplier_Category			AS Abc_SupplierItem
 	,sf.supplier_family_nm			AS SupplierFamily
 	,sf.buying_group_cd				AS BuyingGroup

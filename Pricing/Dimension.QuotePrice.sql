@@ -44,7 +44,7 @@ SELECT
 	,p.ADAST__adjustment_name				AS Adjustment
 	,p.ADAN8__billto						AS Billto
 	,im3.ItemKey							AS ItemKey
-	,p.ADFVTR_factor_value					AS FinalPrice
+	,p.ADFVTR_factor_value					AS QuotePrice
 
 	,ISNULL(h.Supplier,'')					AS Last_SupplierCode
 	,ISNULL(h.Currency,'')					AS Last_CurrencyCode
@@ -58,8 +58,8 @@ SELECT
 	,p.ADEXDJ_expired_date					AS ExpiredDate
 	,p.ADUPMJ_date_updated					AS LastUpdatedDate
 	,p.ADUSER_user_id						AS UserId
+	,im3.Item								AS ItemCode
 
-	,im3.Item								AS tempItemCode
 
 FROM            
 	[Pricing].[price_adjustment_detail_F4072] p
@@ -118,9 +118,9 @@ SELECT
 ,'1980-01-01'	AS EffectiveDate 
 ,'1980-01-01'	AS ExpiredDate 
 ,'1980-01-01'	AS LastUpdatedDate         
-,''				AS UserId     
-
+,''				AS UserId
 ,''				AS ItemCode
+
 
 
 
@@ -132,15 +132,17 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 /*
-SELECT 
-top 10
-* FROM Dimension.QuotePrice
+SELECT top 10* FROM Dimension.QuotePrice
 --WHERE Adjustment = 'SPLPRICE'
 WHERE Adjustment = 'CUSCONTR'
 order by 1 asc
 -- 1s clean
 -- 45s with history
 -- 6s new
+
+SELECT 
+count(*) 
+FROM Dimension.QuotePrice
 
 -- Test Quote dups A
 SELECT        Adjustment, ItemKey, Billto, COUNT(*) AS count
