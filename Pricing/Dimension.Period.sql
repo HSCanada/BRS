@@ -39,7 +39,7 @@ SELECT
 	fm.FiscalMonth
 	,RTRIM(fm.MonthName) AS MonthName
 	,fm.MonthNum
-	,fm.QuarterNum
+	,'Q' + CAST(fm.QuarterNum AS char) AS QuarterName
 	,fm.YearNum
 
 	,fm.WorkingDaysMonth

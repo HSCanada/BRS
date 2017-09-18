@@ -53,7 +53,9 @@ SELECT
 	,ISNULL(h.FX_per_CAD_pnl_rt,0)			AS Last_FxFinance
 	,im3.FreightAdjPct						AS Last_FreightFactor
 	,ISNULL(h.[CorporatePrice],0)			AS Last_BasePrice
+-- 	,(ISNULL(h.SupplierCost,0) * ISNULL(h.FX_per_CAD_mrk_rt,0) * im3.FreightAdjPct) AS Last_LandedCostMrk
 
+		
 	,p.ADEFTJ_effective_date				AS EffectiveDate
 	,p.ADEXDJ_expired_date					AS ExpiredDate
 	,p.ADUPMJ_date_updated					AS LastUpdatedDate

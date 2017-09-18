@@ -39,7 +39,7 @@ SELECT
 	,os.OrderSourceCodeDescr					AS OrderSource
 
 	,pr.PromotionType
-	,pr.PromotionDescription					AS Promotion
+	,RTRIM(pr.PromotionDescription) + ' | ' + pr.PromotionCode	AS Promotion
 	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
 
 	,f.DocType + ' | ' + dt.DocTypeDescr		AS DocType

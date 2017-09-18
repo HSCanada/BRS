@@ -45,8 +45,8 @@ SELECT
 	,t.SalesOrderNumber
 	,t.LineNumber
 	,t.FreeGoodsInvoicedInd
-
-
+	,CASE WHEN q.QuotePriceKey IS NULL THEN 0 ELSE 1 END AS OnActiveQuoteInd
+	
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
 	,(GPAmt + ISNULL(t.ExtChargebackAmt,0))			AS GPAmt

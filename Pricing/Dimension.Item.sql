@@ -40,20 +40,20 @@ SELECT
 	i.ItemKey						AS ItemKey
 	,i.ItemDescription + ' | ' + i.Item	AS Item
 
-	,sc.SalesCategoryName			AS SalesCategory
+	,RTRIM(sc.SalesCategoryName) + ' | ' + sc.SalesCategory	AS SalesCategory
 	,mpc.MPC_Category				AS Abc_MpcItem
-	,cr.category_rollup_desc		AS CategoryRollup
-	,mpc.MajorProductClassDesc		AS Major
-	,c.submajor_desc				AS SubMajor	
-	,c.minor_desc					AS Minor
+	,cr.category_rollup_desc 		AS CategoryRollup
+	,mpc.MajorProductClassDesc	+ ' | ' + c.major_cd	AS Major
+	,c.submajor_desc			+ ' | ' + c.submajor_cd	AS SubMajor	
+	,c.minor_desc				+ ' | ' + c.MinorProductClass AS Minor
 
 	,RTRIM(s.Supplier) + ' | ' + s.supplier_nm	AS Supplier
 	,s.Supplier_Category			AS Abc_SupplierItem
-	,sf.supplier_family_nm			AS SupplierFamily
+	,RTRIM(sf.SupplierFamily) + ' | ' + sf.supplier_family_nm	AS SupplierFamily
 	,sf.buying_group_cd				AS BuyingGroup
 	,sf.classificiation_cd			AS VendorClassification
 	
-	,i.FamilySetLeader				AS FamilySet
+	,ifs.ItemDescription + ' | ' + i.FamilySetLeader	AS FamilySet
 	,i.Item							AS ItemCode
 	,i.ItemStatus					
 	,i.Brand
@@ -96,6 +96,9 @@ FROM
 
 	INNER JOIN BRS_Item AS icomp 
 	ON i.Item_Competitive_Match = icomp.Item
+
+	INNER JOIN BRS_Item AS ifs
+	ON i.FamilySetLeader = ifs.Item
 
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS b 
 	ON b.Item = i.Item AND b.CalMonth = 0

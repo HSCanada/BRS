@@ -38,20 +38,21 @@ SELECT
 	,c.Billto
 	,c.PracticeName + ' | ' + CAST(c.ShipTo as char)	AS Customer
 	,c2.PracticeName + ' | ' + CAST(c2.BillTo as char)	AS CustomerBillto
+	,c.CustGrpWrk										AS CustomerGroup
 
-	,VPADesc + ' | ' + RTRIM(v.VPA)  	AS SalesPlan
-	,RTRIM(v.VPA)  	AS SalesPlanCode
-	,VPATypeCd	AS SalesPlanType
+	,VPADesc + ' | ' + RTRIM(v.VPA)  					AS SalesPlan
+	,RTRIM(v.VPA)  										AS SalesPlanCode
+	,VPATypeCd											AS SalesPlanType
 
-	,sroll.FSCName		AS FieldSales
-	,b.BranchName		AS Branch
+	,sroll.FSCName										AS FieldSales
+	,b.BranchName										AS Branch
 
 	,fsa.FSA
 	,fsa.City
 	,fsa.Region
 	,fsa.Province
 	,fsa.Country
-	,Geo_Category	AS Abc_GeoCustomer
+	,Geo_Category										AS Abc_GeoCustomer
 
 	,ISNULL(padj.[SNAST__adjustment_name],'')			AS Adjustment
 	,ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
@@ -60,33 +61,33 @@ SELECT
 	,ISNULL(padj.[EnrollSource],'')						AS AdjEnrollSource
 	,ISNULL(padj.[PriceMethod],'')						AS AdjPriceMethod
 	
-	,spend.Spend_Category		AS Abc_SpendCustomer
-	,cgrp.PotentialSpendAmt		AS Spend_PotentialAmt
+	,spend.Spend_Category								AS Abc_SpendCustomer
+	,cgrp.PotentialSpendAmt								AS Spend_PotentialAmt
 	,spend.Spend_Display		
 	,spend.Spend_Rank
 	,spend.Spend_Discount_Rate
 
-	,div.SalesDivisionDesc	AS SalesDivision
-	,mcroll.MarketClassDesc	AS MarketClassRollup
-	,mclass.MarketClassDesc	AS MarketClass
-	,s.SegName				AS Segment
-	,s.SpecialtyNm			AS Specialty
+	,div.SalesDivisionDesc								AS SalesDivision
+	,mcroll.MarketClassDesc								AS MarketClassRollup
+	,mclass.MarketClassDesc								AS MarketClass
+	,s.SegName											AS Segment
+	,s.SpecialtyNm + ' | ' + s.Specialty				AS Specialty
 	,iif(c.AccountType='D',
 		'Closed',
 		'Active'
-	)						AS Status
+	)													AS CustomerStatus
 	,iif(c.DSO_ParentShipTo > 0, 
 		c.DSO_ParentShipTo, 
-		c.ShipTo)			AS DCC_TrackingShipTo
+		c.ShipTo)										AS DCC_TrackingShipTo
 	,iif(c.DSO_TrackingCd = 'DSO',
 		'Post',
 		'Prior'
-	)						AS DCC_TrackingCode
+	)													AS DCC_TrackingCode
 	,iif(c.FocusCd='',
 		'Non-Focus',
 		'Focus'
-	)						As Focus
-	,CAST(c.DateAccountOpened AS date) AS DateAccountOpend
+	)													As Focus
+	,CAST(c.DateAccountOpened AS date)					AS DateAccountOpend
 
 
 FROM
