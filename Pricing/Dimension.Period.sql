@@ -46,6 +46,7 @@ SELECT
 	,fm.MonthSeq
 	,fm.FirstMonthSeqInQtr
 	,fm.FirstMonthSeqInYear
+	,CAST(fm.LastWorkingDt as date)		AS LastWorkingDay
 
 FROM
 	BRS_FiscalMonth AS fm 

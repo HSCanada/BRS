@@ -71,6 +71,10 @@ SELECT
 
 	,icomp.ItemKey					AS CompetitiveMatchKey
 
+	,(sf.SupplierFamily)			AS SupplierFamilyCode
+	,(sc.SalesCategory)				AS SalesCategoryCode
+	,(cr.CategoryRollup)			AS CategoryRollupCode
+
 FROM            
 	BRS_Item AS i 
 
@@ -112,3 +116,9 @@ GO
 
 
 -- SELECT top 10 * FROM Dimension.Item
+-- SELECT Count(*) FROM Dimension.Item
+
+-- SELECT * FROM Dimension.Item where Current_FxMarketing = -1
+
+-- integrity check
+-- SELECT * FROM BRS_Item WHERE NOT EXISTS (SELECT * FROM Dimension.Item WHERE ItemCode = BRS_Item.Item)

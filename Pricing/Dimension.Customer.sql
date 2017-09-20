@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	14 Sep 17	tmc		Simplified model
+--	20 Sep 17	tmc		Fixed Market setment join bug resulting in missing rows
 **    
 *******************************************************************************/
 
@@ -37,16 +38,17 @@ SELECT
 	c.ShipTo
 	,c.Billto
 	,c.PracticeName + ' | ' + CAST(c.ShipTo as char)	AS Customer
-	,c2.PracticeName + ' | ' + CAST(c2.BillTo as char)	AS CustomerBillto
-	,c.CustGrpWrk										AS CustomerGroup
 
+	,CASE 
+		WHEN c.CustGrpWrk	<> '' 
+		THEN c.CustGrpWrk
+		ELSE 'BT_' + CAST(c.Billto as char) 
+	END													AS CustomerGroup
 	,VPADesc + ' | ' + RTRIM(v.VPA)  					AS SalesPlan
 	,RTRIM(v.VPA)  										AS SalesPlanCode
 	,VPATypeCd											AS SalesPlanType
-
 	,sroll.FSCName										AS FieldSales
 	,b.BranchName										AS Branch
-
 	,fsa.FSA
 	,fsa.City
 	,fsa.Region
@@ -87,7 +89,12 @@ SELECT
 		'Non-Focus',
 		'Focus'
 	)													As Focus
-	,CAST(c.DateAccountOpened AS date)					AS DateAccountOpend
+	,CAST(c.DateAccountOpened AS date)					AS DateAccountOpened
+
+	,(div.SalesDivision)								AS SalesDivisionCode
+	,(b.Branch)											AS BranchCode
+	,mclass.MarketClass									AS MarketClassCode
+
 
 
 FROM
@@ -101,16 +108,17 @@ FROM
 
 	INNER JOIN BRS_CustomerMarketClass AS mclass 
 	ON c.MarketClass = mclass.MarketClass 
-		AND s.MarketClass = mclass.MarketClass 
+
 
 	INNER JOIN BRS_CustomerGroup AS cgrp
 	ON c.CustGrpWrk = cgrp.CustGrp
 	
 	INNER JOIN BRS_CustomerMarketClass AS mcroll
-	ON mclass.[MarketRollup_L1] = mcroll.MarketClass 
+	ON mclass.[MarketRollup_L3] = mcroll.MarketClass 
 
 	INNER JOIN BRS_CustomerVPA as v
 	ON c.[VPA] = v.[VPA]
+
 
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
@@ -121,21 +129,24 @@ FROM
 	INNER JOIN BRS_FSC_Rollup sroll
 	ON terr.FSCRollup = sroll.TerritoryCd
 
+
 	INNER JOIN BRS_Customer_FSA AS fsa 
 	ON c.FSA = fsa.FSA 
 
 	INNER JOIN [dbo].[BRS_CustomerBT] as bt
 	ON c.BillTo = bt.BillTo
 
-	INNER JOIN [dbo].[BRS_Customer] as c2
-	on bt.ShipToPrimary = c2.ShipTo
 
 	LEFT JOIN [Pricing].[price_adjustment_enroll] AS padj
 	ON c.BillTo = padj.BillTo
 
+
 	CROSS JOIN BRS_Customer_Spend_Category AS spend
+
+
 WHERE 
-	cgrp.PotentialSpendAmt between [Spend_From] and [Spend_To]
+ 	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
+	(1=1)
 
 
 GO
@@ -147,4 +158,8 @@ GO
 
 
 -- SELECT top 10 * FROM Dimension.Customer where  billto = 2613256 order by 1
+
+-- integrity check
+-- SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
+
 

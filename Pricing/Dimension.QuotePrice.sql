@@ -53,7 +53,13 @@ SELECT
 	,ISNULL(h.FX_per_CAD_pnl_rt,0)			AS Last_FxFinance
 	,im3.FreightAdjPct						AS Last_FreightFactor
 	,ISNULL(h.[CorporatePrice],0)			AS Last_BasePrice
--- 	,(ISNULL(h.SupplierCost,0) * ISNULL(h.FX_per_CAD_mrk_rt,0) * im3.FreightAdjPct) AS Last_LandedCostMrk
+ 	,(ISNULL(h.SupplierCost,0) * ISNULL(h.FX_per_CAD_mrk_rt,0) * im3.FreightAdjPct) AS Last_LandedCostMrk
+	,CASE 
+		WHEN p.ADFVTR_factor_value > 0 
+		THEN 1-(ISNULL(h.SupplierCost,0) * ISNULL(h.FX_per_CAD_mrk_rt,0) * im3.FreightAdjPct)/p.ADFVTR_factor_value
+		ELSE 0
+	END 									AS Last_QuotePriceGM
+
 
 		
 	,p.ADEFTJ_effective_date				AS EffectiveDate
@@ -116,6 +122,8 @@ SELECT
 ,0.0	AS Last_FxFinance
 ,0.0	AS Last_FreightFactor  
 ,0.0	AS Last_BasePrice
+,0.0	AS Last_LandedCostMrk
+,0.0	AS Last_QuotePriceGM
 
 ,'1980-01-01'	AS EffectiveDate 
 ,'1980-01-01'	AS ExpiredDate 
@@ -134,7 +142,10 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 /*
-SELECT top 10* FROM Dimension.QuotePrice
+
+SELECT top 10 * FROM Dimension.QuotePrice
+WHERE Last_FxMarketing = -1
+
 --WHERE Adjustment = 'SPLPRICE'
 WHERE Adjustment = 'CUSCONTR'
 order by 1 asc
