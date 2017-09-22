@@ -30,20 +30,25 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	20 Sep 17	tmc		fixed ambiguous market class join 
+--	22 Sep 17	tmc		added static content as per Jen testing
 **    
 *******************************************************************************/
 SELECT        
 	t.FiscalMonth
 
-	,b.BranchKey
+	,b.BranchKey					AS HIST_BranchKey
+	,mc.MarketClassKey				AS HIST_MarketClassKey
+
+	,isup.supplierKey				AS HIST_SupplierKey
+	,isupf.supplierKey				AS HIST_SupplierFamilyKey
+	
 	,bu.GLBU_ClassKey
 	,adj.AdjCodeKey
-	,c.ShipTo
+	,t.ShipTo
 	,i.ItemKey
-	,mc.MarketClassKey				AS HIST_MarketClassKey
 	
 	,t.SalesAmt						AS TotalSalesAmt
-	,t.GPAmt							AS TotalGPAmt
+	,t.GPAmt						AS TotalGPAmt
 	,t.GP_Org_Amt					AS TotalGPExclCBAmt
 	,ISNULL(t.ExtChargebackAmt, 0)	AS ExtChargebackAmt
 
@@ -58,21 +63,24 @@ FROM
 	INNER JOIN Dimension.Item AS i 
 	ON t.Item = i.ItemCode 
 
+-- Key mapping joins
 	INNER JOIN BRS_Branch AS b 
 	ON t.Branch = b.Branch  
 
 	INNER JOIN BRS_BusinessUnitClass AS bu 
 	ON t.GLBU_Class = bu.GLBU_Class 
 
-
 	INNER JOIN BRS_AdjCode AS adj 
 	ON t.AdjCode = adj.AdjCode 
 
-	INNER JOIN Dimension.Customer AS c 
-	ON t.Shipto = c.ShipTo 
-
 	INNER JOIN BRS_CustomerMarketClass AS mc 
-	ON c.MarketClassCode = mc.MarketClass
+	ON t.HIST_MarketClass = mc.MarketClass
+
+	INNER JOIN BRS_ItemSupplier AS isup 
+	ON h.Supplier = isup.Supplier 
+
+	INNER JOIN BRS_ItemSupplier AS isupf 
+	ON isupf.SupplierFamily = isup.SupplierFamily
 
 
 WHERE        
@@ -90,13 +98,14 @@ GO
 -- Testing
 
 -- adhoc look at the data
-select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
-
 SELECT 
  --top 10 
 -- count 
 * 
 FROM Fact.SaleVendor
+
+-- old market test
+select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
 
 
 -- row count testing2 -- success
