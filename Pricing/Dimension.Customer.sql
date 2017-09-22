@@ -46,7 +46,11 @@ SELECT
 	END													AS CustomerGroup
 	,VPADesc + ' | ' + RTRIM(v.VPA)  					AS SalesPlan
 	,RTRIM(v.VPA)  										AS SalesPlanCode
-	,VPATypeCd											AS SalesPlanType
+	,CASE
+		WHEN ISNULL(padj.[EnrollSource],'') = ''
+		THEN [VPATypeCd]
+		ELSE padj.[EnrollSource]
+	END													AS SalesPlanType
 	,sroll.FSCName										AS FieldSales
 	,b.BranchName										AS Branch
 	,fsa.FSA
@@ -136,16 +140,30 @@ FROM
 	INNER JOIN [dbo].[BRS_CustomerBT] as bt
 	ON c.BillTo = bt.BillTo
 
-
-	LEFT JOIN [Pricing].[price_adjustment_enroll] AS padj
+	-- de-dup enroll (due to contract + special price enroll)
+	LEFT JOIN 
+	(
+		SELECT 
+			*
+		FROM            
+			[Pricing].[price_adjustment_enroll] AS s
+		WHERE EXISTS 
+		(
+			SELECT MIN(s2.ID) AS id_unique 
+			FROM [Pricing].[price_adjustment_enroll] s2
+			GROUP BY s2.BillTo
+			HAVING s.[ID] = MIN(s2.ID)
+		)
+	)  padj
 	ON c.BillTo = padj.BillTo
-
 
 	CROSS JOIN BRS_Customer_Spend_Category AS spend
 
 
 WHERE 
  	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
+--	test
+--	c.Billto = 1527764 AND
 	(1=1)
 
 
@@ -162,4 +180,10 @@ GO
 -- integrity check
 -- SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
 
-
+-- dup check
+/*
+SELECT        BillTo, COUNT(*) AS Expr1
+FROM            Pricing.price_adjustment_enroll
+GROUP BY BillTo
+HAVING        (COUNT(*) > 1)
+*/

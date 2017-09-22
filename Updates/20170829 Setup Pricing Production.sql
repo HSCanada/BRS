@@ -1460,7 +1460,7 @@ FROM            Integration.F5613_product_extension_file_Staging
 
 -- Class Contract Map 1 of 3
 
-truncate table Pricing.price_adjustment_enroll
+-- truncate table Pricing.price_adjustment_enroll
 
 INSERT INTO Pricing.price_adjustment_enroll
                          (BillTo, SNAST__adjustment_name, PJASN__adjustment_schedule, PJEFTJ_effective_date, PJEXDJ_expired_date, PJUPMJ_date_updated, PJUSER_user_id, 
@@ -1492,7 +1492,8 @@ WHERE
 	(atn.ATPRGR_item_price_group = '') AND 
 	(atn.ATCPGP_customer_price_group = '') AND 
 	(atn.ATSDGR_order_detail_group = '') AND 
-	(atn.ATLBT__level_break_type = 1) AND 
+	(atn.ATLBT__level_break_type = 1) AND
+	
 	(1 = 1)
 
 -- Contract Map 2 of 3
@@ -1569,11 +1570,6 @@ WHERE
 	p.ADBSCD_basis = 5 AND
 	p.ADMNQ__quantity_from = 1 AND
 
-	-- remove reference were class contract to avoid double counting. bad data 
-	NOT EXISTS (SELECT * 
-				FROM [Pricing].[price_adjustment_enroll] b 
-				WHERE b.BillTo = p.[ADAN8__billto]
-				) AND
 	(1=1)
 GROUP BY
 	p.ADAN8__billto

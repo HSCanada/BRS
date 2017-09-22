@@ -32,6 +32,7 @@ AS
 **	10 Jul 17	tmc		updated ABC group
 **	02 Aug 17	tmc		added Brand
 **	14 Sep 17	tmc		Simplified model
+--	20 Sep 17	tmc		add GM 
 **    
 *******************************************************************************/
 
@@ -69,11 +70,19 @@ SELECT
 	,ISNULL(i.FreightAdjPct,0)		As Current_FreightFactor
 	,ISNULL(b.CorporatePrice, 0)	AS Current_BasePrice
 
+ 	,(ISNULL(b.SupplierCost,0) * ISNULL(b.FX_per_CAD_mrk_rt,0) * ISNULL(i.FreightAdjPct,0)) AS Current_LandedCostMrk
+	,CASE 
+		WHEN ISNULL(b.CorporatePrice, 0) > 0 
+		THEN 1-(ISNULL(b.SupplierCost,0) * ISNULL(b.FX_per_CAD_mrk_rt,0) * ISNULL(i.FreightAdjPct,0))/ISNULL(b.CorporatePrice, 0)
+		ELSE 0
+	END 									AS Current_PriceGM
+
 	,icomp.ItemKey					AS CompetitiveMatchKey
 
 	,(sf.SupplierFamily)			AS SupplierFamilyCode
 	,(sc.SalesCategory)				AS SalesCategoryCode
 	,(cr.CategoryRollup)			AS CategoryRollupCode
+	,(cr.CategoryClass_Rollup)		AS CategoryClassRollupCode
 
 FROM            
 	BRS_Item AS i 

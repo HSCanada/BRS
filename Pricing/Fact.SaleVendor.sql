@@ -93,7 +93,7 @@ GO
 select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
 
 SELECT 
- top 10 
+ --top 10 
 -- count 
 * 
 FROM Fact.SaleVendor

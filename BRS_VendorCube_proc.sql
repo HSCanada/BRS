@@ -18,7 +18,7 @@ AS
 **
 **	Called by:   
 **             
-**	Parameters:
+**	Parameters:	Enter 0 to use lookup values, otherwise supply start and end 
 **	Input					Output
 **	----------				-----------
 **	@bDebug

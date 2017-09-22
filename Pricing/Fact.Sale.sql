@@ -145,7 +145,8 @@ FROM
 		) as q
 		ON (c.BillTo = q.BillTo) AND
 			(i.ItemKey = q.ItemKey) AND
-			(t.Date BETWEEN q.PJEFTJ_effective_date AND q.PJEXDJ_expired_date) AND
+--			remove this as per conversion with Marco (enroll dates are pushed forward)		
+--			(t.Date BETWEEN q.PJEFTJ_effective_date AND q.PJEXDJ_expired_date) AND
 			(t.PriceMethod = q.PriceMethod)
 
 WHERE        
