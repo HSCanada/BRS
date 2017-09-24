@@ -99,7 +99,7 @@ GO
 
 -- adhoc look at the data
 SELECT 
- --top 10 
+ top 10 
 -- count 
 * 
 FROM Fact.SaleVendor

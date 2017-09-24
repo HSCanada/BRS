@@ -35,6 +35,7 @@ AS
 -- 29 Mar 17	tmc		Updated logic to recognise new CAD market rate
 -- 10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
 -- 19 Jul 17	tmc		added daily snapshot for Pricing
+-- 24 Sep 17	tmc		changed date to use lastweekly to avoid manual setting
 **    
 *******************************************************************************/
 BEGIN
@@ -72,7 +73,7 @@ Else
 
 -- Get current date
 Select
-	@dtSalesDate = SalesDate
+	@dtSalesDate = SalesDateLastWeekly
 
 FROM
 	[BRS_Config]
@@ -266,103 +267,6 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-/*
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'UPDATE BRS_ItemBaseHistoryLNK Current with changes ...'
-
-	UPDATE 
-		BRS_ItemBaseHistoryLNK 
-	SET 
-		FamilySetLeaderID	= ifs.ItemKey,
-		PriceID				= d.PriceID
-
-	FROM         
-		STAGE_BRS_ItemBaseHistory AS s 
-
-		INNER JOIN BRS_ItemBaseHistoryDAT AS d 
-		ON s.Supplier = d.Supplier AND 
-			s.Currency = d.Currency AND 
-			s.SupplierCost = d.SupplierCost AND 
-			s.CorporatePrice = d.CorporatePrice AND 
-			s.SellPrcBrk2 = d.SellPrcBrk2 AND 
-			s.SellPrcBrk3 = d.SellPrcBrk3 AND 
-			s.SellQtyBrk2 = d.SellQtyBrk2 AND 
-			s.SellQtyBrk3 = d.SellQtyBrk3 
-
-		INNER JOIN BRS_Item AS i 
-		ON s.Item = i.Item
-
-		INNER JOIN BRS_Item AS ifs 
-		ON s.FamilySetLeader = ifs.Item
-
-		INNER JOIN BRS_ItemBaseHistoryLNK AS ilnk 
-		ON ilnk.CalMonth = s.CalMonth AND 
-			ilnk.ItemID = i.ItemKey
-
-	WHERE
-		-- only update current for performance reasons
-		(s.CalMonth between 0 and 0) AND
-		( 
-			(ilnk.FamilySetLeaderID <> ifs.ItemKey) OR 
-			(ilnk.PriceID <> d.PriceID ) OR
-			(1<>1)
-		) AND
-		(1=1)
-
-
-	Set @nErrorCode = @@Error
-End
-
-
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'LOAD NEW BRS_ItemBaseHistoryLNK ...'
-
-	INSERT INTO BRS_ItemBaseHistoryLNK (
-		CalMonth,
-		ItemID,
-
-		FamilySetLeaderID,
-		PriceID
-	)
-
-	SELECT     
-		s.CalMonth, 
-		i.ItemKey AS ItemID, 
-
-		ifs.ItemKey as FamilySetLeaderID,
-		d.PriceID
-
-	FROM         
-		STAGE_BRS_ItemBaseHistory AS s 
-
-		INNER JOIN BRS_ItemBaseHistoryDAT AS d 
-	ON s.Supplier = d.Supplier AND 
-		s.Currency = d.Currency AND 
-		s.SupplierCost = d.SupplierCost AND 
-		s.CorporatePrice = d.CorporatePrice AND 
-		s.SellPrcBrk2 = d.SellPrcBrk2 AND 
-		s.SellPrcBrk3 = d.SellPrcBrk3 AND 
-		s.SellQtyBrk2 = d.SellQtyBrk2 AND 
-		s.SellQtyBrk3 = d.SellQtyBrk3 
-
-		INNER JOIN BRS_Item AS i 
-		ON s.Item = i.Item
-
-		INNER JOIN BRS_Item AS ifs 
-		ON s.FamilySetLeader = ifs.Item
-	WHERE
-		NOT EXISTS (SELECT * FROM BRS_ItemBaseHistoryLNK WHERE CalMonth = s.CalMonth AND ItemID = i.ItemKey) AND
---		s.CalMonth between 201601 and 201612 AND
-		(1=1)
-
-
-	Set @nErrorCode = @@Error
-End
-*/
 
 If (@nErrorCode = 0) 
 Begin
