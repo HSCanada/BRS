@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	20 Sep 17	tmc		fixed ambiguous market class join 
 --	22 Sep 17	tmc		added static content as per Jen testing
+--	3 Oct 17	tmc		Merge supplier family to use Supplier dimension
 **    
 *******************************************************************************/
 SELECT        
@@ -40,7 +41,6 @@ SELECT
 	,mc.MarketClassKey				AS HIST_MarketClassKey
 
 	,isup.supplierKey				AS HIST_SupplierKey
-	,isupf.supplierKey				AS HIST_SupplierFamilyKey
 	
 	,bu.GLBU_ClassKey
 	,adj.AdjCodeKey
@@ -78,9 +78,6 @@ FROM
 
 	INNER JOIN BRS_ItemSupplier AS isup 
 	ON h.Supplier = isup.Supplier 
-
-	INNER JOIN BRS_ItemSupplier AS isupf 
-	ON isupf.SupplierFamily = isup.SupplierFamily
 
 
 WHERE        
