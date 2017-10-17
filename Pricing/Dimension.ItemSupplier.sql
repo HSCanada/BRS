@@ -29,16 +29,28 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	17 Oct 17	tmc		Add class & buygroup to supplier for vendor reporting
 **    
 *******************************************************************************/
 
 SELECT        
-	SupplierKey, 
-	Supplier		AS SupplierCode, 
-	supplier_nm		AS SupplierName, 
-	SupplierFamily	AS SupplierFamilyCode
+	SupplierKey
+	,Supplier				AS SupplierCode
+	,supplier_nm			AS SupplierName
+	,s.SupplierFamily		AS SupplierFamilyCode
+	,sf.buying_group_cd		AS SupplierBuyingGroupCode
+	,sf.classificiation_cd	AS SupplierClassificationCode
 
-FROM            BRS_ItemSupplier
+
+FROM            
+	BRS_ItemSupplier s
+
+	INNER JOIN [dbo].[BRS_ItemSupplierFamily] sf
+	ON s.SupplierFamily = sf.SupplierFamily
+
+
+
+
 
       
 
@@ -51,3 +63,6 @@ GO
 
 
 -- SELECT * FROM Dimension.ItemSupplier
+
+-- SELECT count(*) FROM Dimension.ItemSupplier
+-- ORG = 5398

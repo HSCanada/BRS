@@ -35,10 +35,9 @@ FROM
 
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
---	(t.SalesCategory = 'TEETH') AND 
 
 	(t.FreeGoodsInvoicedInd = 0)  And 
---	(c.BillTo=2613256 ) AND
+	(c.BillTo=2613256 ) AND
 	(t.FiscalMonth BETWEEN 
 --		(201601 ) and 
 		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 ) and 
@@ -58,3 +57,5 @@ GROUP BY
 
 ORDER BY 1
 
+
+-- set Results to text!
