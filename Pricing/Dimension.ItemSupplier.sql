@@ -34,25 +34,24 @@ AS
 *******************************************************************************/
 
 SELECT        
-	SupplierKey
-	,Supplier				AS SupplierCode
-	,supplier_nm			AS SupplierName
+	s.SupplierKey
+	,s.Supplier				AS SupplierCode
+	,s.supplier_nm			AS SupplierName
 	,s.SupplierFamily		AS SupplierFamilyCode
 	,sf.buying_group_cd		AS SupplierBuyingGroupCode
 	,sf.classificiation_cd	AS SupplierClassificationCode
-
-
+	,CASE 
+		WHEN s.SupplierFamily = ''
+		THEN s.supplier_nm
+		ELSE sf.supplier_family_nm
+	END						AS SupplierFamilyName
+	
 FROM            
 	BRS_ItemSupplier s
 
 	INNER JOIN [dbo].[BRS_ItemSupplierFamily] sf
 	ON s.SupplierFamily = sf.SupplierFamily
-
-
-
-
-
-      
+    
 
 GO
 
