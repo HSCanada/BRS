@@ -1,4 +1,4 @@
-Exec   [BRS_BE_Transaction_DW_load_proc] 0
+-- Exec   [BRS_BE_Transaction_DW_load_proc] 0
 
 UPDATE    BRS_Transaction
 SET              ExtChargebackAmt = w.ExtChargebackAmt
