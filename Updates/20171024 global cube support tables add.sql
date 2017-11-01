@@ -581,26 +581,7 @@ CREATE UNIQUE NONCLUSTERED INDEX cost_center_u_idx ON [hfm].[cost_center]
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
---
 
-CREATE TABLE [hfm].[business_unit_to_cost_center_map](
-	[BusinessUnit] [char](12) NOT NULL,
-	[CostCenter] [nvarchar](30) NOT NULL,
-	[Note] [nchar](50) NULL,
- CONSTRAINT [business_unit_to_cost_center_map_c_pk] PRIMARY KEY CLUSTERED 
-(
-	[BusinessUnit] ASC,
-	[CostCenter] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
-) ON [USERDATA]
-
-GO
-
-CREATE NONCLUSTERED INDEX business_unit_to_cost_center_map_idx_01 ON hfm.business_unit_to_cost_center_map
-	(
-	CostCenter
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
 
 -- ri
 
@@ -692,8 +673,10 @@ GO
 
 ALTER TABLE hfm.account_master_F0901 ADD
 	HFM_CostCenter nvarchar(30) NULL,
-	HFM_Account nvarchar(30) NULL
+	HFM_Account nvarchar(30) NULL,
+	LastUpdated date NULL
 GO
+
 
 ALTER TABLE hfm.account_master_F0901 ADD CONSTRAINT
 	FK_account_master_F0901_cost_center FOREIGN KEY
@@ -886,6 +869,7 @@ WHERE
 ORDER BY 
 	aa.GLOBJ_Type
 
+-- test exclusive map
 
 SELECT       
 	r.Excl_Code_TargKey
@@ -907,10 +891,12 @@ FROM
 		1=1
 WHERE
 	r.StatusCd = 1 AND
+	label = 'p' AND
 --	Excl_Code_TargKey like 'CAO%' AND
-	item in ('5848072'   , '5950085'   ) AND
+--	item in ('5848072'   , '5950085'   ) AND
 	1=1
 
+-- test bu map vs glbu actual consistency
 SELECT        t.SalesOrderNumberKEY, t.DocType, t.LineNumber, t.BusinessUnitSales, t.GLBU_Class, b.GLBU_Class
 FROM            BRS_Transaction AS t INNER JOIN
                          BRS_BusinessUnit AS b ON t.BusinessUnitSales = b.BusinessUnit
@@ -919,4 +905,65 @@ WHERE
 	t.GLBU_Class <> 'SMEQU' AND
 	(t.GLBU_Class <> b.GLBU_Class)
 
+CREATE TABLE [hfm].[business_unit_hfm_account_to_cost_center_map](
+	[business_unit] [char](12) NOT NULL,
+	[HFM_Account] [nvarchar](30) NOT NULL,
+	[CostCenter] [nvarchar](30) NOT NULL,
+
+	Note nvarchar(50) NULL
+
+ CONSTRAINT [business_unit_hfm_account_to_cost_center_map_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[business_unit] ASC,
+	[HFM_Account]  ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+-- add ri
+ALTER TABLE hfm.business_unit_hfm_account_to_cost_center_map ADD CONSTRAINT
+	FK_business_unit_hfm_account_to_cost_center_map_BRS_BusinessUnit FOREIGN KEY
+	(
+	business_unit
+	) REFERENCES dbo.BRS_BusinessUnit
+	(
+	BusinessUnit
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.business_unit_hfm_account_to_cost_center_map ADD CONSTRAINT
+	FK_business_unit_hfm_account_to_cost_center_map_account FOREIGN KEY
+	(
+	HFM_Account
+	) REFERENCES hfm.account
+	(
+	HFM_Account
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.business_unit_hfm_account_to_cost_center_map ADD CONSTRAINT
+	FK_business_unit_hfm_account_to_cost_center_map_cost_center FOREIGN KEY
+	(
+	CostCenter
+	) REFERENCES hfm.cost_center
+	(
+	CostCenter
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+-- mapping - fix this
+UPDATE       hfm.account_master_F0901
+SET                HFM_CostCenter = m.CostCenter, [LastUpdated]  = getdate()
+
+FROM            
+hfm.business_unit_hfm_account_to_cost_center_map m 
+INNER JOIN hfm.account_master_F0901 
+
+ON hfm.account_master_F0901.[GMMCU__business_unit] = m.business_unit AND 
+	hfm.account_master_F0901.HFM_Account = m.[HFM_Account]
 
