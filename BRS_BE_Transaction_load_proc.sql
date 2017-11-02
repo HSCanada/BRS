@@ -46,7 +46,8 @@ AS
 --	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
 --	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place 
 --	13 Dec 16	tmc		Extend FG tag to adjust note (consistent reporting)
-
+--  01 Nov 17	tmc		removed redundant GLaccounts (saved as BU & obj)
+--						fix GLBU logic to use BU + Obj + Sub
 **    
 *******************************************************************************/
 BEGIN
@@ -435,8 +436,6 @@ Begin
 		OrderSourceCode, 
 		CustomerPOText1, 
 		MajorProductClass, 
-		GLAcctNumberSales, 
-		GLAcctNumberCost, 
 		SalesOrderBillTo, 
 		ARInvoiceDocType, 
 		MarketSegment, 
@@ -445,10 +444,13 @@ Begin
 		GLClass, 
 		AdditionalWarehouse, 
 		Warehouse, 
-		BusinessUnitSales, 
-		BusinessUnitCost, 
-		GLAcctNumberObjSales, 
-		GLAcctNumberObjCost,
+		GL_BusinessUnit_Sales, 
+		GL_BusinessUnit_Cost, 
+		GL_Object_Sales, 
+		GL_Object_Cost,
+		GL_Subsidiary_Sales, 
+		GL_Subsidiary_Cost,
+
 		FreeGoodsEstInd,
 
 --	06 May 16	tmc		Duplicate Free Good logic into Adjustment for simplification
@@ -479,8 +481,6 @@ Begin
 		OrderSourceCode, 
 		CustomerPOText1, 
 		l.MajorProductClass, 
-		GLAcctNumberSales, 
-		GLAcctNumberCost, 
 		SalesOrderBillTo, 
 		ARInvoiceDocType, 
 		MarketSegment, 
@@ -491,8 +491,10 @@ Begin
 		Warehouse, 
 		BusinessUnitSales, 
 		BusinessUnitCost, 
-		GLAcctNumberObjSales, 
-		GLAcctNumberObjCost,
+		LEFT(GLAcctNumberObjSales,4), 
+		LEFT(GLAcctNumberObjCost,4),
+		SUBSTRING(GLAcctNumberObjSales,6,4), 
+		SUBSTRING(GLAcctNumberObjCost,6,4),
 
 		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjCode,

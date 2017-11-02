@@ -269,7 +269,8 @@ VALUES
 
 -- Exclusive - mapping rules
 
-CREATE TABLE [hfm].[exclusive_product_rule](
+CREATE TABLE [hfm].[
+e_product_rule](
 	[Supplier_WhereClauseLike] [varchar](30) NOT NULL,
 	[Brand_WhereClauseLike] [varchar](30) NOT NULL,
 	[MinorProductClass_WhereClauseLike] [varchar](30) NOT NULL,
@@ -896,7 +897,45 @@ WHERE
 --	item in ('5848072'   , '5950085'   ) AND
 	1=1
 
+-- update exec (rough , working)
+
+UPDATE       
+	BRS_ItemHistory
+SET
+	Excl_key = p.[Excl_Key]
+FROM
+	BRS_ItemHistory 
+	INNER JOIN hfm.exclusive_product_rule AS r 
+	ON BRS_ItemHistory.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+		BRS_ItemHistory.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
+		BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+		BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
+		1 = 1 
+	
+	INNER JOIN hfm.exclusive_product AS p 
+	ON r.Excl_Code_TargKey = p.Excl_Code  
+WHERE        
+	(r.StatusCd = 1) AND 
+	(BRS_ItemHistory.FiscalMonth BETWEEN p.EffectivePeriod AND p.ExpiredPeriod)
+
+-- update private
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 1
+FROM
+	BRS_ItemHistory 
+
+	INNER JOIN BRS_ItemMPC AS mpc 
+	ON mpc.MajorProductClass = LEFT(BRS_ItemHistory.MinorProductClass, 3)
+
+WHERE
+	(BRS_ItemHistory.Label = 'P') AND 
+	(mpc.PrivateLabelScopeInd = 1) AND 
+	(BRS_ItemHistory.Excl_key IS NULL)
+
 -- test bu map vs glbu actual consistency
+/*
 SELECT        t.SalesOrderNumberKEY, t.DocType, t.LineNumber, t.BusinessUnitSales, t.GLBU_Class, b.GLBU_Class
 FROM            BRS_Transaction AS t INNER JOIN
                          BRS_BusinessUnit AS b ON t.BusinessUnitSales = b.BusinessUnit
@@ -904,6 +943,7 @@ WHERE
 	DocType <>'AA' AND
 	t.GLBU_Class <> 'SMEQU' AND
 	(t.GLBU_Class <> b.GLBU_Class)
+*/
 
 CREATE TABLE [hfm].[business_unit_hfm_account_to_cost_center_map](
 	[business_unit] [char](12) NOT NULL,
@@ -966,4 +1006,136 @@ INNER JOIN hfm.account_master_F0901
 
 ON hfm.account_master_F0901.[GMMCU__business_unit] = m.business_unit AND 
 	hfm.account_master_F0901.HFM_Account = m.[HFM_Account]
+
+
+
+ALTER TABLE dbo.BRS_Transaction
+	DROP CONSTRAINT DF_BRS_Transaction_GLAcctNumberSales
+GO
+ALTER TABLE dbo.BRS_Transaction
+	DROP CONSTRAINT DF_BRS_Transaction_GLAcctNumberCost
+GO
+ALTER TABLE dbo.BRS_Transaction
+	DROP COLUMN GLAcctNumberSales, GLAcctNumberCost
+GO
+
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD
+	HIST_SalesDivision char(3) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_SalesDivision DEFAULT ('')
+GO
+
+-- ri
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD CONSTRAINT
+	FK_BRS_CustomerFSC_History_BRS_SalesDivision FOREIGN KEY
+	(
+	HIST_SalesDivision
+	) REFERENCES dbo.BRS_SalesDivision
+	(
+	SalesDivision
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+-- update
+
+UPDATE       BRS_CustomerFSC_History
+SET                HIST_SalesDivision = SalesDivision
+FROM            BRS_CustomerFSC_History INNER JOIN
+                         BRS_Customer ON BRS_CustomerFSC_History.Shipto = BRS_Customer.ShipTo
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction ADD
+/*
+	GL_Subsidiary_Sales char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_Sales DEFAULT (''),
+	GL_Subsidiary_Cost char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_Cost DEFAULT (''),
+	GL_Subsidiary_ChargeBack char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_ChargeBack DEFAULT (''),
+*/
+	GL_Object_ChargeBack char(10) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Object_ChargeBack DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.BusinessUnitSales', N'Tmp_GL_BusinessUnit_Sales', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.BusinessUnitCost', N'Tmp_GL_BusinessUnit_Cost_1', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.GLAcctNumberObjSales', N'Tmp_GL_Object_Sales_2', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.GLAcctNumberObjCost', N'Tmp_GL_Object_Cost_3', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_BusinessUnit_Sales', N'GL_BusinessUnit_Sales', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_BusinessUnit_Cost_1', N'GL_BusinessUnit_Cost', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_Object_Sales_2', N'GL_Object_Sales', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_Object_Cost_3', N'GL_Object_Cost', 'COLUMN' 
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201401
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201402
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201403
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201404
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201405
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201406
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201407
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201408
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201409
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201410
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201411
+GO
+DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201412
+GO
+
+
+-- check sales
+SELECT        TOP (10) FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, GL_BusinessUnit_Sales, GL_Object_Sales, GL_Subsidiary_Sales
+FROM            BRS_Transaction AS t
+WHERE        (FiscalMonth >= 201501) AND  DocType <>'AA' AND
+NOT EXISTS (
+SELECT * FROM [hfm].[account_master_F0901] 
+WHERE [GMMCU__business_unit]= GL_BusinessUnit_Sales AND
+[GMOBJ__object_account] = GL_Object_Sales AND 
+[GMSUB__subsidiary] = GL_Subsidiary_Sales
+)
+
+
+-- check costs
+SELECT         FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, GL_BusinessUnit_Cost, GL_Object_Cost, GL_Subsidiary_Cost,
+LEFT(GL_Object_Cost,4), SUBSTRING(GL_Object_Cost,6,4) s
+FROM            BRS_Transaction AS t
+WHERE        (FiscalMonth >= 201501) AND  DocType <>'AA' AND
+NOT EXISTS (
+SELECT * FROM [hfm].[account_master_F0901] 
+WHERE [GMMCU__business_unit]= GL_BusinessUnit_Cost AND
+[GMOBJ__object_account] = GL_Object_Cost AND 
+[GMSUB__subsidiary] = GL_Subsidiary_Cost
+)
+
+-- fix costs
+UPDATE       BRS_Transaction
+SET                GL_Object_Cost = LEFT(GL_Object_Cost,4), GL_Subsidiary_Cost = SUBSTRING(GL_Object_Cost,6,4)
+WHERE        (FiscalMonth >= 201501) AND (DocType <> 'AA') AND (NOT EXISTS
+                             (SELECT        *
+                               FROM            hfm.account_master_F0901
+                               WHERE        (GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit_Cost) AND (GMOBJ__object_account = BRS_Transaction.GL_Object_Cost) AND 
+                                                         (GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost)))
 
