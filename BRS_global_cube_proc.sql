@@ -46,65 +46,197 @@ BEGIN
 			BRS_Rollup_Support01
 	END
 
+	-- Sales
 	SELECT     
-		t.FiscalMonth
-		,MIN(f.YearNum)						AS YearNum
-		,MIN(f.MonthNum)					AS MonthNum
-		,t.SalesDivision					AS SalesDivision
-		,t.AdjCode
-		,t.HIST_SegCd						AS SegCd
-		,t.HIST_MarketClass					AS MarketClass
-		,MIN(m.MarketRollup_L3)				AS MarketClass_Rollup
-
-		,MIN(glru.ReportingClass)			AS ReportingClass
-		,'A'								AS TrxSrc
-		,'SM.YTD.ACT'						AS Status
-
-		,SUM(t.SalesAmt)					AS SalesAmt
-		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' 
-				THEN 0 
-				ELSE SUM(t.GPAmt) 
-		 END								AS GPAmt
-		 ,SUM(t.ExtChargebackAmt)			AS ExtChargebackAmt
-
-		,MIN(t.ID_MAX)						AS UniqueID
-
+		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		,t.Shipto
+--		,t.Item
+		,'Test.SALES.ACT'					AS Test_Source
+		,hfm.[HFM_CostCenter]				AS Entity
+		,[HFM_Account]						AS Account
+		,LEFT(ih.MinorProductClass,3)		AS Product
+		,excl.BrandEquityCategory			AS BrandEquity
+		,ch.HIST_MarketClass				AS CustomerCategory
+		,'CAD'								AS Currency
+		,CASE 
+			WHEN doct.SourceCd = 'JDE' 
+			THEN 'GL_Input' 
+			ELSE 'Manual_Entry' 
+		END									AS ReportingSource
+		,t.FiscalMonth						AS Period
+		,'Actual'							AS Senario
+		,SUM(t.[NetSalesAmt])				AS ValueAmt
+--		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
 
-		BRS_AGG_CMBGAD_Sales AS t 
+		[dbo].[BRS_Transaction] AS t 
 
-		INNER JOIN BRS_DS_GLBU_Rollup AS glru
-		ON	t.GLBU_Class = glru.GLBU_Class
+		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+		ON t.Shipto = ch.[Shipto] AND
+			t.[FiscalMonth] = ch.[FiscalMonth]
 
-		INNER JOIN BRS_BusinessUnitClass as bu
-		ON bu.GLBU_Class = t.GLBU_Class
+		INNER JOIN [dbo].[BRS_ItemHistory] as ih
+		ON t.Item = ih.[Item] AND
+			t.[FiscalMonth] = ih.[FiscalMonth]
 
-		INNER JOIN BRS_FiscalMonth as f
-		ON t.FiscalMonth = f.FiscalMonth
+		INNER JOIN [hfm].[account_master_F0901] as hfm
+		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
+			t.[GL_Object_Sales] = hfm.[GMOBJ__object_account] AND
+			t.[GL_Subsidiary_Sales] = hfm.[GMSUB__subsidiary] 
 
-		INNER JOIN [BRS_CustomerMarketClass] m
-		ON t.HIST_MarketClass = m.MarketClass
-/*			
-		INNER JOIN [BRS_Customer] c
-		ON c.Shipto = t.Shipto
+		INNER JOIN [hfm].[exclusive_product] as excl
+		ON ih.Excl_key = excl.Excl_Key
 
-		INNER JOIN [BRS_CustomerGroup] cg
-		ON cg.CustGrp = c.CustGrpWrk
-*/		
+		INNER JOIN [dbo].[BRS_DocType] as doct
+		ON t.DocType = doct.DocType
+
+	WHERE
+		(t.FiscalMonth between @StartMonth AND @EndMonth) 
+--		(t.FiscalMonth between 201701 AND 201701) 
+
+	GROUP BY 
+		t.FiscalMonth
+--		,t.Shipto
+--		,t.Item
+		,t.GL_BusinessUnit
+		,t.GL_Object_Sales
+		,hfm.[HFM_CostCenter]
+		,hfm.[HFM_Account]
+		,ih.MinorProductClass
+		,excl.BrandEquityCategory
+		,ch.HIST_MarketClass
+		,doct.SourceCd
+
+	UNION ALL
+
+	-- Cost
+	SELECT     
+		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		,t.Shipto
+--		,t.Item
+		,'Test.COST.ACT'					AS Test_Source
+		,hfm.[HFM_CostCenter]				AS Entity
+		,[HFM_Account]						AS Account
+		,LEFT(ih.MinorProductClass,3)		AS Product
+		,excl.BrandEquityCategory			AS BrandEquity
+		,ch.HIST_MarketClass				AS CustomerCategory
+		,'CAD'								AS Currency
+		,CASE 
+			WHEN doct.SourceCd = 'JDE' 
+			THEN 'GL_Input' 
+			ELSE 'Manual_Entry' 
+		END									AS ReportingSource
+		,t.FiscalMonth						AS Period
+		,'Actual'							AS Senario
+		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
+--		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
+	FROM         
+
+		[dbo].[BRS_Transaction] AS t 
+
+		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+		ON t.Shipto = ch.[Shipto] AND
+			t.[FiscalMonth] = ch.[FiscalMonth]
+
+		INNER JOIN [dbo].[BRS_ItemHistory] as ih
+		ON t.Item = ih.[Item] AND
+			t.[FiscalMonth] = ih.[FiscalMonth]
+
+		INNER JOIN [hfm].[account_master_F0901] as hfm
+		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
+			t.[GL_Object_Cost] = hfm.[GMOBJ__object_account] AND
+			t.[GL_Subsidiary_Cost] = hfm.[GMSUB__subsidiary] 
+
+		INNER JOIN [hfm].[exclusive_product] as excl
+		ON ih.Excl_key = excl.Excl_Key
+
+		INNER JOIN [dbo].[BRS_DocType] as doct
+		ON t.DocType = doct.DocType
+
+	WHERE
+		(t.FiscalMonth between @StartMonth AND @EndMonth) 
+--		(t.FiscalMonth between 201701 AND 201701) 
+
+	GROUP BY 
+		t.FiscalMonth
+--		,t.Shipto
+--		,t.Item
+		,t.GL_BusinessUnit
+		,t.GL_Object_Sales
+		,hfm.[HFM_CostCenter]
+		,hfm.[HFM_Account]
+		,ih.MinorProductClass
+		,excl.BrandEquityCategory
+		,ch.HIST_MarketClass
+		,doct.SourceCd
+
+	UNION ALL
+
+	-- Chargeback
+	SELECT     
+		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		,t.Shipto
+--		,t.Item
+		,'Test.CHARGEBACK.EST'					AS Test_Source
+		,hfm.[HFM_CostCenter]				AS Entity
+		,[HFM_Account]						AS Account
+		,LEFT(ih.MinorProductClass,3)		AS Product
+		,excl.BrandEquityCategory			AS BrandEquity
+		,ch.HIST_MarketClass				AS CustomerCategory
+		,'CAD'								AS Currency
+		,CASE 
+			WHEN doct.SourceCd = 'JDE' 
+			THEN 'GL_Input' 
+			ELSE 'Manual_Entry' 
+		END									AS ReportingSource
+		,t.FiscalMonth						AS Period
+		,'Actual'							AS Senario
+		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
+--		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
+	FROM         
+
+		[dbo].[BRS_Transaction] AS t 
+
+		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+		ON t.Shipto = ch.[Shipto] AND
+			t.[FiscalMonth] = ch.[FiscalMonth]
+
+		INNER JOIN [dbo].[BRS_ItemHistory] as ih
+		ON t.Item = ih.[Item] AND
+			t.[FiscalMonth] = ih.[FiscalMonth]
+
+		INNER JOIN [hfm].[account_master_F0901] as hfm
+		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
+			t.[GL_Object_ChargeBack] = hfm.[GMOBJ__object_account] AND
+			t.[GL_Subsidiary_ChargeBack] = hfm.[GMSUB__subsidiary] 
+
+		INNER JOIN [hfm].[exclusive_product] as excl
+		ON ih.Excl_key = excl.Excl_Key
+
+		INNER JOIN [dbo].[BRS_DocType] as doct
+		ON t.DocType = doct.DocType
 
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
---		(bu.GLBU_Class='TEETH') AND
---		(t.Shipto=1528737) AND
+--		(t.FiscalMonth between 201701 AND 201701) AND
+		(t.ExtChargebackAmt is NOT NULL) AND
 		(1=1)
 
 	GROUP BY 
 		t.FiscalMonth
-		,t.GLBU_Class
-		,t.AdjCode
-		,t.SalesDivision 
-		,t.HIST_MarketClass
-		,t.HIST_SegCd 
+--		,t.Shipto
+--		,t.Item
+		,t.GL_BusinessUnit
+		,t.GL_Object_Sales
+		,hfm.[HFM_CostCenter]
+		,hfm.[HFM_Account]
+		,ih.MinorProductClass
+		,excl.BrandEquityCategory
+		,ch.HIST_MarketClass
+		,doct.SourceCd
 
 END
 
@@ -114,7 +246,7 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- BRS_global_cube_proc 201612, 1
+-- BRS_global_cube_proc 201701, 201709
 
 -- ORG = 29323 rows, 11 sec
 

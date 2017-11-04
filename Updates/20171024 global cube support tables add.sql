@@ -934,6 +934,16 @@ WHERE
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL)
 
+-- update Branded
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 2
+FROM
+	BRS_ItemHistory 
+WHERE Excl_key IS NULL
+
+
 -- test bu map vs glbu actual consistency
 /*
 SELECT        t.SalesOrderNumberKEY, t.DocType, t.LineNumber, t.BusinessUnitSales, t.GLBU_Class, b.GLBU_Class
@@ -1067,7 +1077,7 @@ EXECUTE sp_rename N'dbo.BRS_Transaction.GLAcctNumberObjSales', N'Tmp_GL_Object_S
 GO
 EXECUTE sp_rename N'dbo.BRS_Transaction.GLAcctNumberObjCost', N'Tmp_GL_Object_Cost_3', 'COLUMN' 
 GO
-EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_BusinessUnit_Sales', N'GL_BusinessUnit_Sales', 'COLUMN' 
+EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_BusinessUnit_Sales', N'GL_BusinessUnit', 'COLUMN' 
 GO
 EXECUTE sp_rename N'dbo.BRS_Transaction.Tmp_GL_BusinessUnit_Cost_1', N'GL_BusinessUnit_Cost', 'COLUMN' 
 GO
@@ -1106,6 +1116,7 @@ DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201412
 GO
 
 
+
 -- check sales
 SELECT        TOP (10) FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, GL_BusinessUnit_Sales, GL_Object_Sales, GL_Subsidiary_Sales
 FROM            BRS_Transaction AS t
@@ -1139,3 +1150,397 @@ WHERE        (FiscalMonth >= 201501) AND (DocType <> 'AA') AND (NOT EXISTS
                                WHERE        (GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit_Cost) AND (GMOBJ__object_account = BRS_Transaction.GL_Object_Cost) AND 
                                                          (GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost)))
 
+
+-- test BU S & C sym
+
+SELECT        FiscalMonth, SalesOrderNumberKEY, DocType, GLBU_Class, LineNumber, GL_BusinessUnit_Sales, GL_BusinessUnit_Cost, GL_Object_Sales, 
+                         GL_Object_Cost, [NetSalesAmt], [ExtendedCostAmt]
+FROM            BRS_Transaction
+WHERE        (DocType <> 'AA') AND (GL_BusinessUnit_Sales <> GL_BusinessUnit_Cost) 
+
+AND SalesOrderNumberKEY = 8320759
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction
+	DROP CONSTRAINT FK_BRS_Transaction_BRS_BusinessUnit
+GO
+ALTER TABLE dbo.BRS_Transaction
+	DROP CONSTRAINT FK_BRS_Transaction_BRS_BusinessUnit1
+GO
+ALTER TABLE dbo.BRS_BusinessUnit SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction
+	DROP COLUMN GL_BusinessUnit_Cost
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+UPDATE       BRS_Branch
+SET                AccountingCode = '11'
+WHERE        (Branch = 'NWFLD')
+
+UPDATE       BRS_Branch
+SET                AccountingCode = '00'
+WHERE        (Branch = 'CORP')
+
+UPDATE       BRS_Branch
+SET                AccountingCode = '00'
+WHERE        (Branch = 'ZCORP')
+
+UPDATE       BRS_Branch
+SET                AccountingCode = '00'
+WHERE        (Branch = 'MEDIC')
+
+-- setup map table
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '', GL_Object_Cost = '', GL_Object_Sales = ''
+
+-- drop table Integration.ajustment_glbu_map
+
+SELECT        GLBU_Class, Branch, SalesDivision, space(12) AS GL_BusinessUnit, space(4) AS GL_Object_Cost, space(4) AS GL_Object_Sales
+INTO              Integration.ajustment_glbu_map
+FROM            BRS_Transaction
+WHERE        (DocType = 'AA')
+GROUP BY GLBU_Class, Branch, SalesDivision
+
+ALTER TABLE Integration.ajustment_glbu_map ADD CONSTRAINT
+	PK_ajustment_glbu_map PRIMARY KEY CLUSTERED 
+	(
+	GLBU_Class,
+	Branch,
+	SalesDivision
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = zzzItem.Note1
+FROM            Integration.ajustment_glbu_map INNER JOIN
+                         zzzItem ON Integration.ajustment_glbu_map.GLBU_Class = zzzItem.Item
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020017000000'
+WHERE        (GLBU_Class = 'MERCH') AND (SalesDivision = 'AAL')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020017000000'
+WHERE        (GLBU_Class = 'REBAT') AND (SalesDivision = 'AAL')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020017000500'
+WHERE        (GLBU_Class = 'PROME') AND (SalesDivision = 'AAL')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '0200010010'
+WHERE        (GLBU_Class = 'PROMC') AND (SalesDivision <> 'AAL')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                 GL_BusinessUnit = RTRIM(m.GL_BusinessUnit)+b.AccountingCode
+FROM            Integration.ajustment_glbu_map m INNER JOIN
+                         BRS_Branch AS b ON m.Branch = b.Branch
+WHERE        (LEN(m.GL_BusinessUnit) = 10)
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Cost] = '4515'
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Sales] = '4320'
+WHERE        (GLBU_Class LIKE 'PROM%')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Sales] = '4300'
+WHERE        (GLBU_Class = 'REBAT')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Sales] = '4200'
+WHERE        (GLBU_Class IN ('FREIG', 'FRTEQ'))
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Sales] = '4147'
+WHERE        (GLBU_Class IN ('ALLOM', 'ALLOT', 'ALLOE'))
+
+UPDATE       Integration.ajustment_glbu_map
+SET                [GL_Object_Sales] = '4130'
+WHERE        ([GL_Object_Sales] ='')
+
+
+
+SELECT        Integration.ajustment_glbu_map.GLBU_Class, Integration.ajustment_glbu_map.Branch, Integration.ajustment_glbu_map.SalesDivision, 
+                         Integration.ajustment_glbu_map.GL_BusinessUnit
+FROM            Integration.ajustment_glbu_map LEFT OUTER JOIN
+                         BRS_BusinessUnit ON Integration.ajustment_glbu_map.GL_BusinessUnit = BRS_BusinessUnit.BusinessUnit
+WHERE        (BRS_BusinessUnit.BusinessUnit IS NULL)
+order by 4
+
+SELECT        Integration.ajustment_glbu_map.GLBU_Class, Integration.ajustment_glbu_map.Branch, Integration.ajustment_glbu_map.SalesDivision, 
+                         Integration.ajustment_glbu_map.GL_BusinessUnit, Integration.ajustment_glbu_map.GL_Object_Sales
+FROM            Integration.ajustment_glbu_map LEFT OUTER JOIN
+                         BRS_Object ON Integration.ajustment_glbu_map.GL_Object_Sales = BRS_Object.GLAcctNumberObj
+WHERE        (BRS_Object.GLAcctNumberObj IS NULL)
+ORDER BY Integration.ajustment_glbu_map.GL_BusinessUnit
+
+-- fix inconsistent corp mapping
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020009000100'
+WHERE        (GL_BusinessUnit = '020009001000') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020009000000'
+WHERE        (GL_BusinessUnit = '020009001100') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020020001016'
+WHERE        (GL_BusinessUnit = '020020001000') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020051001017'
+WHERE        (GL_BusinessUnit = '020051001000') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020060001017'
+WHERE        (GL_BusinessUnit = '020060001000') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020061001017'
+WHERE        (GL_BusinessUnit = '020061001000') 
+
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020062001017'
+WHERE        (GL_BusinessUnit = '020062001000') 
+
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020063001017'
+WHERE        (GL_BusinessUnit = '020063001000') 
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020001000000'
+WHERE        (GL_BusinessUnit = '020001001000') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020020001007'
+WHERE        (GL_BusinessUnit = '020001001007') 
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020020001010'
+WHERE        (GL_BusinessUnit = '020001001010') 
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020020001011'
+WHERE        (GL_BusinessUnit = '020001001011') 
+
+---
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020001001007'
+WHERE        (GL_BusinessUnit = '020020001007') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020001001010'
+WHERE        (GL_BusinessUnit = '020020001010') 
+
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_BusinessUnit = '020001001011'
+WHERE        (GL_BusinessUnit = '020020001011') 
+
+SELECT * FROM [dbo].[BRS_BusinessUnit]
+WHERE [BusinessUnit] = '020001001007' OR  GLBU_CLASS = 'MERCH'
+
+SELECT [GMMCU__business_unit],[GMOBJ__object_account],[GMSUB__subsidiary],[GMDL01_description]    
+FROM [hfm].[account_master_F0901]
+WHERE [GMOBJ__object_account] = '4320' AND [GMMCU__business_unit] LIKE '%10'
+
+
+ 
+/*
+
+GLBU_Class Branch SalesDivision GL_BusinessUnit GL_Object_Sales
+---------- ------ ------------- --------------- ---------------
+PROMM      LONDN  AAD           020001001007    4320
+PROME      LONDN  AAD           020001001007    4320
+PROMM      HALFX  AAD           020001001010    4320
+PROME      HALFX  AAD           020001001010    4320
+
+GLBU_Class Branch SalesDivision GL_BusinessUnit GL_Object_Sales
+---------- ------ ------------- --------------- ---------------
+REBAT      LONDN  AAD           020020001007    4300 to 020001001007
+REBAT      HALFX  AAD           020020001010    4300 to 020001001010
+REBAT      NWFLD  AAD           020020001011    4300 to 020001001011
+GLBU_Class Branch SalesDivision GL_BusinessUnit GL_Object_Sales
+---------- ------ ------------- --------------- ---------------
+PROMM      LONDN  AAD           020001001007    4320  TO 020020001007
+PROME      LONDN  AAD           020001001007    4320  TO 020020001007
+PROMM      HALFX  AAD           020001001010    4320  to 020020001010
+PROME      HALFX  AAD           020001001010    4320
+PROMM      NWFLD  AAD           020001001011    4320  to 020020001011
+PROMM      SJOHN  AAD           020001001011    4320
+PROME      SJOHN  AAD           020001001011    4320
+*/
+
+-- update bu, obj, sales & costs
+
+-- check
+
+SELECT        t.fiscalmonth, t.branch, t.GLBU_Class, t.GL_BusinessUnit, t.GL_Object_Sales, t.GL_Object_Cost, m.GL_BusinessUnit AS new_bu, m.GL_Object_Cost AS new_obj_cost, m.GL_Object_Sales AS new_obj_sales, [GL_Object_ChargeBack] as new_obj_cb
+FROM            Integration.ajustment_glbu_map AS m INNER JOIN
+BRS_Transaction AS t 
+
+ON m.GLBU_Class = t.GLBU_Class AND 
+m.Branch = t.Branch AND 
+m.SalesDivision = t.SalesDivision
+
+WHERE        (t.DocType = 'AA') AND 
+(
+t.GL_BusinessUnit <> m.GL_BusinessUnit OR
+t.GL_Object_Sales <> m.GL_Object_Sales OR
+t.GL_Object_Cost <> m.GL_Object_Cost OR
+t.[GL_Subsidiary_Sales] <> m.[GL_Subsidiary_Sales]
+)
+
+-- chargeback
+SELECT        FiscalMonth, Branch, GLBU_Class, GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, ExtChargebackAmt, [GL_Object_ChargeBack] as new_obj_cb
+FROM            BRS_Transaction AS t
+WHERE        ( ExtChargebackAmt <> 0)
+
+-- do it!
+
+UPDATE       BRS_Transaction
+SET                
+GL_BusinessUnit = m.GL_BusinessUnit, 
+GL_Object_Sales = m.GL_Object_Sales, 
+GL_Object_Cost = m.GL_Object_Cost,
+[GL_Subsidiary_Sales] = m.[GL_Subsidiary_Sales]
+
+FROM            Integration.ajustment_glbu_map AS m INNER JOIN
+                         BRS_Transaction t ON m.GLBU_Class = t.GLBU_Class AND m.Branch = t.Branch AND 
+                         m.SalesDivision = t.SalesDivision AND 
+(
+t.GL_BusinessUnit <> m.GL_BusinessUnit OR
+t.GL_Object_Sales <> m.GL_Object_Sales OR
+t.GL_Object_Cost <> m.GL_Object_Cost OR
+t.[GL_Subsidiary_Sales] <> m.[GL_Subsidiary_Sales]
+)
+WHERE        (t.DocType = 'AA')
+
+UPDATE       BRS_Transaction
+SET                GL_Object_ChargeBack = '4730'
+WHERE        (ExtChargebackAmt <> 0)
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX BRS_Transaction_idx_17 ON dbo.BRS_Transaction
+	(
+	GL_BusinessUnit
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX BRS_Transaction_idx_18 ON dbo.BRS_Transaction
+	(
+	GL_Object_Sales
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- ri
+
+-- rule exceptions
+
+SELECT        FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, GL_BusinessUnit, GL_Object_Sales, GL_Subsidiary_Sales
+FROM            BRS_Transaction AS t
+WHERE DocType = 'aa' and
+NOT EXISTS 
+(SELECT * FROM [Integration].[ajustment_glbu_map] m 
+where 
+t.[GLBU_Class] = m.[GLBU_Class] AND
+t.[Branch] =  m.[Branch] AND
+t.[SalesDivision] = m.[SalesDivision]
+)
+
+-- RI test - transaction exceptions should be zero
+SELECT        FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, Branch, SalesDivision, [GLBU_Class], GL_BusinessUnit, GL_Object_Sales, GL_Subsidiary_Sales
+FROM            BRS_Transaction AS t
+WHERE 
+NOT EXISTS 
+(SELECT * FROM hfm.account_master_F0901 h 
+where GL_BusinessUnit = [GMMCU__business_unit] and  
+GL_Object_Sales = [GMOBJ__object_account] and  
+ GL_Subsidiary_Sales = [GMSUB__subsidiary] and
+1=1
+)
+
+
+-- master account lookup
+SELECT * FROM hfm.account_master_F0901 h 
+where [GMMCU__business_unit] like '%' and  
+[GMOBJ__object_account] = '4320' and  
+-- [GMSUB__subsidiary] = '' and
+ 1=1
+
+ -- rule lookup
+
+SELECT        GLBU_Class, Branch, SalesDivision, GL_BusinessUnit, GL_Object_Cost, GL_Object_Sales, GL_Subsidiary_Sales, GL_Subsidiary_Cost
+FROM            Integration.ajustment_glbu_map
+WHERE        (Branch = 'CALGY') AND (SalesDivision = 'AAD') AND (GLBU_Class = 'PROME')
+
+UPDATE       Integration.ajustment_glbu_map
+SET                GL_Object_Sales = ''
+WHERE        (GL_Object_Sales IS NULL)
+
+
+-- add RI when data is good
+
+ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
+	FK_BRS_Transaction_account_master_F0901_sales FOREIGN KEY
+	(
+	GL_BusinessUnit,
+	GL_Object_Sales,
+	GL_Subsidiary_Sales
+	) REFERENCES hfm.account_master_F0901
+	(
+	GMMCU__business_unit,
+	GMOBJ__object_account,
+	GMSUB__subsidiary
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
+	FK_BRS_Transaction_account_master_F0901_costs FOREIGN KEY
+	(
+	GL_BusinessUnit,
+	GL_Object_Cost,
+	GL_Subsidiary_Cost
+	) REFERENCES hfm.account_master_F0901
+	(
+	GMMCU__business_unit,
+	GMOBJ__object_account,
+	GMSUB__subsidiary
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO

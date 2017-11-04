@@ -59,7 +59,6 @@ Declare @nFiscalTo int, @nFiscalFrom int, @nFiscalCurrent int
 Print 'Init'
 --------------------------------------------------------------------------------
 
-
 -- Get Params to pull 25 Fiscal months to cover for Fiscal / Same Day / Calendar		-- Get Params
 
 Select
@@ -598,6 +597,8 @@ DEALLOCATE c;
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
 
+-- Select FiscalMonth, YearFirstFiscalMonth_HIST, PriorFiscalMonth FROM BRS_Rollup_Support01
+
 INSERT INTO BRS_ItemHistory 
 (
 	Item, 
@@ -670,7 +671,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201709 and 201709) 
+	(t.FiscalMonth between 201710 and 201710) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -693,7 +694,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201709 and 201709) 
+	(t.FiscalMonth between 201710 and 201710) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
