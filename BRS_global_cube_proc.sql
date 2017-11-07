@@ -2,7 +2,7 @@
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE BRS_global_cube_proc 
+ALTER PROCEDURE [hfm].BRS_global_cube_proc 
 	@StartMonth int = 201701, 
 	@EndMonth int = 201701
 AS

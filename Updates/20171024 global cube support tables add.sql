@@ -955,6 +955,40 @@ WHERE
 	(t.GLBU_Class <> b.GLBU_Class)
 */
 
+-- Add Cost Center to BU
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_BusinessUnit ADD
+	CostCenter nvarchar(30) NOT NULL CONSTRAINT DF_BRS_BusinessUnit_CostCenter DEFAULT (''),
+	Note nvarchar(50) NULL
+GO
+ALTER TABLE dbo.BRS_BusinessUnit ADD CONSTRAINT
+	FK_BRS_BusinessUnit_cost_center FOREIGN KEY
+	(
+	CostCenter
+	) REFERENCES hfm.cost_center
+	(
+	CostCenter
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_BusinessUnit SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- update cost center map with BU -> 'CC' + BU
+
+UPDATE       BRS_BusinessUnit
+SET                CostCenter = 'CC' + [BusinessUnit]
+WHERE        (BusinessUnit <> '') AND EXISTS 
+(SELECT * FROM [hfm].[cost_center] c WHERE c.CostCenter = ('CC' + [BusinessUnit]))
+
+
+select top 10 [BusinessUnit], 'CC' + [BusinessUnit] from [dbo].[BRS_BusinessUnit]
+WHERE [BusinessUnit] <>'' 
+/*
+
 CREATE TABLE [hfm].[business_unit_hfm_account_to_cost_center_map](
 	[business_unit] [char](12) NOT NULL,
 	[HFM_Account] [nvarchar](30) NOT NULL,
@@ -1006,17 +1040,18 @@ ALTER TABLE hfm.business_unit_hfm_account_to_cost_center_map ADD CONSTRAINT
 	
 GO
 
+*/
+
 -- mapping - fix this
 UPDATE       hfm.account_master_F0901
-SET                HFM_CostCenter = m.CostCenter, [LastUpdated]  = getdate()
+SET                HFM_CostCenter = b.CostCenter, [LastUpdated]  = getdate()
 
 FROM            
-hfm.business_unit_hfm_account_to_cost_center_map m 
-INNER JOIN hfm.account_master_F0901 
+[dbo].[BRS_BusinessUnit] b 
+INNER JOIN hfm.account_master_F0901 m
 
-ON hfm.account_master_F0901.[GMMCU__business_unit] = m.business_unit AND 
-	hfm.account_master_F0901.HFM_Account = m.[HFM_Account]
-
+ON m.[GMMCU__business_unit] = b.BusinessUnit 
+WHERE b.CostCenter <>''
 
 
 ALTER TABLE dbo.BRS_Transaction
@@ -1544,3 +1579,29 @@ ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
+-- add role
+
+
+/****** Object:  DatabaseRole [hfm_operator]    Script Date: 11/7/2017 10:24:40 AM ******/
+
+CREATE ROLE [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[exclusive_product] TO [hfm_operator]
+GO
+GRANT EXECUTE ON [hfm].[BRS_global_cube_proc] TO [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[object_to_account_map_rule] TO [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[cost_center] TO [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[account] TO [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[account_master_F0901] TO [hfm_operator]
+GO
+GRANT SELECT ON [hfm].[exclusive_product_rule] TO [hfm_operator]
+GO
+
+
+
+

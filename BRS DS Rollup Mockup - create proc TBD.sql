@@ -93,8 +93,9 @@ WHERE
 Print 'Primary Update *****'
 --------------------------------------------------------------------------------
 
-TRUNCATE TABLE BRS_AGG_CDBGAD_Sales
-TRUNCATE TABLE BRS_AGG_CMBGAD_Sales
+-- moved from trucate due to rights
+DELETE FROM BRS_AGG_CDBGAD_Sales
+DELETE FROM BRS_AGG_CMBGAD_Sales
 
 
 OPEN c;
@@ -308,9 +309,9 @@ WHERE
 Print 'Secondary Update *****'
 --------------------------------------------------------------------------------
 
-TRUNCATE TABLE BRS_AGG_ICMBGAD_Sales
-TRUNCATE TABLE BRS_AGG_CMI_DW_Sales
-TRUNCATE TABLE BRS_AGG_IMD_Sales
+DELETE FROM BRS_AGG_ICMBGAD_Sales
+DELETE FROM BRS_AGG_CMI_DW_Sales
+DELETE FROM BRS_AGG_IMD_Sales
 
 OPEN c;
 
@@ -718,7 +719,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201709 and 201709) 
+	(t.FiscalMonth between 201710 and 201710) 
 
 
 
