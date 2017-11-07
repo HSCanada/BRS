@@ -12,6 +12,19 @@ ALTER TABLE dbo.BRS_ItemHistory ADD
 	Excl_key int NULL
 GO
 
+-- test comp
+
+select  distinct FiscalMonth, Item
+from BRS_Transaction t
+where 
+	t.FiscalMonth < 201711 AND
+NOT exists (
+
+SELECT        *
+FROM            BRS_ItemHistory h
+where h.FiscalMonth = t.FiscalMonth and h.Item = t.Item
+)
+
 -- 30 sec
 UPDATE       BRS_ItemHistory
 SET                
@@ -22,18 +35,8 @@ Brand = BRS_Item.Brand
 FROM            BRS_ItemHistory INNER JOIN
                          BRS_Item ON BRS_ItemHistory.Item = BRS_Item.Item
 /*
--- test comp
 
-select  distinct FiscalMonth, Item
-from BRS_Transaction t
-where 
--- t.FiscalMonth = 201302 AND
-NOT exists (
 
-SELECT        *
-FROM            BRS_ItemHistory h
-where h.FiscalMonth = t.FiscalMonth and h.Item = t.Item
-)
 */
 
 -- Private label setup
@@ -269,8 +272,9 @@ VALUES
 
 -- Exclusive - mapping rules
 
-CREATE TABLE [hfm].[
-e_product_rule](
+---
+
+CREATE TABLE [hfm].[exclusive_product_rule](
 	[Supplier_WhereClauseLike] [varchar](30) NOT NULL,
 	[Brand_WhereClauseLike] [varchar](30) NOT NULL,
 	[MinorProductClass_WhereClauseLike] [varchar](30) NOT NULL,
@@ -316,6 +320,7 @@ GO
 
 ALTER TABLE [hfm].[exclusive_product_rule] CHECK CONSTRAINT [FK_exclusive_product_rule_exclusive_product]
 GO
+
 
 
 CREATE TABLE [Integration].[F0901_account_master](
@@ -464,8 +469,8 @@ CREATE TABLE [hfm].[account_master_F0901](
 
 -- pop data into prod
 INSERT INTO hfm.account_master_F0901
-SELECT        Integration.F0901_account_master.*
-FROM            Integration.F0901_account_master
+SELECT        DEV_BRSales.Integration.F0901_account_master.*
+FROM            DEV_BRSales.Integration.F0901_account_master
 
 INSERT INTO
 [dbo].[BRS_BusinessUnit] ([BusinessUnit])
@@ -615,38 +620,6 @@ GO
 COMMIT
 
 
----
-
-
-
-BEGIN TRANSACTION
-GO
-ALTER TABLE hfm.business_unit_to_cost_center_map ADD CONSTRAINT
-	FK_business_unit_to_cost_center_map_BRS_BusinessUnit FOREIGN KEY
-	(
-	BusinessUnit
-	) REFERENCES dbo.BRS_BusinessUnit
-	(
-	BusinessUnit
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE hfm.business_unit_to_cost_center_map ADD CONSTRAINT
-	FK_business_unit_to_cost_center_map_cost_center FOREIGN KEY
-	(
-	CostCenter
-	) REFERENCES hfm.cost_center
-	(
-	CostCenter
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE hfm.business_unit_to_cost_center_map SET (LOCK_ESCALATION = TABLE)
-GO
-
-COMMIT
 
 ALTER TABLE hfm.cost_center ADD CONSTRAINT
 	FK_cost_center_cost_center1 FOREIGN KEY
@@ -779,6 +752,35 @@ UPDATE       BRS_BusinessUnit
 SET                GLBU_Class = 'PARTS'
 WHERE        (BusinessUnit IN ('020022001101', '020022001102', '020022001104', '020022001113'))
 
+-- pop rules here
+
+INSERT INTO hfm.exclusive_product
+                         (Excl_Code, Excl_Name, BrandEquityCategory, ProductCategory, Owner, DataContact, DataSourceCode, Note, LastReviewed, EffectivePeriod, ExpiredPeriod )
+SELECT        Excl_Code, Excl_Name, BrandEquityCategory, ProductCategory, Owner, DataContact, DataSourceCode, Note, LastReviewed, EffectivePeriod, ExpiredPeriod 
+FROM            DEV_BRSales.hfm.exclusive_product AS exclusive_product_1 WHERE Excl_kEY > 2
+
+
+INSERT INTO hfm.exclusive_product_rule
+                         (Supplier_WhereClauseLike, Brand_WhereClauseLike, MinorProductClass_WhereClauseLike, Item_WhereClauseLike, Excl_Code_TargKey, Sequence, RuleName, 
+                         LastReviewed, Note, StatusCd)
+SELECT        Supplier_WhereClauseLike, Brand_WhereClauseLike, MinorProductClass_WhereClauseLike, Item_WhereClauseLike, Excl_Code_TargKey, Sequence, RuleName, 
+                         LastReviewed, Note, StatusCd
+FROM            DEV_BRSales.hfm.exclusive_product_rule AS exclusive_product_rule_1
+
+-- hfm account add
+
+INSERT INTO hfm.account
+                         (HFM_Account, Note, GLOBJ_Type)
+SELECT        HFM_Account, Note, GLOBJ_Type
+FROM            DEV_BRSales.hfm.account AS account_1
+
+
+INSERT INTO hfm.object_to_account_map_rule
+                         (DataKey, RuleName, RuleCategory, Rule_WhereClauseLike, HFM_Account_TargetKey, ActiveInd)
+SELECT        DataKey, RuleName, RuleCategory, Rule_WhereClauseLike, HFM_Account_TargetKey, ActiveInd
+FROM            DEV_BRSales.hfm.object_to_account_map_rule AS object_to_account_map_rule_1
+
+
 -- update Obj map
 UPDATE       hfm.account_master_F0901
 SET                HFM_Account = [HFM_Account_TargetKey]
@@ -870,7 +872,7 @@ WHERE
 ORDER BY 
 	aa.GLOBJ_Type
 
--- test exclusive map
+-- test exclusive map overlap with private
 
 SELECT       
 	r.Excl_Code_TargKey
@@ -962,6 +964,14 @@ ALTER TABLE dbo.BRS_BusinessUnit ADD
 	CostCenter nvarchar(30) NOT NULL CONSTRAINT DF_BRS_BusinessUnit_CostCenter DEFAULT (''),
 	Note nvarchar(50) NULL
 GO
+--- pull ccs.
+
+INSERT INTO hfm.cost_center
+                         (CostCenter, CostCenterDescr, CostCenterParent, LevelNum, ActiveInd, Note)
+SELECT        CostCenter, CostCenterDescr, CostCenterParent, LevelNum, ActiveInd, Note
+FROM            DEV_BRSales.hfm.cost_center AS cost_center_1
+
+
 ALTER TABLE dbo.BRS_BusinessUnit ADD CONSTRAINT
 	FK_BRS_BusinessUnit_cost_center FOREIGN KEY
 	(
@@ -973,6 +983,7 @@ ALTER TABLE dbo.BRS_BusinessUnit ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE dbo.BRS_BusinessUnit SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
@@ -1091,11 +1102,10 @@ FROM            BRS_CustomerFSC_History INNER JOIN
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_Transaction ADD
-/*
+
 	GL_Subsidiary_Sales char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_Sales DEFAULT (''),
 	GL_Subsidiary_Cost char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_Cost DEFAULT (''),
 	GL_Subsidiary_ChargeBack char(8) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Subsidiary_ChargeBack DEFAULT (''),
-*/
 	GL_Object_ChargeBack char(10) NOT NULL CONSTRAINT DF_BRS_Transaction_GL_Object_ChargeBack DEFAULT ('')
 GO
 ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
@@ -1124,7 +1134,7 @@ ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
-
+--- out with the old!  1 min per month
 DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201401
 GO
 DELETE FROM [dbo].[BRS_Transaction] WHERE [FiscalMonth] = 201402
@@ -1176,7 +1186,7 @@ WHERE [GMMCU__business_unit]= GL_BusinessUnit_Cost AND
 [GMSUB__subsidiary] = GL_Subsidiary_Cost
 )
 
--- fix costs
+-- fix costs - split subobj
 UPDATE       BRS_Transaction
 SET                GL_Object_Cost = LEFT(GL_Object_Cost,4), GL_Subsidiary_Cost = SUBSTRING(GL_Object_Cost,6,4)
 WHERE        (FiscalMonth >= 201501) AND (DocType <> 'AA') AND (NOT EXISTS
@@ -1206,14 +1216,12 @@ GO
 ALTER TABLE dbo.BRS_BusinessUnit SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
-BEGIN TRANSACTION
+
+ALTER TABLE [dbo].[BRS_Transaction] DROP CONSTRAINT [DF_BRS_Transaction_BusinessUnitCost]
 GO
-ALTER TABLE dbo.BRS_Transaction
-	DROP COLUMN GL_BusinessUnit_Cost
+ALTER TABLE [dbo].[BRS_Transaction] DROP COLUMN [GL_BusinessUnit_Cost]
 GO
-ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
+
 
 
 UPDATE       BRS_Branch
@@ -1438,8 +1446,43 @@ PROME      SJOHN  AAD           020001001011    4320
 
 -- check
 
-SELECT        t.fiscalmonth, t.branch, t.GLBU_Class, t.GL_BusinessUnit, t.GL_Object_Sales, t.GL_Object_Cost, m.GL_BusinessUnit AS new_bu, m.GL_Object_Cost AS new_obj_cost, m.GL_Object_Sales AS new_obj_sales, [GL_Object_ChargeBack] as new_obj_cb
-FROM            Integration.ajustment_glbu_map AS m INNER JOIN
+-- pull Integration.ajustment_glbu_map from dev
+
+
+CREATE TABLE [Integration].[ajustment_glbu_map](
+	[GLBU_Class] [char](5) NOT NULL,
+	[Branch] [char](5) NOT NULL,
+	[SalesDivision] [char](3) NOT NULL,
+	[GL_BusinessUnit] [varchar](12) NULL,
+	[GL_Object_Cost] [varchar](4) NULL,
+	[GL_Object_Sales] [varchar](4) NULL,
+	[GL_Subsidiary_Sales] [varchar](4) NULL,
+ CONSTRAINT [PK_ajustment_glbu_map] PRIMARY KEY CLUSTERED 
+(
+	[GLBU_Class] ASC,
+	[Branch] ASC,
+	[SalesDivision] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+ALTER TABLE [Integration].[ajustment_glbu_map] ADD  CONSTRAINT [DF_ajustment_glbu_map_GL_Subsidiary_Sales]  DEFAULT ('') FOR [GL_Subsidiary_Sales]
+GO
+
+
+INSERT INTO Integration.adjustment_glbu_map
+                         (GLBU_Class, Branch, SalesDivision, GL_BusinessUnit, GL_Object_Cost, GL_Object_Sales, GL_Subsidiary_Sales)
+SELECT        GLBU_Class, Branch, SalesDivision, GL_BusinessUnit, GL_Object_Cost, GL_Object_Sales, GL_Subsidiary_Sales
+FROM            DEV_BRSales.Integration.ajustment_glbu_map AS ajustment_glbu_map_1
+
+
+
+-- these s/b zero
+
+
+SELECT        top 10 t.fiscalmonth, t.branch, t.GLBU_Class, t.GL_BusinessUnit, t.GL_Object_Sales, t.GL_Object_Cost, m.GL_BusinessUnit AS new_bu, m.GL_Object_Cost AS new_obj_cost, m.GL_Object_Sales AS new_obj_sales, [GL_Object_ChargeBack] as new_obj_cb
+FROM            Integration.adjustment_glbu_map AS m INNER JOIN
 BRS_Transaction AS t 
 
 ON m.GLBU_Class = t.GLBU_Class AND 
@@ -1455,9 +1498,9 @@ t.[GL_Subsidiary_Sales] <> m.[GL_Subsidiary_Sales]
 )
 
 -- chargeback
-SELECT        FiscalMonth, Branch, GLBU_Class, GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, ExtChargebackAmt, [GL_Object_ChargeBack] as new_obj_cb
+SELECT        top 10 FiscalMonth, Branch, GLBU_Class, GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, ExtChargebackAmt, [GL_Object_ChargeBack] as new_obj_cb
 FROM            BRS_Transaction AS t
-WHERE        ( ExtChargebackAmt <> 0)
+WHERE        ( ExtChargebackAmt <> 0) and GL_Object_ChargeBack is null
 
 -- do it!
 
@@ -1468,7 +1511,7 @@ GL_Object_Sales = m.GL_Object_Sales,
 GL_Object_Cost = m.GL_Object_Cost,
 [GL_Subsidiary_Sales] = m.[GL_Subsidiary_Sales]
 
-FROM            Integration.ajustment_glbu_map AS m INNER JOIN
+FROM            Integration.adjustment_glbu_map AS m INNER JOIN
                          BRS_Transaction t ON m.GLBU_Class = t.GLBU_Class AND m.Branch = t.Branch AND 
                          m.SalesDivision = t.SalesDivision AND 
 (
@@ -1482,6 +1525,7 @@ WHERE        (t.DocType = 'AA')
 UPDATE       BRS_Transaction
 SET                GL_Object_ChargeBack = '4730'
 WHERE        (ExtChargebackAmt <> 0)
+
 
 BEGIN TRANSACTION
 GO
@@ -1508,7 +1552,7 @@ SELECT        FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, GL_Business
 FROM            BRS_Transaction AS t
 WHERE DocType = 'aa' and
 NOT EXISTS 
-(SELECT * FROM [Integration].[ajustment_glbu_map] m 
+(SELECT * FROM [Integration].[adjustment_glbu_map] m 
 where 
 t.[GLBU_Class] = m.[GLBU_Class] AND
 t.[Branch] =  m.[Branch] AND
@@ -1526,6 +1570,19 @@ GL_Object_Sales = [GMOBJ__object_account] and
  GL_Subsidiary_Sales = [GMSUB__subsidiary] and
 1=1
 )
+
+-- costs
+SELECT        FiscalMonth, SalesOrderNumberKEY, DocType, LineNumber, Branch, SalesDivision, [GLBU_Class], GL_BusinessUnit, GL_Object_Sales, GL_Subsidiary_Sales, GL_Object_Cost, GL_Subsidiary_Cost, id
+FROM            BRS_Transaction AS t
+WHERE 
+NOT EXISTS 
+(SELECT * FROM hfm.account_master_F0901 h 
+where GL_BusinessUnit = [GMMCU__business_unit] and  
+GL_Object_Cost = [GMOBJ__object_account] and  
+ GL_Subsidiary_Cost = [GMSUB__subsidiary] and
+1=1
+)
+
 
 
 -- master account lookup
@@ -1563,6 +1620,8 @@ ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
+--- fix xxx
 
 ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
 	FK_BRS_Transaction_account_master_F0901_costs FOREIGN KEY
