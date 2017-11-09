@@ -901,6 +901,14 @@ WHERE
 
 -- update exec (rough , working)
 
+-- update Branded
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = Null
+FROM
+	BRS_ItemHistory 
+
 UPDATE       
 	BRS_ItemHistory
 SET
@@ -945,6 +953,7 @@ FROM
 	BRS_ItemHistory 
 WHERE Excl_key IS NULL
 
+-- update Corp and Branch names manually
 
 -- test bu map vs glbu actual consistency
 /*

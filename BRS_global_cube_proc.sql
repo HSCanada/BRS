@@ -2,7 +2,7 @@
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [hfm].BRS_global_cube_proc 
+ALTER PROCEDURE [hfm].global_cube_proc 
 	@StartMonth int = 201701, 
 	@EndMonth int = 201701
 AS
@@ -246,7 +246,7 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- BRS_global_cube_proc 201701, 201709
+-- [hfm].global_cube_proc  201701, 201709
 
 -- ORG = 29323 rows, 11 sec
 
