@@ -1,62 +1,3 @@
--- prepare ME adjustment tables
-
-CREATE TABLE [Integration].[brs_gl_adjustment_Staging](
-	[SalesOrderNumberKEY] [int] NOT NULL,
-	[DocType] [char](2) NOT NULL,
-	[LineNumber] [int] NOT NULL,
-
-	[FiscalMonth] [int] NOT NULL,
-
-	[AdjCode] [char](10) NOT NULL,
-	[AdjNum] [char](10) NOT NULL,
-	[AdjNote] [varchar](50) NOT NULL,
-	[GLBU_Class] [char](5) NOT NULL,
-
-	[TerritoryCd] [char](5) NOT NULL,
-	[Branch] [char](5) NOT NULL,
-	[SalesDivision] [char](3) NOT NULL,
-
-	[SalesDate] [datetime] NOT NULL,
-	[AdjOwner] [varchar](16) NOT NULL,
-	[AdjSource] [varchar](20) NOT NULL,
-	
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	
-	[SalesOrderNumber] [int] NULL,
-	[Shipto] [int] NULL,
-	[Item] [char](10) NULL,
-
-	[NetSalesAmt] [money] NULL,
-	[ExtendedCostAmt] [money] NULL,
-	[ExtChargebackAmt] [money] NULL,
-
-	[GL_BusinessUnit] [char](12) NULL,
-	[GL_Object_Sales] [char](10) NULL,
-	[GL_Subsidiary_Sales] [char](8) NULL,
-	[GL_Object_Cost] [char](10) NULL,
-	[GL_Subsidiary_Cost] [char](8) NULL,
-	[GL_Object_ChargeBack] [char](10) NULL,
-	[GL_Subsidiary_ChargeBack] [char](8) NULL,
-
-	[AdjPostStatus] [smallint] NULL,
-
-
- CONSTRAINT [brs_gl_adjustment_Staging_pk] PRIMARY KEY NONCLUSTERED 
-(
-	[SalesOrderNumberKEY] ASC,
-	[DocType] ASC,
-	[LineNumber] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-
-GRANT DELETE ON [Integration].[brs_gl_adjustment_Staging] TO [maint_role]
-GRANT INSERT ON [Integration].[brs_gl_adjustment_Staging] TO [maint_role]
-GRANT SELECT ON [Integration].[brs_gl_adjustment_Staging] TO [maint_role]
-GRANT UPDATE ON [Integration].[brs_gl_adjustment_Staging] TO [maint_role]
-GO
-
 
 --------------------------------------------------------------------------------
 -- DROP TABLE [Integration].F0911_account_ledger_Staging
@@ -364,3 +305,202 @@ ALTER TABLE Integration.F0911_account_ledger_Staging ADD CONSTRAINT
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
+
+---
+
+CREATE TABLE [hfm].[account_adjustment_F0911](
+	[FiscalMonth] [int] NOT NULL,
+
+	[SalesOrderNumberKEY] [int] NOT NULL,
+	[DocType] [char](2) NOT NULL,
+	[LineNumber] [int] NOT NULL,
+
+	[Branch] [char](5) NOT NULL,
+	[TerritoryCd] [char](5) NOT NULL,
+	[GLBU_Class] [char](5) NOT NULL,
+	[SalesDivision] [char](3) NOT NULL,
+
+	[AdjCode] [char](10) NOT NULL,
+	[AdjNum] [char](10) NOT NULL,
+	[AdjNote] [varchar](50) NOT NULL,
+	[SalesDate] [datetime] NOT NULL,
+	[CustomerPOText1] [varchar](16) NOT NULL,
+
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+
+	[GL_BusinessUnit] [char](12) NULL,
+	[GL_Object_Sales] [char](10) NULL,
+	[GL_Subsidiary_Sales] [char](8) NULL,
+	[GL_Object_Cost] [char](10) NULL,
+	[GL_Subsidiary_Cost] [char](8) NULL,
+	[GL_Object_ChargeBack] [char](10) NULL,
+	[GL_Subsidiary_ChargeBack] [char](8) NULL,
+
+	[NetSalesAmt] [money] NULL,
+	[ExtendedCostAmt] [money] NULL,
+	[ExtChargebackAmt] [money] NULL,
+
+	[AdjPostStatus] [smallint] NULL,
+
+
+ CONSTRAINT [account_adjustment_F0911_c_PK] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumberKEY] ASC,
+	[DocType] ASC,
+	[LineNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+
+
+GRANT DELETE ON [hfm].[account_adjustment_F0911] TO [maint_role]
+GRANT INSERT ON [hfm].[account_adjustment_F0911] TO [maint_role]
+GRANT SELECT ON [hfm].[account_adjustment_F0911] TO [maint_role]
+GRANT UPDATE ON [hfm].[account_adjustment_F0911] TO [maint_role]
+GO
+
+---
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_DocType FOREIGN KEY
+	(
+	DocType
+	) REFERENCES dbo.BRS_DocType
+	(
+	DocType
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_Branch FOREIGN KEY
+	(
+	Branch
+	) REFERENCES dbo.BRS_Branch
+	(
+	Branch
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_FSC_Rollup FOREIGN KEY
+	(
+	TerritoryCd
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_BusinessUnitClass FOREIGN KEY
+	(
+	GLBU_Class
+	) REFERENCES dbo.BRS_BusinessUnitClass
+	(
+	GLBU_Class
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_SalesDivision FOREIGN KEY
+	(
+	SalesDivision
+	) REFERENCES dbo.BRS_SalesDivision
+	(
+	SalesDivision
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_AdjCode FOREIGN KEY
+	(
+	AdjCode
+	) REFERENCES dbo.BRS_AdjCode
+	(
+	AdjCode
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_account_master_F0901 FOREIGN KEY
+	(
+	GL_BusinessUnit,
+	GL_Object_Sales,
+	GL_Subsidiary_Sales
+	) REFERENCES hfm.account_master_F0901
+	(
+	GMMCU__business_unit,
+	GMOBJ__object_account,
+	GMSUB__subsidiary
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_account_master_F09011 FOREIGN KEY
+	(
+	GL_BusinessUnit,
+	GL_Object_Cost,
+	GL_Subsidiary_Cost
+	) REFERENCES hfm.account_master_F0901
+	(
+	GMMCU__business_unit,
+	GMOBJ__object_account,
+	GMSUB__subsidiary
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_account_master_F09012 FOREIGN KEY
+	(
+	GL_BusinessUnit,
+	GL_Object_ChargeBack,
+	GL_Subsidiary_ChargeBack
+	) REFERENCES hfm.account_master_F0901
+	(
+	GMMCU__business_unit,
+	GMOBJ__object_account,
+	GMSUB__subsidiary
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_SalesDay FOREIGN KEY
+	(
+	SalesDate
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDate
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+
+USE [DEV_BRSales]
+GO
+
+/****** Object:  Table [dbo].[STAGE_BRS_TransactionADJ]    Script Date: 11/10/2017 1:26:19 PM ******/
+DROP TABLE [dbo].[STAGE_BRS_TransactionADJ]
+GO
+

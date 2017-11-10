@@ -5,6 +5,8 @@ IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
 
 ECHO Load BRS_BE_Dimension_load_proc to %BRS_SQLSERVER%.%DB_DST% 
 
+PAUSE
+
 ECHO CLEAR STAGE_BRS_CustomerFull...
 
 SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Dimension_load_proc @bClearStage=1, @bDebug=0"
