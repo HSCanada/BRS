@@ -1,4 +1,8 @@
 
+/****** Object:  Table [dbo].[STAGE_BRS_TransactionADJ]    Script Date: 11/10/2017 1:26:19 PM ******/
+DROP TABLE [dbo].[STAGE_BRS_TransactionADJ]
+GO
+
 --------------------------------------------------------------------------------
 -- DROP TABLE [Integration].F0911_account_ledger_Staging
 --------------------------------------------------------------------------------
@@ -328,17 +332,21 @@ CREATE TABLE [hfm].[account_adjustment_F0911](
 
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 
-	[GL_BusinessUnit] [char](12) NULL,
-	[GL_Object_Sales] [char](10) NULL,
-	[GL_Subsidiary_Sales] [char](8) NULL,
-	[GL_Object_Cost] [char](10) NULL,
-	[GL_Subsidiary_Cost] [char](8) NULL,
-	[GL_Object_ChargeBack] [char](10) NULL,
-	[GL_Subsidiary_ChargeBack] [char](8) NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[Item] [char](10) NOT NULL,
+	[Shipto] [int] NOT NULL,
 
-	[NetSalesAmt] [money] NULL,
-	[ExtendedCostAmt] [money] NULL,
-	[ExtChargebackAmt] [money] NULL,
+	[GL_BusinessUnit] [char](12) NOT NULL,
+	[GL_Object_Sales] [char](10) NOT NULL,
+	[GL_Subsidiary_Sales] [char](8) NOT NULL,
+	[GL_Object_Cost] [char](10) NOT NULL,
+	[GL_Subsidiary_Cost] [char](8) NOT NULL,
+	[GL_Object_ChargeBack] [char](10) NOT NULL,
+	[GL_Subsidiary_ChargeBack] [char](8) NOT NULL,
+
+	[NetSalesAmt] [money] NOT NULL,
+	[ExtendedCostAmt] [money] NOT NULL,
+	[ExtChargebackAmt] [money] NOT NULL,
 
 	[AdjPostStatus] [smallint] NULL,
 
@@ -496,11 +504,93 @@ ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
 	
 GO
 
-
-USE [DEV_BRSales]
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_Customer FOREIGN KEY
+	(
+	Shipto
+	) REFERENCES dbo.BRS_Customer
+	(
+	ShipTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_Item FOREIGN KEY
+	(
+	Item
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
+	FK_account_adjustment_F0911_BRS_TransactionDW_Ext FOREIGN KEY
+	(
+	SalesOrderNumber
+	) REFERENCES dbo.BRS_TransactionDW_Ext
+	(
+	SalesOrderNumber
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
 GO
 
-/****** Object:  Table [dbo].[STAGE_BRS_TransactionADJ]    Script Date: 11/10/2017 1:26:19 PM ******/
-DROP TABLE [dbo].[STAGE_BRS_TransactionADJ]
+
+CREATE TABLE [Integration].[account_adjustment_F0911](
+	[FiscalMonth] [int] NOT NULL,
+
+	[SalesOrderNumberKEY] [int] NOT NULL,
+	[DocType] [char](2) NOT NULL,
+	[LineNumber] [int] NOT NULL,
+
+	[Branch] [char](5) NOT NULL,
+	[TerritoryCd] [char](5) NOT NULL,
+	[GLBU_Class] [char](5) NOT NULL,
+	[SalesDivision] [char](3) NOT NULL,
+
+	[AdjCode] [char](10) NOT NULL,
+	[AdjNum] [char](10) NOT NULL,
+	[AdjNote] [varchar](50) NOT NULL,
+	[SalesDate] [datetime] NOT NULL,
+	[CustomerPOText1] [varchar](16) NOT NULL,
+
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+
+	[SalesOrderNumber] [int] NULL,
+	[Item] [char](10) NULL,
+	[Shipto] [int] NULL,
+
+	[GL_BusinessUnit] [char](12) NULL,
+	[GL_Object_Sales] [char](10) NULL,
+	[GL_Subsidiary_Sales] [char](8) NULL,
+	[GL_Object_Cost] [char](10) NULL,
+	[GL_Subsidiary_Cost] [char](8) NULL,
+	[GL_Object_ChargeBack] [char](10) NULL,
+	[GL_Subsidiary_ChargeBack] [char](8) NULL,
+
+	[NetSalesAmt] [money] NULL,
+	[ExtendedCostAmt] [money] NULL,
+	[ExtChargebackAmt] [money] NULL,
+
+	[AdjPostStatus] [smallint] NULL,
+
+
+ CONSTRAINT [Integration_account_adjustment_F0911_c_PK] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumberKEY] ASC,
+	[DocType] ASC,
+	[LineNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+
+
+GRANT DELETE ON [Integration].[account_adjustment_F0911] TO [maint_role]
+GRANT INSERT ON [Integration].[account_adjustment_F0911] TO [maint_role]
+GRANT SELECT ON [Integration].[account_adjustment_F0911] TO [maint_role]
+GRANT UPDATE ON [Integration].[account_adjustment_F0911] TO [maint_role]
 GO
 
