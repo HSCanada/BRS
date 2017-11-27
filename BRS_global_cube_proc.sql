@@ -246,7 +246,7 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- [hfm].global_cube_proc  201701, 201709
+-- [hfm].global_cube_proc  201709, 201709
 
 -- ORG = 29323 rows, 11 sec
 

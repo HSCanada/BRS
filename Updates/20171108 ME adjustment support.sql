@@ -594,3 +594,15 @@ GRANT SELECT ON [Integration].[account_adjustment_F0911] TO [maint_role]
 GRANT UPDATE ON [Integration].[account_adjustment_F0911] TO [maint_role]
 GO
 
+-- remove relation until a proper method is found -- too locked down, 23 Nov 17
+GO
+ALTER TABLE hfm.account_adjustment_F0911
+	DROP CONSTRAINT FK_account_adjustment_F0911_account_master_F0901
+GO
+ALTER TABLE hfm.account_adjustment_F0911
+	DROP CONSTRAINT FK_account_adjustment_F0911_account_master_F09011
+GO
+ALTER TABLE hfm.account_adjustment_F0911
+	DROP CONSTRAINT FK_account_adjustment_F0911_account_master_F09012
+GO
+
