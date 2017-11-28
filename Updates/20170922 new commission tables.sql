@@ -615,7 +615,7 @@ GO
 
 
 CREATE TABLE [comm].[salesperson_master](
-	[employee_num] [smallint] NOT NULL,
+	[employee_num] [int] NOT NULL,
 	[master_salesperson_cd] [char](5) NOT NULL,
 
 	[salesperson_key_id] [varchar](30) NOT NULL,
@@ -640,6 +640,18 @@ GO
 
 ALTER TABLE [comm].[salesperson_master] ADD  CONSTRAINT [DF_comm_salesperson_master_create_dt]  DEFAULT (getdate()) FOR [creation_dt]
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.salesperson_master ADD CONSTRAINT
+	DF_salesperson_master_comm_plan_id DEFAULT ('') FOR comm_plan_id
+GO
+ALTER TABLE comm.salesperson_master ADD CONSTRAINT
+	DF_salesperson_master_territory_start_dt DEFAULT ('1980-01-01') FOR territory_start_dt
+GO
+ALTER TABLE comm.salesperson_master SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 
 ALTER TABLE [comm].[salesperson_master]  WITH NOCHECK ADD  CONSTRAINT [comm_salesperson_master_comm_plan_fk_1] FOREIGN KEY([comm_plan_id])
@@ -697,7 +709,7 @@ CREATE TABLE [comm].[transaction_F555115](
 	[WSTRDJ_order_date] [date] NOT NULL,
 	[WSVR01_reference] [varchar](25) NOT NULL,
 	[WSVR02_reference_2] [varchar](25) NOT NULL,
-	[WSITM__item_number_short] [smallint] NOT NULL,
+	[WSITM__item_number_short] [int] NOT NULL,
 	[WSPROV_price_override_code] [char](1) NOT NULL,
 	[WSASN__adjustment_schedule] [char](10) NOT NULL,
 	[WSKCO__document_company] [char](5) NOT NULL,
@@ -971,10 +983,531 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	
 GO
 
---- add RI
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	transaction_amt money NOT NULL CONSTRAINT DF_transaction_F555115_transaction_amt DEFAULT (0),
+	gp_ext_amt money NOT NULL CONSTRAINT DF_transaction_F555115_gp_ext_amt DEFAULT (0),
+	fsc_salesperson_key_id varchar(30) NULL,
+	fsc_comm_plan_id char(10) NULL,
+	fsc_comm_group_cd char(6) NULL,
+	fsc_comm_rt float(53) NULL,
+	fsc_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_fsc_comm_amt DEFAULT (0),
+	ess_salesperson_key_id varchar(30) NULL,
+	ess_comm_plan_id char(10) NULL,
+	ess_comm_group_cd char(6) NULL,
+	ess_comm_rt float(53) NULL,
+	ess_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_ess_comm_amt DEFAULT (0),
+	dtx_salesperson_key_id varchar(30) NULL,
+	dtx_comm_plan_id char(10) NULL,
+	dtx_comm_group_cd char(6) NULL,
+	dtx_comm_rt float(53) NULL,
+	dtx_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_dtx_comm_amt DEFAULT (0)
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+
+BEGIN TRANSACTION
+GO
+
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_salesperson_master FOREIGN KEY
+	(
+	fsc_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_salesperson_master1 FOREIGN KEY
+	(
+	ess_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_salesperson_master2 FOREIGN KEY
+	(
+	dtx_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan FOREIGN KEY
+	(
+	fsc_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan1 FOREIGN KEY
+	(
+	ess_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan2 FOREIGN KEY
+	(
+	dtx_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group FOREIGN KEY
+	(
+	fsc_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group1 FOREIGN KEY
+	(
+	ess_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group2 FOREIGN KEY
+	(
+	dtx_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSCO___company DEFAULT ('') FOR WSCO___company
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSLNTY_line_type DEFAULT ('') FOR WSLNTY_line_type
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$OSC_order_source_code DEFAULT ('') FOR WS$OSC_order_source_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSAN8__billto DEFAULT (0) FOR WSAN8__billto
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSHAN_shipto DEFAULT (0) FOR WSSHAN_shipto
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSLITM_item_number DEFAULT ('') FOR WSLITM_item_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSDSC1_description DEFAULT ('') FOR WSDSC1_description
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSDSC2_description_2 DEFAULT ('') FOR WSDSC2_description_2
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSRP1_major_product_class DEFAULT ('') FOR WSSRP1_major_product_class
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSRP2_sub_major_product_class DEFAULT ('') FOR WSSRP2_sub_major_product_class
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSRP3_minor_product_class DEFAULT ('') FOR WSSRP3_minor_product_class
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSRP6_manufacturer DEFAULT ('') FOR WSSRP6_manufacturer
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSUORG_quantity DEFAULT (0) FOR WSUORG_quantity
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSOQS_quantity_shipped DEFAULT (0) FOR WSSOQS_quantity_shipped
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSAEXP_extended_price DEFAULT (0) FOR WSAEXP_extended_price
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSURAT_user_reserved_amount DEFAULT (0) FOR WSURAT_user_reserved_amount
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$UNC_sales_order_cost_markup DEFAULT (0) FOR WS$UNC_sales_order_cost_markup
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSOORN_original_order_number DEFAULT ('') FOR WSOORN_original_order_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSOCTO_original_order_type DEFAULT ('') FOR WSOCTO_original_order_type
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSOGNO_original_line_number DEFAULT (0) FOR WSOGNO_original_line_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSTRDJ_order_date DEFAULT ('1980-01-01') FOR WSTRDJ_order_date
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSVR01_reference DEFAULT ('') FOR WSVR01_reference
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSVR02_reference_2 DEFAULT ('') FOR WSVR02_reference_2
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSITM__item_number_short DEFAULT (0) FOR WSITM__item_number_short
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSPROV_price_override_code DEFAULT ('') FOR WSPROV_price_override_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSASN__adjustment_schedule DEFAULT ('') FOR WSASN__adjustment_schedule
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSKCO__document_company DEFAULT ('') FOR WSKCO__document_company
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSDOC__document_number DEFAULT (0) FOR WSDOC__document_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSDCT__document_type DEFAULT ('') FOR WSDCT__document_type
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSPSN__pick_slip_number DEFAULT (0) FOR WSPSN__pick_slip_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSROUT_ship_method DEFAULT ('') FOR WSROUT_ship_method
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSZON__zone_number DEFAULT ('') FOR WSZON__zone_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSFRTH_freight_handling_code DEFAULT ('') FOR WSFRTH_freight_handling_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSFRAT_rate_code_freightmisc DEFAULT ('') FOR WSFRAT_rate_code_freightmisc
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSRATT_rate_type_freightmisc DEFAULT ('') FOR WSRATT_rate_type_freightmisc
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSGLC__gl_offset DEFAULT ('') FOR WSGLC__gl_offset
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSO08_price_adjustment_line_indicator DEFAULT ('') FOR WSSO08_price_adjustment_line_indicator
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSENTB_entered_by DEFAULT ('') FOR WSENTB_entered_by
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$PMC_promotion_code_price_method DEFAULT ('') FOR WS$PMC_promotion_code_price_method
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSTKBY_order_taken_by DEFAULT ('') FOR WSTKBY_order_taken_by
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSKTLN_kit_master_line_number DEFAULT ('') FOR WSKTLN_kit_master_line_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSCOMM_committed_hs DEFAULT ('') FOR WSCOMM_committed_hs
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSEMCU_header_business_unit DEFAULT ('') FOR WSEMCU_header_business_unit
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$SPC_supplier_code DEFAULT ('') FOR WS$SPC_supplier_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$VCD_vendor_code DEFAULT ('') FOR WS$VCD_vendor_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$CLC_classification_code DEFAULT ('') FOR WS$CLC_classification_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSCYCL_cycle_count_category DEFAULT ('') FOR WSCYCL_cycle_count_category
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSORD__equipment_order DEFAULT ('') FOR WSORD__equipment_order
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSORDT_order_type DEFAULT ('') FOR WSORDT_order_type
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSCAG__cagess_code DEFAULT ('') FOR WSCAG__cagess_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSEST__employment_status DEFAULT ('') FOR WSEST__employment_status
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$ESS_equipment_specialist_code DEFAULT ('') FOR WS$ESS_equipment_specialist_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$TSS_tech_specialist_code DEFAULT ('') FOR WS$TSS_tech_specialist_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$CCS_cadcam_specialist_code DEFAULT ('') FOR WS$CCS_cadcam_specialist_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$NM1__name_1 DEFAULT ('') FOR WS$NM1__name_1
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$NM3_researched_by DEFAULT ('') FOR WS$NM3_researched_by
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$NM4_completed_by DEFAULT ('') FOR WS$NM4_completed_by
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$NM5__name_5 DEFAULT ('') FOR WS$NM5__name_5
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$L01_level_code_01 DEFAULT ('') FOR WS$L01_level_code_01
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSRP4_sub_minor_product_class DEFAULT ('') FOR WSSRP4_sub_minor_product_class
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSCITM_customersupplier_item_number DEFAULT ('') FOR WSCITM_customersupplier_item_number
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSSIC__speciality DEFAULT ('') FOR WSSIC__speciality
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSAC04_practice_type DEFAULT ('') FOR WSAC04_practice_type
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSAC10_division_code DEFAULT ('') FOR WSAC10_division_code
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O01_number_equipment_serial_01 DEFAULT ('') FOR WS$O01_number_equipment_serial_01
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O02_number_equipment_serial_02 DEFAULT ('') FOR WS$O02_number_equipment_serial_02
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O03_number_equipment_serial_03 DEFAULT ('') FOR WS$O03_number_equipment_serial_03
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O04_number_equipment_serial_04 DEFAULT ('') FOR WS$O04_number_equipment_serial_04
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O05_number_equipment_serial_05 DEFAULT ('') FOR WS$O05_number_equipment_serial_05
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$O06_number_equipment_serial_06 DEFAULT ('') FOR WS$O06_number_equipment_serial_06
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WSDL03_description_03 DEFAULT (0) FOR WSDL03_description_03
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	DF_transaction_F555115_WS$ODS_order_discount_amount DEFAULT (0) FOR WS$ODS_order_discount_amount
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --- add data...
 
+insert into [dbo].[BRS_DocType] (DocType) values ('')
 
+INSERT INTO comm.salesperson_master
+                         (employee_num, master_salesperson_cd, salesperson_key_id, salesperson_nm)
+VALUES        (0, '', '', 'Unassigned')
+
+INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
+select distinct [WSCAG__cagess_code], '' from [Integration].[F555115_commission_sales_extract_Staging] 
+where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WSCAG__cagess_code] =  [TerritoryCd])
+
+INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
+select distinct [WS$ESS_equipment_specialist_code], '' from [Integration].[F555115_commission_sales_extract_Staging] 
+where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WS$ESS_equipment_specialist_code] =  [TerritoryCd])
+
+INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
+SELECT        distinct master_salesperson_cd, ''
+FROM            DEV_CommBE.dbo.comm_salesperson_master 
+WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <> '' and
+	not exists(select * from [dbo].[BRS_FSC_Rollup] where master_salesperson_cd = [TerritoryCd])
+
+INSERT INTO [dbo].[BRS_Item] ([Item])
+select distinct [WSLITM_item_number] from [Integration].[F555115_commission_sales_extract_Staging] 
+where not exists (select * from [dbo].[BRS_Item] where [WSLITM_item_number] =  [Item])
+
+INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],[DocType] )
+select distinct [WSDOCO_salesorder_number],[WSDCTO_order_type] from [Integration].[F555115_commission_sales_extract_Staging] 
+where not exists (select * from [dbo].[BRS_TransactionDW_Ext] where [WSDOCO_salesorder_number] =  [SalesOrderNumber])
+
+-- truncate table comm.transaction_F555115
+
+INSERT INTO comm.transaction_F555115
+                         (FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
+                         WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
+                         WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP6_manufacturer, WSUORG_quantity, WSSOQS_quantity_shipped, 
+                         WSAEXP_extended_price, WSURAT_user_reserved_amount, WS$UNC_sales_order_cost_markup, WSOORN_original_order_number, WSOCTO_original_order_type, 
+                         WSOGNO_original_line_number, WSTRDJ_order_date, WSVR01_reference, WSVR02_reference_2, WSITM__item_number_short, WSPROV_price_override_code, 
+                         WSASN__adjustment_schedule, WSKCO__document_company, WSDOC__document_number, WSDCT__document_type, WSPSN__pick_slip_number, 
+                         WSROUT_ship_method, WSZON__zone_number, WSFRTH_freight_handling_code, WSFRAT_rate_code_freightmisc, WSRATT_rate_type_freightmisc, 
+                         WSGLC__gl_offset, WSSO08_price_adjustment_line_indicator, WSENTB_entered_by, WS$PMC_promotion_code_price_method, WSTKBY_order_taken_by, 
+                         WSKTLN_kit_master_line_number, WSCOMM_committed_hs, WSEMCU_header_business_unit, WS$SPC_supplier_code, WS$VCD_vendor_code, 
+                         WS$CLC_classification_code, WSCYCL_cycle_count_category, WSORD__equipment_order, WSORDT_order_type, WSCAG__cagess_code, 
+                         WSEST__employment_status, WS$ESS_equipment_specialist_code, WS$TSS_tech_specialist_code, WS$CCS_cadcam_specialist_code, WS$NM1__name_1, 
+                         WS$NM3_researched_by, WS$NM4_completed_by, WS$NM5__name_5, WS$L01_level_code_01, WSSRP4_sub_minor_product_class, 
+                         WSCITM_customersupplier_item_number, WSSIC__speciality, WSAC04_practice_type, WSAC10_division_code, WS$O01_number_equipment_serial_01, 
+                         WS$O02_number_equipment_serial_02, WS$O03_number_equipment_serial_03, WS$O04_number_equipment_serial_04, WS$O05_number_equipment_serial_05, 
+                         WS$O06_number_equipment_serial_06, WSDL03_description_03, WS$ODS_order_discount_amount)
+SELECT        
+-- TOP (10) 
+d.FiscalMonth, t.WSCO___company, t.WSDOCO_salesorder_number, t.WSDCTO_order_type, t.WSLNTY_line_type, ROUND(t.WSLNID_line_number * 1000,0) AS WSLNID_line_number, 
+                         t.WS$OSC_order_source_code, t.WSAN8__billto, t.WSSHAN_shipto, t.WSDGL__gl_date, t.WSLITM_item_number, t.WSDSC1_description, t.WSDSC2_description_2, 
+                         t.WSSRP1_major_product_class, t.WSSRP2_sub_major_product_class, t.WSSRP3_minor_product_class, t.WSSRP6_manufacturer, t.WSUORG_quantity, 
+                         t.WSSOQS_quantity_shipped, t.WSAEXP_extended_price, t.WSURAT_user_reserved_amount, t.WS$UNC_sales_order_cost_markup, 
+                         t.WSOORN_original_order_number, t.WSOCTO_original_order_type, t.WSOGNO_original_line_number, t.WSTRDJ_order_date, t.WSVR01_reference, 
+                         t.WSVR02_reference_2, t.WSITM__item_number_short, t.WSPROV_price_override_code, t.WSASN__adjustment_schedule, t.WSKCO__document_company, 
+                         t.WSDOC__document_number, t.WSDCT__document_type, t.WSPSN__pick_slip_number, t.WSROUT_ship_method, t.WSZON__zone_number, 
+                         t.WSFRTH_freight_handling_code, t.WSFRAT_rate_code_freightmisc, t.WSRATT_rate_type_freightmisc, t.WSGLC__gl_offset, 
+                         t.WSSO08_price_adjustment_line_indicator, t.WSENTB_entered_by, t.WS$PMC_promotion_code_price_method, t.WSTKBY_order_taken_by, 
+                         t.WSKTLN_kit_master_line_number, t.WSCOMM_committed_hs, t.WSEMCU_header_business_unit, t.WS$SPC_supplier_code, t.WS$VCD_vendor_code, 
+                         t.WS$CLC_classification_code, t.WSCYCL_cycle_count_category, t.WSORD__equipment_order, t.WSORDT_order_type, t.WSCAG__cagess_code, 
+                         t.WSEST__employment_status, t.WS$ESS_equipment_specialist_code, t.WS$TSS_tech_specialist_code, t.WS$CCS_cadcam_specialist_code, t.WS$NM1__name_1, 
+                         t.WS$NM3_researched_by, t.WS$NM4_completed_by, t.WS$NM5__name_5, t.WS$L01_level_code_01, t.WSSRP4_sub_minor_product_class, 
+                         t.WSCITM_customersupplier_item_number, t.WSSIC__speciality, t.WSAC04_practice_type, t.WSAC10_division_code, t.WS$O01_number_equipment_serial_01, 
+                         t.WS$O02_number_equipment_serial_02, t.WS$O03_number_equipment_serial_03, t.WS$O04_number_equipment_serial_04, 
+                         t.WS$O05_number_equipment_serial_05, t.WS$O06_number_equipment_serial_06, t.WSDL03_description_03, t.WS$ODS_order_discount_amount
+FROM            Integration.F555115_commission_sales_extract_Staging AS t INNER JOIN
+                         BRS_SalesDay AS d ON t.WSDGL__gl_date = d.SalesDate
+
+-- ADD
+
+INSERT INTO comm.[source]
+                         (source_cd, source_desc, active_ind, creation_dt)
+SELECT        source_cd, source_desc, active_ind, creation_dt
+FROM            DEV_CommBE.dbo.comm_source
+WHERE source_cd <>''
+
+INSERT INTO comm.[group]
+                         (comm_group_cd, comm_group_desc, source_cd, active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
+                         sort_id, FRG_comm_group_cd)
+SELECT        comm_group_cd, comm_group_desc, source_cd, active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
+                         sort_id, FRG_comm_group_cd
+FROM            DEV_CommBE.dbo.comm_group
+WHERE comm_group_cd <>''
+
+INSERT INTO comm.[plan]
+                         (comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd)
+SELECT        comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd
+FROM            DEV_CommBE.dbo.comm_plan
+
+INSERT INTO comm.plan_group_rate
+                         (comm_plan_id, comm_group_cd, comm_base_rt, active_ind, creation_dt, note_txt, show_ind)
+SELECT        comm_plan_id, comm_group_cd, comm_base_rt, active_ind, creation_dt, note_txt, show_ind
+FROM            DEV_CommBE.dbo.comm_plan_group_rate
+
+
+INSERT INTO comm.salesperson_master
+                         (salesperson_key_id, salesperson_nm, comm_plan_id, creation_dt, note_txt, master_salesperson_cd, flag_ind, territory_start_dt, employee_num)
+SELECT        salesperson_key_id, salesperson_nm, comm_plan_id, creation_dt, note_txt, master_salesperson_cd, select_ind, ISNULL(territory_start_dt, '1980-01-01'), employee_num
+FROM            DEV_CommBE.dbo.comm_salesperson_master 
+WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <> '' 
+
+-- todo
+-- map and load this!
+
+SELECT TOP (1000) [record_id]
+      ,[fiscal_yearmo_num]
+      ,[salesperson_cd]
+      ,[source_cd]
+      ,[transaction_dt]
+      ,[transaction_amt]
+      ,[doc_key_id]
+      ,[line_id]
+      ,[doc_id]
+      ,[order_id]
+      ,[reference_order_txt]
+      ,[order_source_cd]
+      ,[customer_nm]
+      ,[item_id]
+      ,[shipped_qty]
+      ,[price_unit_amt]
+      ,[price_override_ind]
+      ,[transaction_txt]
+      ,[unit_price_cd]
+      ,[creation_dt]
+      ,[audit_id]
+      ,[salesperson_key_id]
+      ,[comm_plan_id]
+      ,[comm_amt]
+      ,[cost_unit_amt]
+      ,[item_label_cd]
+      ,[item_comm_group_cd]
+      ,[item_comm_rt]
+      ,[status_cd]
+      ,[cost_ext_amt]
+      ,[ess_salesperson_key_id]
+      ,[pmts_salesperson_key_id]
+      ,[gp_ext_amt]
+      ,[tax_gst_amt]
+      ,[tax_pst_amt]
+      ,[doc_type_cd]
+      ,[ess_comm_plan_id]
+      ,[ess_comm_group_cd]
+      ,[ess_comm_rt]
+      ,[ess_comm_amt]
+      ,[ess_status_cd]
+      ,[hsi_shipto_id]
+      ,[IMCLMJ]
+      ,[IMCLSJ]
+      ,[IMCLMC]
+      ,[IMCLSM]
+      ,[file_cost_ext_amt]
+      ,[ess_salesperson_cd]
+      ,[pmts_salesperson_cd]
+      ,[hsi_billto_id]
+      ,[hsi_billto_div_cd]
+      ,[hsi_shipto_div_cd]
+      ,[hsi_shipto_nm]
+      ,[file_cost_unit_amt]
+      ,[land_cost_unit_amt]
+      ,[avg_cost_unit_amt]
+      ,[comm_cost_unit_amt]
+      ,[vpa_cd]
+      ,[vpa_desc]
+      ,[manufact_cd]
+      ,[sales_category_cd]
+      ,[privileges_cd]
+      ,[price_method_cd]
+      ,[hsi_billto_nm]
+      ,[customer_po_num]
+  FROM [DEV_CommBE].[dbo].[comm_transaction] WHERE [fiscal_yearmo_num] = '201709' AND [source_cd] = 'JDE'
 
