@@ -45,6 +45,7 @@ AS
 --  06 Feb 17	tmc		Add restock to price adj correction
 --	13 Feb 17	tmc		Final Discount logic fix
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
+--	28 Dec 17	tmc		Added EssCode,CcsCode,TssCode,CagCode to BRS_FSC_Rollup
 
 **    
 *******************************************************************************/
@@ -172,6 +173,70 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+
+		-- ESS
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new ESS...'
+
+			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
+			SELECT DISTINCT [ESSCD], ''
+			FROM            STAGE_BRS_TransactionDW 
+			WHERE 
+				([ESSCD] IS NOT NULL) AND
+				NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [ESSCD] = [TerritoryCd])
+
+			Set @nErrorCode = @@Error
+		End
+
+		-- CCS
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new CCS...'
+
+			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
+			SELECT DISTINCT [CCSCD], ''
+			FROM            STAGE_BRS_TransactionDW 
+			WHERE 
+				([CCSCD] IS NOT NULL) AND
+				NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [CCSCD] = [TerritoryCd])
+
+			Set @nErrorCode = @@Error
+		End
+
+		-- TSS
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new TSS...'
+
+			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
+			SELECT DISTINCT [TSSCD], ''
+			FROM            STAGE_BRS_TransactionDW 
+			WHERE 
+				([TSSCD] IS NOT NULL) AND
+				NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [TSSCD] = [TerritoryCd])
+
+			Set @nErrorCode = @@Error
+		End
+
+		-- DTX
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new DTX...'
+
+			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
+			SELECT DISTINCT [CAGREPCD], ''
+			FROM            STAGE_BRS_TransactionDW 
+			WHERE 
+				([CAGREPCD] IS NOT NULL) AND
+				NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [CAGREPCD] = [TerritoryCd])
+
+			Set @nErrorCode = @@Error
+		End
 
 		If (@nErrorCode = 0) 
 		Begin
@@ -642,10 +707,5 @@ truncate table STAGE_BRS_TransactionDW
 
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
-
-
-
-
-
 
 

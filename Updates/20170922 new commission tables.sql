@@ -5,10 +5,7 @@
 CREATE SCHEMA [comm]
 GO
 
----
---------------------------------------------------------------------------------
 -- DROP TABLE Integration.F55510_customer_territory_Staging
---------------------------------------------------------------------------------
 
 SELECT 
 
@@ -1338,6 +1335,68 @@ GO
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+---
+
+CREATE TABLE [comm].[config](
+	[FiscalMonth] [integer] NOT NULL,
+	[PriorFiscalMonth] [integer] NOT NULL,
+	[SalesDateLastWeekly] datetime NOT NULL,
+	[HistorySummaryMonths] [int] NOT NULL,
+	[OutputPath] [varchar](255) NOT NULL,
+	[LogFile] [varchar](255) NOT NULL,
+	[ID] [int] NOT NULL,
+ CONSTRAINT [comm_config_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[FiscalMonth] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.config ADD CONSTRAINT
+	FK_config_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.config ADD CONSTRAINT
+	FK_config_BRS_FiscalMonth1 FOREIGN KEY
+	(
+	PriorFiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.config ADD CONSTRAINT
+	FK_config_BRS_SalesDay FOREIGN KEY
+	(
+	SalesDateLastWeekly
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDate
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.config SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+GO
+
+
+
 
 --- add data...
 
