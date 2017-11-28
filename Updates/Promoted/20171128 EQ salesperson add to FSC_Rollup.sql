@@ -5,7 +5,9 @@
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 SELECT DISTINCT EssCode, ''
 FROM            BRS_TransactionDW 
-WHERE NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE EssCode = [TerritoryCd])
+WHERE 
+	EssCode IS NOT NULL AND
+	NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE EssCode = [TerritoryCd])
 
 -- CCS
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
