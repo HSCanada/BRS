@@ -310,7 +310,6 @@ ALTER TABLE Integration.F0911_account_ledger_Staging ADD CONSTRAINT
 
 GO
 
----
 
 CREATE TABLE [hfm].[account_adjustment_F0911](
 	[FiscalMonth] [int] NOT NULL,
