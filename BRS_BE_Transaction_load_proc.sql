@@ -48,6 +48,7 @@ AS
 --	13 Dec 16	tmc		Extend FG tag to adjust note (consistent reporting)
 --  01 Nov 17	tmc		removed redundant GLaccounts (saved as BU & obj)
 --						fix GLBU logic to use BU + Obj + Sub
+--	30 Nov 17	tmc		Update TransExt Salesorder for RI
 **    
 *******************************************************************************/
 BEGIN
@@ -333,6 +334,21 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Add new Salesorder...'
+
+		INSERT INTO [dbo].[BRS_TransactionDW_Ext]
+							  ([SalesOrderNumber], [DocType])
+		SELECT DISTINCT t.SalesOrderNumber, t.DocType
+		FROM         STAGE_BRS_Transaction_Load AS t
+		WHERE     (NOT EXISTS
+								  (SELECT     *
+									FROM          [dbo].[BRS_TransactionDW_Ext] AS t2
+									WHERE       t.SalesOrderNumber = t2.SalesOrderNumber))
+	Set @nErrorCode = @@Error
+End
 
 
 If (@nErrorCode = 0) 

@@ -999,6 +999,7 @@ CREATE TABLE [comm].[transaction_F555115](
 
 GO
 
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_BRS_FiscalMonth FOREIGN KEY
 	(
@@ -1574,6 +1575,23 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- DROP INDEX transaction_F555115_c_idx_01 ON comm.transaction_F555115
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_c_idx_01 ON comm.transaction_F555115
+	(
+	FiscalMonth,
+	[WSLITM_item_number],
+	[WSSHAN_shipto],
+	transaction_amt,
+	gp_ext_amt
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 ---
 
 
@@ -1701,6 +1719,27 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	fsc_code char(5) NULL
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_BRS_FSC_Rollup5 FOREIGN KEY
+	(
+	fsc_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 
 --- add data...
 
@@ -1954,15 +1993,6 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_FiscalMonth] WHERE fiscal_yearmo_num = [FiscalMonth]
 )
 
--- fix
-SELECT 
-	transaction_dt, CAST(transaction_dt as date) as d2
-
-FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_SalesDay] WHERE transaction_dt = [SalesDate]
-)
-
 --ok
 SELECT 
 	TOP 10
@@ -1973,15 +2003,6 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE salesperson_cd = [TerritoryCd]
 )
 
--- fix
-SELECT 
-	TOP 10
-	ess_salesperson_cd, ess_salesperson_key_id
-
-FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE ess_salesperson_cd = [TerritoryCd]
-)
 
 --ok
 SELECT 
@@ -2030,39 +2051,6 @@ SELECT
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [comm].[plan] WHERE ess_comm_plan_id = [comm_plan_id]
-)
-
--- fix1 add 201710 DW trans to DEV
--- fix2 'NA' | NULL -> 0, other...
--- fix3 add AZAZZ to DWext?
--- fix4 ?
-SELECT 
---	TOP 10
-	* 
---	doc_id
-
-FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE CASE WHEN doc_id = 'NA' THEN 0 ELSE ISNULL(doc_id,0) END = [SalesOrderNumber] or  salesperson_cd ='AZAZZ'
-)
-
--- fix null
-SELECT 
-	TOP 10
-	order_source_cd
-
-FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_OrderSource] WHERE order_source_cd = [OrderSourceCode]
-)
--- fix null
-SELECT 
-	TOP 10
-	item_id
-
-FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_Item] WHERE item_id = [Item]
 )
 
 --ok
@@ -2135,16 +2123,66 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_SalesDivision] WHERE hsi_shipto_div_cd = [SalesDivision]
 )
 
+
+-- fix null
+SELECT 
+	TOP 10
+	item_id, *
+
+FROM DEV_CommBE.[dbo].[comm_transaction]
+WHERE NOT EXISTS (
+	SELECT * FROM [dbo].[BRS_Item] WHERE item_id = [Item]
+)
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                item_id = ''
+WHERE        (item_id IS NULL)
+
+-- fix null
+SELECT 
+	TOP 10
+	order_source_cd
+
+FROM DEV_CommBE.[dbo].[comm_transaction]
+WHERE NOT EXISTS (
+	SELECT * FROM [dbo].[BRS_OrderSource] WHERE order_source_cd = [OrderSourceCode]
+)
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                order_source_cd = ''
+WHERE        (order_source_cd IS NULL)
+
 -- fix *ERROR* -> ''
 SELECT 
---	TOP 10
-	*
---	vpa_cd
+	vpa_cd
 
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_CustomerVPA] WHERE vpa_cd = [VPA]
 )
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                vpa_cd = N''
+WHERE        (NOT EXISTS
+                             (SELECT        *
+                               FROM            BRS_CustomerVPA
+                               WHERE        (DEV_CommBE.dbo.comm_transaction.vpa_cd = VPA)))
+
+-- fix
+SELECT 
+	transaction_dt, CAST(transaction_dt as date) as d2
+
+FROM DEV_CommBE.[dbo].[comm_transaction]
+WHERE NOT EXISTS (
+	SELECT * FROM [dbo].[BRS_SalesDay] WHERE transaction_dt = [SalesDate]
+)
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                transaction_dt = CAST(transaction_dt as date)
+WHERE        (NOT EXISTS
+                             (SELECT        *
+                               FROM            BRS_SalesDay
+                               WHERE        (DEV_CommBE.dbo.comm_transaction.transaction_dt = SalesDate)))
 
 -- fix Left(1)
 SELECT 
@@ -2155,3 +2193,189 @@ FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_PriceMethod] WHERE price_method_cd = [PriceMethod]
 )
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                price_method_cd = LEFT(price_method_cd,1)
+WHERE        (NOT EXISTS
+                             (SELECT        *
+                               FROM            BRS_PriceMethod
+                               WHERE        (DEV_CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
+-- fix
+SELECT 
+	TOP 10
+	ess_salesperson_cd, ess_salesperson_key_id
+
+FROM DEV_CommBE.[dbo].[comm_transaction]
+WHERE NOT EXISTS (
+	SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE ess_salesperson_cd = [TerritoryCd]
+)
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                ess_salesperson_cd = N'ESS48'
+WHERE        (ess_salesperson_cd = 'ESS13')
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                ess_salesperson_cd = N''
+WHERE        (ess_salesperson_cd = 'OCTOBER 21')
+
+/*
+ESS13     	HouseNCZHESS -=>ESS48                 
+ESS13     	HouseNCZHESS                  
+OCTOBER 21	              =>''                
+*/
+
+-- fix3 add AZAZZ to DWext?
+-- fix4 ?
+SELECT 
+	* 
+--	doc_id
+FROM DEV_CommBE.[dbo].[comm_transaction]
+WHERE hsi_shipto_div_cd not in ('AZA', 'AZE') and  NOT EXISTS (
+	SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE ISNULL(doc_id,0) =[SalesOrderNumber] 
+)
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                doc_id = N'0'
+WHERE        (doc_id = 'NA')
+
+UPDATE       BRS_Transaction
+SET                SalesOrderNumber = 0
+WHERE        (DocType = 'aa')  AND (NOT EXISTS
+                             (SELECT        * 
+                               FROM            BRS_TransactionDW_Ext AS ext
+                               WHERE        (BRS_Transaction.SalesOrderNumber = SalesOrderNumber)))
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                doc_id = N'0'
+WHERE        (doc_id is null)
+
+INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber], DocType)
+SELECT         distinct SalesOrderNumber, DocType
+FROM            BRS_Transaction t where SalesOrderNumber IS NOT NULL AND  NOT exists 
+	(select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber]) 
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
+	FK_BRS_Transaction_BRS_TransactionDW_Ext FOREIGN KEY
+	(
+	SalesOrderNumber
+	) REFERENCES dbo.BRS_TransactionDW_Ext
+	(
+	SalesOrderNumber
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                doc_id = '0'
+WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
+                             (SELECT        *
+                               FROM            BRS_TransactionDW_Ext
+                               WHERE        (ISNULL(DEV_CommBE.dbo.comm_transaction.doc_id, 0) = SalesOrderNumber)))
+
+SELECT         doc_id, doc_type_cd, line_id, COUNT(*) AS Expr1
+FROM            DEV_CommBE.dbo.comm_transaction t
+GROUP BY doc_id, doc_type_cd, line_id
+HAVING COUNT(*) >1
+
+-- fix duplicate linenumbers by setting to ID (all imports)
+UPDATE       DEV_CommBE.dbo.comm_transaction
+SET                line_id = [record_id],[audit_id]=line_id 
+where exists(
+SELECT         doc_id, doc_type_cd, line_id, COUNT(*) AS Expr1
+FROM            DEV_CommBE.dbo.comm_transaction t
+WHERE DEV_CommBE.dbo.comm_transaction.doc_id =t.doc_id and DEV_CommBE.dbo.comm_transaction.doc_type_cd=t.doc_type_cd and DEV_CommBE.dbo.comm_transaction.line_id = t.line_id
+GROUP BY doc_id, doc_type_cd, line_id
+HAVING COUNT(*) >1
+)
+
+
+-- migrate data
+INSERT INTO comm.transaction_F555115
+(
+FiscalMonth, fsc_code, source_cd, WSDGL__gl_date, transaction_amt, WSLNID_line_number, WSDOCO_salesorder_number, WSVR01_reference, 
+WS$OSC_order_source_code, WSLITM_item_number, WSSOQS_quantity_shipped, WSPROV_price_override_code, WSDSC1_description, fsc_salesperson_key_id, 
+fsc_comm_plan_id, fsc_comm_amt, WS$UNC_sales_order_cost_markup, WSCYCL_cycle_count_category, fsc_comm_group_cd, fsc_comm_rt, 
+ess_salesperson_key_id, gp_ext_amt, WSDCTO_order_type, ess_comm_plan_id, ess_comm_group_cd, ess_comm_rt, ess_comm_amt, WSSHAN_shipto, 
+WSSRP1_major_product_class, WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP4_sub_minor_product_class, 
+WS$ESS_equipment_specialist_code, WSCAG__cagess_code, WSAN8__billto, WSAC10_division_code, WSASN__adjustment_schedule, WSSRP6_manufacturer, 
+WS$PMC_promotion_code_price_method)
+SELECT        
+--	TOP (10) 
+	fiscal_yearmo_num,
+	LEFT(salesperson_cd,5),
+	LEFT(source_cd,3),
+	transaction_dt,
+	transaction_amt,
+	line_id,
+	doc_id,
+	ISNULL(reference_order_txt,''),
+	order_source_cd,
+	LEFT(item_id,10),
+	shipped_qty,
+	price_override_ind,
+	transaction_txt,
+	salesperson_key_id,
+	comm_plan_id,
+	comm_amt,
+	cost_unit_amt,
+	item_label_cd,
+	item_comm_group_cd,
+	item_comm_rt,
+	ess_salesperson_key_id,
+	gp_ext_amt,
+	doc_type_cd,
+	ess_comm_plan_id,
+	ess_comm_group_cd,
+	ess_comm_rt,
+	ess_comm_amt,
+	hsi_shipto_id,
+	IMCLMJ,
+	IMCLSJ,
+	IMCLMC,
+	IMCLSM,
+	LEFT(ess_salesperson_cd,5),
+	LEFT(pmts_salesperson_cd,5),
+	hsi_billto_id,
+	hsi_shipto_div_cd,
+	vpa_cd,
+	manufact_cd,
+	price_method_cd
+
+FROM            
+	DEV_CommBE.dbo.comm_transaction
+WHERE        
+	(hsi_shipto_div_cd NOT IN ('AZA', 'AZE')) AND 
+	(fiscal_yearmo_num = '201711')
+
+--201708 NEW format
+
+-- Delete FROM            comm.transaction_F555115 where (FiscalMonth = 201601)
+
+SELECT DISTINCT source_cd 
+FROM comm.transaction_F555115
+WHERE FiscalMonth = 201708
+
+update comm.transaction_F555115
+set source_cd = 'JDE'
+WHERE FiscalMonth = 201708
+
+update comm.transaction_F555115
+set WSDCTO_order_type = 'AA'
+WHERE source_cd <> 'JDE'
+
+SELECT        WSDCTO_order_type, source_cd, COUNT(*) AS Expr1
+FROM            comm.transaction_F555115
+GROUP BY WSDCTO_order_type, source_cd

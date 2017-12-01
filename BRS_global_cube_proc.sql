@@ -31,6 +31,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	30 Nov 17	tmc		update Product to use sub-minor & use global rollup 4CC
 
 *******************************************************************************/
 
@@ -53,9 +54,9 @@ BEGIN
 --		,t.Shipto
 --		,t.Item
 		,'Test.SALES.ACT'					AS Test_Source
-		,hfm.[HFM_CostCenter]				AS Entity
+		,cc.[Entity]						AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,3)		AS Product
+		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
@@ -85,6 +86,9 @@ BEGIN
 			t.[GL_Object_Sales] = hfm.[GMOBJ__object_account] AND
 			t.[GL_Subsidiary_Sales] = hfm.[GMSUB__subsidiary] 
 
+		INNER JOIN [hfm].[cost_center] as cc
+		ON hfm.HFM_CostCenter = cc.CostCenter
+
 		INNER JOIN [hfm].[exclusive_product] as excl
 		ON ih.Excl_key = excl.Excl_Key
 
@@ -101,7 +105,7 @@ BEGIN
 --		,t.Item
 		,t.GL_BusinessUnit
 		,t.GL_Object_Sales
-		,hfm.[HFM_CostCenter]
+		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
@@ -117,9 +121,9 @@ BEGIN
 --		,t.Shipto
 --		,t.Item
 		,'Test.COST.ACT'					AS Test_Source
-		,hfm.[HFM_CostCenter]				AS Entity
+		,cc.[Entity]						AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,3)		AS Product
+		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
@@ -149,6 +153,9 @@ BEGIN
 			t.[GL_Object_Cost] = hfm.[GMOBJ__object_account] AND
 			t.[GL_Subsidiary_Cost] = hfm.[GMSUB__subsidiary] 
 
+		INNER JOIN [hfm].[cost_center] as cc
+		ON hfm.HFM_CostCenter = cc.CostCenter
+
 		INNER JOIN [hfm].[exclusive_product] as excl
 		ON ih.Excl_key = excl.Excl_Key
 
@@ -165,7 +172,7 @@ BEGIN
 --		,t.Item
 		,t.GL_BusinessUnit
 		,t.GL_Object_Sales
-		,hfm.[HFM_CostCenter]
+		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
@@ -181,9 +188,9 @@ BEGIN
 --		,t.Shipto
 --		,t.Item
 		,'Test.CHARGEBACK.EST'					AS Test_Source
-		,hfm.[HFM_CostCenter]				AS Entity
+		,cc.[Entity]						AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,3)		AS Product
+		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
@@ -213,6 +220,9 @@ BEGIN
 			t.[GL_Object_ChargeBack] = hfm.[GMOBJ__object_account] AND
 			t.[GL_Subsidiary_ChargeBack] = hfm.[GMSUB__subsidiary] 
 
+		INNER JOIN [hfm].[cost_center] as cc
+		ON hfm.HFM_CostCenter = cc.CostCenter
+
 		INNER JOIN [hfm].[exclusive_product] as excl
 		ON ih.Excl_key = excl.Excl_Key
 
@@ -231,7 +241,7 @@ BEGIN
 --		,t.Item
 		,t.GL_BusinessUnit
 		,t.GL_Object_Sales
-		,hfm.[HFM_CostCenter]
+		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
