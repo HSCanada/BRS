@@ -51,7 +51,7 @@ SELECT
 	"WRUPMJ" AS WRUPMJ_date_updated,
 	"WRUPMT" AS WRUPMT_time_last_updated 
 
-INTO Integration.F55510_customer_territory_Staging
+ INTO Integration.F55510_customer_territory_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -206,7 +206,7 @@ SELECT
 	"WSDL03" AS WSDL03_description_03,
 	"WS$ODS" AS WS$ODS_order_discount_amount 
 
-INTO Integration.F555115_commission_sales_extract_Staging
+-- INTO Integration.F555115_commission_sales_extract_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -1809,6 +1809,41 @@ d.FiscalMonth, t.WSCO___company, t.WSDOCO_salesorder_number, t.WSDCTO_order_type
                          t.WS$O05_number_equipment_serial_05, t.WS$O06_number_equipment_serial_06, t.WSDL03_description_03, t.WS$ODS_order_discount_amount
 FROM            Integration.F555115_commission_sales_extract_Staging AS t INNER JOIN
                          BRS_SalesDay AS d ON t.WSDGL__gl_date = d.SalesDate
+WHERE 
+	(WSAC10_division_code NOT IN ('AZA', 'AZE')) 
+
+/*
+SELECT        
+DISTINCT t.WSDOCO_salesorder_number
+FROM            Integration.F555115_commission_sales_extract_Staging AS t INNER JOIN
+                         BRS_SalesDay AS d ON t.WSDGL__gl_date = d.SalesDate
+WHERE 
+	(WSAC10_division_code NOT IN ('AZA', 'AZE')) AND 
+	NOT EXISTS ( SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE [SalesOrderNumber] =t.WSDOCO_salesorder_number)
+
+SELECT        
+	*
+FROM            Integration.F555115_commission_sales_extract_Staging AS t
+WHERE t.WSDOCO_salesorder_number = 10901332	 
+
+*/
+--- XXX
+SELECT
+TOP (10) 
+WSAC10_division_code, 
+SUM(WSAEXP_extended_price) AS WSAEXP_extended_price, 
+SUM(WS$ODS_order_discount_amount) AS WS$ODS_order_discount_amount, 
+SUM(WS$UNC_sales_order_cost_markup) AS WS$UNC_sales_order_cost_markup, 
+SUM(WSSOQS_quantity_shipped) AS WSSOQS_quantity_shipped, 
+SUM(WS$UNC_sales_order_cost_markup * WSSOQS_quantity_shipped) AS ext_cost,
+SUM(WSAEXP_extended_price-WS$ODS_order_discount_amount) as net_sales,
+SUM(WSAEXP_extended_price-WS$ODS_order_discount_amount - WS$UNC_sales_order_cost_markup * WSSOQS_quantity_shipped) as gp_amt
+
+FROM            comm.transaction_F555115
+WHERE        (FiscalMonth = 201711)
+GROUP BY WSAC10_division_code
+
+
 
 -- ADD
 
@@ -2379,3 +2414,5 @@ WHERE source_cd <> 'JDE'
 SELECT        WSDCTO_order_type, source_cd, COUNT(*) AS Expr1
 FROM            comm.transaction_F555115
 GROUP BY WSDCTO_order_type, source_cd
+
+

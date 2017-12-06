@@ -672,7 +672,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201710 and 201710) 
+	(t.FiscalMonth between 201711 and 201711) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -695,7 +695,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201710 and 201710) 
+	(t.FiscalMonth between 201711 and 201711) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -719,7 +719,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201710 and 201710) 
+	(t.FiscalMonth between 201711 and 201711) 
 
 
 
@@ -734,4 +734,4 @@ where
 -- Select FiscalMonth, YearFirstFiscalMonth_HIST, PriorFiscalMonth FROM BRS_Rollup_Support01
 
 
--- 18m
+-- 20m
