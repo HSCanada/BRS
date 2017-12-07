@@ -1,41 +1,45 @@
--- refine adjustment, tmc 5 Dec 2017
+-- refine adjustment, tmc 6 Dec 2017
 
 -- DROP TABLE [Integration].[account_adjustment_F0911]
 
 CREATE TABLE [Integration].[account_adjustment_F0911](
-	[FiscalMonth] [int] NOT NULL,
-	[SalesDate] [datetime] NOT NULL,
-
-	[SalesOrderNumberKEY] [int] NOT NULL,
+	[BatchNumber] [int] NOT NULL,
 	[DocType] [char](2) NOT NULL,
 	[LineNumber] [int] NOT NULL,
 
-	[SalesDivision] [char](3) NOT NULL,
-	[Branch] [char](5) NOT NULL,
-	[TerritoryCd] [char](5) NOT NULL,
+	[FiscalMonth] [int] NOT NULL,
+	[SalesDate] [datetime] NOT NULL,
 
-	[AdjCode] [char](10) NOT NULL,
 	[AdjNum] [char](10) NOT NULL,
+	[AdjCode] [char](10) NOT NULL,
 	[AdjNote] [varchar](50) NOT NULL,
+	[AdjNoteRemark] [varchar](50) NOT NULL,
+	[AdjSource] [varchar](16) NOT NULL,
+	[AdjOwner] [varchar](20) NOT NULL,
 
-	[GLBU_Class] [char](5) NOT NULL,
+	[ValueAmt] [money] NOT NULL,
+
 	[GL_BusinessUnit] [char](12) NOT NULL,
 	[GL_Object] [char](10) NOT NULL,
 	[GL_Subsidiary] [char](8) NOT NULL,
 
-	[ValueAmt] [money] NOT NULL,
-	[CustomerPOText1] [varchar](16) NOT NULL,
-
-	[SalesOrderNumber] [int] NOT NULL,
 	[Shipto] [int] NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
 	[Item] [char](10) NOT NULL,
 
+	[GL_DocType] [char](2) NOT NULL,
 	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[ExceptionText] [varchar](50) NULL,
 
+	[GLBU_Class] [char](5) NULL,
+	[Branch] [char](5) NULL,
+	[TerritoryCd] [char](5) NULL,
+	[SalesDivision] [char](3) NULL,
+
+	[ExceptionText] [varchar](50) NULL,
+	
  CONSTRAINT [Integration_account_adjustment_F0911_c_PK] PRIMARY KEY CLUSTERED 
 (
-	[SalesOrderNumberKEY] ASC,
+	[BatchNumber] ASC,
 	[DocType] ASC,
 	[LineNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
@@ -65,39 +69,43 @@ COMMIT
 
 
 CREATE TABLE [hfm].[account_adjustment_F0911](
-	[FiscalMonth] [int] NOT NULL,
-	[SalesDate] [datetime] NOT NULL,
-
-	[SalesOrderNumberKEY] [int] NOT NULL,
+	[BatchNumber] [int] NOT NULL,
 	[DocType] [char](2) NOT NULL,
 	[LineNumber] [int] NOT NULL,
 
-	[SalesDivision] [char](3) NOT NULL,
-	[Branch] [char](5) NOT NULL,
-	[TerritoryCd] [char](5) NOT NULL,
+	[FiscalMonth] [int] NOT NULL,
+	[SalesDate] [datetime] NOT NULL,
 
-	[AdjCode] [char](10) NOT NULL,
 	[AdjNum] [char](10) NOT NULL,
+	[AdjCode] [char](10) NOT NULL,
 	[AdjNote] [varchar](50) NOT NULL,
+	[AdjNoteRemark] [varchar](50) NOT NULL,
+	[AdjSource] [varchar](16) NOT NULL,
+	[AdjOwner] [varchar](20) NOT NULL,
 
-	[GLBU_Class] [char](5) NOT NULL,
+	[ValueAmt] [money] NOT NULL,
+
 	[GL_BusinessUnit] [char](12) NOT NULL,
 	[GL_Object] [char](10) NOT NULL,
 	[GL_Subsidiary] [char](8) NOT NULL,
 
-	[ValueAmt] [money] NOT NULL,
-	[CustomerPOText1] [varchar](16) NOT NULL,
-
+	[Shipto] [int] NOT NULL,
 	[SalesOrderNumber] [int] NOT NULL,
 	[Item] [char](10) NOT NULL,
-	[Shipto] [int] NOT NULL,
 
+	[GL_DocType] [char](2) NOT NULL,
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 
+	[GLBU_Class] [char](5) NULL,
+	[Branch] [char](5) NULL,
+	[TerritoryCd] [char](5) NULL,
+	[SalesDivision] [char](3) NULL,
+
 	[AdjPostStatus] [smallint] NULL,
+
  CONSTRAINT [account_adjustment_F0911_c_PK] PRIMARY KEY CLUSTERED 
 (
-	[SalesOrderNumberKEY] ASC,
+	[BatchNumber] ASC,
 	[DocType] ASC,
 	[LineNumber] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
@@ -165,6 +173,59 @@ ALTER TABLE hfm.account_adjustment_F0911 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
+---
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Object ADD
+	AdjCode char(10) NOT NULL CONSTRAINT DF_BRS_Object_AdjCode DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_Object SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Object ADD CONSTRAINT
+	FK_BRS_Object_BRS_AdjCode FOREIGN KEY
+	(
+	AdjCode
+	) REFERENCES dbo.BRS_AdjCode
+	(
+	AdjCode
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Object SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- update BU Map
+UPDATE       BRS_BusinessUnit
+SET                GLBU_Class = n.text
+FROM            zzzBU AS n INNER JOIN
+                         BRS_BusinessUnit ON n.BU = LEFT(BRS_BusinessUnit.BusinessUnit, 10) AND n.text <> BRS_BusinessUnit.GLBU_Class
+
+
+UPDATE       BRS_Object
+SET                AdjCode = 'ALLOWA'
+WHERE        (GLAcctNumberObj = '4147')
+
+UPDATE       BRS_Object
+SET                AdjCode = 'PROMOT'
+WHERE        (GLAcctNumberObj in ('4320', '4330'))
+
+UPDATE       BRS_Object
+SET                AdjCode = 'FREEGD'
+WHERE        (GLAcctNumberObj = '4579')
+
+UPDATE       BRS_Object
+SET                AdjCode = 'REBATE'
+WHERE        (GLAcctNumberObj in ('4300', '4310'))
+
+
 
 
 
