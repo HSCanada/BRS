@@ -6,8 +6,9 @@ GO
 
 /******************************************************************************
 **	File: 
-**	Name: comm_statement_detail
+**	Name: [comm].[backend_detail_fsc] 
 **	Desc: commission detail recordset used by Access report front-end
+**			(renamed from comm_statement_detail)
 **
 **              
 **
@@ -33,7 +34,7 @@ GO
 --	7 Dec 17	tmc	Convert to new backend
 *******************************************************************************/
 
-ALTER VIEW [dbo].[comm_statement_detail]
+ALTER VIEW [comm].[backend_detail_fsc]
 AS
 SELECT   
 	t.record_id,
@@ -88,17 +89,18 @@ SELECT
 	customer_po_num
 
 FROM         
-comm_transaction t
-	INNER JOIN comm_salesperson_master m
+	[comm].[transaction_F555115] t
+
+	INNER JOIN [comm].[salesperson_master] m
 	ON t.salesperson_key_id = m.salesperson_key_id
 
-	-- added optimized code 4 Jun 13, tmc
-	INNER JOIN dbo.comm_configure f
+	INNER JOIN [comm].[config] f
 	ON t.fiscal_yearmo_num = f.current_fiscal_yearmo_num
 
-	INNER JOIN comm_plan p
+	INNER JOIN [comm].[plan] p
 	ON m.comm_plan_id = p.comm_plan_id
 
+	-- TODO create comm view!
 	INNER JOIN comm_batch_control c
 	ON t.fiscal_yearmo_num = c.fiscal_yearmo_num
 
