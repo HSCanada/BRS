@@ -1592,6 +1592,56 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_02 ON comm.transaction_F555115
+	(
+	WSLITM_item_number
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_03 ON comm.transaction_F555115
+	(
+	WSSHAN_shipto
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_04 ON comm.transaction_F555115
+	(
+	WSDGL__gl_date
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_05 ON comm.transaction_F555115
+	(
+	fsc_salesperson_key_id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_06 ON comm.transaction_F555115
+	(
+	ess_salesperson_key_id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_07 ON comm.transaction_F555115
+	(
+	dtx_salesperson_key_id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_08 ON comm.transaction_F555115
+	(
+	fsc_comm_group_cd
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_09 ON comm.transaction_F555115
+	(
+	ess_comm_group_cd
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+
 ---
 
 
@@ -1827,7 +1877,7 @@ FROM            Integration.F555115_commission_sales_extract_Staging AS t
 WHERE t.WSDOCO_salesorder_number = 10901332	 
 
 */
---- XXX
+--- 
 SELECT
 TOP (10) 
 WSAC10_division_code, 
@@ -2405,7 +2455,7 @@ WHERE FiscalMonth = 201708
 
 update comm.transaction_F555115
 set source_cd = 'JDE'
-WHERE FiscalMonth = 201708
+WHERE FiscalMonth in( 201708, 201711)
 
 update comm.transaction_F555115
 set WSDCTO_order_type = 'AA'
@@ -2414,5 +2464,7 @@ WHERE source_cd <> 'JDE'
 SELECT        WSDCTO_order_type, source_cd, COUNT(*) AS Expr1
 FROM            comm.transaction_F555115
 GROUP BY WSDCTO_order_type, source_cd
+
+-- select * from [comm].[transaction_F555115] where FiscalMonth = 201701
 
 

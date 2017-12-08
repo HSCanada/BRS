@@ -4,7 +4,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Fact].[Sale]
+ALTER VIEW [Fact].[Commission]
 AS
 
 /******************************************************************************
@@ -23,135 +23,78 @@ AS
 **	----------				-----------
 **
 **	Auth: tmc
-**	Date: 14 Jun 17
+**	Date: 7 Dec 17
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	14 Sep 17	tmc		Simplified model
 **    
 *******************************************************************************/
 
 SELECT        
 	t.ID											AS FactKey
+	,t.FiscalMonth									AS FiscalMonth	
+	,fsc.salesperson_master_key						AS FSC_SalespersonKey
+	,fsc_grp.comm_group_key							AS FSC_CommGroupKey
+	,ess.salesperson_master_key						AS ESS_SalespersonKey
+	,ess_grp.comm_group_key							AS ESS_CommGroupKey
 
-	,t.Shipto										AS ShipTo
+
+	,t.[WSSHAN_shipto]								AS ShipTo
 	,i.ItemKey										AS ItemKey
-	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
-	,pm.PriceMethodKey
-	,d.FiscalMonth									AS FiscalMonth	
-	,CAST(t.Date AS date)							AS DateKey
-	,t.SalesOrderNumber
-	,t.LineNumber
-	,t.FreeGoodsInvoicedInd
-	,CASE WHEN q.QuotePriceKey IS NULL THEN 0 ELSE 1 END AS OnActiveQuoteInd
-	
-	,(t.ShippedQty)									AS Quantity
-	,(t.NetSalesAmt)								AS SalesAmt
-	,(GPAmt + ISNULL(t.ExtChargebackAmt,0))			AS GPAmt
-	,(t.GPAtFileCostAmt)							AS GPAtFileCostAmt
-	,(t.GPAtCommCostAmt)							AS GPAtCommCostAmt
-	,(t.ExtChargebackAmt)							AS ExtChargebackAmt
 
-	,(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)  AS ExtBaseAmt
-	,(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)  AS DiscountAmt
-	,(t.ExtListPrice  + 0          -  NetSalesAmt)  AS DiscountLineAmt
-	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
-	-- Lookup fields for Salesorder dimension
-	,hdr.IDMin										AS FactKeyFirst
-	,c.BillTo
-	,[DocType]
-	,[OrderPromotionCode]
-	,[OrderSourceCode]
-	,[EnteredBy]
-	,[OrderTakenBy]
-	,pm.PriceMethod
-	,q.EnrollSource
-	
+	,t.[WSDOCO_salesorder_number]					AS SalesOrderNumber
+	,doct.DocTypeKey								AS DocTypeKey
+	,t.[WSLNID_line_number]							AS LineNumber
 
+	,CAST(t.[WSDGL__gl_date] AS date)				AS DateKey
+	,t.[WSAN8__billto]								AS BillTo
+	,src.source_key									AS SourceKey
+
+	,(t.[WSUORG_quantity])							AS Quantity
+	,(t.[transaction_amt])							AS SalesAmt
+	,(t.[gp_ext_amt])								AS GPAmt
+	,(t.[fsc_comm_amt])								AS FSC_CommAmt
+	,(t.[ess_comm_amt])								AS ESS_CommAmt
+
+/*
+
+[fsc_comm_group_cd]
+[ess_comm_group_cd]
+
+
+*/
 FROM            
-	BRS_TransactionDW AS t 
+	[comm].[transaction_F555115] AS t 
 
 	INNER JOIN BRS_SalesDay AS d 
-	ON d.SalesDate = t.Date 
+	ON d.SalesDate = t.WSDGL__gl_date 
 
 	INNER JOIN BRS_Item AS i 
-	ON i.Item = t.Item 
+	ON i.Item = t.[WSLITM_item_number]
 
-	INNER JOIN BRS_Customer AS c 
-	ON t.Shipto = c.ShipTo 
+	INNER JOIN [comm].[source] as src
+	ON src.source_cd = t.source_cd
 
-	INNER JOIN BRS_PriceMethod AS pm 
-	ON t.PriceMethod = pm.PriceMethod 
+	INNER JOIN [dbo].[BRS_DocType] as doct
+	ON doct.DocType = t.[WSDCTO_order_type]
 
-	-- identify first sales order (for sales order dimension)
-	INNER JOIN 
-	(
-		SELECT
-			h.SalesOrderNumber, 
-			MIN(d.ID) AS IDMin
-		FROM
-			BRS_TransactionDW_Ext AS h INNER JOIN
+	INNER JOIN [comm].[salesperson_master] as fsc
+	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
 
-			BRS_TransactionDW AS d 
-			ON h.SalesOrderNumber = d.SalesOrderNumber
-		GROUP BY h.SalesOrderNumber
-	) AS hdr
-	ON t.SalesOrderNumber = hdr.SalesOrderNumber
+	INNER JOIN [comm].[salesperson_master] as ess
+	ON ess.salesperson_key_id = t.[ess_salesperson_key_id]
 
-	-- match sales to QuotePrice line
-	LEFT JOIN
-	(
-		SELECT
-			quot.QuotePriceKey, 
-			quot.Adjustment, 
-			enr.Billto,
-			quot.ItemKey, 
-			enr.PJEFTJ_effective_date, 
-			enr.PJEXDJ_expired_date, 
-			enr.EnrollSource, 
-			enr.PriceMethod
-		FROM            
-			Pricing.price_adjustment_enroll AS enr 
+	INNER JOIN [comm].[group] as fsc_grp
+	ON fsc_grp.comm_group_cd = t.[fsc_comm_group_cd]
 
-			INNER JOIN Dimension.QuotePrice AS quot 
-			ON
-			(
-				enr.SNAST__adjustment_name = quot.Adjustment AND
-				EnrollSource = 'CLACTR'
-			)	
+	INNER JOIN [comm].[group] as ess_grp
+	ON ess_grp.comm_group_cd = t.[ess_comm_group_cd]
 
-		UNION ALL
-
-		SELECT
-			quot.QuotePriceKey, 
-			quot.Adjustment, 
-			enr.Billto,
-			quot.ItemKey, 
-			enr.PJEFTJ_effective_date, 
-			enr.PJEXDJ_expired_date, 
-			enr.EnrollSource, 
-			enr.PriceMethod
-		FROM            
-			Pricing.price_adjustment_enroll AS enr 
-
-			INNER JOIN Dimension.QuotePrice AS quot 
-			ON
-			(
-				enr.SNAST__adjustment_name = quot.Adjustment AND
-				(EnrollSource <> 'CLACTR' AND quot.BillTo = enr.BillTo)
-			)
-		) as q
-		ON (c.BillTo = q.BillTo) AND
-			(i.ItemKey = q.ItemKey) AND
---			remove this as per conversion with Marco (enroll dates are pushed forward)		
---			(t.Date BETWEEN q.PJEFTJ_effective_date AND q.PJEXDJ_expired_date) AND
-			(t.PriceMethod = q.PriceMethod)
 
 WHERE        
-	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
-	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
+	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
 
 	-- test
 
@@ -159,87 +102,15 @@ WHERE
 
 GO
 
-SET ANSI_NULLS OFF
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
-
 -- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
-
-/*
-
--- Test Sales dups
-SELECT        FactKey, COUNT(*) AS Expr1
-FROM            Fact.Sale
-GROUP BY FactKey
-HAVING        (COUNT(*) > 1)
 
 SELECT 
 TOP 10 
-* FROM Fact.Sale 
-WHERE FactKey = 25127039
+* 
+FROM Fact.Commission
+WHERE [FiscalMonth] = 201710 
 
-SELECT [BillTo]
-      ,[PJASN__adjustment_schedule]
-      ,[PJEFTJ_effective_date]
-      ,[PJEXDJ_expired_date]
-      ,[PJUPMJ_date_updated]
-      ,[PJUSER_user_id]
-      ,[SNAST__adjustment_name]
-      ,[EnrollSource]
-      ,[PriceMethod]
-  FROM [DEV_BRSales].[Pricing].[price_adjustment_enroll] WHERE SNAST__adjustment_name = 'ADC01ASP'
 
--- join accounts
-SELECT
-	quot.QuotePriceKey, 
-	quot.Adjustment, 
-	enr.Billto,
-	quot.ItemKey, 
-	quot.tempItemCode, 
-	enr.PJEFTJ_effective_date, 
-	enr.PJEXDJ_expired_date, 
-	enr.EnrollSource, 
-	enr.PriceMethod
-FROM            
-	Pricing.price_adjustment_enroll AS enr 
-
-	INNER JOIN Dimension.QuotePrice AS quot 
-	ON
-	(
-		enr.SNAST__adjustment_name = quot.Adjustment AND
-		EnrollSource = 'CLACTR'
-	)	
--- 2819903 rows in 26s
-UNION ALL
-
-SELECT
-	quot.QuotePriceKey, 
-	quot.Adjustment, 
-	enr.Billto,
-	quot.ItemKey, 
-	quot.tempItemCode, 
-	enr.PJEFTJ_effective_date, 
-	enr.PJEXDJ_expired_date, 
-	enr.EnrollSource, 
-	enr.PriceMethod
-FROM            
-	Pricing.price_adjustment_enroll AS enr 
-
-	INNER JOIN Dimension.QuotePrice AS quot 
-	ON
-	(
-		enr.SNAST__adjustment_name = quot.Adjustment AND
-		(EnrollSource <> 'CLACTR' AND quot.BillTo = enr.BillTo)
-	)
-
--- 213361 rows in 4s
-
--- 3033264 rows in 2:27
-
-*/
-
--- SELECT count(*) FROM Fact.Sale 
--- org 1 570 012, 28s
--- new 1570012
+-- SELECT count(*) FROM Fact.[Commission] 
+-- org 5 377 237, 10s
 

@@ -33,6 +33,7 @@ AS
 **	02 Aug 17	tmc		added Brand
 **	14 Sep 17	tmc		Simplified model
 --	20 Sep 17	tmc		add GM 
+--	07 Dec 17	tmc		add Commission info
 **    
 *******************************************************************************/
 
@@ -83,6 +84,8 @@ SELECT
 	,(sc.SalesCategory)				AS SalesCategoryCode
 	,(cr.CategoryRollup)			AS CategoryRollupCode
 	,(cr.CategoryClass_Rollup)		AS CategoryClassRollupCode
+	,i.comm_group_cd				AS CommGroupCode
+	,i.comm_note_txt				AS CommGroupNote
 
 FROM            
 	BRS_Item AS i 
