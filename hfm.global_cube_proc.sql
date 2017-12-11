@@ -49,12 +49,12 @@ BEGIN
 
 	-- Sales
 	SELECT     
-		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
-		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+--		,t.GL_Object_Sales					AS Test_GL_Object_Sales
 --		,t.Shipto
 --		,t.Item
-		,'Test.SALES.ACT'					AS Test_Source
-		,cc.[Entity]						AS Entity
+--		,'Test.SALES.ACT'					AS Test_Source
+		cc.[Entity]						AS Entity
 		,[HFM_Account]						AS Account
 		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
@@ -103,8 +103,8 @@ BEGIN
 		t.FiscalMonth
 --		,t.Shipto
 --		,t.Item
-		,t.GL_BusinessUnit
-		,t.GL_Object_Sales
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Sales
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
@@ -116,12 +116,12 @@ BEGIN
 
 	-- Cost
 	SELECT     
-		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
-		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+--		,t.GL_Object_Sales					AS Test_GL_Object_Sales
 --		,t.Shipto
 --		,t.Item
-		,'Test.COST.ACT'					AS Test_Source
-		,cc.[Entity]						AS Entity
+--		,'Test.COST.ACT'					AS Test_Source
+		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
 		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
@@ -170,8 +170,8 @@ BEGIN
 		t.FiscalMonth
 --		,t.Shipto
 --		,t.Item
-		,t.GL_BusinessUnit
-		,t.GL_Object_Sales
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Sales
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
@@ -183,12 +183,12 @@ BEGIN
 
 	-- Chargeback
 	SELECT     
-		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
-		,t.GL_Object_Sales					AS Test_GL_Object_Sales
+--		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
+--		,t.GL_Object_Sales					AS Test_GL_Object_Sales
 --		,t.Shipto
 --		,t.Item
-		,'Test.CHARGEBACK.EST'					AS Test_Source
-		,cc.[Entity]						AS Entity
+--		,'Test.CHARGEBACK.EST'					AS Test_Source
+		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
 		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
@@ -239,8 +239,8 @@ BEGIN
 		t.FiscalMonth
 --		,t.Shipto
 --		,t.Item
-		,t.GL_BusinessUnit
-		,t.GL_Object_Sales
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Sales
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
