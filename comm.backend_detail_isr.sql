@@ -6,7 +6,7 @@ GO
 
 /******************************************************************************
 **	File: 
-**	Name: comm_transaction_ts
+**	Name: [comm].[backend_detail_isr]
 **	Desc: map commission fields to better join to newer DS tables
 **
 **              
@@ -18,68 +18,76 @@ GO
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-------	-------		-------------------------------------------
---	12 Apr 17	tmc		Added ess_comm group for DSS role, removed fiscal filter
--- 
+--	7 Dec 17	tmc	Convert to new backend
 *******************************************************************************/
 
-ALTER VIEW [dbo].[comm_transaction_ts]
+ALTER VIEW [comm].[backend_detail_isr]
 AS
-SELECT     
-	record_id 
+SELECT   
+	t.ID							AS record_id,
+	t.FiscalMonth					AS fiscal_yearmo_num, 
 
-	,fiscal_yearmo_num
-	,CAST (fiscal_yearmo_num AS int) as FiscalMonth
+	t.fsc_salesperson_key_id		AS fsc_salesperson_key_id, 
+	t.fsc_code						AS fsc_salesperson_cd, 
+	t.ess_salesperson_key_id		AS ess_salesperson_key_id,
+	t.WS$ESS_equipment_specialist_code	AS ess_salesperson_cd,
+	t.[fsc_comm_group_cd]			AS fsc_item_comm_group_cd,
+	t.[ess_comm_group_cd]			AS ess_item_comm_group_cd,
 
-	,salesperson_key_id
-	,ess_salesperson_cd
-	,ess_salesperson_key_id
-	,order_source_cd
-	,reference_order_txt
-	,doc_id
-	,CASE WHEN ISNUMERIC(doc_id)=1 THEN CAST(doc_id AS int) ELSE 0 END as SalesOrderNumber
-	,item_id
-	,transaction_txt
+	t.source_cd						AS source_cd,
 
-	,item_comm_group_cd
-	,ess_comm_group_cd
-	,shipped_qty
-	,transaction_amt
-	,gp_ext_amt
+	t.fsc_comm_plan_id				AS comm_plan_id,
 
-	,transaction_dt
 
-	,source_cd 
-	,doc_key_id
-	,line_id
+	t.WSDOCO_salesorder_number		AS doc_key_id, 
+	t.[WSDCTO_order_type]			AS doc_type_cd,
+	t.[WSLNID_line_number]			AS line_id, 
+	t.WSDOCO_salesorder_number		AS doc_id, 
+	0								AS order_id, 
 
-	,salesperson_cd
-	,customer_nm
-	,comm_plan_id
+	t.[WSDGL__gl_date]				AS transaction_dt, 
 
-	,doc_type_cd
-	,hsi_shipto_id
-	,hsi_shipto_div_cd
-	,manufact_cd
-	,sales_category_cd
-	,customer_po_num
-	,IMCLMJ
+	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
+	cust.PracticeName				AS customer_nm, 
+	t.[WSAC10_division_code]		AS hsi_shipto_div_cd,	
+
+
+	t.[WSLITM_item_number]			AS item_id, 
+	t.[WSDSC1_description]			AS transaction_txt, 
+	i.[SalesCategory]				AS sales_category_cd,
+
+	t.[transaction_amt]				AS transaction_amt, 
+	t.[gp_ext_amt]					AS gp_ext_amt,
+	t.[WSSOQS_quantity_shipped]		AS shipped_qty,
+
+	t.[WSSRP6_manufacturer]			AS manufact_cd,
+	t.[WS$OSC_order_source_code]	AS order_source_cd,
+	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
+	t.[WSSRP1_major_product_class]	AS IMCLMJ,
+
+	t.[WSVR01_reference]			AS customer_po_num
 
 FROM         
-	comm_transaction AS t
+	[comm].[transaction_F555115] t
+
+	INNER JOIN [dbo].[BRS_Customer] cust
+	ON t.[WSSHAN_shipto] = cust.ShipTo
+
+	INNER JOIN [dbo].[BRS_Item] i
+	ON t.[WSLITM_item_number] = i.Item
 
 WHERE     
-	t.source_cd IN('JDE', 'IMPORT') AND
---	t.source_cd = 'JDE' AND
+	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
+	t.source_cd in ('JDE', 'IMP') AND
 
---	t.fiscal_yearmo_num = (SELECT current_fiscal_yearmo_num FROM comm_configure) AND
 --	t.salesperson_key_id = 'ptario' And
-	fiscal_yearmo_num >= 201701 AND
 	1=1
 GO
+
 
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 100 * FROM [comm_transaction_ts]
+-- SELECT top 100 * FROM [comm].[backend_detail_isr]

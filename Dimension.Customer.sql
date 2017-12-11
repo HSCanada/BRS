@@ -31,6 +31,8 @@ AS
 **	-----	----------	--------------------------------------------
 **	14 Sep 17	tmc		Simplified model
 --	20 Sep 17	tmc		Fixed Market setment join bug resulting in missing rows
+--	07 Dec 17	tmc		add Commission info
+
 **    
 *******************************************************************************/
 
@@ -99,7 +101,8 @@ SELECT
 	,(b.Branch)											AS BranchCode
 	,mclass.MarketClass									AS MarketClassCode
 
-
+	,[comm_status_cd]									AS CommStatusCode
+	,[comm_note_txt]									AS CommStatusNote
 
 FROM
 	BRS_Customer AS c 

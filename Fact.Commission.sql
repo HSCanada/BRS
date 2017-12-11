@@ -52,19 +52,29 @@ SELECT
 	,t.[WSAN8__billto]								AS BillTo
 	,src.source_key									AS SourceKey
 
-	,(t.[WSUORG_quantity])							AS Quantity
+	-- tbd
+	,0												AS FreeGoodsEstInd
+	,0												AS FreeGoodsRedeemedInd
+
+	,(t.[WSSOQS_quantity_shipped])					AS Quantity
 	,(t.[transaction_amt])							AS SalesAmt
 	,(t.[gp_ext_amt])								AS GPAmt
 	,(t.[fsc_comm_amt])								AS FSC_CommAmt
 	,(t.[ess_comm_amt])								AS ESS_CommAmt
 
-/*
+	,(t.source_cd)
 
-[fsc_comm_group_cd]
-[ess_comm_group_cd]
+	-- Lookup fields for Salesorder dimension
+	,ISNULL(hdr.IDMin,0)							AS FactKeyFirst
+	,ISNULL([WSDCTO_order_type], '')				AS DocType
+	,ISNULL([WS$OSC_order_source_code], '')			AS OrderSourceCode
+	,ISNULL([WSENTB_entered_by], '') 				AS EnteredBy
+	,ISNULL([WSTKBY_order_taken_by], '')			AS OrderTakenBy
+	,ISNULL([WS$PMC_promotion_code_price_method], '') AS PriceMethod
+	,ISNULL([WSVR01_reference], '')					AS CustomerPOText1
+	,ISNULL([WSORD__equipment_order], '')			AS EquipmentOrderNumber
 
 
-*/
 FROM            
 	[comm].[transaction_F555115] AS t 
 
@@ -92,6 +102,20 @@ FROM
 	INNER JOIN [comm].[group] as ess_grp
 	ON ess_grp.comm_group_cd = t.[ess_comm_group_cd]
 
+	-- identify first sales order (for sales order dimension)
+	LEFT JOIN 
+	(
+		SELECT
+			h.[WSDOCO_salesorder_number], 
+			MIN(h.ID) AS IDMin
+		FROM
+			[comm].[transaction_F555115] AS h 
+		WHERE ((h.[WSDOCO_salesorder_number] > 0) AND h.source_cd = 'JDE')
+
+		GROUP BY h.[WSDOCO_salesorder_number]
+	) AS hdr
+	ON t.[WSDOCO_salesorder_number] = hdr.[WSDOCO_salesorder_number]
+
 
 WHERE        
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
@@ -108,7 +132,7 @@ SELECT
 TOP 10 
 * 
 FROM Fact.Commission
-WHERE [FiscalMonth] = 201710 
+WHERE [FiscalMonth] = 201710 and source_cd <>'JDE'
 
 
 -- SELECT count(*) FROM Fact.[Commission] 

@@ -27,95 +27,89 @@ GO
 --  30 Jan 16	tmc		Update for new comm codes
 -- 03 Feb 16	tmc		Add Plan-specific group hiding
 -- 10 Feb 16	tmc	Removed legacy customer_comm_group_cd
-**    
+--	7 Dec 17	tmc	Convert to new backend
 *******************************************************************************/
-ALTER VIEW [dbo].[comm_ess_statement_detail]
+
+ALTER VIEW [comm].[backend_detail_ess]
 AS
-SELECT     
+SELECT   
+	t.ID							AS record_id,
 
-  t.record_id, 
+	t.ess_salesperson_key_id		AS salesperson_key_id, 
+	t.source_cd						AS source_cd,
 
-	t.ess_salesperson_key_id AS salesperson_key_id, 
-	t.source_cd,
-
-	m.salesperson_nm, 
-	t.ess_salesperson_cd AS salesperson_cd, 
-	t.ess_comm_plan_id AS comm_plan_id, 
+	m.salesperson_nm				AS salesperson_nm, 
+	t.WS$ESS_equipment_specialist_code	AS salesperson_cd, 
+	t.ess_comm_plan_id				AS comm_plan_id,
 	p.comm_plan_nm, 
 
-	t.salesperson_key_id AS fsc_salesperson_key_id, 
+	t.fsc_code						AS fsc_salesperson_cd,
+	t.fsc_salesperson_key_id		AS fsc_salesperson_key_id,
 
-	t.fiscal_yearmo_num, 
-	c.fiscal_begin_dt, 
-	c.fiscal_end_dt, 
+	t.FiscalMonth					AS fiscal_yearmo_num, 
+	c.BeginDt						AS fiscal_begin_dt, 
+	c.EndDt							AS fiscal_end_dt, 
 
-	t.doc_key_id, 
-	t.line_id, 
-	t.doc_id, 
-	t.order_id, 
+	t.WSDOCO_salesorder_number		AS doc_key_id, 
+	t.[WSLNID_line_number]			AS line_id, 
+	t.WSDOCO_salesorder_number		AS doc_id, 
+	0								AS order_id, 
 
-	t.transaction_dt, 
+	t.[WSDGL__gl_date]				AS transaction_dt, 
 
-	t.hsi_shipto_id, 
-	t.customer_nm, 
--- 10 Feb 16	tmc	Removed legacy customer_comm_group_cd
---	t.customer_comm_group_cd,
-	t.ess_comm_group_cd AS item_comm_group_cd, 
+	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
+	cust.PracticeName				AS customer_nm, 
+	t.[ess_comm_group_cd]			AS item_comm_group_cd,
 
 	g.comm_group_desc,
 
-	t.item_id, 
-	t.transaction_txt, 
-	t.ess_comm_rt AS comm_rt, 
-	t.ess_comm_amt AS comm_amt, 
+	t.[WSLITM_item_number]			AS item_id, 
+	t.[WSDSC1_description]			AS transaction_txt, 
+	t.[ess_comm_rt]					AS item_comm_rt, 
+	t.[ess_comm_amt]				AS comm_amt, 
 
-	t.transaction_amt, 
-	t.gp_ext_amt,
-	t.shipped_qty,
+	t.[transaction_amt]				AS transaction_amt, 
+	t.[gp_ext_amt]					AS gp_ext_amt,
+	t.[WSSOQS_quantity_shipped]		AS shipped_qty,
 
-	t.manufact_cd,
-	t.order_source_cd,
-	t.item_label_cd,
-	t.IMCLMJ
+	t.[WSSRP6_manufacturer]			AS manufact_cd,
+	t.[WS$OSC_order_source_code]	AS order_source_cd,
+	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
+	t.[WSSRP1_major_product_class]	AS IMCLMJ,
+
+	t.[WSVR01_reference]			AS customer_po_num
 
 FROM         
+	[comm].[transaction_F555115] t
 
-  dbo.comm_transaction AS t 
+	INNER JOIN [comm].[salesperson_master] m
+	ON t.ess_salesperson_key_id = m.salesperson_key_id
 
-  INNER JOIN dbo.comm_salesperson_master AS m 
-  ON t.ess_salesperson_key_id = m.salesperson_key_id 
+	INNER JOIN [comm].[plan] p
+	ON m.comm_plan_id = p.comm_plan_id
 
-  INNER JOIN dbo.comm_configure AS f 
-  ON t.fiscal_yearmo_num = f.current_fiscal_yearmo_num 
+	INNER JOIN [dbo].[BRS_FiscalMonth]  c
+	ON t.[FiscalMonth] = c.[FiscalMonth]
 
-  INNER JOIN dbo.comm_plan AS p 
-  ON m.comm_plan_id = p.comm_plan_id 
+	INNER JOIN [comm].[group] g
+	ON t.ess_comm_group_cd = g.comm_group_cd
 
-  INNER JOIN dbo.comm_batch_control AS c 
-  ON t.fiscal_yearmo_num = c.fiscal_yearmo_num 
-
-  INNER JOIN dbo.comm_group AS g 
-  ON t.ess_comm_group_cd = g.comm_group_cd 
-
--- 03 Feb 16	tmc		Add Plan-specific group hiding
-  INNER JOIN dbo.comm_plan_group_rate AS pr 
-  ON (t.ess_comm_plan_id = pr.comm_plan_id) AND 
-	(t.ess_comm_group_cd = pr.comm_group_cd)
+	INNER JOIN [dbo].[BRS_Customer] cust
+	ON t.[WSSHAN_shipto] = cust.ShipTo
 
 WHERE     
+	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
+	t.source_cd in ('JDE', 'IMP') AND
+	g.show_ind = 1 AND
 
-  (t.source_cd IN ('JDE', 'IMPORT')) AND 
-
--- 03 Feb 16	tmc		Add Plan-specific group hiding
---	(pr.show_ind = 1) AND
-
-  (1 = 1)
-
+--	t.salesperson_key_id = 'ptario' And
+	1=1
 GO
+
 
 SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM comm_ess_statement_detail WHERE doc_id = '10290539'
+-- SELECT * FROM [comm].[backend_detail_ess] WHERE doc_id = '10290539'
