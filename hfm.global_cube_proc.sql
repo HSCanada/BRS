@@ -67,6 +67,7 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
+		,''									AS Version
 		,SUM(t.[NetSalesAmt])				AS ValueAmt
 --		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
@@ -134,6 +135,7 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
+		,''									AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 --		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
@@ -201,6 +203,7 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
+		,''									AS Version
 		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
 --		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
@@ -256,7 +259,7 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- [hfm].global_cube_proc  201708, 201708
+-- [hfm].global_cube_proc  201710, 201710
 
 -- ORG = 29323 rows, 11 sec
 
