@@ -63,6 +63,24 @@ ALTER TABLE hfm.cost_center SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add entity 
+
+insert into [hfm].[entity]
+(Entity,EntityDescr,EntityParent,LevelNum,ActiveInd,Note)
+select Entity,EntityDescr,EntityParent,LevelNum,ActiveInd,Note from DEV_BRSales.[hfm].[entity] s
+where not exists (
+	select * from [hfm].[entity] d
+	where d.Entity = s.Entity)
+
+-- add new cc from dev
+
+insert into [hfm].[cost_center]
+(CostCenter,CostCenterDescr,CostCenterParent,LevelNum,ActiveInd,Note,Entity)
+select CostCenter,CostCenterDescr,CostCenterParent,LevelNum,ActiveInd,Note,Entity from DEV_BRSales.[hfm].[cost_center] s where not exists (
+	select * from [hfm].[cost_center] d
+	where d.CostCenter = s.CostCenter)
+
+-- update cc from dev
 
 -- update 
 SELECT        b.BusinessUnit, b.GLBU_Class, m.HFM_CostCenter, m.HFM_Account, c.GLBU_ClassUS_L1
@@ -77,15 +95,16 @@ FROM            zzzBU AS n LEFT OUTER JOIN
 WHERE        (BRS_BusinessUnit.BusinessUnit IS NULL)
 
 
+
 UPDATE       hfm.account_master_F0901
-SET                HFM_CostCenter = n.[text]
-FROM            zzzBU AS n INNER JOIN
-                         hfm.account_master_F0901 ON n.BU = hfm.account_master_F0901.GMMCU__business_unit AND n.text <> ISNULL(hfm.account_master_F0901.HFM_CostCenter, N'')
+SET                HFM_CostCenter = n.HFM_CostCenter
+FROM            DEV_BRSales.hfm.account_master_F0901 AS n INNER JOIN
+                         hfm.account_master_F0901 ON n.GMMCU__business_unit = hfm.account_master_F0901.GMMCU__business_unit AND n.HFM_CostCenter <> ISNULL(hfm.account_master_F0901.HFM_CostCenter, N'')
 
 UPDATE       [dbo].[BRS_BusinessUnit]
-SET                CostCenter = n.[text]
-FROM            zzzBU AS n INNER JOIN
-                         [dbo].[BRS_BusinessUnit] b ON n.BU = b.BusinessUnit AND n.text <> ISNULL(b.CostCenter, N'')
+SET                CostCenter = n.[CostCenter]
+FROM            DEV_BRSales.[dbo].[BRS_BusinessUnit] AS n INNER JOIN
+                         [dbo].[BRS_BusinessUnit] b ON n.BusinessUnit = b.BusinessUnit AND n.CostCenter <> ISNULL(b.CostCenter, N'')
 
 
 /*
@@ -104,9 +123,9 @@ CREATE TABLE [dbo].[zzzBU](
  */
 
 UPDATE       hfm.cost_center
-SET                Entity = zzzBU.[text]
-FROM            zzzBU INNER JOIN
-                         hfm.cost_center ON zzzBU.BU = hfm.cost_center.CostCenter
+SET                Entity = d.[Entity]
+FROM            DEV_BRSAles.hfm.cost_center d INNER JOIN
+                         hfm.cost_center ON d.CostCenter = hfm.cost_center.CostCenter
 
 
 SELECT        cl.GLBU_ClassUS_L1, b.BusinessUnit, b.BusinessUnitName, cl.GLBU_Class, c.CostCenter, c.Entity
@@ -121,3 +140,16 @@ FROM            hfm.cost_center INNER JOIN
                          BRS_BusinessUnit AS b ON hfm.cost_center.CostCenter = b.CostCenter INNER JOIN
                          BRS_BusinessUnitClass AS cl ON b.GLBU_Class = cl.GLBU_Class
 WHERE        (cl.GLBU_ClassUS_L1 IN ('ZZZZZ')) AND (hfm.cost_center.Entity IS NULL)
+
+
+-- update account map
+
+UPDATE       hfm.account_master_F0901
+SET                HFM_CostCenter = s.HFM_CostCenter, HFM_Account = s.HFM_Account, LastUpdated = s.LastUpdated
+FROM            DEV_BRSales.hfm.account_master_F0901 AS s INNER JOIN
+                         hfm.account_master_F0901 ON s.GMMCU__business_unit = hfm.account_master_F0901.GMMCU__business_unit AND 
+                         s.GMOBJ__object_account = hfm.account_master_F0901.GMOBJ__object_account AND s.GMSUB__subsidiary = hfm.account_master_F0901.GMSUB__subsidiary
+
+
+
+

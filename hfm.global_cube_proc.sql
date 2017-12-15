@@ -53,8 +53,9 @@ BEGIN
 --		,t.GL_Object_Sales					AS Test_GL_Object_Sales
 --		,t.Shipto
 --		,t.Item
---		,'Test.SALES.ACT'					AS Test_Source
-		cc.[Entity]						AS Entity
+--		'Test.SALES.ACT'					AS Test_Source
+
+		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
 		,LEFT(ih.MinorProductClass,6)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
@@ -67,9 +68,10 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
-		,''									AS Version
+		,''								AS Version
 		,SUM(t.[NetSalesAmt])				AS ValueAmt
 --		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
+
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -106,12 +108,15 @@ BEGIN
 --		,t.Item
 --		,t.GL_BusinessUnit
 --		,t.GL_Object_Sales
+
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
+
 		,excl.BrandEquityCategory
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+
 
 	UNION ALL
 
@@ -251,7 +256,10 @@ BEGIN
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 
+
 END
+
+
 
 GO
 
@@ -259,7 +267,7 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- [hfm].global_cube_proc  201710, 201710
+-- [hfm].global_cube_proc  201711, 201711
 
 -- ORG = 29323 rows, 11 sec
 
