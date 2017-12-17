@@ -71,6 +71,22 @@ FROM            hfm.account_master_F0901 INNER JOIN
                           REPLACE(REPLACE(m.Rule_WhereClauseLike, '?', '_'), '*', '%')
 WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_TargetKey]
 
+-- update CB
+
+UPDATE       BRS_Transaction
+SET                [GL_Object_ChargeBack] = '4730',[GL_Subsidiary_ChargeBack]=''
+WHERE        
+(DocType <> 'AA') AND 
+(ExtChargebackAmt <> 0) AND 
+(GL_Object_ChargeBack <> '4730')
+
+SELECT * FROM BRS_Transaction 
+WHERE 
+--	FiscalMonth = 201712 AND 
+	DocType <> 'AA' AND
+	ExtChargebackAmt <>0 AND
+	[GL_Object_ChargeBack] <> '4730'
+
 -- TODO Exclusive history, ...
 
 --- Test RI -- sales, cost, cb all should be zero rows

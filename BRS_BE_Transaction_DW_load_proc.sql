@@ -45,8 +45,7 @@ AS
 --  06 Feb 17	tmc		Add restock to price adj correction
 --	13 Feb 17	tmc		Final Discount logic fix
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
---	28 Dec 17	tmc		Added EssCode,CcsCode,TssCode,CagCode to BRS_FSC_Rollup
-
+--	17 Dec 17	tmc		Add DW Chargeback info to DS trans
 **    
 *******************************************************************************/
 BEGIN
@@ -636,6 +635,51 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		If (@nErrorCode = 0 And @nRowCount > 0) 
+		Begin
+
+			If (@bDebug <> 0)
+			Begin
+				Print '--------------------------------------------------------------------------------'
+				Print 'add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 '
+				Print '--------------------------------------------------------------------------------'
+				Print ''
+			End
+
+			--- 
+			UPDATE    
+				BRS_Transaction
+			SET              
+				ExtChargebackAmt = w.ExtChargebackAmt,
+				[GL_Object_ChargeBack] = '4730',
+				[GL_Subsidiary_ChargeBack] = ''
+--			SELECT *  
+			FROM         
+				BRS_TransactionDW AS w 
+				INNER JOIN BRS_Transaction 
+				ON w.SalesOrderNumber = BRS_Transaction.SalesOrderNumberKEY AND 
+					w.DocType = BRS_Transaction.DocType AND
+					w.LineNumber = BRS_Transaction.LineNumber AND 
+					w.Date = BRS_Transaction.SalesDate AND 
+					w.Shipto = BRS_Transaction.Shipto AND
+					w.Item = BRS_Transaction.Item AND 
+					w.LineTypeOrder = BRS_Transaction.LineTypeOrder
+			WHERE     
+				(ISNULL(BRS_Transaction.ExtChargebackAmt,0) <> w.ExtChargebackAmt)  AND
+				EXISTS
+				(
+					Select * 
+					From STAGE_BRS_TransactionDW s
+					Where 
+						w.SalesOrderNumber = s.JDEORNO And
+						w.DocType = s.ORDOTYCD And
+						w.LineNumber = ROUND(s.LNNO * 1000,0) 
+				) AND
+				(1 = 1)
+
+			Set @nErrorCode = @@Error
+		End
+
 
 
 		If (@nErrorCode = 0) 
@@ -703,7 +747,7 @@ truncate table STAGE_BRS_TransactionDW
 
 -- BRS_BE_Transaction_DW_load_proc @bClearStage=1
 -- prod run 
--- BRS_BE_Transaction_DW_load_proc 0
+-- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
