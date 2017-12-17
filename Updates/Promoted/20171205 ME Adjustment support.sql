@@ -208,6 +208,10 @@ SET                GLBU_Class = n.text
 FROM            zzzBU AS n INNER JOIN
                          BRS_BusinessUnit ON n.BU = LEFT(BRS_BusinessUnit.BusinessUnit, 10) AND n.text <> BRS_BusinessUnit.GLBU_Class
 
+UPDATE       BRS_BusinessUnit
+SET                GLBU_Class = s.GLBU_Class
+FROM            BRS_BusinessUnit INNER JOIN
+                         DEV_BRSales.dbo.BRS_BusinessUnit AS s ON BRS_BusinessUnit.BusinessUnit = s.BusinessUnit AND BRS_BusinessUnit.GLBU_Class <> s.GLBU_Class
 
 UPDATE       BRS_Object
 SET                AdjCode = 'ALLOWA'

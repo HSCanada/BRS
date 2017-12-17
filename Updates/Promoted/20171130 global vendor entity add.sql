@@ -151,5 +151,3 @@ FROM            DEV_BRSales.hfm.account_master_F0901 AS s INNER JOIN
                          s.GMOBJ__object_account = hfm.account_master_F0901.GMOBJ__object_account AND s.GMSUB__subsidiary = hfm.account_master_F0901.GMSUB__subsidiary
 
 
-
-

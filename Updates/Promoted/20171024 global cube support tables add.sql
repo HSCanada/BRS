@@ -54,10 +54,15 @@ WHERE        (MajorProductClass in( '001','002','003','004','005','006','007','0
 
 SELECT 
 
---    Top 5 
-    "ACOBJ" AS ACOBJ__object_account, "ACCO" AS ACCO___company, "ACDL01" AS ACDL01_description, "ACLDA" AS ACLDA__account_level_of_detail, "ACPEC" AS ACPEC__posting_edit, "ACUM" AS ACUM___unit_of_measure 
+    Top 5 
+    "ACOBJ" AS ACOBJ__object_account,
+	"ACCO" AS ACCO___company,
+	"ACDL01" AS ACDL01_description,
+	"ACLDA" AS ACLDA__account_level_of_detail,
+	"ACPEC" AS ACPEC__posting_edit,
+	"ACUM" AS ACUM___unit_of_measure 
 
- INTO Integration.F0909_chart_of_accounts_Stage
+-- INTO Integration.F0909_chart_of_accounts_Stage
 
 FROM 
     OPENQUERY (ESYS_PROD, '

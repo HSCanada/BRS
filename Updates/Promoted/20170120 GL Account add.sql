@@ -3,8 +3,7 @@
 --------------------------------------------------------------------------------
 
 SELECT 
-
---    Top 5 
+    Top 5 
     "GMCO" AS GMCO___company,
 	"GMAID" AS GMAID__account_id,
 	"GMMCU" AS GMMCU__business_unit,
@@ -68,7 +67,7 @@ SELECT
 	"GMUPMJ" AS GMUPMJ_date_updated_JDT,
 	"GMUPMT" AS GMUPMT_time_last_updated 
 
-INTO Integration.F0901_account_master
+-- INTO Integration.F0901_account_master
 
 FROM 
     OPENQUERY (ESYS_PROD, '
