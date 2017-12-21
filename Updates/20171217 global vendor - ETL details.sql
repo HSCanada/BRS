@@ -92,6 +92,7 @@ WHERE
 --- Test RI -- sales, cost, cb all should be zero rows
 
 -- sales
+
 SELECT        
 	-- TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Sales, [GL_Subsidiary_Sales], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
@@ -107,9 +108,18 @@ where
 			[GMOBJ__object_account] = t.GL_Object_Sales AND
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_Sales] 
 	) 
+/*
+-- TC todo
+-- 020001000000 + '' -> OBJ '4200'
+
+UPDATE       BRS_Transaction
+SET                GL_Object_Sales = '4200'
+WHERE        (NetSalesAmt <> 0) AND (GL_BusinessUnit = '020001000000') AND (DocType = 'AA') AND (GL_Object_Sales = '')
+*/
 
 
 -- cost
+
 SELECT        
 	-- TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Cost, [GL_Subsidiary_Cost], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
@@ -126,7 +136,19 @@ where
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_Cost]
 	) 
 
+/*
+-- TC todo
+-- 020025000000 + 4579 -> BU '020001000000'
+-- 020040000000 + 4579 -> BU '020001000000'
+
+UPDATE       BRS_Transaction
+SET                GL_BusinessUnit = '020001000000'
+WHERE        (ExtendedCostAmt <> 0) AND (GL_BusinessUnit IN ('020025000000', '020040000000')) AND (GL_Object_Cost = '4579')
+*/
+
 -- cost cb
+
+
 SELECT        
 	-- TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_ChargeBack, [GL_Subsidiary_ChargeBack], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
@@ -142,21 +164,22 @@ where
 			[GMOBJ__object_account] = t.GL_Object_ChargeBack AND
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_ChargeBack]
 	) 
+order by GL_BusinessUnit
 
--- test 
-SELECT TOP 10
-      [GMMCU__business_unit]
-      ,[GMOBJ__object_account]
-      ,[GMSUB__subsidiary]
-      ,[HFM_CostCenter]
-      ,[HFM_Account]
-      ,[LastUpdated]
-  FROM [BRSales].[hfm].[account_master_F0901] 
-  
-  where 
---  [GMMCU__business_unit] = '020099000000' AND
-  [GMOBJ__object_account] in ('4130', '4300', '4515', '4579', '4730')
-  order by 1
+/*
+-- TC todo
+-- 4730 + 020020001011 -> BU 020001001011
+-- 4730 + 020001001000 -> BU 020001000000
+
+UPDATE       BRS_Transaction
+--SET                GL_BusinessUnit = '020001001011'
+SET                GL_BusinessUnit = '020001000000'
+where 
+	[ExtChargebackAmt] <>0 AND 
+	GL_Object_ChargeBack = '4730' AND
+--	GL_BusinessUnit in( '020020001011')
+	GL_BusinessUnit in( '020001001000')
+*/
 
 
 

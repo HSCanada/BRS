@@ -1,3 +1,55 @@
+-- Set Trevor as DB_Owner for dev; use sa for prod
+-- purge and clean commBE data
+-- 1m48 min / month?
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201501
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201502
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201503
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201504
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201505
+
+GO
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201506
+GO
+
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201507
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201508
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201509
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201510
+GO
+
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201511
+
+GO
+delete from dbo.comm_transaction where 
+fiscal_yearmo_num = 201512
+GO
 
 -- Add objects to BRSales
 
@@ -9,7 +61,7 @@ GO
 
 SELECT 
 
---    Top 5 
+    Top 5 
     "WRCO" AS WRCO___company,
 	"WR$GTC" AS WR$GTC_group_type_category,
 	"WR$GTY" AS WR$GTY_group_type,
@@ -51,7 +103,7 @@ SELECT
 	"WRUPMJ" AS WRUPMJ_date_updated,
 	"WRUPMT" AS WRUPMT_time_last_updated 
 
- INTO Integration.F55510_customer_territory_Staging
+INTO Integration.F55510_customer_territory_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -119,15 +171,8 @@ ALTER TABLE Integration.F55510_customer_territory_Staging ADD CONSTRAINT
 GO
 
 
-ALTER TABLE Integration.F555115_commission_sales_extract_Staging ADD
-	source_cd char(3) NOT NULL CONSTRAINT DF_F555115_commission_sales_extract_Staging_source_cd DEFAULT ('')
-GO
-
-
-
 
 SELECT 
-
     Top 5 
     "WSCO" AS WSCO___company,
 	"WSDOCO" AS WSDOCO_salesorder_number,
@@ -206,7 +251,7 @@ SELECT
 	"WSDL03" AS WSDL03_description_03,
 	"WS$ODS" AS WS$ODS_order_discount_amount 
 
--- INTO Integration.F555115_commission_sales_extract_Staging
+ INTO Integration.F555115_commission_sales_extract_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -296,6 +341,10 @@ FROM
 --    ORDER BY
 --        <insert custom code here>
 ')
+
+ALTER TABLE Integration.F555115_commission_sales_extract_Staging ADD
+	source_cd char(3) NOT NULL CONSTRAINT DF_F555115_commission_sales_extract_Staging_source_cd DEFAULT ('')
+GO
 
 /*
 SELECT        WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, COUNT(*) AS Expr1
@@ -530,6 +579,8 @@ ALTER TABLE Integration.F555115_commission_sales_extract_Staging SET (LOCK_ESCAL
 GO
 COMMIT
 
+-- change to CommBE
+
 -- Phase 0 - drop unneeded objects from CommBE
 
 
@@ -574,17 +625,9 @@ STAGE_TransferDoc
 ALTER TABLE dbo.comm_batch_control
 	DROP CONSTRAINT comm_batch_control_comm_status_code_fk_1
 GO
-ALTER TABLE dbo.comm_salesperson_master_stage
-	DROP CONSTRAINT comm_salesperson_master_stage_comm_status_code_fk_1
-GO
+
 ALTER TABLE dbo.comm_transaction
 	DROP CONSTRAINT comm_transaction_comm_status_code_fk_1
-GO
-ALTER TABLE dbo.comm_transaction_external_stage
-	DROP CONSTRAINT comm_transaction_external_stage_comm_status_code_fk_1
-GO
-ALTER TABLE dbo.comm_transaction_stage
-	DROP CONSTRAINT comm_transaction_stage_comm_status_code_fk_1
 GO
 
 ALTER TABLE dbo.comm_salesperson_master
@@ -594,8 +637,9 @@ GO
 DROP TABLE [dbo].[comm_status_code], comm_salesperson_category
 GO
 
--- Phase 1 - add needed tables to BRSales
+-- Change to BR Sales
 
+-- Phase 1 - add needed tables to BRSales
 
 
 CREATE TABLE [comm].[source](
@@ -628,7 +672,7 @@ VALUES        ('', 'Unassigned')
 CREATE TABLE [comm].[group](
 	[comm_group_cd] [char](6) NOT NULL,
 	[comm_group_desc] [varchar](40) NOT NULL,
-	[source_cd] [char](10) NOT NULL,
+	[source_cd] [char](3) NOT NULL,
 	[active_ind] [bit] NOT NULL,
 	[creation_dt] [datetime] NOT NULL,
 	[comm_calc_rt] [int] NOT NULL,
@@ -1234,11 +1278,11 @@ ALTER TABLE comm.transaction_F555115 ADD
 	ess_comm_group_cd char(6) NULL,
 	ess_comm_rt float(53) NULL,
 	ess_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_ess_comm_amt DEFAULT (0),
-	dtx_salesperson_key_id varchar(30) NULL,
-	dtx_comm_plan_id char(10) NULL,
-	dtx_comm_group_cd char(6) NULL,
-	dtx_comm_rt float(53) NULL,
-	dtx_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_dtx_comm_amt DEFAULT (0)
+	cps_salesperson_key_id varchar(30) NULL,
+	cps_comm_plan_id char(10) NULL,
+	cps_comm_group_cd char(6) NULL,
+	cps_comm_rt float(53) NULL,
+	cps_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_dtx_comm_amt DEFAULT (0)
 GO
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
@@ -1259,6 +1303,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_salesperson_master1 FOREIGN KEY
 	(
@@ -1270,10 +1315,11 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_salesperson_master2 FOREIGN KEY
 	(
-	dtx_salesperson_key_id
+	cps_salesperson_key_id
 	) REFERENCES comm.salesperson_master
 	(
 	salesperson_key_id
@@ -1281,6 +1327,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_plan FOREIGN KEY
 	(
@@ -1292,6 +1339,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_plan1 FOREIGN KEY
 	(
@@ -1303,10 +1351,11 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_plan2 FOREIGN KEY
 	(
-	dtx_comm_plan_id
+	cps_comm_plan_id
 	) REFERENCES comm.[plan]
 	(
 	comm_plan_id
@@ -1314,6 +1363,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_group FOREIGN KEY
 	(
@@ -1325,6 +1375,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_group1 FOREIGN KEY
 	(
@@ -1336,10 +1387,11 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	FK_transaction_F555115_group2 FOREIGN KEY
 	(
-	dtx_comm_group_cd
+	cps_comm_group_cd
 	) REFERENCES comm.[group]
 	(
 	comm_group_cd
@@ -1347,6 +1399,7 @@ ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
@@ -1621,7 +1674,7 @@ CREATE NONCLUSTERED INDEX transaction_F555115_idx_06 ON comm.transaction_F555115
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_07 ON comm.transaction_F555115
 	(
-	dtx_salesperson_key_id
+	cps_salesperson_key_id
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 
@@ -1677,12 +1730,13 @@ GO
 
 
 
----
+---  
 
+-- 20s
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD
 	ESS_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_ESS_code DEFAULT (''),
 	CCS_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_CCS_code DEFAULT (''),
-	DTX_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_DTX_code DEFAULT (''),
+	CPS_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_CPS_code DEFAULT (''),
 	TSS_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_TSS_code DEFAULT (''),
 	FSC_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_FSC_code DEFAULT (''),
 	comm_note varchar(30) NULL
@@ -1699,6 +1753,7 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup2 FOREIGN KEY
 	(
@@ -1710,6 +1765,7 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup3 FOREIGN KEY
 	(
@@ -1724,7 +1780,7 @@ GO
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup4 FOREIGN KEY
 	(
-	DTX_code
+	CPS_code
 	) REFERENCES dbo.BRS_FSC_Rollup
 	(
 	TerritoryCd
@@ -1732,6 +1788,7 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
 	FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup5 FOREIGN KEY
 	(
@@ -1767,11 +1824,18 @@ COMMIT
 
 --- add data...
 
+-- run comm ETL package
+
 insert into [dbo].[BRS_DocType] (DocType) values ('')
 
 INSERT INTO comm.salesperson_master
                          (employee_num, master_salesperson_cd, salesperson_key_id, salesperson_nm)
 VALUES        (0, '', '', 'Unassigned')
+
+INSERT INTO comm.[plan]
+                         (comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd)
+SELECT        comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd
+FROM            DEV_CommBE.dbo.comm_plan
 
 INSERT INTO comm.transaction_F555115
                          (WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, FiscalMonth, WSDGL__gl_date)
@@ -1800,8 +1864,8 @@ INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],[DocType] )
 select distinct [WSDOCO_salesorder_number],[WSDCTO_order_type] from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_TransactionDW_Ext] where [WSDOCO_salesorder_number] =  [SalesOrderNumber])
 
--- truncate table comm.transaction_F555115
 
+-- DEV LONLY - load new data source
 INSERT INTO comm.transaction_F555115
                          (FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
                          WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
@@ -1855,8 +1919,9 @@ SELECT
 FROM            Integration.F555115_commission_sales_extract_Staging AS t
 WHERE t.WSDOCO_salesorder_number = 10901332	 
 
-*/
---- 
+
+
+
 SELECT
 TOP (10) 
 WSAC10_division_code, 
@@ -1872,7 +1937,7 @@ FROM            comm.transaction_F555115
 WHERE        (FiscalMonth = 201711)
 GROUP BY WSAC10_division_code
 
-
+*/
 
 -- ADD
 
@@ -1885,23 +1950,11 @@ WHERE source_cd <>''
 INSERT INTO comm.[group]
                          (comm_group_cd, comm_group_desc, source_cd, active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
                          sort_id, FRG_comm_group_cd)
-SELECT        comm_group_cd, comm_group_desc, source_cd, active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
+SELECT        comm_group_cd, comm_group_desc, LEFT(source_cd,3), active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
                          sort_id, FRG_comm_group_cd
 FROM            DEV_CommBE.dbo.comm_group
 WHERE comm_group_cd <>''
 
-/*
-UPDATE       comm.[group] 
-SET             source_cd = LEFT(DEV_CommBE.dbo.comm_group.[source_cd],3)   
-FROM            DEV_CommBE.dbo.comm_group INNER JOIN
-                         comm.[group] ON DEV_CommBE.dbo.comm_group.comm_group_cd = comm.[group].comm_group_cd
-WHERE        (DEV_CommBE.dbo.comm_group.comm_group_cd <> '')
-*/
-
-INSERT INTO comm.[plan]
-                         (comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd)
-SELECT        comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd
-FROM            DEV_CommBE.dbo.comm_plan
 
 INSERT INTO comm.plan_group_rate
                          (comm_plan_id, comm_group_cd, comm_base_rt, active_ind, creation_dt, note_txt, show_ind)
@@ -1919,30 +1972,24 @@ WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <>
 
 UPDATE       BRS_FSC_Rollup
 SET                Branch = c.branch_cd
-FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
+FROM            DEV_CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
                          BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd AND c.branch_cd <> BRS_FSC_Rollup.Branch AND BRS_FSC_Rollup.Branch = ''
 
 UPDATE       BRS_FSC_Rollup
 SET                [FSCName] = c.[salesperson_nm]
-FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
+FROM            DEV_CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
                          BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd AND c.[salesperson_nm] <> [FSCName] AND c.[salesperson_nm] <> ''
 
 UPDATE       BRS_FSC_Rollup
-SET                [comm_salesperson_key_id] = c.[salesperson_key_id]
-FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
-                         BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd AND 
-			EXISTS (SELECT * FROM CommBE.dbo.[comm_salesperson_master] s WHERE c.[salesperson_key_id] = s.[salesperson_key_id])
-
-UPDATE       BRS_FSC_Rollup
 SET                comm_salesperson_key_id = c.salesperson_key_id
-FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
+FROM            DEV_CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
                          BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd
 WHERE EXISTS (SELECT * FROM comm.salesperson_master WHERE [salesperson_key_id] = c.salesperson_key_id)
 
 -- map item
 UPDATE       BRS_Item
 SET                [comm_group_cd] = c.comm_group_cd
-FROM            CommBE.dbo.comm_item_master AS c INNER JOIN
+FROM            DEV_CommBE.dbo.comm_item_master AS c INNER JOIN
                          BRS_Item ON c.[item_id] = item
 
 -- map customer
@@ -1950,68 +1997,17 @@ FROM            CommBE.dbo.comm_item_master AS c INNER JOIN
 UPDATE       BRS_Customer
 SET                
 comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMEQU' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMSND' ELSE '' END END, 
-comm_note_txt = CommBE.dbo.comm_customer_master.SPM_ReasonTxt
-FROM            CommBE.dbo.comm_customer_master INNER JOIN
-                         BRS_Customer ON CommBE.dbo.comm_customer_master.hsi_shipto_id = BRS_Customer.ShipTo
+comm_note_txt = c.SPM_ReasonTxt
+FROM            DEV_CommBE.dbo.comm_customer_master c INNER JOIN
+                         BRS_Customer ON c.hsi_shipto_id = BRS_Customer.ShipTo
 
 -- BranchZone
 
 UPDATE       BRS_Branch
 SET                ZoneName = [zone_cd]
-FROM            CommBE.dbo.comm_branch INNER JOIN
-                         BRS_Branch ON CommBE.dbo.comm_branch.branch_cd = BRS_Branch.Branch
+FROM            DEV_CommBE.dbo.comm_branch c INNER JOIN
+                         BRS_Branch ON c.branch_cd = BRS_Branch.Branch
 
--- purge and clean commBE data
--- 1m48 min / month?
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201501
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201502
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201503
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201504
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201505
-
-GO
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201506
-GO
-
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201507
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201508
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201509
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201510
-GO
-
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201511
-
-GO
-delete from dbo.comm_transaction where 
-fiscal_yearmo_num = 201512
-GO
 
 --
 select name from sys.foreign_keys where name like 'FK_transaction_F555115%' 
@@ -2107,6 +2103,7 @@ FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [comm].[plan] WHERE DEV_CommBE.[dbo].[comm_transaction].comm_plan_id = [comm_plan_id]
 )
+
 --ok
 SELECT 
 	TOP 10
@@ -2264,6 +2261,7 @@ WHERE        (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_PriceMethod
                                WHERE        (DEV_CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
+
 -- fix
 SELECT 
 	TOP 10
@@ -2313,17 +2311,18 @@ UPDATE       DEV_CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id is null)
 
+-- 30s
 INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber], DocType)
 SELECT         distinct SalesOrderNumber, DocType
-FROM            BRS_Transaction t where SalesOrderNumber IS NOT NULL AND  NOT exists 
-	(select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber]) 
+FROM            BRS_Transaction t 
+where 
+	SalesOrderNumber IS NOT NULL AND  
+	NOT exists 
+	(
+		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber]
+	) 
 
 
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_Transaction ADD CONSTRAINT
@@ -2366,7 +2365,7 @@ HAVING COUNT(*) >1
 )
 
 
--- migrate data
+-- migrate data, 30s
 INSERT INTO comm.transaction_F555115
 (
 FiscalMonth, fsc_code, source_cd, WSDGL__gl_date, transaction_amt, WSLNID_line_number, WSDOCO_salesorder_number, WSVR01_reference, 
@@ -2422,23 +2421,27 @@ FROM
 	DEV_CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA', 'AZE')) AND 
-	(fiscal_yearmo_num = '201711')
+	(fiscal_yearmo_num = '201710')
 
---201708 NEW format
+--201601 - 201710; 201711 NEW format
 
--- Delete FROM            comm.transaction_F555115 where (FiscalMonth = 201601)
 
 SELECT DISTINCT source_cd 
 FROM comm.transaction_F555115
-WHERE FiscalMonth = 201708
+WHERE FiscalMonth = 201711
+
 
 update comm.transaction_F555115
 set source_cd = 'JDE'
-WHERE FiscalMonth in( 201708, 201711)
+WHERE FiscalMonth in( 201711)
 
 update comm.transaction_F555115
 set WSDCTO_order_type = 'AA'
 WHERE source_cd <> 'JDE'
+
+SELECT *
+FROM comm.transaction_F555115
+WHERE source_cd = ''
 
 SELECT        WSDCTO_order_type, source_cd, COUNT(*) AS Expr1
 FROM            comm.transaction_F555115
@@ -2507,7 +2510,7 @@ FROM            comm.transaction_F555115_temp where FiscalMonth = 201601
 
 select distinct [FiscalMonth]	 from comm.transaction_F555115
 -- 
--- truncate table comm.transaction_F555115
+
 */
 
 
@@ -2701,9 +2704,10 @@ ALTER TABLE Integration.F55479C_rebate_by_shipto_Staging ADD
 
 --------------------------------------------------------------------------------
 SELECT        QMSHAN_shipto,  COUNT(*) AS Expr1
-FROM            Integration.F55479C_rebate_by_shipto
+FROM            Integration.F55479C_rebate_by_shipto_Staging
 GROUP BY QMSHAN_shipto
 HAVING COUNT(*) > 1
 
-SELECT * FROM Integration.F55479C_rebate_by_shipto WHERE QMSHAN_shipto IN (1658532, 1669207)
+SELECT * FROM Integration.F55479C_rebate_by_shipto_Staging WHERE QMSHAN_shipto IN (1658532, 1669207)
 
+-- run Dimension & facts

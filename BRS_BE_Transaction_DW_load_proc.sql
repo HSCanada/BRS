@@ -665,6 +665,7 @@ BEGIN
 					w.Item = BRS_Transaction.Item AND 
 					w.LineTypeOrder = BRS_Transaction.LineTypeOrder
 			WHERE     
+				-- XXX TBD 18 Dec 2017 missing?
 				(ISNULL(BRS_Transaction.ExtChargebackAmt,0) <> w.ExtChargebackAmt)  AND
 				EXISTS
 				(
@@ -676,6 +677,7 @@ BEGIN
 						w.LineNumber = ROUND(s.LNNO * 1000,0) 
 				) AND
 				(1 = 1)
+--			ORDER BY DATE 
 
 			Set @nErrorCode = @@Error
 		End
@@ -749,7 +751,21 @@ truncate table STAGE_BRS_TransactionDW
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
+-- BRS_BE_Transaction_DW_load_proc @bDebug=1
+
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
 
+/*
+UPDATE       BRS_Transaction
+SET                ExtChargebackAmt = NULL
+WHERE        (FiscalMonth = 201712)
+
+Select  SalesDate, SUM(ISNULL(ExtChargebackAmt,0))
+FROM BRS_Transaction
+WHERE        (FiscalMonth = 201712)
+GROUP BY SalesDate
+ORDER BY 1
+
+*/
 

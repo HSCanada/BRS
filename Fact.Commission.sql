@@ -127,13 +127,13 @@ WHERE
 GO
 
 -- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
-
+/*
 SELECT 
 TOP 10 
 * 
 FROM Fact.Commission
 WHERE [FiscalMonth] = 201710 and source_cd <>'JDE'
-
+*/
 
 -- SELECT count(*) FROM Fact.[Commission] 
 -- org 5 377 237, 10s
