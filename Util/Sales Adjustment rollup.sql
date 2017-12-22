@@ -128,3 +128,54 @@ GROUP BY
 	ISNULL(h.HIST_MarketClass, '')
 HAVING 
   SUM(ISNULL(t.ExtChargebackAmt, 0)) <>0
+
+
+--
+
+-- Sales
+/*
+
+SELECT     
+	'Sales' as src,
+	t.FiscalMonth,
+	t.AdjCode,
+
+	SUM(t.NetSalesAmt) AS value,
+
+	t.GL_BusinessUnit,
+	t.GL_Object_Sales,
+	t.GL_Subsidiary_Sales,
+
+	t.GLBU_Class,
+	t.Branch,
+
+	t.SalesDivision,
+
+	ISNULL(h.HIST_MarketClass, '') AS HIST_MarketClass,
+	MAX(t.Shipto) as st
+
+
+
+FROM            
+	BRS_Transaction AS t 
+
+	LEFT OUTER JOIN BRS_CustomerFSC_History AS h 
+	ON t.Shipto = h.Shipto and 
+	t.FiscalMonth = h.FiscalMonth
+WHERE        
+	(t.SalesDate BETWEEN CONVERT(DATETIME, '2016-12-22 00:00:00', 102) AND CONVERT(DATETIME, '2016-12-31 00:00:00', 102))
+GROUP BY 
+	t.FiscalMonth,
+	t.Branch,
+	t.GLBU_Class,
+	t.SalesDivision,
+	t.AdjCode,
+	t.GL_BusinessUnit,
+	t.GL_Object_Sales,
+	t.GL_Subsidiary_Sales,
+
+	ISNULL(h.HIST_MarketClass, '')
+HAVING 
+  SUM(t.NetSalesAmt) <>0
+
+*/
