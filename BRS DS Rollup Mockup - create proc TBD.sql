@@ -4,7 +4,8 @@
 **	Name: BRS_DS_AGG_Build_proc
 **	Desc: Rebuild aggragate tables NEW
 **
-**              
+**      Takes 45 min run in Dev for 25 months
+**      Change config to 13 to speed up        
 **	Return values:  @@Error
 **
 **	Called by:   
