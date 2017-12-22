@@ -2711,3 +2711,63 @@ HAVING COUNT(*) > 1
 SELECT * FROM Integration.F55479C_rebate_by_shipto_Staging WHERE QMSHAN_shipto IN (1658532, 1669207)
 
 -- run Dimension & facts
+
+-- 
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Branch ADD
+	FSC_code char(5) NOT NULL CONSTRAINT DF_BRS_Branch_FSC_code DEFAULT (''),
+	ESS_code char(5) NOT NULL CONSTRAINT DF_BRS_Branch_ESS_code DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_Branch ADD CONSTRAINT
+	FK_BRS_Branch_BRS_FSC_Rollup1 FOREIGN KEY
+	(
+	FSC_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Branch ADD CONSTRAINT
+	FK_BRS_Branch_BRS_FSC_Rollup2 FOREIGN KEY
+	(
+	ESS_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Branch SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+UPDATE       BRS_Branch
+SET                FSC_code = DefaultTerritoryCd
+
+-- manual update ess -> copy to prod
+
+SELECT        TerritoryCd, FSCName, Branch
+FROM            BRS_FSC_Rollup
+WHERE        (TerritoryCd LIKE 'ESS%') AND (comm_salesperson_key_id LIKE 'house%')
+order by Branch
+
+
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS41' WHERE [Branch] = 'HALFX'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS46' WHERE [Branch] = 'OTTWA'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS47' WHERE [Branch] = 'TORNT'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS45' WHERE [Branch] = 'LONDN'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS48' WHERE [Branch] = 'WINPG'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS50' WHERE [Branch] = 'QUEBC'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS49' WHERE [Branch] = 'MNTRL'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS44' WHERE [Branch] = 'NWFLD'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS22' WHERE [Branch] = 'CALGY'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS23' WHERE [Branch] = 'EDMON'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS38' WHERE [Branch] = 'VACVR'
+UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS26' WHERE [Branch] = 'REGIN'
+GO
+
