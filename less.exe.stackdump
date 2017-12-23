@@ -1,7 +1,0 @@
-Exception: STATUS_ACCESS_VIOLATION at eip=040474AC
-eax=00000001 ebx=040474AC ecx=FFFAC000 edx=611DB5B4 esi=0288CE64 edi=0288CDC4
-ebp=00000000 esp=0288CD6C program=C:\Users\tcrowley\AppData\Local\GitHub\PortableGit_d7effa1a4a322478cd29c826b52a0c118ad3db11\usr\bin\less.exe, pid 11756, thread unknown (0x2994)
-cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
-Stack trace:
-Frame     Function  Args
-End of stack trace
