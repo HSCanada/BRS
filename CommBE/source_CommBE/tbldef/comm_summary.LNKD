@@ -1,0 +1,4 @@
+﻿comm_summary
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.comm_summary
+salesperson_key_id;+comm_group_cd

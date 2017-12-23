@@ -1,0 +1,4 @@
+﻿BRS_Item
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2010;DATABASE=BRSales
+dbo.BRS_Item
+Item

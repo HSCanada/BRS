@@ -1,0 +1,4 @@
+﻿STAGE_BRS_FreeGoodsRedeem
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;
+dbo.STAGE_BRS_FreeGoodsRedeem
+ID

@@ -1,0 +1,4 @@
+﻿zzzCustList
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.zzzCustList
+hsi_customer_id

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:od="urn:schemas-microsoft-com:officedata">
+<xsd:element name="dataroot">
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element ref="comm_salesperson_master_goal" minOccurs="0" maxOccurs="unbounded"/>
+</xsd:sequence>
+<xsd:attribute name="generated" type="xsd:dateTime"/>
+</xsd:complexType>
+</xsd:element>
+<xsd:element name="comm_salesperson_master_goal">
+<xsd:annotation>
+<xsd:appinfo>
+<od:index index-name="PrimaryKey" index-key="employee_num " primary="yes" unique="yes" clustered="no" order="asc"/>
+</xsd:appinfo>
+</xsd:annotation>
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element name="employee_num" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="10"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="new_salesperson_nm" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="30"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="new_ITMSND_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_REBSND_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_CUSINS_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMTEE_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_REBTEE_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMFO1_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMFO2_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMFO3_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMFRT_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMCNX_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMDET_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMBTI_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMISC_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITME4D_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMCPU_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_SFFFIN_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_PMANEW_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMPAR_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMSER_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMEQ0_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_note_txt" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="255"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="new_ITMCAM_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_ITMSOF_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_BON001_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_BON002_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_BON003_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_BON004_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="new_BON005_GOAL_YTD_AMT" minOccurs="0" od:jetType="currency" od:sqlSType="money" type="xsd:double"/>
+<xsd:element name="F31" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="255"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="F32" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="255"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:element>
+</xsd:schema>

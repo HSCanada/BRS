@@ -1,0 +1,4 @@
+﻿comm_statement_export02
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.comm_statement_export02
+employee_num

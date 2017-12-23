@@ -1,0 +1,4 @@
+﻿BRS_CustomerVPA
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+dbo.BRS_CustomerVPA
+VPA
