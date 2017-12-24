@@ -1,4 +1,0 @@
-﻿BRS_CustomerBT
-ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;
-dbo.BRS_CustomerBT
-BillTo

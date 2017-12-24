@@ -100,58 +100,6 @@ Begin
         dbText "Name" ="comm_statement_export02.BONSCNMIL_QTY_YTD_AMT"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="BON04K_GP_YTD_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_QTY_YTD_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_SALES_CM_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr2"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr4"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr6"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_GP_CM_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_GP_YTD_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_QTY_CM_AMT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr3"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr5"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_export02.BONCCS_SALES_YTD_AMT"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
