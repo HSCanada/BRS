@@ -217,7 +217,8 @@ Begin Report
                     FontSize =14
                     FontWeight =700
                     Name ="Text153"
-                    ControlSource ="=\"Sales & Commission Details - \" & [fiscal_begin_dt] & \"-\" & [fiscal_end_dt]"
+                    ControlSource ="=\"Sales & Commission Details - \" & Format([fiscal_begin_dt],\"Medium Date\") &"
+                        " \" to \" & Format([fiscal_end_dt],\"Medium Date\")"
 
                     LayoutCachedWidth =10740
                     LayoutCachedHeight =480
@@ -561,13 +562,13 @@ Begin Report
             Begin
                 Begin TextBox
                     IMESentenceMode =3
-                    Left =2580
-                    Width =780
+                    Left =2250
+                    Width =1110
                     Height =270
                     Name ="doc_id"
                     ControlSource ="doc_id"
 
-                    LayoutCachedLeft =2580
+                    LayoutCachedLeft =2250
                     LayoutCachedWidth =3360
                     LayoutCachedHeight =270
                 End

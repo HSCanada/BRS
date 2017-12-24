@@ -260,7 +260,8 @@ Begin Report
                     Height =270
                     TabIndex =2
                     Name ="Text213"
-                    ControlSource ="=[fiscal_begin_dt] & \" - \" & [fiscal_end_dt]"
+                    ControlSource ="=Format([fiscal_begin_dt],\"Medium Date\") & \" to \" & Format([fiscal_end_dt],\""
+                        "Medium Date\")"
 
                     LayoutCachedLeft =1140
                     LayoutCachedTop =1110
@@ -568,14 +569,14 @@ Begin Report
                 End
                 Begin TextBox
                     IMESentenceMode =3
-                    Left =4980
-                    Width =780
+                    Left =4515
+                    Width =1245
                     Height =270
                     TabIndex =5
                     Name ="doc_id"
                     ControlSource ="doc_id"
 
-                    LayoutCachedLeft =4980
+                    LayoutCachedLeft =4515
                     LayoutCachedWidth =5760
                     LayoutCachedHeight =270
                 End

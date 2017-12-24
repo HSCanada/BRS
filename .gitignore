@@ -8,6 +8,8 @@
 *.xlsx
 *.xlsm
 *.db
+publish/
+working/
 
 
 # Prerequisites

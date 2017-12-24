@@ -77,7 +77,8 @@ SELECT
 	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
 	t.[WSSRP1_major_product_class]	AS IMCLMJ,
 
-	t.[WSVR01_reference]			AS customer_po_num
+	t.[WSVR01_reference]			AS customer_po_num,
+	cust.comm_status_cd				AS SPM_StatusCd
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -100,9 +101,8 @@ FROM
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
+	t.ess_salesperson_key_id <> '' And
 	g.show_ind = 1 AND
-
---	t.salesperson_key_id = 'ptario' And
 	1=1
 GO
 
@@ -112,4 +112,4 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM [comm].[backend_detail_ess] WHERE doc_id = '10290539'
+-- SELECT top 10 * FROM [comm].[backend_detail_ess] 

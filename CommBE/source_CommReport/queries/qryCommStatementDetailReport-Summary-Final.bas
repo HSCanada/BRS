@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
 Begin InputTables
-    Name ="qryCommStatementDetailReport-Summary"
     Name ="qsubCommStatementDetailReportSummary"
+    Name ="qryCommStatementDetailReport-Summary"
 End
 Begin OutputColumns
     Alias ="salesperson_key_id"
@@ -59,26 +59,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="[qryCommStatementDetailReport-Summary].salesperson_key_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="qsubCommStatementDetailReportSummary_1.comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="qsubCommStatementDetailReportSummary_1.comm_group_desc"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="qsubCommStatementDetailReportSummary_1.sort_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="qsubCommStatementDetailReportSummary.report_sort_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="qsubCommStatementDetailReportSummary.sort_id"
         dbLong "AggregateType" ="-1"
     End
@@ -88,23 +68,14 @@ Begin
     Left =0
     Top =0
     Right =1560
-    Bottom =971
+    Bottom =956
     Left =-1
     Top =-1
-    Right =1094
-    Bottom =263
+    Right =1544
+    Bottom =229
     Left =0
     Top =0
     ColumnsShown =539
-    Begin
-        Left =514
-        Top =10
-        Right =817
-        Bottom =154
-        Top =0
-        Name ="qryCommStatementDetailReport-Summary"
-        Name =""
-    End
     Begin
         Left =40
         Top =23
@@ -112,6 +83,15 @@ Begin
         Bottom =213
         Top =0
         Name ="qsubCommStatementDetailReportSummary"
+        Name =""
+    End
+    Begin
+        Left =514
+        Top =10
+        Right =817
+        Bottom =154
+        Top =0
+        Name ="qryCommStatementDetailReport-Summary"
         Name =""
     End
 End

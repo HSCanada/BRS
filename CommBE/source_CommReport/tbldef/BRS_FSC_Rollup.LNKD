@@ -1,4 +1,4 @@
-﻿comm_group
+﻿BRS_FSC_Rollup
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-comm.group
-comm_group_cd
+dbo.BRS_FSC_Rollup
+TerritoryCd

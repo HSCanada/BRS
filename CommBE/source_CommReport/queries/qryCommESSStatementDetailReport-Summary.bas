@@ -67,11 +67,11 @@ Begin
     Left =0
     Top =0
     Right =1560
-    Bottom =971
+    Bottom =956
     Left =-1
     Top =-1
     Right =1544
-    Bottom =185
+    Bottom =168
     Left =0
     Top =0
     ColumnsShown =543

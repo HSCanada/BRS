@@ -1697,18 +1697,6 @@ COMMIT
 
 ---
 
-
-
-CREATE TABLE [comm].[config](
-	[ID] [int] NOT NULL,
-	[OutputPath] [varchar](255) NOT NULL,
-	[LogFile] [varchar](255) NOT NULL,
- CONSTRAINT [comm_config_c_pk] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
-) ON [USERDATA]
-
 --
 
 ALTER TABLE dbo.BRS_Config ADD
@@ -2770,4 +2758,6 @@ UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS23' WHERE [Branch] = 'EDMON'
 UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS38' WHERE [Branch] = 'VACVR'
 UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS26' WHERE [Branch] = 'REGIN'
 GO
+
+
 

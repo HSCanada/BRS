@@ -1,4 +1,4 @@
 ﻿comm_salesperson_master
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
-dbo.comm_salesperson_master
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+comm.salesperson_master
 salesperson_key_id

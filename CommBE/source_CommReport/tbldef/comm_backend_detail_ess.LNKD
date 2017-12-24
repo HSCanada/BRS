@@ -1,4 +1,4 @@
-﻿comm_group
+﻿comm_backend_detail_ess
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-comm.group
-comm_group_cd
+comm.backend_detail_ess
+record_id
