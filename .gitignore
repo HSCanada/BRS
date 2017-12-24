@@ -10,6 +10,7 @@
 *.db
 publish/
 working/
+Upload/
 
 
 # Prerequisites

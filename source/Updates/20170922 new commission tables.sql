@@ -3674,3 +3674,11 @@ WHERE
 
 GO
 
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT        distinct 
+                         Integration.F55510_customer_territory_Staging.WR$TER_territory_code, Integration.F55510_customer_territory_Staging.WRTKBY_order_taken_by, 
+                         BRS_FSC_Rollup.FSCName
+FROM            Integration.F55510_customer_territory_Staging INNER JOIN
+                         BRS_FSC_Rollup ON Integration.F55510_customer_territory_Staging.WR$TER_territory_code = BRS_FSC_Rollup.TerritoryCd
+where WR$GTY_group_type='AAFS'
+order by 2
