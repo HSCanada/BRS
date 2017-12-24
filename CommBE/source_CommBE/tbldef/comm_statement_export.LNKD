@@ -1,4 +1,0 @@
-﻿comm_statement_export
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
-dbo.comm_statement_export
-employee_num

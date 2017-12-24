@@ -65,7 +65,9 @@ SELECT
 	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
 	t.[WSSRP1_major_product_class]	AS IMCLMJ,
 
-	t.[WSVR01_reference]			AS customer_po_num
+	t.[WSVR01_reference]			AS customer_po_num,
+	cust.comm_status_cd				AS SPM_StatusCd
+
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -79,6 +81,7 @@ FROM
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
+	t.fsc_salesperson_key_id <> '' And
 
 --	t.salesperson_key_id = 'ptario' And
 	1=1

@@ -57,6 +57,16 @@ GO
 CREATE SCHEMA [comm]
 GO
 
+DROP TABLE 
+	STAGE_BRS_CustomerFSC_History
+	,STAGE_BRS_SalesDay
+	,STAGE_BRS_Territory
+	,STAGE_BRS_TransactionDWfix
+	,STAGE_BRS_TransactionGL
+	,STAGE_CustVPA
+	,STAGE_FreeGoods
+
+
 -- DROP TABLE Integration.F55510_customer_territory_Staging
 
 SELECT 
@@ -106,7 +116,8 @@ SELECT
 INTO Integration.F55510_customer_territory_Staging
 
 FROM 
-    OPENQUERY (ESYS_PROD, '
+    OPENQUERY (ESYS_PROD,
+'
 
 	SELECT
 		WRCO,
@@ -166,7 +177,10 @@ ALTER TABLE Integration.F55510_customer_territory_Staging ADD CONSTRAINT
 	(
 	WRSHAN_shipto,
 	WR$TER_territory_code
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
 
@@ -254,7 +268,8 @@ SELECT
  INTO Integration.F555115_commission_sales_extract_Staging
 
 FROM 
-    OPENQUERY (ESYS_PROD, '
+    OPENQUERY (ESYS_PROD,
+'
 
 	SELECT
 		WSCO,
@@ -347,9 +362,14 @@ ALTER TABLE Integration.F555115_commission_sales_extract_Staging ADD
 GO
 
 /*
-SELECT        WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, COUNT(*) AS Expr1
+SELECT        WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNID_line_number,
+COUNT(*) AS Expr1
 FROM            Integration.F555115_commission_sales_extract_Staging AS s
-GROUP BY WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number
+GROUP BY WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNID_line_number
 HAVING        (COUNT(*) > 1)
 */
 
@@ -359,7 +379,10 @@ ALTER TABLE Integration.F555115_commission_sales_extract_Staging ADD CONSTRAINT
 	WSDOCO_salesorder_number,
 	WSDCTO_order_type,
 	WSLNID_line_number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
 
@@ -590,8 +613,10 @@ GO
 
 /****** Object:  View [dbo].[zzcomm_ess_statement_export02]    Script Date: 11/18/2017 12:56:36 PM ******/
 DROP VIEW 
-	comm_eps_region_map, 
-	comm_salesperson_RIS_map, 
+	comm_eps_region_map,
+
+	comm_salesperson_RIS_map,
+
 	zzcomm_ess_statement_export02,
 	zzcomm_ess_statement_history,
 	zzcomm_rate_map,
@@ -634,7 +659,8 @@ ALTER TABLE dbo.comm_salesperson_master
 	DROP CONSTRAINT comm_salesperson_master_comm_salesperson_category_fk_1
 GO
 
-DROP TABLE [dbo].[comm_status_code], comm_salesperson_category
+DROP TABLE [dbo].[comm_status_code],
+comm_salesperson_category
 GO
 
 -- Change to BR Sales
@@ -652,7 +678,11 @@ CREATE TABLE [comm].[source](
  CONSTRAINT [comm_source_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[source_cd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -664,8 +694,10 @@ ALTER TABLE [comm].[source] ADD  DEFAULT (getdate()) FOR [creation_dt]
 GO
 
 INSERT        
-INTO              comm.[source](source_cd, source_desc)
-VALUES        ('', 'Unassigned')
+INTO              comm.[source](source_cd,
+source_desc)
+VALUES        ('',
+'Unassigned')
 
 --
 
@@ -687,7 +719,11 @@ CREATE TABLE [comm].[group](
  CONSTRAINT [comm_group_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[comm_group_cd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -766,7 +802,11 @@ CREATE TABLE [comm].[plan](
  CONSTRAINT [comm_plan_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[comm_plan_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -795,7 +835,11 @@ CREATE TABLE [comm].[plan_group_rate](
 (
 	[comm_plan_id] ASC,
 	[comm_group_cd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -842,7 +886,11 @@ CREATE TABLE [Integration].[salesperson_master_Staging](
  CONSTRAINT [PK_comm_salesperson_master_stage] PRIMARY KEY CLUSTERED 
 (
 	[master_salesperson_cd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -864,8 +912,10 @@ ALTER TABLE dbo.BRS_Item ADD
 GO
 
 INSERT        
-INTO              comm.[group](comm_group_cd, comm_group_desc)
-VALUES        ('', 'Unassigned')
+INTO              comm.[group](comm_group_cd,
+comm_group_desc)
+VALUES        ('',
+'Unassigned')
 
 
 ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
@@ -906,8 +956,13 @@ CREATE TABLE [comm].[salesperson_master](
 
  CONSTRAINT [comm_salesperson_master_pk] PRIMARY KEY NONCLUSTERED 
 (
-	[employee_num], [master_salesperson_cd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+	[employee_num],
+[master_salesperson_cd] ASC
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -939,7 +994,10 @@ GO
 CREATE UNIQUE CLUSTERED INDEX idx_salesperson_master_uc_idx_01 ON comm.salesperson_master
 	(
 	salesperson_key_id
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 
 --
@@ -947,6 +1005,16 @@ GO
 ALTER TABLE dbo.BRS_FSC_Rollup ADD
 	comm_salesperson_key_id varchar(30) NULL
 GO
+
+ALTER TABLE dbo.BRS_FSC_Rollup ADD
+	group_type char(4) NOT NULL CONSTRAINT DF_BRS_FSC_Rollup_group_type DEFAULT ('')
+GO
+
+ALTER TABLE dbo.BRS_FSC_Rollup ADD
+	order_taken_by char(10) NOT NULL CONSTRAINT DF_BRS_FSC_Rollup_OrderTakenBy DEFAULT ('')
+GO
+
+
 
 ALTER TABLE dbo.BRS_FSC_Rollup  WITH NOCHECK ADD  CONSTRAINT [BRS_FSC_Rollup_comm_salesperson_master_fk] FOREIGN KEY([comm_salesperson_key_id])
 REFERENCES [comm].[salesperson_master] ([salesperson_key_id])
@@ -987,9 +1055,11 @@ CREATE TABLE [comm].[transaction_F555115](
 	[WSPROV_price_override_code] [char](1) NOT NULL,
 	[WSASN__adjustment_schedule] [char](10) NOT NULL,
 	[WSKCO__document_company] [char](5) NOT NULL,
-	[WSDOC__document_number] [numeric](8, 0) NOT NULL,
+	[WSDOC__document_number] [numeric](8,
+0) NOT NULL,
 	[WSDCT__document_type] [char](2) NOT NULL,
-	[WSPSN__pick_slip_number] [numeric](8, 0) NOT NULL,
+	[WSPSN__pick_slip_number] [numeric](8,
+0) NOT NULL,
 	[WSROUT_ship_method] [char](3) NOT NULL,
 	[WSZON__zone_number] [char](3) NOT NULL,
 	[WSFRTH_freight_handling_code] [char](3) NOT NULL,
@@ -1030,7 +1100,8 @@ CREATE TABLE [comm].[transaction_F555115](
 	[WS$O04_number_equipment_serial_04] [varchar](30) NOT NULL,
 	[WS$O05_number_equipment_serial_05] [varchar](30) NOT NULL,
 	[WS$O06_number_equipment_serial_06] [varchar](30) NOT NULL,
-	[WSDL03_description_03] [numeric](6, 0) NOT NULL,
+	[WSDL03_description_03] [numeric](6,
+0) NOT NULL,
 	[WS$ODS_order_discount_amount] [money] NOT NULL,
 	[ID] [integer] identity(1,1) NOT NULL
  CONSTRAINT [comm_transaction_F555115_pk] PRIMARY KEY NONCLUSTERED 
@@ -1038,7 +1109,11 @@ CREATE TABLE [comm].[transaction_F555115](
 	[WSDOCO_salesorder_number] ASC,
 	[WSDCTO_order_type] ASC,
 	[WSLNID_line_number] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+)WITH (PAD_INDEX = OFF,
+STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
@@ -1639,7 +1714,10 @@ CREATE NONCLUSTERED INDEX transaction_F555115_c_idx_01 ON comm.transaction_F5551
 	[WSSHAN_shipto],
 	transaction_amt,
 	gp_ext_amt
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
@@ -1650,43 +1728,67 @@ GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_02 ON comm.transaction_F555115
 	(
 	WSLITM_item_number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_03 ON comm.transaction_F555115
 	(
 	WSSHAN_shipto
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_04 ON comm.transaction_F555115
 	(
 	WSDGL__gl_date
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_05 ON comm.transaction_F555115
 	(
 	fsc_salesperson_key_id
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_06 ON comm.transaction_F555115
 	(
 	ess_salesperson_key_id
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_07 ON comm.transaction_F555115
 	(
 	cps_salesperson_key_id
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_08 ON comm.transaction_F555115
 	(
 	fsc_comm_group_cd
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 CREATE NONCLUSTERED INDEX transaction_F555115_idx_09 ON comm.transaction_F555115
 	(
 	ess_comm_group_cd
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
@@ -1817,29 +1919,58 @@ COMMIT
 insert into [dbo].[BRS_DocType] (DocType) values ('')
 
 INSERT INTO comm.salesperson_master
-                         (employee_num, master_salesperson_cd, salesperson_key_id, salesperson_nm)
-VALUES        (0, '', '', 'Unassigned')
+                         (employee_num,
+master_salesperson_cd,
+salesperson_key_id,
+salesperson_nm)
+VALUES        (0,
+'',
+'',
+'Unassigned')
 
 INSERT INTO comm.[plan]
-                         (comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd)
-SELECT        comm_plan_id, comm_plan_nm, note_txt, active_ind, creation_dt, SPM_StatusCd
+                         (comm_plan_id,
+comm_plan_nm,
+note_txt,
+active_ind,
+creation_dt,
+SPM_StatusCd)
+SELECT        comm_plan_id,
+comm_plan_nm,
+note_txt,
+active_ind,
+creation_dt,
+SPM_StatusCd
 FROM            DEV_CommBE.dbo.comm_plan
 
 INSERT INTO comm.transaction_F555115
-                         (WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, FiscalMonth, WSDGL__gl_date)
-VALUES        (0, '', 0, 0, CONVERT(DATETIME, '2012-12-31 00:00:00', 102))
+                         (WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNID_line_number,
+FiscalMonth,
+WSDGL__gl_date)
+VALUES        (0,
+'',
+0,
+0,
+CONVERT(DATETIME,
+'2012-12-31 00:00:00',
+102))
 
 
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
-select distinct [WSCAG__cagess_code], '' from [Integration].[F555115_commission_sales_extract_Staging] 
+select distinct [WSCAG__cagess_code],
+'' from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WSCAG__cagess_code] =  [TerritoryCd])
 
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
-select distinct [WS$ESS_equipment_specialist_code], '' from [Integration].[F555115_commission_sales_extract_Staging] 
+select distinct [WS$ESS_equipment_specialist_code],
+'' from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WS$ESS_equipment_specialist_code] =  [TerritoryCd])
 
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
-SELECT        distinct master_salesperson_cd, ''
+SELECT        distinct master_salesperson_cd,
+''
 FROM            DEV_CommBE.dbo.comm_salesperson_master 
 WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <> '' and
 	not exists(select * from [dbo].[BRS_FSC_Rollup] where master_salesperson_cd = [TerritoryCd])
@@ -1855,43 +1986,196 @@ where not exists (select * from [dbo].[BRS_TransactionDW_Ext] where [WSDOCO_sale
 
 -- DEV LONLY - load new data source
 INSERT INTO comm.transaction_F555115
-                         (FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
-                         WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
-                         WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP6_manufacturer, WSUORG_quantity, WSSOQS_quantity_shipped, 
-                         WSAEXP_extended_price, WSURAT_user_reserved_amount, WS$UNC_sales_order_cost_markup, WSOORN_original_order_number, WSOCTO_original_order_type, 
-                         WSOGNO_original_line_number, WSTRDJ_order_date, WSVR01_reference, WSVR02_reference_2, WSITM__item_number_short, WSPROV_price_override_code, 
-                         WSASN__adjustment_schedule, WSKCO__document_company, WSDOC__document_number, WSDCT__document_type, WSPSN__pick_slip_number, 
-                         WSROUT_ship_method, WSZON__zone_number, WSFRTH_freight_handling_code, WSFRAT_rate_code_freightmisc, WSRATT_rate_type_freightmisc, 
-                         WSGLC__gl_offset, WSSO08_price_adjustment_line_indicator, WSENTB_entered_by, WS$PMC_promotion_code_price_method, WSTKBY_order_taken_by, 
-                         WSKTLN_kit_master_line_number, WSCOMM_committed_hs, WSEMCU_header_business_unit, WS$SPC_supplier_code, WS$VCD_vendor_code, 
-                         WS$CLC_classification_code, WSCYCL_cycle_count_category, WSORD__equipment_order, WSORDT_order_type, WSCAG__cagess_code, 
-                         WSEST__employment_status, WS$ESS_equipment_specialist_code, WS$TSS_tech_specialist_code, WS$CCS_cadcam_specialist_code, WS$NM1__name_1, 
-                         WS$NM3_researched_by, WS$NM4_completed_by, WS$NM5__name_5, WS$L01_level_code_01, WSSRP4_sub_minor_product_class, 
-                         WSCITM_customersupplier_item_number, WSSIC__speciality, WSAC04_practice_type, WSAC10_division_code, WS$O01_number_equipment_serial_01, 
-                         WS$O02_number_equipment_serial_02, WS$O03_number_equipment_serial_03, WS$O04_number_equipment_serial_04, WS$O05_number_equipment_serial_05, 
-                         WS$O06_number_equipment_serial_06, WSDL03_description_03, WS$ODS_order_discount_amount)
+                         (FiscalMonth,
+WSCO___company,
+WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNTY_line_type,
+WSLNID_line_number,
+WS$OSC_order_source_code,
+
+                         WSAN8__billto,
+WSSHAN_shipto,
+WSDGL__gl_date,
+WSLITM_item_number,
+WSDSC1_description,
+WSDSC2_description_2,
+WSSRP1_major_product_class,
+
+                         WSSRP2_sub_major_product_class,
+WSSRP3_minor_product_class,
+WSSRP6_manufacturer,
+WSUORG_quantity,
+WSSOQS_quantity_shipped,
+
+                         WSAEXP_extended_price,
+WSURAT_user_reserved_amount,
+WS$UNC_sales_order_cost_markup,
+WSOORN_original_order_number,
+WSOCTO_original_order_type,
+
+                         WSOGNO_original_line_number,
+WSTRDJ_order_date,
+WSVR01_reference,
+WSVR02_reference_2,
+WSITM__item_number_short,
+WSPROV_price_override_code,
+
+                         WSASN__adjustment_schedule,
+WSKCO__document_company,
+WSDOC__document_number,
+WSDCT__document_type,
+WSPSN__pick_slip_number,
+
+                         WSROUT_ship_method,
+WSZON__zone_number,
+WSFRTH_freight_handling_code,
+WSFRAT_rate_code_freightmisc,
+WSRATT_rate_type_freightmisc,
+
+                         WSGLC__gl_offset,
+WSSO08_price_adjustment_line_indicator,
+WSENTB_entered_by,
+WS$PMC_promotion_code_price_method,
+WSTKBY_order_taken_by,
+
+                         WSKTLN_kit_master_line_number,
+WSCOMM_committed_hs,
+WSEMCU_header_business_unit,
+WS$SPC_supplier_code,
+WS$VCD_vendor_code,
+
+                         WS$CLC_classification_code,
+WSCYCL_cycle_count_category,
+WSORD__equipment_order,
+WSORDT_order_type,
+WSCAG__cagess_code,
+
+                         WSEST__employment_status,
+WS$ESS_equipment_specialist_code,
+WS$TSS_tech_specialist_code,
+WS$CCS_cadcam_specialist_code,
+WS$NM1__name_1,
+
+                         WS$NM3_researched_by,
+WS$NM4_completed_by,
+WS$NM5__name_5,
+WS$L01_level_code_01,
+WSSRP4_sub_minor_product_class,
+
+                         WSCITM_customersupplier_item_number,
+WSSIC__speciality,
+WSAC04_practice_type,
+WSAC10_division_code,
+WS$O01_number_equipment_serial_01,
+
+                         WS$O02_number_equipment_serial_02,
+WS$O03_number_equipment_serial_03,
+WS$O04_number_equipment_serial_04,
+WS$O05_number_equipment_serial_05,
+
+                         WS$O06_number_equipment_serial_06,
+WSDL03_description_03,
+WS$ODS_order_discount_amount)
 SELECT        
 -- TOP (10) 
-d.FiscalMonth, t.WSCO___company, t.WSDOCO_salesorder_number, t.WSDCTO_order_type, t.WSLNTY_line_type, ROUND(t.WSLNID_line_number * 1000,0) AS WSLNID_line_number, 
-                         t.WS$OSC_order_source_code, t.WSAN8__billto, t.WSSHAN_shipto, t.WSDGL__gl_date, t.WSLITM_item_number, t.WSDSC1_description, t.WSDSC2_description_2, 
-                         t.WSSRP1_major_product_class, t.WSSRP2_sub_major_product_class, t.WSSRP3_minor_product_class, t.WSSRP6_manufacturer, t.WSUORG_quantity, 
-                         t.WSSOQS_quantity_shipped, t.WSAEXP_extended_price, t.WSURAT_user_reserved_amount, t.WS$UNC_sales_order_cost_markup, 
-                         t.WSOORN_original_order_number, t.WSOCTO_original_order_type, t.WSOGNO_original_line_number, t.WSTRDJ_order_date, t.WSVR01_reference, 
-                         t.WSVR02_reference_2, t.WSITM__item_number_short, t.WSPROV_price_override_code, t.WSASN__adjustment_schedule, t.WSKCO__document_company, 
-                         t.WSDOC__document_number, t.WSDCT__document_type, t.WSPSN__pick_slip_number, t.WSROUT_ship_method, t.WSZON__zone_number, 
-                         t.WSFRTH_freight_handling_code, t.WSFRAT_rate_code_freightmisc, t.WSRATT_rate_type_freightmisc, t.WSGLC__gl_offset, 
-                         t.WSSO08_price_adjustment_line_indicator, t.WSENTB_entered_by, t.WS$PMC_promotion_code_price_method, t.WSTKBY_order_taken_by, 
-                         t.WSKTLN_kit_master_line_number, t.WSCOMM_committed_hs, t.WSEMCU_header_business_unit, t.WS$SPC_supplier_code, t.WS$VCD_vendor_code, 
-                         t.WS$CLC_classification_code, t.WSCYCL_cycle_count_category, t.WSORD__equipment_order, t.WSORDT_order_type, t.WSCAG__cagess_code, 
-                         t.WSEST__employment_status, t.WS$ESS_equipment_specialist_code, t.WS$TSS_tech_specialist_code, t.WS$CCS_cadcam_specialist_code, t.WS$NM1__name_1, 
-                         t.WS$NM3_researched_by, t.WS$NM4_completed_by, t.WS$NM5__name_5, t.WS$L01_level_code_01, t.WSSRP4_sub_minor_product_class, 
-                         t.WSCITM_customersupplier_item_number, t.WSSIC__speciality, t.WSAC04_practice_type, t.WSAC10_division_code, t.WS$O01_number_equipment_serial_01, 
-                         t.WS$O02_number_equipment_serial_02, t.WS$O03_number_equipment_serial_03, t.WS$O04_number_equipment_serial_04, 
-                         t.WS$O05_number_equipment_serial_05, t.WS$O06_number_equipment_serial_06, t.WSDL03_description_03, t.WS$ODS_order_discount_amount
+d.FiscalMonth,
+t.WSCO___company,
+t.WSDOCO_salesorder_number,
+t.WSDCTO_order_type,
+t.WSLNTY_line_type,
+ROUND(t.WSLNID_line_number * 1000,0) AS WSLNID_line_number,
+
+                         t.WS$OSC_order_source_code,
+t.WSAN8__billto,
+t.WSSHAN_shipto,
+t.WSDGL__gl_date,
+t.WSLITM_item_number,
+t.WSDSC1_description,
+t.WSDSC2_description_2,
+
+                         t.WSSRP1_major_product_class,
+t.WSSRP2_sub_major_product_class,
+t.WSSRP3_minor_product_class,
+t.WSSRP6_manufacturer,
+t.WSUORG_quantity,
+
+                         t.WSSOQS_quantity_shipped,
+t.WSAEXP_extended_price,
+t.WSURAT_user_reserved_amount,
+t.WS$UNC_sales_order_cost_markup,
+
+                         t.WSOORN_original_order_number,
+t.WSOCTO_original_order_type,
+t.WSOGNO_original_line_number,
+t.WSTRDJ_order_date,
+t.WSVR01_reference,
+
+                         t.WSVR02_reference_2,
+t.WSITM__item_number_short,
+t.WSPROV_price_override_code,
+t.WSASN__adjustment_schedule,
+t.WSKCO__document_company,
+
+                         t.WSDOC__document_number,
+t.WSDCT__document_type,
+t.WSPSN__pick_slip_number,
+t.WSROUT_ship_method,
+t.WSZON__zone_number,
+
+                         t.WSFRTH_freight_handling_code,
+t.WSFRAT_rate_code_freightmisc,
+t.WSRATT_rate_type_freightmisc,
+t.WSGLC__gl_offset,
+
+                         t.WSSO08_price_adjustment_line_indicator,
+t.WSENTB_entered_by,
+t.WS$PMC_promotion_code_price_method,
+t.WSTKBY_order_taken_by,
+
+                         t.WSKTLN_kit_master_line_number,
+t.WSCOMM_committed_hs,
+t.WSEMCU_header_business_unit,
+t.WS$SPC_supplier_code,
+t.WS$VCD_vendor_code,
+
+                         t.WS$CLC_classification_code,
+t.WSCYCL_cycle_count_category,
+t.WSORD__equipment_order,
+t.WSORDT_order_type,
+t.WSCAG__cagess_code,
+
+                         t.WSEST__employment_status,
+t.WS$ESS_equipment_specialist_code,
+t.WS$TSS_tech_specialist_code,
+t.WS$CCS_cadcam_specialist_code,
+t.WS$NM1__name_1,
+
+                         t.WS$NM3_researched_by,
+t.WS$NM4_completed_by,
+t.WS$NM5__name_5,
+t.WS$L01_level_code_01,
+t.WSSRP4_sub_minor_product_class,
+
+                         t.WSCITM_customersupplier_item_number,
+t.WSSIC__speciality,
+t.WSAC04_practice_type,
+t.WSAC10_division_code,
+t.WS$O01_number_equipment_serial_01,
+
+                         t.WS$O02_number_equipment_serial_02,
+t.WS$O03_number_equipment_serial_03,
+t.WS$O04_number_equipment_serial_04,
+
+                         t.WS$O05_number_equipment_serial_05,
+t.WS$O06_number_equipment_serial_06,
+t.WSDL03_description_03,
+t.WS$ODS_order_discount_amount
 FROM            Integration.F555115_commission_sales_extract_Staging AS t INNER JOIN
                          BRS_SalesDay AS d ON t.WSDGL__gl_date = d.SalesDate
 WHERE 
-	(WSAC10_division_code NOT IN ('AZA', 'AZE')) 
+	(WSAC10_division_code NOT IN ('AZA',
+'AZE')) 
 
 /*
 SELECT        
@@ -1899,7 +2183,8 @@ DISTINCT t.WSDOCO_salesorder_number
 FROM            Integration.F555115_commission_sales_extract_Staging AS t INNER JOIN
                          BRS_SalesDay AS d ON t.WSDGL__gl_date = d.SalesDate
 WHERE 
-	(WSAC10_division_code NOT IN ('AZA', 'AZE')) AND 
+	(WSAC10_division_code NOT IN ('AZA',
+'AZE')) AND 
 	NOT EXISTS ( SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE [SalesOrderNumber] =t.WSDOCO_salesorder_number)
 
 SELECT        
@@ -1912,11 +2197,16 @@ WHERE t.WSDOCO_salesorder_number = 10901332
 
 SELECT
 TOP (10) 
-WSAC10_division_code, 
-SUM(WSAEXP_extended_price) AS WSAEXP_extended_price, 
-SUM(WS$ODS_order_discount_amount) AS WS$ODS_order_discount_amount, 
-SUM(WS$UNC_sales_order_cost_markup) AS WS$UNC_sales_order_cost_markup, 
-SUM(WSSOQS_quantity_shipped) AS WSSOQS_quantity_shipped, 
+WSAC10_division_code,
+
+SUM(WSAEXP_extended_price) AS WSAEXP_extended_price,
+
+SUM(WS$ODS_order_discount_amount) AS WS$ODS_order_discount_amount,
+
+SUM(WS$UNC_sales_order_cost_markup) AS WS$UNC_sales_order_cost_markup,
+
+SUM(WSSOQS_quantity_shipped) AS WSSOQS_quantity_shipped,
+
 SUM(WS$UNC_sales_order_cost_markup * WSSOQS_quantity_shipped) AS ext_cost,
 SUM(WSAEXP_extended_price-WS$ODS_order_discount_amount) as net_sales,
 SUM(WSAEXP_extended_price-WS$ODS_order_discount_amount - WS$UNC_sales_order_cost_markup * WSSOQS_quantity_shipped) as gp_amt
@@ -1930,29 +2220,88 @@ GROUP BY WSAC10_division_code
 -- ADD
 
 INSERT INTO comm.[source]
-                         (source_cd, source_desc, active_ind, creation_dt)
-SELECT        LEFT(source_cd,3), source_desc, active_ind, creation_dt
+                         (source_cd,
+source_desc,
+active_ind,
+creation_dt)
+SELECT        LEFT(source_cd,3),
+source_desc,
+active_ind,
+creation_dt
 FROM            DEV_CommBE.dbo.comm_source
 WHERE source_cd <>''
 
 INSERT INTO comm.[group]
-                         (comm_group_cd, comm_group_desc, source_cd, active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
-                         sort_id, FRG_comm_group_cd)
-SELECT        comm_group_cd, comm_group_desc, LEFT(source_cd,3), active_ind, creation_dt, comm_calc_rt, note_txt, booking_rt, SPM_comm_group_cd, show_ind, SPM_EQOptOut, 
-                         sort_id, FRG_comm_group_cd
+                         (comm_group_cd,
+comm_group_desc,
+source_cd,
+active_ind,
+creation_dt,
+comm_calc_rt,
+note_txt,
+booking_rt,
+SPM_comm_group_cd,
+show_ind,
+SPM_EQOptOut,
+
+                         sort_id,
+FRG_comm_group_cd)
+SELECT        comm_group_cd,
+comm_group_desc,
+LEFT(source_cd,3),
+active_ind,
+creation_dt,
+comm_calc_rt,
+note_txt,
+booking_rt,
+SPM_comm_group_cd,
+show_ind,
+SPM_EQOptOut,
+
+                         sort_id,
+FRG_comm_group_cd
 FROM            DEV_CommBE.dbo.comm_group
 WHERE comm_group_cd <>''
 
 
 INSERT INTO comm.plan_group_rate
-                         (comm_plan_id, comm_group_cd, comm_base_rt, active_ind, creation_dt, note_txt, show_ind)
-SELECT        comm_plan_id, comm_group_cd, comm_base_rt, active_ind, creation_dt, note_txt, show_ind
+                         (comm_plan_id,
+comm_group_cd,
+comm_base_rt,
+active_ind,
+creation_dt,
+note_txt,
+show_ind)
+SELECT        comm_plan_id,
+comm_group_cd,
+comm_base_rt,
+active_ind,
+creation_dt,
+note_txt,
+show_ind
 FROM            DEV_CommBE.dbo.comm_plan_group_rate
 
 
 INSERT INTO comm.salesperson_master
-                         (salesperson_key_id, salesperson_nm, comm_plan_id, creation_dt, note_txt, master_salesperson_cd, flag_ind, territory_start_dt, employee_num)
-SELECT        salesperson_key_id, salesperson_nm, comm_plan_id, creation_dt, note_txt, master_salesperson_cd, select_ind, ISNULL(territory_start_dt, '1980-01-01'), employee_num
+                         (salesperson_key_id,
+salesperson_nm,
+comm_plan_id,
+creation_dt,
+note_txt,
+master_salesperson_cd,
+flag_ind,
+territory_start_dt,
+employee_num)
+SELECT        salesperson_key_id,
+salesperson_nm,
+comm_plan_id,
+creation_dt,
+note_txt,
+master_salesperson_cd,
+select_ind,
+ISNULL(territory_start_dt,
+'1980-01-01'),
+employee_num
 FROM            DEV_CommBE.dbo.comm_salesperson_master 
 WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <> '' 
 
@@ -1984,7 +2333,8 @@ FROM            DEV_CommBE.dbo.comm_item_master AS c INNER JOIN
 
 UPDATE       BRS_Customer
 SET                
-comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMEQU' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMSND' ELSE '' END END, 
+comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMEQU' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMSND' ELSE '' END END,
+
 comm_note_txt = c.SPM_ReasonTxt
 FROM            DEV_CommBE.dbo.comm_customer_master c INNER JOIN
                          BRS_Customer ON c.hsi_shipto_id = BRS_Customer.ShipTo
@@ -2176,7 +2526,8 @@ WHERE NOT EXISTS (
 -- fix null
 SELECT 
 	TOP 10
-	item_id, *
+	item_id,
+*
 
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
@@ -2219,7 +2570,8 @@ WHERE        (NOT EXISTS
 
 -- fix
 SELECT 
-	transaction_dt, CAST(transaction_dt as date) as d2
+	transaction_dt,
+CAST(transaction_dt as date) as d2
 
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
@@ -2236,7 +2588,8 @@ WHERE        (NOT EXISTS
 -- fix Left(1)
 SELECT 
 --	TOP 10
-	price_method_cd, LEFT(price_method_cd,1) pmfix
+	price_method_cd,
+LEFT(price_method_cd,1) pmfix
 
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
@@ -2253,7 +2606,8 @@ WHERE        (NOT EXISTS
 -- fix
 SELECT 
 	TOP 10
-	ess_salesperson_cd, ess_salesperson_key_id
+	ess_salesperson_cd,
+ess_salesperson_key_id
 
 FROM DEV_CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
@@ -2280,7 +2634,8 @@ SELECT
 	* 
 --	doc_id
 FROM DEV_CommBE.[dbo].[comm_transaction]
-WHERE hsi_shipto_div_cd not in ('AZA', 'AZE') and  NOT EXISTS (
+WHERE hsi_shipto_div_cd not in ('AZA',
+'AZE') and  NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE ISNULL(doc_id,0) =[SalesOrderNumber] 
 )
 
@@ -2300,8 +2655,10 @@ SET                doc_id = N'0'
 WHERE        (doc_id is null)
 
 -- 30s
-INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber], DocType)
-SELECT         distinct SalesOrderNumber, DocType
+INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],
+DocType)
+SELECT         distinct SalesOrderNumber,
+DocType
 FROM            BRS_Transaction t 
 where 
 	SalesOrderNumber IS NOT NULL AND  
@@ -2334,34 +2691,84 @@ SET                doc_id = '0'
 WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_TransactionDW_Ext
-                               WHERE        (ISNULL(DEV_CommBE.dbo.comm_transaction.doc_id, 0) = SalesOrderNumber)))
+                               WHERE        (ISNULL(DEV_CommBE.dbo.comm_transaction.doc_id,
+0) = SalesOrderNumber)))
 
-SELECT         doc_id, doc_type_cd, line_id, COUNT(*) AS Expr1
+SELECT         doc_id,
+doc_type_cd,
+line_id,
+COUNT(*) AS Expr1
 FROM            DEV_CommBE.dbo.comm_transaction t
-GROUP BY doc_id, doc_type_cd, line_id
+GROUP BY doc_id,
+doc_type_cd,
+line_id
 HAVING COUNT(*) >1
 
 -- fix duplicate linenumbers by setting to ID (all imports)
 UPDATE       DEV_CommBE.dbo.comm_transaction
 SET                line_id = [record_id],[audit_id]=line_id 
 where exists(
-SELECT         doc_id, doc_type_cd, line_id, COUNT(*) AS Expr1
+SELECT         doc_id,
+doc_type_cd,
+line_id,
+COUNT(*) AS Expr1
 FROM            DEV_CommBE.dbo.comm_transaction t
 WHERE DEV_CommBE.dbo.comm_transaction.doc_id =t.doc_id and DEV_CommBE.dbo.comm_transaction.doc_type_cd=t.doc_type_cd and DEV_CommBE.dbo.comm_transaction.line_id = t.line_id
-GROUP BY doc_id, doc_type_cd, line_id
+GROUP BY doc_id,
+doc_type_cd,
+line_id
 HAVING COUNT(*) >1
 )
 
 
--- migrate data, 30s
+-- migrate data,
+30s
 INSERT INTO comm.transaction_F555115
 (
-FiscalMonth, fsc_code, source_cd, WSDGL__gl_date, transaction_amt, WSLNID_line_number, WSDOCO_salesorder_number, WSVR01_reference, 
-WS$OSC_order_source_code, WSLITM_item_number, WSSOQS_quantity_shipped, WSPROV_price_override_code, WSDSC1_description, fsc_salesperson_key_id, 
-fsc_comm_plan_id, fsc_comm_amt, WS$UNC_sales_order_cost_markup, WSCYCL_cycle_count_category, fsc_comm_group_cd, fsc_comm_rt, 
-ess_salesperson_key_id, gp_ext_amt, WSDCTO_order_type, ess_comm_plan_id, ess_comm_group_cd, ess_comm_rt, ess_comm_amt, WSSHAN_shipto, 
-WSSRP1_major_product_class, WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP4_sub_minor_product_class, 
-WS$ESS_equipment_specialist_code, WSCAG__cagess_code, WSAN8__billto, WSAC10_division_code, WSASN__adjustment_schedule, WSSRP6_manufacturer, 
+FiscalMonth,
+fsc_code,
+source_cd,
+WSDGL__gl_date,
+transaction_amt,
+WSLNID_line_number,
+WSDOCO_salesorder_number,
+WSVR01_reference,
+
+WS$OSC_order_source_code,
+WSLITM_item_number,
+WSSOQS_quantity_shipped,
+WSPROV_price_override_code,
+WSDSC1_description,
+fsc_salesperson_key_id,
+
+fsc_comm_plan_id,
+fsc_comm_amt,
+WS$UNC_sales_order_cost_markup,
+WSCYCL_cycle_count_category,
+fsc_comm_group_cd,
+fsc_comm_rt,
+
+ess_salesperson_key_id,
+gp_ext_amt,
+WSDCTO_order_type,
+ess_comm_plan_id,
+ess_comm_group_cd,
+ess_comm_rt,
+ess_comm_amt,
+WSSHAN_shipto,
+
+WSSRP1_major_product_class,
+WSSRP2_sub_major_product_class,
+WSSRP3_minor_product_class,
+WSSRP4_sub_minor_product_class,
+
+WS$ESS_equipment_specialist_code,
+WSCAG__cagess_code,
+WSAN8__billto,
+WSAC10_division_code,
+WSASN__adjustment_schedule,
+WSSRP6_manufacturer,
+
 WS$PMC_promotion_code_price_method)
 SELECT        
 --	TOP (10) 
@@ -2408,7 +2815,8 @@ SELECT
 FROM            
 	DEV_CommBE.dbo.comm_transaction
 WHERE        
-	(hsi_shipto_div_cd NOT IN ('AZA', 'AZE')) AND 
+	(hsi_shipto_div_cd NOT IN ('AZA',
+'AZE')) AND 
 	(fiscal_yearmo_num = '201710')
 
 --201601 - 201710; 201711 NEW format
@@ -2431,69 +2839,358 @@ SELECT *
 FROM comm.transaction_F555115
 WHERE source_cd = ''
 
-SELECT        WSDCTO_order_type, source_cd, COUNT(*) AS Expr1
+SELECT        WSDCTO_order_type,
+source_cd,
+COUNT(*) AS Expr1
 FROM            comm.transaction_F555115
-GROUP BY WSDCTO_order_type, source_cd
+GROUP BY WSDCTO_order_type,
+source_cd
 
 -- select * from [comm].[transaction_F555115] where FiscalMonth = 201701
 /*
-SELECT        FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
-                         WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
-                         WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP6_manufacturer, WSUORG_quantity, WSSOQS_quantity_shipped, 
-                         WSAEXP_extended_price, WSURAT_user_reserved_amount, WS$UNC_sales_order_cost_markup, WSOORN_original_order_number, WSOCTO_original_order_type, 
-                         WSOGNO_original_line_number, WSTRDJ_order_date, WSVR01_reference, WSVR02_reference_2, WSITM__item_number_short, WSPROV_price_override_code, 
-                         WSASN__adjustment_schedule, WSKCO__document_company, WSDOC__document_number, WSDCT__document_type, WSPSN__pick_slip_number, 
-                         WSROUT_ship_method, WSZON__zone_number, WSFRTH_freight_handling_code, WSFRAT_rate_code_freightmisc, WSRATT_rate_type_freightmisc, 
-                         WSGLC__gl_offset, WSSO08_price_adjustment_line_indicator, WSENTB_entered_by, WS$PMC_promotion_code_price_method, WSTKBY_order_taken_by, 
-                         WSKTLN_kit_master_line_number, WSCOMM_committed_hs, WSEMCU_header_business_unit, WS$SPC_supplier_code, WS$VCD_vendor_code, 
-                         WS$CLC_classification_code, WSCYCL_cycle_count_category, WSORD__equipment_order, WSORDT_order_type, WSCAG__cagess_code, 
-                         WSEST__employment_status, WS$ESS_equipment_specialist_code, WS$TSS_tech_specialist_code, WS$CCS_cadcam_specialist_code, WS$NM1__name_1, 
-                         WS$NM3_researched_by, WS$NM4_completed_by, WS$NM5__name_5, WS$L01_level_code_01, WSSRP4_sub_minor_product_class, 
-                         WSCITM_customersupplier_item_number, WSSIC__speciality, WSAC04_practice_type, WSAC10_division_code, WS$O01_number_equipment_serial_01, 
-                         WS$O02_number_equipment_serial_02, WS$O03_number_equipment_serial_03, WS$O04_number_equipment_serial_04, WS$O05_number_equipment_serial_05, 
-                         WS$O06_number_equipment_serial_06, WSDL03_description_03, WS$ODS_order_discount_amount, ID, transaction_amt, gp_ext_amt, fsc_salesperson_key_id, 
-                         fsc_comm_plan_id, fsc_comm_group_cd, fsc_comm_rt, fsc_comm_amt, ess_salesperson_key_id, ess_comm_plan_id, ess_comm_group_cd, ess_comm_rt, 
-                         ess_comm_amt, dtx_salesperson_key_id, dtx_comm_plan_id, dtx_comm_group_cd, dtx_comm_rt, dtx_comm_amt, source_cd, fsc_code
+SELECT        FiscalMonth,
+WSCO___company,
+WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNTY_line_type,
+WSLNID_line_number,
+WS$OSC_order_source_code,
+
+                         WSAN8__billto,
+WSSHAN_shipto,
+WSDGL__gl_date,
+WSLITM_item_number,
+WSDSC1_description,
+WSDSC2_description_2,
+WSSRP1_major_product_class,
+
+                         WSSRP2_sub_major_product_class,
+WSSRP3_minor_product_class,
+WSSRP6_manufacturer,
+WSUORG_quantity,
+WSSOQS_quantity_shipped,
+
+                         WSAEXP_extended_price,
+WSURAT_user_reserved_amount,
+WS$UNC_sales_order_cost_markup,
+WSOORN_original_order_number,
+WSOCTO_original_order_type,
+
+                         WSOGNO_original_line_number,
+WSTRDJ_order_date,
+WSVR01_reference,
+WSVR02_reference_2,
+WSITM__item_number_short,
+WSPROV_price_override_code,
+
+                         WSASN__adjustment_schedule,
+WSKCO__document_company,
+WSDOC__document_number,
+WSDCT__document_type,
+WSPSN__pick_slip_number,
+
+                         WSROUT_ship_method,
+WSZON__zone_number,
+WSFRTH_freight_handling_code,
+WSFRAT_rate_code_freightmisc,
+WSRATT_rate_type_freightmisc,
+
+                         WSGLC__gl_offset,
+WSSO08_price_adjustment_line_indicator,
+WSENTB_entered_by,
+WS$PMC_promotion_code_price_method,
+WSTKBY_order_taken_by,
+
+                         WSKTLN_kit_master_line_number,
+WSCOMM_committed_hs,
+WSEMCU_header_business_unit,
+WS$SPC_supplier_code,
+WS$VCD_vendor_code,
+
+                         WS$CLC_classification_code,
+WSCYCL_cycle_count_category,
+WSORD__equipment_order,
+WSORDT_order_type,
+WSCAG__cagess_code,
+
+                         WSEST__employment_status,
+WS$ESS_equipment_specialist_code,
+WS$TSS_tech_specialist_code,
+WS$CCS_cadcam_specialist_code,
+WS$NM1__name_1,
+
+                         WS$NM3_researched_by,
+WS$NM4_completed_by,
+WS$NM5__name_5,
+WS$L01_level_code_01,
+WSSRP4_sub_minor_product_class,
+
+                         WSCITM_customersupplier_item_number,
+WSSIC__speciality,
+WSAC04_practice_type,
+WSAC10_division_code,
+WS$O01_number_equipment_serial_01,
+
+                         WS$O02_number_equipment_serial_02,
+WS$O03_number_equipment_serial_03,
+WS$O04_number_equipment_serial_04,
+WS$O05_number_equipment_serial_05,
+
+                         WS$O06_number_equipment_serial_06,
+WSDL03_description_03,
+WS$ODS_order_discount_amount,
+ID,
+transaction_amt,
+gp_ext_amt,
+fsc_salesperson_key_id,
+
+                         fsc_comm_plan_id,
+fsc_comm_group_cd,
+fsc_comm_rt,
+fsc_comm_amt,
+ess_salesperson_key_id,
+ess_comm_plan_id,
+ess_comm_group_cd,
+ess_comm_rt,
+
+                         ess_comm_amt,
+dtx_salesperson_key_id,
+dtx_comm_plan_id,
+dtx_comm_group_cd,
+dtx_comm_rt,
+dtx_comm_amt,
+source_cd,
+fsc_code
 INTO              comm.transaction_F555115_temp
 FROM            comm.transaction_F555115
 
 --  sidetrack fix -- needed to add 0 ID entry 
 
 INSERT INTO comm.transaction_F555115
-                         (FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
-                         WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
-                         WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP6_manufacturer, WSUORG_quantity, WSSOQS_quantity_shipped, 
-                         WSAEXP_extended_price, WSURAT_user_reserved_amount, WS$UNC_sales_order_cost_markup, WSOORN_original_order_number, WSOCTO_original_order_type, 
-                         WSOGNO_original_line_number, WSTRDJ_order_date, WSVR01_reference, WSVR02_reference_2, WSITM__item_number_short, WSPROV_price_override_code, 
-                         WSASN__adjustment_schedule, WSKCO__document_company, WSDOC__document_number, WSDCT__document_type, WSPSN__pick_slip_number, 
-                         WSROUT_ship_method, WSZON__zone_number, WSFRTH_freight_handling_code, WSFRAT_rate_code_freightmisc, WSRATT_rate_type_freightmisc, 
-                         WSGLC__gl_offset, WSSO08_price_adjustment_line_indicator, WSENTB_entered_by, WS$PMC_promotion_code_price_method, WSTKBY_order_taken_by, 
-                         WSKTLN_kit_master_line_number, WSCOMM_committed_hs, WSEMCU_header_business_unit, WS$SPC_supplier_code, WS$VCD_vendor_code, 
-                         WS$CLC_classification_code, WSCYCL_cycle_count_category, WSORD__equipment_order, WSORDT_order_type, WSCAG__cagess_code, 
-                         WSEST__employment_status, WS$ESS_equipment_specialist_code, WS$TSS_tech_specialist_code, WS$CCS_cadcam_specialist_code, WS$NM1__name_1, 
-                         WS$NM3_researched_by, WS$NM4_completed_by, WS$NM5__name_5, WS$L01_level_code_01, WSSRP4_sub_minor_product_class, 
-                         WSCITM_customersupplier_item_number, WSSIC__speciality, WSAC04_practice_type, WSAC10_division_code, WS$O01_number_equipment_serial_01, 
-                         WS$O02_number_equipment_serial_02, WS$O03_number_equipment_serial_03, WS$O04_number_equipment_serial_04, WS$O05_number_equipment_serial_05, 
-                         WS$O06_number_equipment_serial_06, WSDL03_description_03, WS$ODS_order_discount_amount, transaction_amt, gp_ext_amt, fsc_salesperson_key_id, 
-                         fsc_comm_plan_id, fsc_comm_group_cd, fsc_comm_rt, fsc_comm_amt, ess_salesperson_key_id, ess_comm_plan_id, ess_comm_group_cd, ess_comm_rt, 
-                         ess_comm_amt, dtx_salesperson_key_id, dtx_comm_plan_id, dtx_comm_group_cd, dtx_comm_rt, dtx_comm_amt, source_cd, fsc_code)
-SELECT        FiscalMonth, WSCO___company, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNTY_line_type, WSLNID_line_number, WS$OSC_order_source_code, 
-                         WSAN8__billto, WSSHAN_shipto, WSDGL__gl_date, WSLITM_item_number, WSDSC1_description, WSDSC2_description_2, WSSRP1_major_product_class, 
-                         WSSRP2_sub_major_product_class, WSSRP3_minor_product_class, WSSRP6_manufacturer, WSUORG_quantity, WSSOQS_quantity_shipped, 
-                         WSAEXP_extended_price, WSURAT_user_reserved_amount, WS$UNC_sales_order_cost_markup, WSOORN_original_order_number, WSOCTO_original_order_type, 
-                         WSOGNO_original_line_number, WSTRDJ_order_date, WSVR01_reference, WSVR02_reference_2, WSITM__item_number_short, WSPROV_price_override_code, 
-                         WSASN__adjustment_schedule, WSKCO__document_company, WSDOC__document_number, WSDCT__document_type, WSPSN__pick_slip_number, 
-                         WSROUT_ship_method, WSZON__zone_number, WSFRTH_freight_handling_code, WSFRAT_rate_code_freightmisc, WSRATT_rate_type_freightmisc, 
-                         WSGLC__gl_offset, WSSO08_price_adjustment_line_indicator, WSENTB_entered_by, WS$PMC_promotion_code_price_method, WSTKBY_order_taken_by, 
-                         WSKTLN_kit_master_line_number, WSCOMM_committed_hs, WSEMCU_header_business_unit, WS$SPC_supplier_code, WS$VCD_vendor_code, 
-                         WS$CLC_classification_code, WSCYCL_cycle_count_category, WSORD__equipment_order, WSORDT_order_type, WSCAG__cagess_code, 
-                         WSEST__employment_status, WS$ESS_equipment_specialist_code, WS$TSS_tech_specialist_code, WS$CCS_cadcam_specialist_code, WS$NM1__name_1, 
-                         WS$NM3_researched_by, WS$NM4_completed_by, WS$NM5__name_5, WS$L01_level_code_01, WSSRP4_sub_minor_product_class, 
-                         WSCITM_customersupplier_item_number, WSSIC__speciality, WSAC04_practice_type, WSAC10_division_code, WS$O01_number_equipment_serial_01, 
-                         WS$O02_number_equipment_serial_02, WS$O03_number_equipment_serial_03, WS$O04_number_equipment_serial_04, WS$O05_number_equipment_serial_05, 
-                         WS$O06_number_equipment_serial_06, WSDL03_description_03, WS$ODS_order_discount_amount, transaction_amt, gp_ext_amt, fsc_salesperson_key_id, 
-                         fsc_comm_plan_id, fsc_comm_group_cd, fsc_comm_rt, fsc_comm_amt, ess_salesperson_key_id, ess_comm_plan_id, ess_comm_group_cd, ess_comm_rt, 
-                         ess_comm_amt, dtx_salesperson_key_id, dtx_comm_plan_id, dtx_comm_group_cd, dtx_comm_rt, dtx_comm_amt, source_cd, fsc_code
+                         (FiscalMonth,
+WSCO___company,
+WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNTY_line_type,
+WSLNID_line_number,
+WS$OSC_order_source_code,
+
+                         WSAN8__billto,
+WSSHAN_shipto,
+WSDGL__gl_date,
+WSLITM_item_number,
+WSDSC1_description,
+WSDSC2_description_2,
+WSSRP1_major_product_class,
+
+                         WSSRP2_sub_major_product_class,
+WSSRP3_minor_product_class,
+WSSRP6_manufacturer,
+WSUORG_quantity,
+WSSOQS_quantity_shipped,
+
+                         WSAEXP_extended_price,
+WSURAT_user_reserved_amount,
+WS$UNC_sales_order_cost_markup,
+WSOORN_original_order_number,
+WSOCTO_original_order_type,
+
+                         WSOGNO_original_line_number,
+WSTRDJ_order_date,
+WSVR01_reference,
+WSVR02_reference_2,
+WSITM__item_number_short,
+WSPROV_price_override_code,
+
+                         WSASN__adjustment_schedule,
+WSKCO__document_company,
+WSDOC__document_number,
+WSDCT__document_type,
+WSPSN__pick_slip_number,
+
+                         WSROUT_ship_method,
+WSZON__zone_number,
+WSFRTH_freight_handling_code,
+WSFRAT_rate_code_freightmisc,
+WSRATT_rate_type_freightmisc,
+
+                         WSGLC__gl_offset,
+WSSO08_price_adjustment_line_indicator,
+WSENTB_entered_by,
+WS$PMC_promotion_code_price_method,
+WSTKBY_order_taken_by,
+
+                         WSKTLN_kit_master_line_number,
+WSCOMM_committed_hs,
+WSEMCU_header_business_unit,
+WS$SPC_supplier_code,
+WS$VCD_vendor_code,
+
+                         WS$CLC_classification_code,
+WSCYCL_cycle_count_category,
+WSORD__equipment_order,
+WSORDT_order_type,
+WSCAG__cagess_code,
+
+                         WSEST__employment_status,
+WS$ESS_equipment_specialist_code,
+WS$TSS_tech_specialist_code,
+WS$CCS_cadcam_specialist_code,
+WS$NM1__name_1,
+
+                         WS$NM3_researched_by,
+WS$NM4_completed_by,
+WS$NM5__name_5,
+WS$L01_level_code_01,
+WSSRP4_sub_minor_product_class,
+
+                         WSCITM_customersupplier_item_number,
+WSSIC__speciality,
+WSAC04_practice_type,
+WSAC10_division_code,
+WS$O01_number_equipment_serial_01,
+
+                         WS$O02_number_equipment_serial_02,
+WS$O03_number_equipment_serial_03,
+WS$O04_number_equipment_serial_04,
+WS$O05_number_equipment_serial_05,
+
+                         WS$O06_number_equipment_serial_06,
+WSDL03_description_03,
+WS$ODS_order_discount_amount,
+transaction_amt,
+gp_ext_amt,
+fsc_salesperson_key_id,
+
+                         fsc_comm_plan_id,
+fsc_comm_group_cd,
+fsc_comm_rt,
+fsc_comm_amt,
+ess_salesperson_key_id,
+ess_comm_plan_id,
+ess_comm_group_cd,
+ess_comm_rt,
+
+                         ess_comm_amt,
+dtx_salesperson_key_id,
+dtx_comm_plan_id,
+dtx_comm_group_cd,
+dtx_comm_rt,
+dtx_comm_amt,
+source_cd,
+fsc_code)
+SELECT        FiscalMonth,
+WSCO___company,
+WSDOCO_salesorder_number,
+WSDCTO_order_type,
+WSLNTY_line_type,
+WSLNID_line_number,
+WS$OSC_order_source_code,
+
+                         WSAN8__billto,
+WSSHAN_shipto,
+WSDGL__gl_date,
+WSLITM_item_number,
+WSDSC1_description,
+WSDSC2_description_2,
+WSSRP1_major_product_class,
+
+                         WSSRP2_sub_major_product_class,
+WSSRP3_minor_product_class,
+WSSRP6_manufacturer,
+WSUORG_quantity,
+WSSOQS_quantity_shipped,
+
+                         WSAEXP_extended_price,
+WSURAT_user_reserved_amount,
+WS$UNC_sales_order_cost_markup,
+WSOORN_original_order_number,
+WSOCTO_original_order_type,
+
+                         WSOGNO_original_line_number,
+WSTRDJ_order_date,
+WSVR01_reference,
+WSVR02_reference_2,
+WSITM__item_number_short,
+WSPROV_price_override_code,
+
+                         WSASN__adjustment_schedule,
+WSKCO__document_company,
+WSDOC__document_number,
+WSDCT__document_type,
+WSPSN__pick_slip_number,
+
+                         WSROUT_ship_method,
+WSZON__zone_number,
+WSFRTH_freight_handling_code,
+WSFRAT_rate_code_freightmisc,
+WSRATT_rate_type_freightmisc,
+
+                         WSGLC__gl_offset,
+WSSO08_price_adjustment_line_indicator,
+WSENTB_entered_by,
+WS$PMC_promotion_code_price_method,
+WSTKBY_order_taken_by,
+
+                         WSKTLN_kit_master_line_number,
+WSCOMM_committed_hs,
+WSEMCU_header_business_unit,
+WS$SPC_supplier_code,
+WS$VCD_vendor_code,
+
+                         WS$CLC_classification_code,
+WSCYCL_cycle_count_category,
+WSORD__equipment_order,
+WSORDT_order_type,
+WSCAG__cagess_code,
+
+                         WSEST__employment_status,
+WS$ESS_equipment_specialist_code,
+WS$TSS_tech_specialist_code,
+WS$CCS_cadcam_specialist_code,
+WS$NM1__name_1,
+
+                         WS$NM3_researched_by,
+WS$NM4_completed_by,
+WS$NM5__name_5,
+WS$L01_level_code_01,
+WSSRP4_sub_minor_product_class,
+
+                         WSCITM_customersupplier_item_number,
+WSSIC__speciality,
+WSAC04_practice_type,
+WSAC10_division_code,
+WS$O01_number_equipment_serial_01,
+
+                         WS$O02_number_equipment_serial_02,
+WS$O03_number_equipment_serial_03,
+WS$O04_number_equipment_serial_04,
+WS$O05_number_equipment_serial_05,
+
+                         WS$O06_number_equipment_serial_06,
+WSDL03_description_03,
+WS$ODS_order_discount_amount,
+transaction_amt,
+gp_ext_amt,
+fsc_salesperson_key_id,
+
+                         fsc_comm_plan_id,
+fsc_comm_group_cd,
+fsc_comm_rt,
+fsc_comm_amt,
+ess_salesperson_key_id,
+ess_comm_plan_id,
+ess_comm_group_cd,
+ess_comm_rt,
+
+                         ess_comm_amt,
+dtx_salesperson_key_id,
+dtx_comm_plan_id,
+dtx_comm_group_cd,
+dtx_comm_rt,
+dtx_comm_amt,
+source_cd,
+fsc_code
 FROM            comm.transaction_F555115_temp where FiscalMonth = 201601
 
 select distinct [FiscalMonth]	 from comm.transaction_F555115
@@ -2509,7 +3206,7 @@ select distinct [FiscalMonth]	 from comm.transaction_F555115
 --------------------------------------------------------------------------------
 
 SELECT 
---    Top 10
+    Top 10
     "QMAN8" AS QMAN8__billto,
 	"QMSHAN" AS QMSHAN_shipto,
 	"QMBNAD" AS QMBNAD_beneficiary,
@@ -2581,10 +3278,11 @@ SELECT
 	"QMUPMJ" AS QMUPMJ_date_updated,
 	"QMUPMT" AS QMUPMT_time_last_updated 
 
-INTO Integration.F55479C_rebate_by_shipto_Staging
+-- INTO Integration.F55479C_rebate_by_shipto_Staging
 
 FROM 
-    OPENQUERY (ESYS_PROD, '
+    OPENQUERY (ESYS_PROD,
+'
 
 	SELECT
 		QMAN8,
@@ -2682,7 +3380,10 @@ ALTER TABLE Integration.F55479C_rebate_by_shipto_Staging ADD CONSTRAINT
 	QMASN__adjustment_schedule,
 	QMEFTJ_effective_date
 
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) WITH( STATISTICS_NORECOMPUTE = OFF,
+IGNORE_DUP_KEY = OFF,
+ALLOW_ROW_LOCKS = ON,
+ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
 
@@ -2691,12 +3392,14 @@ ALTER TABLE Integration.F55479C_rebate_by_shipto_Staging ADD
 
 
 --------------------------------------------------------------------------------
-SELECT        QMSHAN_shipto,  COUNT(*) AS Expr1
+SELECT        QMSHAN_shipto,
+ COUNT(*) AS Expr1
 FROM            Integration.F55479C_rebate_by_shipto_Staging
 GROUP BY QMSHAN_shipto
 HAVING COUNT(*) > 1
 
-SELECT * FROM Integration.F55479C_rebate_by_shipto_Staging WHERE QMSHAN_shipto IN (1658532, 1669207)
+SELECT * FROM Integration.F55479C_rebate_by_shipto_Staging WHERE QMSHAN_shipto IN (1658532,
+1669207)
 
 -- run Dimension & facts
 
@@ -2739,7 +3442,9 @@ SET                FSC_code = DefaultTerritoryCd
 
 -- manual update ess -> copy to prod
 
-SELECT        TerritoryCd, FSCName, Branch
+SELECT        TerritoryCd,
+FSCName,
+Branch
 FROM            BRS_FSC_Rollup
 WHERE        (TerritoryCd LIKE 'ESS%') AND (comm_salesperson_key_id LIKE 'house%')
 order by Branch
@@ -2760,4 +3465,212 @@ UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS26' WHERE [Branch] = 'REGIN'
 GO
 
 
+
+---
+--------------------------------------------------------------------------------
+-- DROP TABLE Integration.F5553_territory_Staging
+--------------------------------------------------------------------------------
+
+SELECT 
+
+    Top 5 
+    "GDCO" AS GDCO___company,
+	"GD$GTY" AS GD$GTY_group_type,
+	"GD$VNO" AS GD$VNO_number_version,
+	"GD$TER" AS GD$TER_territory_code,
+	"GD$L01" AS GD$L01_level_code_01,
+	"GD$L02" AS GD$L02_level_code_02,
+	"GD$L03" AS GD$L03_level_code_03,
+	"GD$L04" AS GD$L04_level_code_04,
+	"GD$L05" AS GD$L05_level_code_05,
+	"GD$L06" AS GD$L06_level_code_06,
+	"GD$L07" AS GD$L07_level_code_07,
+	"GD$L08" AS GD$L08_level_code_08,
+	"GD$L09" AS GD$L09_level_code_09,
+	"GD$L10" AS GD$L10_level_code_10,
+	"GD$L11" AS GD$L11_level_code_11,
+	"GD$L12" AS GD$L12_level_code_12,
+	"GD$L13" AS GD$L13_level_code_13,
+	"GD$L14" AS GD$L14_level_code_14,
+	"GD$L15" AS GD$L15_level_code_15,
+	"GD$L16" AS GD$L16_level_code_16,
+	"GD$L17" AS GD$L17_level_code_17,
+	"GD$L18" AS GD$L18_level_code_18,
+	"GD$L19" AS GD$L19_level_code_19,
+	"GD$L20" AS GD$L20_level_code_20,
+	"GDCXPJ" AS GDCXPJ_expiration_date,
+	"GD$RV4" AS GD$RV4_user_reserved_field,
+	"GD$RV5" AS GD$RV5_user_reserved_field,
+	"GDUSER" AS GDUSER_user_id,
+	"GDPID" AS GDPID__program_id,
+	"GDJOBN" AS GDJOBN_work_station_id,
+	"GDUPMJ" AS GDUPMJ_date_updated,
+	"GDUPMT" AS GDUPMT_time_last_updated 
+
+ INTO Integration.F5553_territory_Staging
+
+FROM 
+    OPENQUERY (ESYS_PROD,
+'
+
+	SELECT
+		GDCO,
+		GD$GTY,
+		GD$VNO,
+		GD$TER,
+		GD$L01,
+		GD$L02,
+		GD$L03,
+		GD$L04,
+		GD$L05,
+		GD$L06,
+		GD$L07,
+		GD$L08,
+		GD$L09,
+		GD$L10,
+		GD$L11,
+		GD$L12,
+		GD$L13,
+		GD$L14,
+		GD$L15,
+		GD$L16,
+		GD$L17,
+		GD$L18,
+		GD$L19,
+		GD$L20,
+		CASE WHEN GDCXPJ > 0 THEN DATE(DIGITS(DEC(GDCXPJ+ 1900000,7,0))) ELSE NULL END AS GDCXPJ,
+		GD$RV4,
+		GD$RV5,
+		GDUSER,
+		GDPID,
+		GDJOBN,
+		CASE WHEN GDUPMJ IS NOT NULL THEN DATE(DIGITS(DEC(GDUPMJ+ 1900000,7,0))) ELSE NULL END AS GDUPMJ,
+		GDUPMT
+
+	FROM
+		ARCPDTA71.F5553
+--    WHERE
+--        GDCXPJ = 0
+--    ORDER BY
+--        <insert custom code here>
+')
+
+--------------------------------------------------------------------------------
+
+ALTER TABLE Integration.F5553_territory_Staging ADD CONSTRAINT
+	F5553_territory_Staging_c_pk PRIMARY KEY CLUSTERED 
+	(
+	GD$TER_territory_code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+UPDATE       BRS_FSC_Rollup
+SET                Branch = b.Branch
+FROM            Integration.F5553_territory_Staging AS s LEFT OUTER JOIN
+                         BRS_Branch AS b ON b.Branch = s.GD$L02_level_code_02 INNER JOIN
+                         BRS_FSC_Rollup ON s.GD$TER_territory_code = BRS_FSC_Rollup.TerritoryCd
+WHERE        (s.GD$TER_territory_code <> '') AND (b.Branch<> '') AND (BRS_FSC_Rollup.Branch = '')
+/*
+SELECT 
+	GD$TER_territory_code,  [GD$GTY_group_type], ISNULL(b.Branch, '') as src_branch, d.Branch as dst_branch
+FROM 
+	Integration.F5553_territory_Staging s
+	LEFT JOIN [dbo].[BRS_Branch] b
+	ON b.Branch = s.[GD$L02_level_code_02]
+
+	INNER JOIN [dbo].[BRS_FSC_Rollup] d
+	ON GD$TER_territory_code  = d.TerritoryCd
+
+WHERE 
+	s.GD$TER_territory_code <>'' AND
+	ISNULL(b.Branch, '') <>'' AND
+	d.Branch = ''
+*/
+
+INSERT INTO [dbo].[BRS_FSC_Rollup]
+([TerritoryCd], [group_type], Branch)
+SELECT 
+ GD$TER_territory_code,  [GD$GTY_group_type], ISNULL(b.Branch, '') as branch
+FROM 
+	Integration.F5553_territory_Staging s
+	LEFT JOIN [dbo].[BRS_Branch] b
+	ON b.Branch = s.[GD$L02_level_code_02]
+
+WHERE 
+	s.GD$TER_territory_code <>'' AND
+	NOT EXISTS 
+	(
+		SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [TerritoryCd] = s.GD$TER_territory_code
+	)
+
+-- test doc, line match
+
+-- DW - success
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+WHERE
+	[FiscalMonth] = 201711 AND
+	NOT EXISTS
+	(
+		SELECT * FROM [dbo].[BRS_TransactionDW] t
+		WHERE 
+			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+			s.[WSDCTO_order_type] = t.DocType AND
+			s.[WSLNID_line_number] = t.LineNumber
+	)
+
+-- DW - test ess fields
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSTKBY_order_taken_by]
+	,t.OrderTakenBy
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+	INNER JOIN [dbo].[BRS_TransactionDW] t
+	ON 
+		s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+		s.[WSDCTO_order_type] = t.DocType AND
+		s.[WSLNID_line_number] = t.LineNumber
+
+WHERE
+	[FiscalMonth] = 201711 and
+--	t.OrderTakenBy like 'CCS%' AND
+	[WS$ESS_equipment_specialist_code] <> t.OrderTakenBy
+
+
+--DS - failed
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WSDGL__gl_date]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+WHERE
+	[FiscalMonth] = 201711 AND
+	NOT EXISTS
+	(
+		SELECT * FROM [dbo].[BRS_Transaction] t
+		WHERE 
+			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+			s.[WSDCTO_order_type] = t.DocType AND
+			s.[WSLNID_line_number] = t.LineNumber
+	)
+
+
+GO
 
