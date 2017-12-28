@@ -1,4 +1,4 @@
-﻿comm_batch_control
+﻿LEGACYx_comm_salesperson_code_map
 ODBC;DSN=DEV_CommBE;Description=DEV_CommBE;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_CommBE
-dbo.comm_batch_control
-fiscal_yearmo_num
+dbo.comm_salesperson_code_map
+salesperson_cd

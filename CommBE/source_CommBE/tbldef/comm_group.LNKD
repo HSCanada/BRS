@@ -1,4 +1,4 @@
-﻿comm_salesperson_master
+﻿comm_group
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-comm.salesperson_master
-salesperson_key_id
+comm.group
+comm_group_cd

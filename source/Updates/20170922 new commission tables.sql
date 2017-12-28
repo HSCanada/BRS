@@ -65,6 +65,7 @@ DROP TABLE
 	,STAGE_BRS_TransactionGL
 	,STAGE_CustVPA
 	,STAGE_FreeGoods
+	,zzzItem
 
 
 -- DROP TABLE Integration.F55510_customer_territory_Staging
@@ -895,9 +896,80 @@ ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 
 GO
 
+
+CREATE TABLE [Integration].[salesperson_master_Staging](
+	[FiscalMonth] [char](6) NOT NULL,
+	[master_salesperson_cd] [char](6) NOT NULL,
+
+	[salesperson_nm] [varchar](30) NOT NULL,
+	[comm_plan_id] [char](10) NOT NULL,
+	[territory_start_dt] [datetime] NOT NULL,
+	[CostCenter] [nvarchar] (30) NOT NULL,
+
+	[salary_draw_amt] [money] NOT NULL,
+	[deficit_amt] [money] NOT NULL,
+	[salesperson_key_id] [char](30) NOT NULL,
+ CONSTRAINT [salesperson_master_stage_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[master_salesperson_cd] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
 ALTER TABLE [Integration].[salesperson_master_Staging] ADD  DEFAULT ('') FOR [salesperson_key_id]
 GO
 
+
+CREATE TABLE [Integration].[F555115_commission_sales_adjustment_Staging](
+	[FiscalMonth] [integer] NOT NULL,
+	[WSDGL__gl_date] [date] NULL,
+
+	[WSVR01_reference] [char](25) NOT NULL,
+
+	[WSDOCO_salesorder_number] [numeric](8, 0) NOT NULL,
+	[WSLNID_line_number] [numeric](15, 3) NOT NULL,
+
+	[WSSHAN_shipto] [numeric](8, 0) NOT NULL,
+	[WSLITM_item_number] [char](25) NOT NULL,
+	[WSDSC1_description] [char](30) NOT NULL,
+	[WSSRP6_manufacturer] [char](6) NOT NULL,
+
+	[transaction_amt] [money] NOT NULL,
+	[gp_ext_amt] [money] NOT NULL,
+
+	[fsc_code] [char](5) NOT NULL,
+	[WS$ESS_equipment_specialist_code] [char](5) NOT NULL,
+	[WSCAG__cagess_code] [char](5) NOT NULL,
+
+ CONSTRAINT [F555115_commission_sales_adjustment_Staging_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[WSDOCO_salesorder_number] ASC,
+	[WSLNID_line_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+CREATE TABLE [Integration].[transaction_transfer](
+	[SalesOrderNumber] [int] NOT NULL,
+	[FSC_code] [char](5) NULL,
+	[TsTerritoryCd] [char](5) NULL,
+	[ESS_code] [char](5) NULL,
+	[CCS_code] [char](5) NULL,
+	[CPS_code] [char](5) NULL,
+	[TSS_code] [char](5) NULL,
+	[comm_note] [varchar](30) NULL,
+ CONSTRAINT [transaction_transfer_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+
+
+--- XXX
 --
 
 ALTER TABLE dbo.BRS_Branch ADD
@@ -966,6 +1038,26 @@ ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.salesperson_master ADD
+	CostCenter nvarchar(30) NOT NULL CONSTRAINT DF_salesperson_master_CostCenter DEFAULT ('')
+GO
+ALTER TABLE comm.salesperson_master ADD CONSTRAINT
+	FK_salesperson_master_cost_center FOREIGN KEY
+	(
+	CostCenter
+	) REFERENCES hfm.cost_center
+	(
+	CostCenter
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.salesperson_master SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 ALTER TABLE [comm].[salesperson_master] ADD  CONSTRAINT [DF_comm_salesperson_master_create_dt]  DEFAULT (getdate()) FOR [creation_dt]
 GO
@@ -1116,6 +1208,15 @@ ALLOW_ROW_LOCKS = ON,
 ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
+GO
+
+
+-- 30 sec
+
+ALTER TABLE comm.transaction_F555115 ADD
+	FreeGoodsInvoicedInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsInvoicedInd DEFAULT (0),
+	FreeGoodsRedeemedInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsRedeemedInd DEFAULT (0)
+	FreeGoodsEstInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsEstInd DEFAULT (0)
 GO
 
 
@@ -1796,10 +1897,122 @@ GO
 COMMIT
 
 
+-- item stage
 
----
+CREATE TABLE [Integration].[Item](
+	[Item] [char](10) NOT NULL,
+	[comm_group_cd] [char](6) NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL,
+ CONSTRAINT [Item_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[Item] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
 
---
+GO
+
+
+CREATE TABLE [Integration].[free_goods_redeem](
+	[FiscalMonth] [int] NOT NULL,
+	[Item] [char](10) NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+
+	[ShipTo] [int] NOT NULL,
+	[Supplier] [char](6) NOT NULL,
+	[ExtFileCostCadAmt] [money] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Note] [nchar](10) NULL,
+ CONSTRAINT [free_goods_redeem_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[Item] ASC,
+	[SalesOrderNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+CREATE TABLE [comm].[free_goods_redeem](
+	[FiscalMonth] [int] NOT NULL,
+	[Item] [char](10) NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+
+	[ShipTo] [int] NOT NULL,
+	[Supplier] [char](6) NOT NULL,
+	[ExtFileCostCadAmt] [money] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Note] [nchar](10) NULL,
+ CONSTRAINT [comm_free_goods_redeem_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[Item] ASC,
+	[SalesOrderNumber] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_Item FOREIGN KEY
+	(
+	Item
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_TransactionDW_Ext FOREIGN KEY
+	(
+	SalesOrderNumber
+	) REFERENCES dbo.BRS_TransactionDW_Ext
+	(
+	SalesOrderNumber
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_Customer FOREIGN KEY
+	(
+	ShipTo
+	) REFERENCES dbo.BRS_Customer
+	(
+	ShipTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_ItemSupplier FOREIGN KEY
+	(
+	Supplier
+	) REFERENCES dbo.BRS_ItemSupplier
+	(
+	Supplier
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 
 ALTER TABLE dbo.BRS_Config ADD
 	comm_LastWeekly datetime  NULL 
@@ -1910,6 +2123,236 @@ GO
 ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+---
+
+CREATE TABLE [comm].[rebate_by_shipto_F55479C](
+	[FiscalMonth] [integer] NOT NULL,
+	[QMSHAN_shipto] [integer] NOT NULL,
+	[QM$TER_territory_code] [char](5) NOT NULL,
+	[QMRBAM_rebate_amount] [money] NOT NULL,
+
+	[QMAN8__billto] [integer] NOT NULL,
+	[QMBNAD_beneficiary] [integer] NOT NULL,
+	[QMASN__adjustment_schedule] [char](10) NOT NULL,
+	[QMAST__adjustment_name] [char](8) NOT NULL,
+	[QMTOSA_total_sales_amt] [money] NOT NULL,
+	[QMAS01_qualified_sales_amt] [money] NOT NULL,
+	[QM$PCR_total_percent] [numeric](15, 2) NOT NULL,
+	[QMREBP_rebate_percent] [numeric](15, 2) NOT NULL,
+	[QMRBAM_rebate_org_amount] [money] NOT NULL,
+	[QM$P01_projected_sales_amt] [money] NOT NULL,
+	[QM$Y01_projected_qualified_sales_amt] [money] NOT NULL,
+	[QMRBTF_rebate_factor] [numeric](15, 2) NOT NULL,
+	[QMTHRV_threshold_value] [money] NOT NULL,
+	[QM$REB_projected_rebate_amt] [money] NOT NULL,
+	[QM$STD_start_date] [date] NULL,
+	[QM$EDT_end_date] [date] NULL,
+	[QMEFTJ_effective_date] [date] NULL,
+	[QMEXDJ_expired_date] [date] NULL,
+	[QMDY01_days_on_plan] [integer] NOT NULL,
+	[QMDY02_period_days] [integer] NOT NULL,
+	[QMURAT_excluded_sales_amt] [money] NOT NULL,
+	[QMIINA_excluded_month] [money] NOT NULL,
+	[QMURC1_pay_type_code] [char](3) NOT NULL,
+	[QMRHF5_plan_type_code] [char](3) NOT NULL,
+	[QM$GRB_group_rebate] [char](1) NOT NULL,
+	[QMAC10_division_code] [char](3) NOT NULL,
+	[QMUPMJ_date_updated] [date] NULL,
+ CONSTRAINT [F55479C_rebate_by_shipto_Staging_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[QMSHAN_shipto] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMAN8__billto DEFAULT (0) FOR QMAN8__billto
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMBNAD_beneficiary DEFAULT (0) FOR QMBNAD_beneficiary
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMASN__adjustment_schedule DEFAULT ('') FOR QMASN__adjustment_schedule
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMAST__adjustment_name DEFAULT ('') FOR QMAST__adjustment_name
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMTOSA_total_sales_amt DEFAULT (0) FOR QMTOSA_total_sales_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMAS01_qualified_sales_amt DEFAULT (0) FOR QMAS01_qualified_sales_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QM$PCR_total_percent DEFAULT (0) FOR QM$PCR_total_percent
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMREBP_rebate_percent DEFAULT (0) FOR QMREBP_rebate_percent
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMRBAM_rebate_org_amount DEFAULT (0) FOR QMRBAM_rebate_org_amount
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QM$P01_projected_sales_amt DEFAULT (0) FOR QM$P01_projected_sales_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QM$Y01_projected_qualified_sales_amt DEFAULT (0) FOR QM$Y01_projected_qualified_sales_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMRBTF_rebate_factor DEFAULT (0) FOR QMRBTF_rebate_factor
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMTHRV_threshold_value DEFAULT (0) FOR QMTHRV_threshold_value
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QM$REB_projected_rebate_amt DEFAULT (0) FOR QM$REB_projected_rebate_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMDY01_days_on_plan DEFAULT (0) FOR QMDY01_days_on_plan
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMDY02_period_days DEFAULT (0) FOR QMDY02_period_days
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMURAT_excluded_sales_amt DEFAULT (0) FOR QMURAT_excluded_sales_amt
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMIINA_excluded_month DEFAULT (0) FOR QMIINA_excluded_month
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMURC1_pay_type_code DEFAULT ('') FOR QMURC1_pay_type_code
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMRHF5_plan_type_code DEFAULT ('') FOR QMRHF5_plan_type_code
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QM$GRB_group_rebate DEFAULT ('') FOR QM$GRB_group_rebate
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	DF_rebate_by_shipto_F55479C_QMAC10_division_code DEFAULT ('') FOR QMAC10_division_code
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_Customer FOREIGN KEY
+	(
+	QMSHAN_shipto
+	) REFERENCES dbo.BRS_Customer
+	(
+	ShipTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_FSC_Rollup FOREIGN KEY
+	(
+	QM$TER_territory_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_CustomerBT FOREIGN KEY
+	(
+	QMAN8__billto
+	) REFERENCES dbo.BRS_CustomerBT
+	(
+	BillTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_price_adjustment_name_F4071 FOREIGN KEY
+	(
+	QMAST__adjustment_name
+	) REFERENCES Pricing.price_adjustment_name_F4071
+	(
+	ATAST__adjustment_name
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_CustomerVPA FOREIGN KEY
+	(
+	QMASN__adjustment_schedule
+	) REFERENCES dbo.BRS_CustomerVPA
+	(
+	VPA
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C ADD CONSTRAINT
+	FK_rebate_by_shipto_F55479C_BRS_SalesDivision FOREIGN KEY
+	(
+	QMAC10_division_code
+	) REFERENCES dbo.BRS_SalesDivision
+	(
+	SalesDivision
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX rebate_by_shipto_F55479C_idx_01 ON comm.rebate_by_shipto_F55479C
+	(
+	QMSHAN_shipto
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX rebate_by_shipto_F55479C_idx_02 ON comm.rebate_by_shipto_F55479C
+	(
+	QM$TER_territory_code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.rebate_by_shipto_F55479C SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- see "t rebate app" to load rebate (fix rep='')
+UPDATE       comm.rebate_by_shipto_F55479C
+SET                QM$TER_territory_code =  f.HIST_TerritoryCd
+FROM            comm.rebate_by_shipto_F55479C INNER JOIN
+                         BRS_CustomerFSC_History AS f ON comm.rebate_by_shipto_F55479C.FiscalMonth = f.FiscalMonth AND 
+                         comm.rebate_by_shipto_F55479C.QMSHAN_shipto = f.Shipto
+WHERE        (comm.rebate_by_shipto_F55479C.QM$TER_territory_code = '')
+
+SELECT        r.FiscalMonth, r.QMSHAN_shipto, r.QM$TER_territory_code, r.QMRBAM_rebate_amount, f.HIST_TerritoryCd
+FROM            comm.rebate_by_shipto_F55479C AS r INNER JOIN
+                         BRS_CustomerFSC_History AS f ON r.FiscalMonth = f.FiscalMonth AND r.QMSHAN_shipto = f.Shipto
+WHERE        (r.QM$TER_territory_code = '')
+
 
 
 --- add data...
@@ -3464,12 +3907,17 @@ UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS38' WHERE [Branch] = 'VACVR'
 UPDATE [dbo].[BRS_Branch] SET [ESS_code] = 'ESS26' WHERE [Branch] = 'REGIN'
 GO
 
+INSERT INTO comm.free_goods_redeem
+                         (FiscalMonth, Item, SalesOrderNumber, ExtFileCostCadAmt, ShipTo, Supplier, Note)
+SELECT        FiscalMonth, Item, SalesOrderNumber, ExtFileCostAmt, ShipTo, Supplier, NoteTxt
+FROM            BRS_FreeGoodsRedeem
 
+drop table [dbo].[STAGE_BRS_FreeGoodsRedeem], [dbo].[BRS_FreeGoodsRedeem]
+
+drop view STAGE_BRS_FreeGoodsRedeem_Load
 
 ---
---------------------------------------------------------------------------------
 -- DROP TABLE Integration.F5553_territory_Staging
---------------------------------------------------------------------------------
 
 SELECT 
 
@@ -3675,10 +4123,102 @@ WHERE
 GO
 
 /****** Script for SelectTopNRows command from SSMS  ******/
-SELECT        distinct 
-                         Integration.F55510_customer_territory_Staging.WR$TER_territory_code, Integration.F55510_customer_territory_Staging.WRTKBY_order_taken_by, 
-                         BRS_FSC_Rollup.FSCName
-FROM            Integration.F55510_customer_territory_Staging INNER JOIN
-                         BRS_FSC_Rollup ON Integration.F55510_customer_territory_Staging.WR$TER_territory_code = BRS_FSC_Rollup.TerritoryCd
-where WR$GTY_group_type='AAFS'
-order by 2
+
+UPDATE       BRS_FSC_Rollup
+SET                order_taken_by = s.WRTKBY_order_taken_by
+FROM            Integration.F55510_customer_territory_Staging s INNER JOIN
+                         BRS_FSC_Rollup ON s.WR$TER_territory_code = BRS_FSC_Rollup.TerritoryCd
+WHERE
+	order_taken_by <> s.WRTKBY_order_taken_by
+
+
+UPDATE       BRS_FSC_Rollup
+SET                FSCRollup = s.TerritoryCd
+FROM            BRS_FSC_Rollup AS s INNER JOIN
+                         BRS_FSC_Rollup ON s.order_taken_by = BRS_FSC_Rollup.order_taken_by AND s.TerritoryCd <> BRS_FSC_Rollup.FSCRollup
+WHERE 
+	s.order_taken_by NOT IN (' ', 'OPEN') AND
+	s.FSCRollup <> '' AND
+	s.FSCRollup <> BRS_FSC_Rollup.FSCRollup AND
+	1=1
+
+
+SELECT        s.TerritoryCd, s.FSCRollup, s.comm_salesperson_key_id, s.order_taken_by, s.FSCRollup as s_roll, d.FSCRollup as d_roll, S.FSCName, D.FSCName
+FROM            BRS_FSC_Rollup AS s INNER JOIN
+                         BRS_FSC_Rollup AS d ON s.order_taken_by = d.order_taken_by
+WHERE 
+	s.order_taken_by NOT IN (' ', 'OPEN') AND
+	s.FSCRollup <> '' AND
+	s.FSCRollup <> d.FSCRollup AND
+	1=1
+ORDER BY s.FSCRollup, S.TerritoryCd
+
+-- Free Goods update
+
+/*
+1. FG redeem.  Act vs est vs Redeem
+2. Test Order disc NOT order promo in JDE
+
+DEV
+
+3. worth building AGG?
+
+*/
+
+TRUNCATE TABLE [Integration].[free_goods_redeem]
+
+
+-- ADD From Tony excel.
+
+-- check sales order RI
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_TransactionDW_Ext] s
+	where t.SalesOrderNumber = s.SalesOrderNumber
+)
+
+-- add RI Fiscal, Item, shipto
+
+
+INSERT INTO comm.free_goods_redeem
+                         (FiscalMonth, Item, SalesOrderNumber, ExtFileCostCadAmt, ShipTo, Supplier, Note)
+SELECT        FiscalMonth, Item, SalesOrderNumber, ExtFileCostCadAmt, ShipTo, Supplier, Note
+FROM            Integration.free_goods_redeem
+
+
+-- Update flag - FreeGoodsRedeemedInd
+UPDATE    BRS_TransactionDW
+SET               FreeGoodsRedeemedInd = 1
+FROM         comm.free_goods_redeem s INNER JOIN
+                      BRS_TransactionDW ON s.SalesOrderNumber = BRS_TransactionDW.SalesOrderNumber AND 
+                      s.Item = BRS_TransactionDW.Item
+WHERE     (s.FiscalMonth BETWEEN 201701 AND 201712) AND (BRS_TransactionDW.ShippedQty <> 0) AND (BRS_TransactionDW.NetSalesAmt = 0) AND 
+                      (BRS_TransactionDW.FreeGoodsRedeemedInd <> 1)
+
+					  
+-- Check flag - FreeGoodsRedeemedInd
+SELECT     CalMonth, COUNT( CalMonth), sum(GPAtFileCostAmt)
+FROM         BRS_TransactionDW
+WHERE     (FreeGoodsRedeemedInd = 1)
+AND    (CalMonth >= 201701)
+GROUP BY CalMonth
+
+
+UPDATE    [comm].[transaction_F555115]
+SET               [FreeGoodsRedeemedInd] = 1
+FROM         comm.free_goods_redeem s INNER JOIN
+                      [comm].[transaction_F555115] t ON s.SalesOrderNumber = t.[WSDOCO_salesorder_number] AND 
+                      s.Item = t.[WSLITM_item_number]
+WHERE     (s.FiscalMonth BETWEEN 201601 AND 201612) AND (t.[WSSOQS_quantity_shipped] <> 0) AND (t.[transaction_amt] = 0) AND 
+                      (t.FreeGoodsRedeemedInd <> 1)
+
+UPDATE    [comm].[transaction_F555115]
+SET               [FreeGoodsInvoicedInd] = 1
+WHERE     (FiscalMonth BETWEEN 201701 AND 201712) AND ([WSSOQS_quantity_shipped] <> 0) AND ([transaction_amt] = 0) AND 
+                      ([FreeGoodsInvoicedInd] <> 1)
+
+
+-- rebate
+

@@ -1,4 +1,4 @@
-﻿comm_transaction_hsi_stage
+﻿LEGACYx_comm_transaction_hsi_stage
 ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
 dbo.comm_transaction_hsi_stage
 key_id

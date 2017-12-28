@@ -3,12 +3,12 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="comm_customer_free_goods_YTD" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="LEGACYx_comm_customer_free_goods_YTD" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="comm_customer_free_goods_YTD">
+<xsd:element name="LEGACYx_comm_customer_free_goods_YTD">
 <xsd:annotation>
 <xsd:appinfo>
 <od:index index-name="doc_id" index-key="doc_id " primary="no" unique="no" clustered="no" order="asc"/>

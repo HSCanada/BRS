@@ -3,12 +3,12 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="STAGE_comm_item_master_import" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="LEGACYx_STAGE_comm_item_master_import" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="STAGE_comm_item_master_import">
+<xsd:element name="LEGACYx_STAGE_comm_item_master_import">
 <xsd:annotation>
 <xsd:appinfo>
 <od:index index-name="PrimaryKey" index-key="ItemSchein " primary="yes" unique="yes" clustered="no" order="asc"/>

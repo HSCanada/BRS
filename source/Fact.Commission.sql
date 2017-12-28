@@ -53,8 +53,9 @@ SELECT
 	,src.source_key									AS SourceKey
 
 	-- tbd
-	,0												AS FreeGoodsEstInd
-	,0												AS FreeGoodsRedeemedInd
+	,t.FreeGoodsInvoicedInd							AS FreeGoodsInvoicedInd
+	,t.FreeGoodsEstInd								AS FreeGoodsEstInd
+	,t.FreeGoodsRedeemedInd							AS FreeGoodsRedeemedInd
 
 	,(t.[WSSOQS_quantity_shipped])					AS Quantity
 	,(t.[transaction_amt])							AS SalesAmt

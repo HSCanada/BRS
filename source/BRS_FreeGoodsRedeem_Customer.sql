@@ -41,11 +41,11 @@ SELECT
 --	14 Dec 16	tmc		Add Historical FSC associated Branch 
 	MIN(h.HIST_TerritoryCd) as HIST_TerritoryCd,
 
-	SUM(f.ExtFileCostAmt) AS FreeGoodsRedeem_ExtFileCostAmt
+	SUM(f.ExtFileCostCadAmt) AS FreeGoodsRedeem_ExtFileCostAmt
 
 FROM         
 
-	BRS_FreeGoodsRedeem AS f 
+	comm.free_goods_redeem AS f 
 	INNER JOIN BRS_Item AS i 
 	ON f.Item = i.Item 
 
@@ -74,10 +74,3 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- Select * from BRS_FreeGoodsRedeem_Customer
-
-
-
-
-
-
-

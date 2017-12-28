@@ -1,4 +1,4 @@
-﻿comm_ess_statement_export
+﻿LEGACYx_comm_salesperson_master
 ODBC;DSN=DEV_CommBE;Description=DEV_CommBE;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_CommBE
-dbo.comm_ess_statement_export
-ESS_key_id
+dbo.comm_salesperson_master
+salesperson_key_id

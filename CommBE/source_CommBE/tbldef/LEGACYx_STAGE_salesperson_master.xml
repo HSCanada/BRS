@@ -3,12 +3,12 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="STAGE_salesperson_master" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="LEGACYx_STAGE_salesperson_master" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="STAGE_salesperson_master">
+<xsd:element name="LEGACYx_STAGE_salesperson_master">
 <xsd:annotation>
 <xsd:appinfo>
 <od:index index-name="PrimaryKey" index-key="salesperson_cd " primary="yes" unique="yes" clustered="no" order="asc"/>

@@ -1,0 +1,4 @@
+﻿Integration_F555115_commission_sales_extract_Staging
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+Integration.F555115_commission_sales_extract_Staging
+WSDOCO_salesorder_number;+WSDCTO_order_type;+WSLNID_line_number
