@@ -86,6 +86,10 @@ SELECT
 	,(cr.CategoryClass_Rollup)		AS CategoryClassRollupCode
 	,i.comm_group_cd				AS CommGroupCode
 	,i.comm_note_txt				AS CommGroupNote
+	,i.comm_group_cps_cd			AS CommGroupCpsCode
+	,i.[custom_comm_group1_cd]		AS CustomCommGroup1Code
+	,i.[custom_comm_group2_cd]		AS CustomCommGroup2Code
+	,i.[custom_comm_group3_cd]		AS CustomCommGroup3Code
 
 FROM            
 	BRS_Item AS i 
