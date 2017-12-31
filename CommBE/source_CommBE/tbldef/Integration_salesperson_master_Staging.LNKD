@@ -1,4 +1,4 @@
 ﻿Integration_salesperson_master_Staging
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
 Integration.salesperson_master_Staging
-FiscalMonth;+master_salesperson_cd
+FiscalMonth;+employee_num;+master_salesperson_cd

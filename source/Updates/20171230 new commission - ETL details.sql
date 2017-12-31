@@ -1,3 +1,6 @@
+select * from DEV_BRSales.[dbo].[BRS_FSC_Rollup] d where not exists (select * from [dbo].[BRS_FSC_Rollup] s where s.TerritoryCd = d.TerritoryCd)
+
+sp_who2
 
 -- test doc, line match
 
