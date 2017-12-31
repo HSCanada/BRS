@@ -724,14 +724,10 @@ CREATE TABLE [comm].[group](
 	[source_cd] [char](3) NOT NULL,
 	[active_ind] [bit] NOT NULL,
 	[creation_dt] [datetime] NOT NULL,
-	[comm_calc_rt] [int] NOT NULL,
 	[note_txt] [varchar](255) NULL,
 	[booking_rt] [float] NOT NULL,
-	[SPM_comm_group_cd] [char](6) NOT NULL,
 	[show_ind] [bit] NOT NULL,
-	[SPM_EQOptOut] [char](1) NOT NULL,
 	[sort_id] [smallint] NOT NULL,
-	[FRG_comm_group_cd] [char](6) NOT NULL,
 	[comm_group_key] [smallint] NOT NULL Identity(1,1),
  CONSTRAINT [comm_group_c_pk] PRIMARY KEY CLUSTERED 
 (
@@ -743,6 +739,12 @@ ALLOW_ROW_LOCKS = ON,
 ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
+GO
+
+ALTER TABLE [comm].[group] ADD
+	comm_status_cd char(6) NOT NULL CONSTRAINT DF_comm_group_comm_status_cd DEFAULT (''),
+	comm_group_sm_cd char(6) NOT NULL CONSTRAINT DF_comm_group_comm_group_sm_cd DEFAULT (''),
+	comm_note_txt varchar(50) NULL
 GO
 
 ALTER TABLE [comm].[group] ADD  DEFAULT ('') FOR [source_cd]
@@ -757,25 +759,29 @@ GO
 ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_booking_rt]  DEFAULT ((0)) FOR [booking_rt]
 GO
 
-ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_comm_calc_rt]  DEFAULT ((0)) FOR [comm_calc_rt]
-GO
-
-GO
-
-ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_SPM_comm_group_cd]  DEFAULT ('') FOR [SPM_comm_group_cd]
-GO
-
 ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_show_ind]  DEFAULT ((1)) FOR [show_ind]
-GO
-
-ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_SPM_EQOptOut]  DEFAULT ('') FOR [SPM_EQOptOut]
 GO
 
 ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_sort_id]  DEFAULT ((0)) FOR [sort_id]
 GO
 
-ALTER TABLE [comm].[group] ADD  CONSTRAINT [DF_comm_group_SPM_comm_group_cd1]  DEFAULT ('') FOR [FRG_comm_group_cd]
+BEGIN TRANSACTION
 GO
+ALTER TABLE comm.[group] ADD CONSTRAINT
+	FK_group_group FOREIGN KEY
+	(
+	comm_group_sm_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.[group] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 
 ALTER TABLE [comm].[group]  WITH NOCHECK ADD  CONSTRAINT [comm_group_comm_source_fk_1] FOREIGN KEY([source_cd])
 REFERENCES [comm].[source] ([source_cd])
@@ -784,22 +790,14 @@ GO
 ALTER TABLE [comm].[group] CHECK CONSTRAINT [comm_group_comm_source_fk_1]
 GO
 
-ALTER TABLE [comm].[group]  WITH CHECK ADD  CONSTRAINT [FK_comm_group_comm_group] FOREIGN KEY([SPM_comm_group_cd])
-REFERENCES [comm].[group] ([comm_group_cd])
-GO
 
 ALTER TABLE [comm].[group] CHECK CONSTRAINT [FK_comm_group_comm_group]
 GO
 
-ALTER TABLE [comm].[group]  WITH CHECK ADD  CONSTRAINT [FK_comm_group_comm_group1] FOREIGN KEY([FRG_comm_group_cd])
-REFERENCES [comm].[group] ([comm_group_cd])
-GO
 
 ALTER TABLE [comm].[group] CHECK CONSTRAINT [FK_comm_group_comm_group1]
 GO
 
-ALTER TABLE [comm].[group]  WITH CHECK ADD CHECK  (([comm_calc_rt] = 1 or ([comm_calc_rt] = 0 or [comm_calc_rt] = (-1))))
-GO
 
 ALTER TABLE dbo.BRS_FiscalMonth ADD
 	comm_status_cd smallint NOT NULL CONSTRAINT DF_BRS_FiscalMonth_comm_status_cd DEFAULT (0)
@@ -813,7 +811,6 @@ CREATE TABLE [comm].[plan](
 	[note_txt] [varchar](255) NULL,
 	[active_ind] [bit] NOT NULL,
 	[creation_dt] [datetime] NOT NULL,
-	[SPM_StatusCd] [char](1) NOT NULL,
 	[comm_key] [smallint] NOT NULL identity(1,1),
 
  CONSTRAINT [comm_plan_c_pk] PRIMARY KEY CLUSTERED 
@@ -834,8 +831,6 @@ GO
 ALTER TABLE [comm].[plan] ADD  DEFAULT (getdate()) FOR [creation_dt]
 GO
 
-ALTER TABLE [comm].[plan] ADD  CONSTRAINT [DF_comm_plan_SPM_StatusCd]  DEFAULT ('') FOR [SPM_StatusCd]
-GO
 
 --
 
@@ -888,32 +883,10 @@ GO
 
 --
 
-CREATE TABLE [Integration].[salesperson_master_Staging](
-	[master_salesperson_cd] [char](6) NOT NULL,
-	[fiscal_yearmo_num] [char](6) NOT NULL,
-	[salesperson_nm] [varchar](30) NOT NULL,
-	[comm_plan_id] [char](10) NOT NULL,
-	[employee_num] [char](10) NOT NULL,
-	[territory_start_dt] [datetime] NOT NULL,
-	[SALD30_amt] [money] NOT NULL,
-	[STMPBA_amt] [money] NOT NULL,
-	[note_txt] [varchar](255) NULL,
-	[salesperson_key_id] [char](30) NOT NULL,
- CONSTRAINT [PK_comm_salesperson_master_stage] PRIMARY KEY CLUSTERED 
-(
-	[master_salesperson_cd] ASC
-)WITH (PAD_INDEX = OFF,
-STATISTICS_NORECOMPUTE = OFF,
-IGNORE_DUP_KEY = OFF,
-ALLOW_ROW_LOCKS = ON,
-ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
-) ON [USERDATA]
-
-GO
-
 
 CREATE TABLE [Integration].[salesperson_master_Staging](
 	[FiscalMonth] [char](6) NOT NULL,
+	[employee_num] [int] NOT NULL,
 	[master_salesperson_cd] [char](6) NOT NULL,
 
 	[salesperson_nm] [varchar](30) NOT NULL,
@@ -927,6 +900,7 @@ CREATE TABLE [Integration].[salesperson_master_Staging](
  CONSTRAINT [salesperson_master_stage_pk] PRIMARY KEY NONCLUSTERED 
 (
 	[FiscalMonth] ASC,
+	[employee_num] ASC,
 	[master_salesperson_cd] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
@@ -939,9 +913,9 @@ GO
 
 CREATE TABLE [Integration].[F555115_commission_sales_adjustment_Staging](
 	[FiscalMonth] [integer] NOT NULL,
-	[WSDGL__gl_date] [date] NULL,
-
+	[WSDGL__gl_date] [date] NOT NULL,
 	[WSVR01_reference] [char](25) NOT NULL,
+	[WSSRP6_manufacturer] [char](6) NOT NULL,
 
 	[WSDOCO_salesorder_number] [numeric](8, 0) NOT NULL,
 	[WSLNID_line_number] [numeric](15, 3) NOT NULL,
@@ -949,14 +923,17 @@ CREATE TABLE [Integration].[F555115_commission_sales_adjustment_Staging](
 	[WSSHAN_shipto] [numeric](8, 0) NOT NULL,
 	[WSLITM_item_number] [char](25) NOT NULL,
 	[WSDSC1_description] [char](30) NOT NULL,
-	[WSSRP6_manufacturer] [char](6) NOT NULL,
-
-	[transaction_amt] [money] NOT NULL,
-	[gp_ext_amt] [money] NOT NULL,
+	[WSDSC2_description] [char](30) NOT NULL,
+	[comm_group_cd] [char](6) NOT NULL,
 
 	[fsc_code] [char](5) NOT NULL,
 	[WS$ESS_equipment_specialist_code] [char](5) NOT NULL,
 	[WSCAG__cagess_code] [char](5) NOT NULL,
+
+	[transaction_amt] [money] NOT NULL,
+	[extended_cost_amt] [money] NOT NULL,
+	[gp_ext_amt] [money] NOT NULL,
+	[extended_cost_code] [char](5) NOT NULL
 
  CONSTRAINT [F555115_commission_sales_adjustment_Staging_pk] PRIMARY KEY NONCLUSTERED 
 (
@@ -967,14 +944,16 @@ CREATE TABLE [Integration].[F555115_commission_sales_adjustment_Staging](
 
 GO
 
+-- truncate table [Integration].[transaction_transfer]
+
 CREATE TABLE [Integration].[transaction_transfer](
 	[SalesOrderNumber] [int] NOT NULL,
-	[FSC_code] [char](5) NULL,
-	[TsTerritoryCd] [char](5) NULL,
-	[ESS_code] [char](5) NULL,
-	[CCS_code] [char](5) NULL,
-	[CPS_code] [char](5) NULL,
-	[TSS_code] [char](5) NULL,
+	[FSC_code] [char](5) NOT NULL,
+	[TsTerritoryCd] [char](5) NOT NULL,
+	[ESS_code] [char](5) NOT NULL,
+	[CCS_code] [char](5) NOT NULL,
+	[CPS_code] [char](5) NOT NULL,
+	[TSS_code] [char](5) NOT NULL,
 	[comm_note] [varchar](30) NULL,
  CONSTRAINT [transaction_transfer_c_pk] PRIMARY KEY CLUSTERED 
 (
@@ -982,6 +961,28 @@ CREATE TABLE [Integration].[transaction_transfer](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_FSC_code]  DEFAULT ('') FOR [FSC_code]
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_TsTerritoryCd]  DEFAULT ('') FOR [TsTerritoryCd]
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_ESS_code]  DEFAULT ('') FOR [ESS_code]
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_CCS_code]  DEFAULT ('') FOR [CCS_code]
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_CPS_code]  DEFAULT ('') FOR [CPS_code]
+GO
+
+ALTER TABLE [Integration].[transaction_transfer] ADD  CONSTRAINT [DF_transaction_transfer_TSS_code]  DEFAULT ('') FOR [TSS_code]
+GO
+
+
+--
 
 ALTER TABLE dbo.BRS_Branch ADD
 	ZoneName varchar(50) NOT NULL CONSTRAINT DF_BRS_Branch_zone_cd DEFAULT ('')
@@ -1081,6 +1082,28 @@ GO
 
 ALTER TABLE dbo.BRS_Customer ADD
 	comm_status_cd char(6) NOT NULL CONSTRAINT DF_BRS_Customer_comm_status_cd DEFAULT (''),
+	comm_note_txt varchar(50) NULL
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerVPA
+	DROP CONSTRAINT DF_BRS_CustomerVPA_SPM_StatusCd
+GO
+ALTER TABLE dbo.BRS_CustomerVPA
+	DROP CONSTRAINT DF_BRS_CustomerVPA_SPM_EQOptOut
+GO
+ALTER TABLE dbo.BRS_CustomerVPA
+	DROP COLUMN SPM_StatusCd, SPM_EQOptOut, SPM_ReasonTxt
+GO
+ALTER TABLE dbo.BRS_CustomerVPA SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+ALTER TABLE [dbo].[BRS_CustomerVPA] ADD
+	comm_status_cd char(6) NOT NULL CONSTRAINT DF_BRS_CustomerVPA_comm_status_cd DEFAULT (''),
 	comm_note_txt varchar(50) NULL
 GO
 
@@ -1291,8 +1314,13 @@ GO
 
 ALTER TABLE comm.transaction_F555115 ADD
 	FreeGoodsInvoicedInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsInvoicedInd DEFAULT (0),
-	FreeGoodsRedeemedInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsRedeemedInd DEFAULT (0)
+	FreeGoodsRedeemedInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsRedeemedInd DEFAULT (0),
 	FreeGoodsEstInd bit NOT NULL CONSTRAINT DF_transaction_F555115_FreeGoodsEstInd DEFAULT (0)
+GO
+
+-- used to store GP before booking override
+ALTER TABLE comm.transaction_F555115 ADD
+	[gp_ext_org_amt] money NULL
 GO
 
 
@@ -1994,19 +2022,21 @@ GO
 
 CREATE TABLE [Integration].[free_goods_redeem](
 	[FiscalMonth] [int] NOT NULL,
-	[Item] [char](10) NOT NULL,
-	[SalesOrderNumber] [int] NOT NULL,
-
-	[ShipTo] [int] NOT NULL,
+	[SourceCode] [varchar](10) NOT NULL,
 	[Supplier] [char](6) NOT NULL,
-	[ExtFileCostCadAmt] [money] NOT NULL,
+	[ShipTo] [int] NOT NULL,
+	[PracticeName] [varchar](40) NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[Item] [char](10) NOT NULL,
+	[ItemDescription] [varchar](40) NULL,
+	[Currency] [char](3) NOT NULL,
+	[ExtFileCostAmt] [money] NOT NULL,
+	[PromoNote] [varchar](100) NULL,
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[Note] [nchar](10) NULL,
  CONSTRAINT [free_goods_redeem_pk] PRIMARY KEY NONCLUSTERED 
 (
-	[FiscalMonth] ASC,
-	[Item] ASC,
-	[SalesOrderNumber] ASC
+	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
@@ -2031,6 +2061,31 @@ CREATE TABLE [comm].[free_goods_redeem](
 ) ON [USERDATA]
 
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.free_goods_redeem ADD
+	SourceCode varchar(10) NULL,
+	Currency char(3) NULL,
+	ExtFileCostAmt money NULL,
+	PromoNote varchar(100) NULL
+GO
+ALTER TABLE comm.free_goods_redeem ADD CONSTRAINT
+	FK_free_goods_redeem_BRS_Currency FOREIGN KEY
+	(
+	Currency
+	) REFERENCES dbo.BRS_Currency
+	(
+	Currency
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.free_goods_redeem SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- add extra
 
 BEGIN TRANSACTION
 GO
@@ -2444,18 +2499,18 @@ VALUES        (0,
 'Unassigned')
 
 INSERT INTO comm.[plan]
-                         (comm_plan_id,
-comm_plan_nm,
-note_txt,
-active_ind,
-creation_dt,
-SPM_StatusCd)
+(
+	comm_plan_id,
+	comm_plan_nm,
+	note_txt,
+	active_ind,
+	creation_dt
+)
 SELECT        comm_plan_id,
-comm_plan_nm,
-note_txt,
-active_ind,
-creation_dt,
-SPM_StatusCd
+	comm_plan_nm,
+	note_txt,
+	active_ind,
+	creation_dt
 FROM            DEV_CommBE.dbo.comm_plan
 
 INSERT INTO comm.transaction_F555115
@@ -2843,35 +2898,29 @@ FROM            DEV_CommBE.dbo.comm_source
 WHERE source_cd <>''
 
 INSERT INTO comm.[group]
-                         (comm_group_cd,
-comm_group_desc,
-source_cd,
-active_ind,
-creation_dt,
-comm_calc_rt,
-note_txt,
-booking_rt,
-SPM_comm_group_cd,
-show_ind,
-SPM_EQOptOut,
-
-                         sort_id,
-FRG_comm_group_cd)
-SELECT        comm_group_cd,
-comm_group_desc,
-LEFT(source_cd,3),
-active_ind,
-creation_dt,
-comm_calc_rt,
-note_txt,
-booking_rt,
-SPM_comm_group_cd,
-show_ind,
-SPM_EQOptOut,
-
-                         sort_id,
-FRG_comm_group_cd
-FROM            DEV_CommBE.dbo.comm_group
+(
+	comm_group_cd,
+	comm_group_desc,
+	source_cd,
+	active_ind,
+	creation_dt,
+	note_txt,
+	booking_rt,
+	show_ind,
+	sort_id
+)
+SELECT
+	comm_group_cd,
+	comm_group_desc,
+	LEFT(source_cd,3),
+	active_ind,
+	creation_dt,
+	note_txt,
+	booking_rt,
+	show_ind,
+	sort_id
+FROM            
+	DEV_CommBE.dbo.comm_group
 WHERE comm_group_cd <>''
 
 
@@ -2944,11 +2993,20 @@ FROM            DEV_CommBE.dbo.comm_item_master AS c INNER JOIN
 
 UPDATE       BRS_Customer
 SET                
-comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMALL' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMSND' ELSE '' END END,
+comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMNEQ' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMALL' ELSE '' END END,
 
 comm_note_txt = c.SPM_ReasonTxt
 FROM            DEV_CommBE.dbo.comm_customer_master c INNER JOIN
                          BRS_Customer ON c.hsi_shipto_id = BRS_Customer.ShipTo
+
+-- map group
+UPDATE       [comm].[group]
+SET                
+comm_status_cd =CASE WHEN [SPM_comm_group_cd] like 'SPM%' AND SPM_EQOptOut = 'Y' THEN 'SMEQU' ELSE CASE WHEN [SPM_comm_group_cd] like 'SPM%' THEN 'SMSND' ELSE '' END END,
+comm_group_sm_cd = SPM_comm_group_cd,
+note_txt = c.[note_txt]
+FROM            DEV_CommBE.dbo.[comm_group] c INNER JOIN
+                         [comm].[group] ON c.[comm_group_cd] = [comm].[group].[comm_group_cd]
 
 -- BranchZone
 
@@ -3570,7 +3628,7 @@ WHERE
 
 GO
 
-
+---
 --- DATA - Post ETL workflow	
 
 
@@ -3656,6 +3714,55 @@ WHERE
 	1=1
 ORDER BY s.FSCRollup, S.TerritoryCd
 	
+-- Transfer check
+
+-- [SalesOrderNumber]
+SELECT     *  
+FROM  [Integration].[transaction_transfer] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_TransactionDW_Ext] s
+	where t.SalesOrderNumber = s.SalesOrderNumber
+)
+
+--[FSC_code]
+SELECT     *  
+FROM  [Integration].[transaction_transfer] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.[FSC_code] = s.[TerritoryCd]
+)
+
+--[ESS_code]
+SELECT     *  
+FROM  [Integration].[transaction_transfer] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.[ESS_code] = s.[TerritoryCd]
+)
+
+-- set transfer
+UPDATE
+	BRS_TransactionDW_Ext
+SET
+	FSC_code = CASE WHEN t.FSC_code<>'' THEN t.FSC_code ELSE BRS_TransactionDW_Ext.FSC_code END,
+	ESS_code = CASE WHEN t.ESS_code<>'' THEN t.ESS_code ELSE BRS_TransactionDW_Ext.ESS_code END,
+	CPS_code = CASE WHEN t.CPS_code<>'' THEN t.CPS_code ELSE BRS_TransactionDW_Ext.CPS_code END,
+	TsTerritoryCd = CASE WHEN t.TsTerritoryCd<>'' THEN t.TsTerritoryCd ELSE BRS_TransactionDW_Ext.TsTerritoryCd END,
+	TSS_code = CASE WHEN t.TSS_code<>'' THEN t.TSS_code ELSE BRS_TransactionDW_Ext.TSS_code END,
+	CCS_code = CASE WHEN t.CCS_code<>'' THEN t.CCS_code ELSE BRS_TransactionDW_Ext.CCS_code END,
+	comm_note= t.comm_note
+FROM
+	Integration.transaction_transfer AS t 
+	INNER JOIN BRS_TransactionDW_Ext ON 
+	t.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber
+
+SELECT        BRS_TransactionDW_Ext.SalesOrderNumber, BRS_TransactionDW_Ext.TsTerritoryCd, BRS_TransactionDW_Ext.ESS_code, BRS_TransactionDW_Ext.CCS_code, 
+                         BRS_TransactionDW_Ext.CPS_code, BRS_TransactionDW_Ext.TSS_code, BRS_TransactionDW_Ext.FSC_code, BRS_TransactionDW_Ext.comm_note
+FROM            Integration.transaction_transfer AS t INNER JOIN
+                         BRS_TransactionDW_Ext ON t.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber
 
 
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201711
@@ -3878,11 +3985,88 @@ FROM
 WHERE 
 	(WSAC10_division_code NOT IN ('AZA','AZE')) 
 
+
+-- add adj check / load logic
+
+-- [FiscalMonth]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FiscalMonth] s
+	where t.FiscalMonth = s.FiscalMonth
+)
+
+-- [WSDOCO_salesorder_number]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_TransactionDW_Ext] s
+	where t.WSDOCO_salesorder_number = s.SalesOrderNumber
+)
+
+-- [WSSHAN_shipto]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_Customer] s
+	where t.WSSHAN_shipto = s.ShipTo
+)
+
+-- [WSLITM_item_number]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_Item] s
+	where t.WSLITM_item_number = s.Item
+)
+
+-- [comm_group_cd]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [comm].[group] s
+	where t.comm_group_cd = s.comm_group_cd
+)
+
+-- [fsc_code]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.fsc_code = s.[TerritoryCd]
+)
+
+-- [WS$ESS_equipment_specialist_code]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.WS$ESS_equipment_specialist_code = s.[TerritoryCd]
+)
+
+-- [WSCAG__cagess_code]
+SELECT     * 
+FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.WSCAG__cagess_code = s.[TerritoryCd]
+)
+
+--
+
 Update [dbo].[BRS_FiscalMonth]
 	set [comm_status_cd] = 10
 WHERE [FiscalMonth] = 201711
 
--- review
+-- review trans
 
 -- select * from [comm].[transaction_F555115] where FiscalMonth = 201701
 
@@ -3906,17 +4090,17 @@ source_cd
 select distinct [FiscalMonth]	 from comm.transaction_F555115
 -- 
 
--- Free Goods update
-
-/*
-1. FG redeem.  Act vs est vs Redeem
-2. Test Order disc NOT order promo in JDE
-*/
+-- Free Goods Redeem update
 
 TRUNCATE TABLE [Integration].[free_goods_redeem]
+
 -- ADD From Tony excel.
 
 -- check sales order RI
+SELECT     count(*)
+FROM  [Integration].[free_goods_redeem] t
+
+-- [SalesOrderNumber]
 SELECT     *  
 FROM  [Integration].[free_goods_redeem] t
 WHERE not exists
@@ -3925,15 +4109,101 @@ WHERE not exists
 	where t.SalesOrderNumber = s.SalesOrderNumber
 )
 
--- add RI Fiscal, Item, shipto
+-- [FiscalMonth]
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FiscalMonth] s
+	where t.FiscalMonth = s.FiscalMonth
+)
 
-INSERT INTO comm.free_goods_redeem
-                         (FiscalMonth, Item, SalesOrderNumber, ExtFileCostCadAmt, ShipTo, Supplier, Note)
-SELECT        FiscalMonth, Item, SalesOrderNumber, ExtFileCostCadAmt, ShipTo, Supplier, Note
-FROM            Integration.free_goods_redeem
+-- [Supplier]
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE  not exists
+(
+	select * from [dbo].[BRS_ItemSupplier] s
+	where t.Supplier = s.Supplier
+)
+
+-- [ShipTo]
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_Customer] s
+	where t.ShipTo = s.ShipTo
+)
+
+-- [Item]
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_Item] s
+	where t.Item = s.Item
+)
+
+-- [Currency]
+SELECT     *  
+FROM  [Integration].[free_goods_redeem] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_Currency] s
+	where t.Currency = s.Currency
+)
 
 
--- Update flag - FreeGoodsRedeemedInd
+-- add group by & fx calc
+
+INSERT INTO comm.free_goods_redeem 
+(
+	[FiscalMonth]
+	,[Item]
+	,[SalesOrderNumber]
+	,[ShipTo]
+	,[Supplier]
+	,[ExtFileCostCadAmt]
+	,[SourceCode]
+	,[Currency]
+	,[ExtFileCostAmt]
+	,[PromoNote]
+)
+
+SELECT 
+	--top 10
+
+	d.FiscalMonth
+	,Item
+	,SalesOrderNumber
+	,MAX(ShipTo)
+	,MAX(Supplier)
+	,SUM(d.[ExtFileCostAmt] * (fxcad.FX_per_USD_pnl_rt / fx.FX_per_USD_pnl_rt)) AS ExtFileCostCadAmt
+	,MAX(d.[SourceCode])
+	,MAX(d.[Currency])
+	,SUM(d.[ExtFileCostAmt])
+	,MAX(d.[PromoNote])
+
+FROM
+	Integration.free_goods_redeem d
+
+	INNER JOIN BRS_CurrencyHistory AS fx 
+	ON d.Currency = fx.Currency AND 
+		d.FiscalMonth = fx.FiscalMonth 
+
+	INNER JOIN BRS_CurrencyHistory AS fxcad 
+	ON d.FiscalMonth = fxcad.FiscalMonth AND 
+		fxcad.Currency = 'CAD'
+GROUP BY 
+	d.FiscalMonth
+	,Item
+	,SalesOrderNumber
+
+
+
+
+-- Update FreeGoodsRedeemedInd - DW 
 UPDATE    BRS_TransactionDW
 SET               FreeGoodsRedeemedInd = 1
 FROM         comm.free_goods_redeem s INNER JOIN
@@ -3950,20 +4220,64 @@ WHERE     (FreeGoodsRedeemedInd = 1)
 AND    (CalMonth >= 201701)
 GROUP BY CalMonth
 
-
-UPDATE    [comm].[transaction_F555115]
-SET               [FreeGoodsRedeemedInd] = 1
-FROM         comm.free_goods_redeem s INNER JOIN
-                      [comm].[transaction_F555115] t ON s.SalesOrderNumber = t.[WSDOCO_salesorder_number] AND 
-                      s.Item = t.[WSLITM_item_number]
-WHERE     (s.FiscalMonth BETWEEN 201601 AND 201612) AND (t.[WSSOQS_quantity_shipped] <> 0) AND (t.[transaction_amt] = 0) AND 
-                      (t.FreeGoodsRedeemedInd <> 1)
+-- Update [FreeGoodsInvoicedInd] - Comm
 
 UPDATE    [comm].[transaction_F555115]
 SET               [FreeGoodsInvoicedInd] = 1
 WHERE     (FiscalMonth BETWEEN 201701 AND 201712) AND ([WSSOQS_quantity_shipped] <> 0) AND ([transaction_amt] = 0) AND 
                       ([FreeGoodsInvoicedInd] <> 1)
+-- Update FreeGoodsRedeemedInd - Comm
 
+UPDATE    [comm].[transaction_F555115]
+SET               FreeGoodsRedeemedInd = 1
+FROM         comm.free_goods_redeem s INNER JOIN
+                      [comm].[transaction_F555115] ON s.SalesOrderNumber = [comm].[transaction_F555115].[WSDOCO_salesorder_number] AND 
+                      s.Item = [comm].[transaction_F555115].[WSLITM_item_number]
+WHERE     (s.FiscalMonth BETWEEN 201701 AND 201712) AND ([comm].[transaction_F555115].[WSSOQS_quantity_shipped] <> 0) AND ([transaction_F555115].[transaction_amt] = 0) AND 
+                      ([comm].[transaction_F555115].FreeGoodsRedeemedInd <> 1)
 
 -- FREE GOODS END
 
+-- [salesperson_master_Staging] BEGIN
+
+--[FiscalMonth]
+SELECT     *  
+FROM  [Integration].[salesperson_master_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FiscalMonth] s
+	where t.FiscalMonth = s.FiscalMonth
+)
+
+--[master_salesperson_cd]
+SELECT     *  
+FROM  [Integration].[salesperson_master_Staging] t
+WHERE not exists
+(
+	select * from [dbo].[BRS_FSC_Rollup] s
+	where t.master_salesperson_cd = s.[TerritoryCd]
+)
+
+--[comm_plan_id]
+SELECT     *  
+FROM  [Integration].[salesperson_master_Staging] t
+WHERE not exists
+(
+	select * from [comm].[plan] s
+	where t.comm_plan_id = s.comm_plan_id
+)
+
+--[CostCenter]
+SELECT     *  
+FROM  [Integration].[salesperson_master_Staging] t
+WHERE not exists
+(
+	select * from [hfm].[cost_center] s
+	where t.CostCenter = s.CostCenter
+)
+
+-- UPDATE [Integration].[salesperson_master_Staging] SET CostCenter = ''
+
+select distinct [comm_status_cd] from [dbo].[BRS_Customer] order by 1
+
+select distinct [comm_status_cd] from [comm].[group] order by 1
