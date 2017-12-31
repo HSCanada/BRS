@@ -35,6 +35,7 @@ AS
 --	24 Feb 16	tmc		Finalize Automation (SM EQ optout, Booking), remove legacy, and set Debug to default
 --	29 Feb 16	tmc		fix small but so that batch 10 is valid
 --	22 Dec 17	tmc		port to new backend
+--	30 Dec 17	tmc		finalize new backend logic for FSC and ESS
 **    
 *******************************************************************************/
 
@@ -148,7 +149,6 @@ Begin
 		WHERE     
 			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
 			(ext.[fsc_code] <> '' OR ext.[ess_code] <> '') AND 
---			(ISNULL(t.[fsc_code], '') <> ext.[fsc_code]) AND
 			(1=1)
 
 
@@ -187,6 +187,40 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+	if (@bDebug <> 0)
+		Print 'Set:  ESS SalespersonKey and Plan'
+
+	If (@nErrorCode = 0) 
+	Begin
+
+		UPDATE    
+			[comm].[transaction_F555115]
+		SET              
+			[ess_salesperson_key_id]	= s.[comm_salesperson_key_id], 
+			[ess_comm_plan_id]			= sm.[comm_plan_id]
+		FROM         
+			[comm].[transaction_F555115] t
+
+			INNER JOIN [dbo].[BRS_FSC_Rollup] AS s 
+			ON t.[WS$ESS_equipment_specialist_code] = s.[TerritoryCd] AND
+				t.[WS$ESS_equipment_specialist_code] <> ''
+
+			INNER JOIN [comm].[salesperson_master] AS sm
+			ON s.[comm_salesperson_key_id] = sm.[salesperson_key_id]
+
+		WHERE     
+			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
+			(t.source_cd IN ('JDE', 'IMP')) AND
+			( 
+				(ISNULL(t.[ess_comm_plan_id], '') <> sm.[comm_plan_id]) OR 
+				(ISNULL(t.[ess_salesperson_key_id], '') <> s.[comm_salesperson_key_id]) 
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
 	if (@bDebug <> 0)
 		Print 'Set:  FSC ItemCommGroup Codes (with special market logic)'
 
@@ -235,7 +269,35 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+	if (@bDebug <> 0)
+		Print 'Set:  ESS ItemCommGroup Codes'
 
+	If (@nErrorCode = 0) 
+	Begin
+
+		UPDATE    
+			[comm].[transaction_F555115]
+		SET              
+			ess_comm_group_cd =	i.comm_group_cd 
+	
+		FROM         
+			[comm].[transaction_F555115] t
+
+			INNER JOIN [dbo].[BRS_Item] AS i 
+			ON t.[WSLITM_item_number] = i.item AND
+				t.[WSLITM_item_number] > ''
+
+		WHERE     
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND 
+			(t.source_cd IN ('JDE', 'IMP')) AND
+			(t.ess_comm_plan_id IS NOT NULL) AND 
+			(1=1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
 -- Fix Parts, 4 Feb 15, tmc
 	if (@bDebug <> 0)
 		Print 'Override:  FSC ItemCommGroup for Parts on EQ Orders'
@@ -281,6 +343,53 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+	if (@bDebug <> 0)
+		Print 'Override:  ESS ItemCommGroup for Parts on EQ Orders'
+
+	If (@nErrorCode = 0) 
+	Begin
+
+		Update
+			[comm].[transaction_F555115]
+		Set 
+			-- override Parts on EQ orders.  Pelton is Focus 1 and the rest Focus 3., 04 Feb 15, tmc.
+			[ess_comm_group_cd] =	CASE 
+										WHEN t.[WSSRP6_manufacturer] IN ('PELTON' ) 
+										Then 'ITMFO1' 
+										Else 'ITMFO3' 
+									End
+		From 
+			[comm].[transaction_F555115] s,
+			(
+			SELECT     
+				tt.[ID], 
+				tt.[fsc_comm_group_cd], 
+				tt.[WSSRP6_manufacturer]
+
+			FROM         
+				[comm].[transaction_F555115] tt 
+			Where
+				(tt.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
+				(tt.source_cd IN ('JDE')) AND 
+				(tt.[ess_comm_plan_id] IS NOT NULL) AND 
+
+				tt.[WS$OSC_order_source_code] IN ('A','L') And		-- Astea  EQ and Service
+				tt.[WS$ESS_equipment_specialist_code] <>'' And		-- Exclude Service (No ESS code)
+				tt.[ess_comm_group_cd] = 'ITMPAR' And				-- ONLY effect Parts 
+				1=1
+			) t
+		Where 
+			(s.[FiscalMonth] = @sCurrentFiscalYearmoNum ) AND
+			(s.[ID] = t.[ID]) AND
+			(1=1)
+
+
+		Set @nErrorCode = @@Error
+	End
+
+--
+
 	-- Add Booking rate, 24 Feb 16
 	if (@bDebug <> 0)
 		Print 'Override:  FSC Booking Rate GP'
@@ -308,7 +417,34 @@ Begin
 			(t.[gp_ext_org_amt] IS NULL)
 	End
 
-		
+--
+	if (@bDebug <> 0)
+		Print 'Override:  ESS Booking Rate GP'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE    
+			[comm].[transaction_F555115]
+		SET              
+			[gp_ext_org_amt] = gp_ext_amt,
+			gp_ext_amt = t.transaction_amt * (g.booking_rt / 100.0)
+		FROM         
+			[comm].[transaction_F555115] as t
+			
+			INNER JOIN [comm].[group] AS g 
+			ON t.[ess_comm_group_cd] = g.[comm_group_cd]
+
+		WHERE     
+			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
+			(t.source_cd IN ('JDE', 'IMP')) AND 
+			(t.[ess_comm_plan_id] IS NOT NULL) AND 
+
+			(g.[booking_rt] > 0)  AND 
+			-- only run once so as not to clobber orginal GP
+			(t.[gp_ext_org_amt] IS NULL)
+	End
+
+--		
 	if (@bDebug <> 0)
 		Print 'Set:  FSC ItemCommGroup Rates'
 
@@ -338,7 +474,37 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+	if (@bDebug <> 0)
+		Print 'Set:  ESS ItemCommGroup Rates'
 
+
+	If (@nErrorCode = 0) 
+	Begin
+
+		UPDATE    
+			[comm].[transaction_F555115]
+		SET              
+			[ess_comm_rt] = r.comm_base_rt,
+			[ess_comm_amt] = t.gp_ext_amt * (r.comm_base_rt / 100.0) 
+
+		FROM         
+			[comm].[transaction_F555115] t INNER JOIN
+
+			[comm].[plan_group_rate] AS r 
+			ON t.[ess_comm_plan_id] = r.comm_plan_id AND 
+				t.[ess_comm_group_cd] = r.comm_group_cd
+
+		WHERE     
+			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
+			(t.source_cd IN ('JDE', 'IMP')) AND 
+			(t.[ess_comm_plan_id] IS NOT NULL) AND 
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
