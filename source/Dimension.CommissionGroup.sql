@@ -36,6 +36,8 @@ SELECT
 	[comm_group_key]								AS CommGroupKey
 	,[comm_group_cd]	+ ' | ' + [comm_group_desc]	AS CommGroup
 	,[comm_group_cd]								AS CommGroupCode
+	,[comm_group_sm_cd]								AS SpecialMarketCode
+	,[comm_status_cd]								AS SpecialMarketStatusCode
 FROM 
 	[comm].[group]
 WHERE

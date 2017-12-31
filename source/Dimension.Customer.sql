@@ -101,8 +101,8 @@ SELECT
 	,(b.Branch)											AS BranchCode
 	,mclass.MarketClass									AS MarketClassCode
 
-	,[comm_status_cd]									AS CommStatusCode
-	,[comm_note_txt]									AS CommStatusNote
+	,c.[comm_status_cd]									AS CommStatusCode
+	,c.[comm_note_txt]									AS CommStatusNote
 
 FROM
 	BRS_Customer AS c 
@@ -190,3 +190,5 @@ FROM            Pricing.price_adjustment_enroll
 GROUP BY BillTo
 HAVING        (COUNT(*) > 1)
 */
+
+-- Select top 10 * from [Dimension].[Customer]

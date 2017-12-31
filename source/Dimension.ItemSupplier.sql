@@ -61,7 +61,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT * FROM Dimension.ItemSupplier
+-- SELECT top 10 * FROM Dimension.ItemSupplier
 
 -- SELECT count(*) FROM Dimension.ItemSupplier
 -- ORG = 5398

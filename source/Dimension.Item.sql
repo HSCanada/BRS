@@ -39,57 +39,69 @@ AS
 
 SELECT         
 
-	i.ItemKey						AS ItemKey
+	i.ItemKey							AS ItemKey
 	,i.ItemDescription + ' | ' + i.Item	AS Item
 
-	,RTRIM(sc.SalesCategoryName) + ' | ' + sc.SalesCategory	AS SalesCategory
-	,mpc.MPC_Category				AS Abc_MpcItem
-	,cr.category_rollup_desc 		AS CategoryRollup
-	,mpc.MajorProductClassDesc	+ ' | ' + c.major_cd	AS Major
-	,c.submajor_desc			+ ' | ' + c.submajor_cd	AS SubMajor	
-	,c.minor_desc				+ ' | ' + c.MinorProductClass AS Minor
+	,RTRIM(sc.SalesCategoryName) + ' | ' 
+		+ sc.SalesCategory				AS SalesCategory
+	,mpc.MPC_Category					AS Abc_MpcItem
+	,cr.category_rollup_desc 			AS CategoryRollup
+	,mpc.MajorProductClassDesc	+ ' | ' 
+		+ c.major_cd					AS Major
+	,c.submajor_desc			+ ' | ' 
+		+ c.submajor_cd					AS SubMajor	
+	,c.minor_desc				+ ' | ' 
+		+ c.MinorProductClass			AS Minor
 
-	,RTRIM(s.Supplier) + ' | ' + s.supplier_nm	AS Supplier
-	,s.Supplier_Category			AS Abc_SupplierItem
-	,RTRIM(sf.SupplierFamily) + ' | ' + sf.supplier_family_nm	AS SupplierFamily
-	,sf.buying_group_cd				AS BuyingGroup
-	,sf.classificiation_cd			AS VendorClassification
+	,RTRIM(s.Supplier) + ' | ' 
+		+ s.supplier_nm					AS Supplier
+	,s.Supplier_Category				AS Abc_SupplierItem
+	,RTRIM(sf.SupplierFamily) + ' | ' 
+		+ sf.supplier_family_nm			AS SupplierFamily
+	,sf.buying_group_cd					AS BuyingGroup
+	,sf.classificiation_cd				AS VendorClassification
 	
-	,ifs.ItemDescription + ' | ' + i.FamilySetLeader	AS FamilySet
-	,i.Item							AS ItemCode
+	,ifs.ItemDescription + ' | ' 
+		+ i.FamilySetLeader				AS FamilySet
+	,i.Item								AS ItemCode
 	,i.ItemStatus					
 	,i.Brand
 	,i.Label
-	,i.GLCategory					AS StockingCode
-	,mpc.CategoryManager			AS CategorySpecialist
+	,i.GLCategory						AS StockingCode
+	,mpc.CategoryManager				AS CategorySpecialist
 
-	,s.Supplier						AS Current_SupplierCode
-	,ISNULL(b.Currency, '')			AS Current_CurrencyCode
-	,ISNULL(b.SupplierCost,0)		AS Current_SupplierCost
-	,ISNULL(b.FX_per_CAD_mrk_rt,0)	AS Current_FxMarketing
-	,ISNULL(b.FX_per_CAD_pnl_rt,0)	AS Current_FxFinance
-	,ISNULL(i.FreightAdjPct,0)		As Current_FreightFactor
-	,ISNULL(b.CorporatePrice, 0)	AS Current_BasePrice
+	,s.Supplier							AS Current_SupplierCode
+	,ISNULL(b.Currency, '')				AS Current_CurrencyCode
+	,ISNULL(b.SupplierCost,0)			AS Current_SupplierCost
+	,ISNULL(b.FX_per_CAD_mrk_rt,0)		AS Current_FxMarketing
+	,ISNULL(b.FX_per_CAD_pnl_rt,0)		AS Current_FxFinance
+	,ISNULL(i.FreightAdjPct,0)			As Current_FreightFactor
+	,ISNULL(b.CorporatePrice, 0)		AS Current_BasePrice
 
- 	,(ISNULL(b.SupplierCost,0) * ISNULL(b.FX_per_CAD_mrk_rt,0) * ISNULL(i.FreightAdjPct,0)) AS Current_LandedCostMrk
+ 	,(ISNULL(b.SupplierCost,0) 
+		* ISNULL(b.FX_per_CAD_mrk_rt,0) 
+		* ISNULL(i.FreightAdjPct,0))	AS Current_LandedCostMrk
 	,CASE 
 		WHEN ISNULL(b.CorporatePrice, 0) > 0 
-		THEN 1-(ISNULL(b.SupplierCost,0) * ISNULL(b.FX_per_CAD_mrk_rt,0) * ISNULL(i.FreightAdjPct,0))/ISNULL(b.CorporatePrice, 0)
+		THEN 1-(ISNULL(b.SupplierCost,0) 
+			* ISNULL(b.FX_per_CAD_mrk_rt,0) 
+			* ISNULL(i.FreightAdjPct,0))
+			/ISNULL(b.CorporatePrice, 0)
 		ELSE 0
-	END 									AS Current_PriceGM
+	END 								AS Current_PriceGM
 
-	,icomp.ItemKey					AS CompetitiveMatchKey
+	,icomp.ItemKey						AS CompetitiveMatchKey
 
-	,(sf.SupplierFamily)			AS SupplierFamilyCode
-	,(sc.SalesCategory)				AS SalesCategoryCode
-	,(cr.CategoryRollup)			AS CategoryRollupCode
-	,(cr.CategoryClass_Rollup)		AS CategoryClassRollupCode
-	,i.comm_group_cd				AS CommGroupCode
-	,i.comm_note_txt				AS CommGroupNote
-	,i.comm_group_cps_cd			AS CommGroupCpsCode
-	,i.[custom_comm_group1_cd]		AS CustomCommGroup1Code
-	,i.[custom_comm_group2_cd]		AS CustomCommGroup2Code
-	,i.[custom_comm_group3_cd]		AS CustomCommGroup3Code
+	,(sf.SupplierFamily)				AS SupplierFamilyCode
+	,(sc.SalesCategory)					AS SalesCategoryCode
+	,(cr.CategoryRollup)				AS CategoryRollupCode
+	,(cr.CategoryClass_Rollup)			AS CategoryClassRollupCode
+	,i.comm_group_cd					AS CommGroupCode
+	,i.comm_note_txt					AS CommGroupNote
+	,i.comm_group_cps_cd				AS CommGroupCpsCode
+	,i.[custom_comm_group1_cd]			AS CustomCommGroup1Code
+	,i.[custom_comm_group2_cd]			AS CustomCommGroup2Code
+	,i.[custom_comm_group3_cd]			AS CustomCommGroup3Code
 
 FROM            
 	BRS_Item AS i 

@@ -34,16 +34,16 @@ AS
 
 
 SELECT 
-	[employee_num]				AS EmployeeNumber
+	[salesperson_master_key]	AS SalespersonKey
+	,[employee_num]				AS EmployeeNumber
 	,[master_salesperson_cd]	AS CommMasterCode
 	,[salesperson_nm]			AS SalespersonName
 	,[comm_plan_id]				AS CommPlanCode
 	,CAST([territory_start_dt] AS Date)	AS TerritoryStart
 	,[salesperson_key_id]		AS SalespersonID
-	,[salesperson_master_key]	AS SalespersonKey
+	,[CostCenter]
   FROM [comm].[salesperson_master]
 GO
-
       
 
 GO
@@ -54,4 +54,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
---  SELECT * FROM Dimension.SalespersonCommission
+--  SELECT  * FROM Dimension.SalespersonCommission order by 2

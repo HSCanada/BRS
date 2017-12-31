@@ -35,7 +35,8 @@ AS
 SELECT        
 	BranchKey, 
 	Branch AS BranchCode, 
-	BranchName
+	BranchName,
+	[ZoneName]
 FROM            
 	BRS_Branch     
 
