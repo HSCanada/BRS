@@ -1,6 +1,3 @@
-select * from DEV_BRSales.[dbo].[BRS_FSC_Rollup] d where not exists (select * from [dbo].[BRS_FSC_Rollup] s where s.TerritoryCd = d.TerritoryCd)
-
-sp_who2
 
 -- test doc, line match
 
@@ -512,6 +509,11 @@ Update [dbo].[BRS_FiscalMonth]
 	set [comm_status_cd] = 10
 WHERE [FiscalMonth] = 201711
 
+Update [dbo].BRS_Config
+	set comm_LastWeekly = (SELECT MAX(WSDGL__gl_date) FROM Integration.F555115_commission_sales_extract_Staging)
+
+
+
 -- review trans
 
 -- select * from [comm].[transaction_F555115] where FiscalMonth = 201701
@@ -727,3 +729,5 @@ WHERE not exists
 select distinct [comm_status_cd] from [dbo].[BRS_Customer] order by 1
 
 select distinct [comm_status_cd] from [comm].[group] order by 1
+
+select * from [comm].[transaction_F555115] where source_cd =''
