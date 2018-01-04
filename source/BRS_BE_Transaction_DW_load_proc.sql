@@ -46,6 +46,7 @@ AS
 --	13 Feb 17	tmc		Final Discount logic fix
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
 --	17 Dec 17	tmc		Add DW Chargeback info to DS trans
+-- 03 Jan 18	tmc		sunset BRS_TS_Rollup
 **    
 *******************************************************************************/
 BEGIN
@@ -282,30 +283,21 @@ BEGIN
 			UPDATE    
 				BRS_TransactionDW_Ext
 			SET              
-				TsTerritoryOrgCd = BRS_TS_Rollup.TsTerritoryCd,
-				TsTerritoryCd = BRS_TS_Rollup.TsTerritoryCd
-
+				TsTerritoryOrgCd =	r.[TerritoryCd],
+				TsTerritoryCd=		r.[TerritoryCd]
+			--			select SalesOrderNumber, r.[TerritoryCd], CustomerPOText1
 			FROM         
 				BRS_TransactionDW_Ext 
 
-				INNER JOIN BRS_TS_Rollup 
-				ON SUBSTRING(BRS_TransactionDW_Ext.CustomerPOText1, PATINDEX('%TS__%', BRS_TransactionDW_Ext.CustomerPOText1), 4) 
-					= BRS_TS_Rollup.PoTag
-
+				INNER JOIN [dbo].[BRS_FSC_Rollup]  r
+				ON BRS_TransactionDW_Ext.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
+					r.Rule_WhereClauseLike <>''
 			WHERE     
-				(BRS_TransactionDW_Ext.CustomerPOText1 LIKE '%TS__%') AND
 				EXISTS
 				(
-					Select 
-						* 
-					From 
-						STAGE_BRS_TransactionDW s
-					Where 
-						SalesOrderNumber = s.JDEORNO And
-						DocType = s.ORDOTYCD 
-				) AND
-				(1 = 1)
-
+					Select * From [dbo].[STAGE_BRS_TransactionDW] s
+					Where JDEORNO = SalesOrderNumber 
+				)
 
 			Set @nErrorCode = @@Error
 		End

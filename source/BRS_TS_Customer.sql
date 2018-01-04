@@ -31,6 +31,7 @@ AS
 --  8 Nov 16	tmc		Standardised Channel, Branch, and Focus fields
 -- 16 Nov 16	tmc		replace Sales Division code with description
 -- 17 Nov 16	tmc	    Updated Sales Channel wording based on feedback
+-- 03 Jan 18	tmc		sunset BRS_TS_Rollup
 **    
 *******************************************************************************/
 
@@ -39,26 +40,35 @@ SELECT
 	c.BillTo, 
 	c.DSO_ParentShipTo, 
 	c.PracticeName, 
-	CASE WHEN c.AccountType = 'D' THEN 'D' ELSE 'A' END AccountType, 
+	CASE 
+		WHEN c.AccountType = 'D' 
+		THEN 'D' 
+		ELSE 'A' 
+	END					AS AccountType, 
 	d.SalesDivisionDesc AS SalesDivision, 
 	c.VPA, 
-	CASE WHEN c.CustGrpWrk = '' THEN 'Other' ELSE c.CustGrpWrk END CustomerGroup, 
+	CASE 
+		WHEN c.CustGrpWrk = '' 
+		THEN 'Other' 
+		ELSE c.CustGrpWrk 
+	END					AS CustomerGroup, 
 	c.MarketClass, 
 	c.SegCd, 
 	c.Specialty, 
-	CONVERT(INT, LEFT(CONVERT(varchar, (c.DateAccountOpened), 112), 6)) AS DateAccountOpenedFiscalMonth, 
+	CONVERT(INT, LEFT(CONVERT(varchar, 
+		(c.DateAccountOpened), 112), 6)) AS DateAccountOpenedFiscalMonth, 
 
-	b.BranchName AS Branch,
+	b.BranchName		AS Branch,
 
-	f.TerritoryCd AS FscTerritoryCd, 
-	f.FSCName AS FscName, 
-	f.FSCStatusCode AS FscStatusCode,
+	f.TerritoryCd		AS FscTerritoryCd, 
+	f.FSCName			AS FscName, 
+	f.FSCStatusCode		AS FscStatusCode,
+	-- sunset
+	''					AS FscShareType,
 
-	TS_CategoryCd AS FscShareType,
-
-	t.TsTerritoryCd , 
-	t.TsName , 
-	t.StatusCode AS TsStatusCode,
+	t.TerritoryCd		AS TsTerritoryCd, 
+	t.FSCName			AS TsName, 
+	t.FSCStatusCode		AS TsStatusCode,
 
 -----------------------------------------
 --			|	TS		|	No
@@ -70,12 +80,12 @@ SELECT
 
 	CASE WHEN f.FSCStatusCode LIKE 'F%' 
 		THEN 
-			CASE WHEN t.StatusCode LIKE 'T%' 
+			CASE WHEN t.FSCStatusCode LIKE 'T%' 
 				THEN 'Shared FSCs & TS'  
 				ELSE 'Field Only' 
 			END 
 		ELSE 
-			CASE WHEN t.StatusCode LIKE 'T%' 
+			CASE WHEN t.FSCStatusCode LIKE 'T%' 
 				THEN 'Telesales Only'  
 				ELSE 'Unassigned' 
 			END 
@@ -100,8 +110,8 @@ FROM
 	INNER JOIN BRS_FSC_Rollup AS f 
 	ON c.TerritoryCd = f.TerritoryCd
 
-	INNER JOIN BRS_TS_Rollup AS t
-	ON c.TsTerritoryCd = t.TsTerritoryCd
+	INNER JOIN BRS_FSC_Rollup AS t
+	ON c.TsTerritoryCd = t.TerritoryCd
 
 	INNER JOIN BRS_Branch AS b 
 	ON f.Branch = b.Branch
@@ -121,6 +131,8 @@ SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
+
+-- SELECT top 10 * FROM BRS_TS_Customer 
 
 -- SELECT * FROM BRS_TS_Customer WHERE VPA = 'DENCORP'
 

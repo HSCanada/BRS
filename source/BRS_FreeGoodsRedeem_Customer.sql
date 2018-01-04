@@ -73,4 +73,4 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- Select * from BRS_FreeGoodsRedeem_Customer
+-- Select TOP 10 * from BRS_FreeGoodsRedeem_Customer

@@ -41,6 +41,7 @@ AS
 --	25 May 17	tmc		Added FSA for GEO ranking
 --	19 Jul 17	tmc		Added Brand to Item for Pricing
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
+-- 03 Jan 18	tmc		sunset BRS_TS_Rollup
 **    
 *******************************************************************************/
 
@@ -116,8 +117,8 @@ BEGIN
 				FROM         STAGE_BRS_CustomerFull AS c
 				WHERE     (NOT EXISTS
 										  (SELECT     *
-											FROM          BRS_FSC_Rollup AS BRS_TS_Rollup_1
-											WHERE       TerritoryCd = c.TerritoryCd ))
+											FROM          BRS_FSC_Rollup AS s
+											WHERE       s.TerritoryCd = c.TerritoryCd ))
 			Set @nErrorCode = @@Error
 		End
 
@@ -128,14 +129,14 @@ BEGIN
 			if (@bDebug <> 0)
 				Print 'Add new TS (from Cust FULL)...'
 
-				INSERT INTO BRS_TS_Rollup
-									  (TsTerritoryCd)
-				SELECT DISTINCT TsTerritoryCd
+				INSERT INTO BRS_FSC_Rollup
+					  (TerritoryCd, FSCRollup, Branch)
+				SELECT DISTINCT TsTerritoryCd, '', ''
 				FROM         STAGE_BRS_CustomerFull AS c
 				WHERE     (NOT EXISTS
 										  (SELECT     *
-											FROM          BRS_TS_Rollup AS BRS_TS_Rollup_1
-											WHERE       TsTerritoryCd = c.TsTerritoryCd ))
+											FROM          BRS_FSC_Rollup AS s
+											WHERE       s.TerritoryCd = c.TsTerritoryCd ))
 			Set @nErrorCode = @@Error
 		End
 
