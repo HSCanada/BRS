@@ -1,79 +1,6 @@
 
--- test doc, line match
-
--- DW - success
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-WHERE
-	[FiscalMonth] = 201711 AND
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_TransactionDW] t
-		WHERE 
-			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-			s.[WSDCTO_order_type] = t.DocType AND
-			s.[WSLNID_line_number] = t.LineNumber
-	)
-
--- DW - test ess fields
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSTKBY_order_taken_by]
-	,t.OrderTakenBy
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-	INNER JOIN [dbo].[BRS_TransactionDW] t
-	ON 
-		s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-		s.[WSDCTO_order_type] = t.DocType AND
-		s.[WSLNID_line_number] = t.LineNumber
-
-WHERE
-	[FiscalMonth] = 201711 and
---	t.OrderTakenBy like 'CCS%' AND
-	[WS$ESS_equipment_specialist_code] <> t.OrderTakenBy
-
-
---DS - failed
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WSDGL__gl_date]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-WHERE
-	[FiscalMonth] = 201711 AND
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_Transaction] t
-		WHERE 
-			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-			s.[WSDCTO_order_type] = t.DocType AND
-			s.[WSLNID_line_number] = t.LineNumber
-	)
-
-
-GO
-
 ---
 --- DATA - Post ETL workflow	
-
 
 INSERT INTO [dbo].[BRS_FSC_Rollup]
 ([TerritoryCd], [group_type], Branch)
@@ -96,19 +23,26 @@ INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
 select distinct [WSCAG__cagess_code],
 '' from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WSCAG__cagess_code] =  [TerritoryCd])
+GO
 
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
 select distinct [WS$ESS_equipment_specialist_code],
 '' from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_FSC_Rollup] where [WS$ESS_equipment_specialist_code] =  [TerritoryCd])
+GO
 
 INSERT INTO [dbo].[BRS_Item] ([Item])
 select distinct [WSLITM_item_number] from [Integration].[F555115_commission_sales_extract_Staging] 
 where not exists (select * from [dbo].[BRS_Item] where [WSLITM_item_number] =  [Item])
+GO
 
 INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],[DocType] )
 select distinct [WSDOCO_salesorder_number],[WSDCTO_order_type] from [Integration].[F555115_commission_sales_extract_Staging] 
-where not exists (select * from [dbo].[BRS_TransactionDW_Ext] where [WSDOCO_salesorder_number] =  [SalesOrderNumber])
+where 
+not exists (select * from [dbo].[BRS_TransactionDW_Ext] where [WSDOCO_salesorder_number] =  [SalesOrderNumber]) AND
+	(WSAC10_division_code NOT IN ('AZA','AZE')) 
+
+
 
 INSERT INTO [dbo].[BRS_Customer] ([ShipTo])
 SELECT        
@@ -430,6 +364,84 @@ WHERE
 
 
 -- add adj check / load logic
+-- test doc, line match
+
+-- Item
+UPDATE       BRS_Item
+SET                comm_group_cd = s.comm_group_cd, comm_note_txt = s.comm_note_txt
+FROM            BRS_Item INNER JOIN
+                         Integration.Item s ON BRS_Item.Item = s.Item
+
+
+
+-- DW - success
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+WHERE
+	[FiscalMonth] = 201712 AND
+	NOT EXISTS
+	(
+		SELECT * FROM [dbo].[BRS_TransactionDW] t
+		WHERE 
+			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+			s.[WSDCTO_order_type] = t.DocType AND
+			s.[WSLNID_line_number] = t.LineNumber
+	)
+
+-- DW - test ess fields
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSTKBY_order_taken_by]
+	,t.OrderTakenBy
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+	INNER JOIN [dbo].[BRS_TransactionDW] t
+	ON 
+		s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+		s.[WSDCTO_order_type] = t.DocType AND
+		s.[WSLNID_line_number] = t.LineNumber
+
+WHERE
+	[FiscalMonth] = 201712 and
+--	t.OrderTakenBy like 'CCS%' AND
+	[WS$ESS_equipment_specialist_code] <> t.OrderTakenBy
+
+
+--DS - failed
+SELECT 
+	[FiscalMonth]
+	,[WSDOCO_salesorder_number]
+	,[WSDCTO_order_type]
+	,[WSLNID_line_number]
+	,[WSDGL__gl_date]
+	,[WS$ESS_equipment_specialist_code]
+	,[WSCAG__cagess_code]
+FROM 
+	[comm].[transaction_F555115] s
+WHERE
+	[FiscalMonth] = 201711 AND
+	NOT EXISTS
+	(
+		SELECT * FROM [dbo].[BRS_Transaction] t
+		WHERE 
+			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
+			s.[WSDCTO_order_type] = t.DocType AND
+			s.[WSLNID_line_number] = t.LineNumber
+	)
+
+GO
 
 -- [FiscalMonth]
 SELECT     * 
