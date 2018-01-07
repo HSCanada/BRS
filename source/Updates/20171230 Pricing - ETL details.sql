@@ -1,7 +1,7 @@
 -- Pricing update (RI sensitive order)
 -- 31 Dec 17
 
---- 
+--- 60s
 
 truncate table [Pricing].[item_customer_keyid_master_file_F4094]
 GO

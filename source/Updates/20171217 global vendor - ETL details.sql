@@ -1,8 +1,6 @@
 -- Add the below logic to a post ETL load proc
 -- 17 Dec 17, tmc
--- AFTER data flow doc
-
-
+-- AFTER data flow doc, est 5m
 
 --- update F0901 from ETL - run package to update F0901, F0909
 
@@ -73,30 +71,108 @@ FROM            hfm.account_master_F0901 INNER JOIN
                           REPLACE(REPLACE(m.Rule_WhereClauseLike, '?', '_'), '*', '%')
 WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_TargetKey]
 
--- update CB
-
-UPDATE       BRS_Transaction
-SET                [GL_Object_ChargeBack] = '4730',[GL_Subsidiary_ChargeBack]=''
-WHERE        
-(DocType <> 'AA') AND 
-(ExtChargebackAmt <> 0) AND 
-(GL_Object_ChargeBack <> '4730')
-
-SELECT * FROM BRS_Transaction 
-WHERE 
---	FiscalMonth = 201712 AND 
-	DocType <> 'AA' AND
-	ExtChargebackAmt <>0 AND
-	[GL_Object_ChargeBack] <> '4730'
 
 -- TODO Exclusive history, ...
+
+---
+-- test exclusive map overlap with private
+
+/*
+-- manual
+SELECT       
+	r.Excl_Code_TargKey
+	,i.ItemDescription
+	,i.Supplier
+	,i.Brand
+	,i.Item
+	,i.Label
+	,i.Est12MoSales
+FROM            
+	BRS_Item AS i 
+
+	INNER JOIN hfm.exclusive_product_rule AS r 
+	ON 
+		i.Supplier				like RTRIM(r.Supplier_WhereClauseLike) AND 
+		i.Brand					like RTRIM(r.Brand_WhereClauseLike) AND 
+		i.MinorProductClass		like RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+		i.Item					like RTRIM(r.Item_WhereClauseLike) AND
+		1=1
+WHERE
+	r.StatusCd = 1 AND
+	label = 'p' AND
+--	Excl_Code_TargKey like 'CAO%' AND
+--	item in ('5848072'   , '5950085'   ) AND
+	1=1
+*/
+
+-- update exec (rough , working)
+-- update Branded, 1m
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = Null
+FROM
+	BRS_ItemHistory 
+GO
+
+-- update Exclusive, 30s
+UPDATE       
+	BRS_ItemHistory
+SET
+	Excl_key = p.[Excl_Key]
+FROM
+	BRS_ItemHistory 
+	INNER JOIN hfm.exclusive_product_rule AS r 
+	ON BRS_ItemHistory.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+		BRS_ItemHistory.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
+		BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+		BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
+		1 = 1 
+	
+	INNER JOIN hfm.exclusive_product AS p 
+	ON r.Excl_Code_TargKey = p.Excl_Code  
+WHERE        
+	(r.StatusCd = 1) AND 
+	(BRS_ItemHistory.FiscalMonth BETWEEN p.EffectivePeriod AND p.ExpiredPeriod)
+GO
+
+
+-- update private
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 1
+FROM
+	BRS_ItemHistory 
+
+	INNER JOIN BRS_ItemMPC AS mpc 
+	ON mpc.MajorProductClass = LEFT(BRS_ItemHistory.MinorProductClass, 3)
+
+WHERE
+	(BRS_ItemHistory.Label = 'P') AND 
+	(mpc.PrivateLabelScopeInd = 1) AND 
+	(BRS_ItemHistory.Excl_key IS NULL)
+GO
+
+-- update Branded
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 2
+FROM
+	BRS_ItemHistory 
+WHERE Excl_key IS NULL
+GO
+
+---
 
 --- Test RI -- sales, cost, cb all should be zero rows
 
 -- sales
-
+/*
+-- manual run
 SELECT        
-	-- TOP (10) 
+	TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Sales, [GL_Subsidiary_Sales], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
 FROM            
 	BRS_Transaction as t
@@ -110,20 +186,15 @@ where
 			[GMOBJ__object_account] = t.GL_Object_Sales AND
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_Sales] 
 	) 
-/*
--- TC todo
--- 020001000000 + '' -> OBJ '4200'
 
-UPDATE       BRS_Transaction
-SET                GL_Object_Sales = '4200'
-WHERE        (NetSalesAmt <> 0) AND (GL_BusinessUnit = '020001000000') AND (DocType = 'AA') AND (GL_Object_Sales = '')
 */
-
 
 -- cost
 
+/*
+-- manual run
 SELECT        
-	-- TOP (10) 
+	TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Cost, [GL_Subsidiary_Cost], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
 FROM            
 	BRS_Transaction as t
@@ -137,6 +208,7 @@ where
 			[GMOBJ__object_account] = t.GL_Object_Cost AND
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_Cost]
 	) 
+*/
 
 /*
 -- TC todo
@@ -150,9 +222,10 @@ WHERE        (ExtendedCostAmt <> 0) AND (GL_BusinessUnit IN ('020025000000', '02
 
 -- cost cb
 
-
+/*
+-- manual run
 SELECT        
-	-- TOP (10) 
+	TOP (10) 
 	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_ChargeBack, [GL_Subsidiary_ChargeBack], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
 FROM            
 	BRS_Transaction as t
@@ -167,6 +240,7 @@ where
 			[GMSUB__subsidiary] = t.[GL_Subsidiary_ChargeBack]
 	) 
 order by GL_BusinessUnit
+*/
 
 /*
 -- TC todo
@@ -182,6 +256,4 @@ where
 --	GL_BusinessUnit in( '020020001011')
 	GL_BusinessUnit in( '020001001000')
 */
-
-
 

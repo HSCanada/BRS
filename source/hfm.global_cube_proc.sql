@@ -100,7 +100,7 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) 
---		(t.FiscalMonth between 201701 AND 201701) 
+--		(t.FiscalMonth between 201712 AND 201712) 
 
 	GROUP BY 
 		t.FiscalMonth
@@ -171,7 +171,7 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) 
---		(t.FiscalMonth between 201701 AND 201701) 
+--		(t.FiscalMonth between 201712 AND 201712) 
 
 	GROUP BY 
 		t.FiscalMonth
@@ -238,10 +238,9 @@ BEGIN
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
---		(t.FiscalMonth between 201701 AND 201701) AND
 		(t.ExtChargebackAmt is NOT NULL) AND
-		(1=1)
+		(t.FiscalMonth between @StartMonth AND @EndMonth)
+--		(t.FiscalMonth between 201712 AND 201712)
 
 	GROUP BY 
 		t.FiscalMonth
@@ -266,10 +265,16 @@ GO
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
--- Run with PrioBRS_global_cube_procr Fiscal Month ref (results to text)
--- [hfm].global_cube_proc  201711, 201711
 
--- ORG = 29323 rows, 11 sec
+-- [hfm].global_cube_proc  201701, 201712
+-- set month	276 @ 5s
+-- param		139 @ 1:20, cancel
+
+-- full year	192 480 @ 1.20
+--						@ 1.15
+-- item fix		189 252	@ 0.21
+--				192 488 @ 0.21
+
 
 
 
