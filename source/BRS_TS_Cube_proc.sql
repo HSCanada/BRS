@@ -62,6 +62,7 @@ BEGIN
 	FROM
 		BRS_TS_Config g
 
+
 	--Pull Cube based on Params
 
 	SELECT     

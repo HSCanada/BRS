@@ -134,6 +134,9 @@ GO
 
 -- SELECT top 10 * FROM BRS_TS_Customer 
 
+-- SELECT distinct TsName FROM BRS_TS_Customer 
+
+
 -- SELECT * FROM BRS_TS_Customer WHERE VPA = 'DENCORP'
 
 -- SELECT * FROM BRS_TS_Customer WHERE MarketRollup_L1 like 'SP%' and FocusCd <>''
