@@ -1052,6 +1052,11 @@ WHERE
 	)
 GO
 
+SELECT        BRS_CustomerVPA.VPA, BRS_CustomerVPA.VPADesc, BRS_CustomerVPA.VPATypeCd, BRS_CustomerVPA.LastReviewDate, BRS_CustomerVPA.AddedDt, 
+                         BRS_CustomerVPA.NoteTxt, BRS_CustomerVPA.StatusCd, BRS_CustomerVPA.MarketClass, BRS_CustomerVPA.Specialty, BRS_CustomerVPA.VpaKey, 
+                         BRS_CustomerVPA.comm_status_cd, BRS_CustomerVPA.comm_note_txt
+FROM            BRS_CustomerVPA CROSS JOIN
+                         Pricing.price_adjustment_name_F4071
 
  -- [Pricing].[price_marketing_program_enroll_F40308]
 INSERT INTO

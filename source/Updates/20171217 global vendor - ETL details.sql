@@ -164,6 +164,16 @@ FROM
 WHERE Excl_key IS NULL
 GO
 
+-- 30 sec
+UPDATE       BRS_ItemHistory
+SET                
+MinorProductClass = BRS_Item.MinorProductClass , 
+Label = BRS_Item.Label, 
+Brand = BRS_Item.Brand
+
+FROM            BRS_ItemHistory INNER JOIN
+                         BRS_Item ON BRS_ItemHistory.Item = BRS_Item.Item
+
 ---
 
 --- Test RI -- sales, cost, cb all should be zero rows

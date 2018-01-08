@@ -1,4 +1,5 @@
 
+-- ETL BEGIN....
 ---
 --- DATA - Post ETL workflow	
 
@@ -80,7 +81,8 @@ WHERE
 	s.FSCRollup <> BRS_FSC_Rollup.FSCRollup AND
 	1=1
 
--- review problems
+/*
+-- review problems -- fix this, 8 jan 17
 SELECT        s.TerritoryCd, s.FSCRollup, s.comm_salesperson_key_id, s.order_taken_by, s.FSCRollup as s_roll, d.FSCRollup as d_roll, S.FSCName, D.FSCName
 FROM            BRS_FSC_Rollup AS s INNER JOIN
                          BRS_FSC_Rollup AS d ON s.order_taken_by = d.order_taken_by
@@ -90,7 +92,23 @@ WHERE
 	s.FSCRollup <> d.FSCRollup AND
 	1=1
 ORDER BY s.FSCRollup, S.TerritoryCd
-	
+*/
+
+-- update names here...
+
+UPDATE       BRS_FSC_Rollup
+SET                FSCName = s.GEDSC1_description 
+FROM            Integration.F5554_territory_name_Staging AS s INNER JOIN
+                         BRS_FSC_Rollup ON s.GE$L01_level_code_01 = BRS_FSC_Rollup.TerritoryCd AND s.GEDSC1_description <> BRS_FSC_Rollup.FSCName
+WHERE        (s.GE$GTY_group_type <> 'DDTS')
+
+
+-- ETL END....
+
+
+-- Comm Manual load start here
+
+
 -- Transfer check
 
 -- [SalesOrderNumber]
@@ -743,3 +761,4 @@ select distinct [comm_status_cd] from [dbo].[BRS_Customer] order by 1
 select distinct [comm_status_cd] from [comm].[group] order by 1
 
 select * from [comm].[transaction_F555115] where source_cd =''
+
