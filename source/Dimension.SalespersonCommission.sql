@@ -42,7 +42,18 @@ SELECT
 	,CAST([territory_start_dt] AS Date)	AS TerritoryStart
 	,[salesperson_key_id]		AS SalespersonID
 	,[CostCenter]
-  FROM [comm].[salesperson_master]
+	,b.Branch					AS BranchCode
+	,b.BranchName
+	,b.ZoneName
+
+  FROM 
+	[comm].[salesperson_master] s
+
+	INNER JOIN [dbo].[BRS_FSC_Rollup] f
+	ON s.master_salesperson_cd = f.TerritoryCd
+
+	INNER JOIN [dbo].[BRS_Branch] b
+	ON f.Branch = b.Branch
 GO
       
 
