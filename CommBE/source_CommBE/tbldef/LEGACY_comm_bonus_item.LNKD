@@ -1,4 +1,0 @@
-﻿LEGACY_comm_bonus_item
-ODBC;DSN=DEV_CommBE;Description=DEV_CommBE;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_CommBE
-dbo.comm_bonus_item
-IMITEM

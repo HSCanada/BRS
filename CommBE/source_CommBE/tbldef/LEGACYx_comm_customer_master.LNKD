@@ -1,4 +1,0 @@
-﻿LEGACYx_comm_customer_master
-ODBC;DSN=DEV_CommBE;Description=DEV_CommBE;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_CommBE
-dbo.comm_customer_master
-hsi_shipto_id

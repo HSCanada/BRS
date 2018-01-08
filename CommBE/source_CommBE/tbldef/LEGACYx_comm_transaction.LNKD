@@ -1,4 +1,0 @@
-﻿LEGACYx_comm_transaction
-ODBC;DSN=DEV_CommBE;Description=DEV_CommBE;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_CommBE
-dbo.comm_transaction
-record_id
