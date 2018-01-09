@@ -1305,6 +1305,10 @@ GROUP BY
 	p.ADAN8__billto
 GO
 
+/*
+select * from [Integration].[F0005_user_defined_codes_Staging] 
+where 
+DRSY___product_code = '56' AND DRRT___user_defined_codes = 'SC'
 
-
-
+[DRDL01_description] = 'Disposables exam room products'
+*/
