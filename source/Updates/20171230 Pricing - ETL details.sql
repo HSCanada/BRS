@@ -1,7 +1,6 @@
--- Pricing update (RI sensitive order)
--- 31 Dec 17
+print 'Pricing update (RI sensitive order), 13 Jan 18, 60s'
 
---- 60s
+print 'clear stage tables'
 
 truncate table [Pricing].[item_customer_keyid_master_file_F4094]
 GO
@@ -33,6 +32,7 @@ GO
 
 
 -- Merge!  update Dest - Source where Hash(Dest) <> Hash(Source)
+print 'update Pricing.item_master_F4101'
 
 UPDATE
 	Pricing.item_master_F4101
@@ -218,7 +218,8 @@ WHERE
 	)
 GO
 
--- [Pricing].[item_master_F4101]
+print 'add new [Pricing].[item_master_F4101]'
+
 INSERT INTO Pricing.item_master_F4101
 (
 	IMITM__item_number_short,
@@ -565,7 +566,8 @@ GO
 
 -- not merge updating this table as it is slowly changing
 
--- [Pricing].[price_adjustment_name_F4071]
+print 'add new [Pricing].[price_adjustment_name_F4071]'
+
 INSERT INTO Pricing.price_adjustment_name_F4071
 (
 	ATAST__adjustment_name,
@@ -653,9 +655,10 @@ WHERE
 GO
 
 
--- add all
 
- -- [Pricing].[free_goods_master_file_F4073]
+
+print 'add all [Pricing].[free_goods_master_file_F4073]'
+
 INSERT INTO Pricing.free_goods_master_file_F4073
 (
 	FGAST__adjustment_name,
@@ -708,7 +711,8 @@ GO
 
 
 
- -- [Pricing].[price_adjustment_detail_F4072], est 30s
+print 'add all [Pricing].[price_adjustment_detail_F4072], est 30s'
+
 -- do not load bad shipto enrolled (fix at source)
 INSERT INTO Pricing.price_adjustment_detail_F4072
 (
@@ -797,7 +801,7 @@ WHERE
 GO
 
 
- -- [Pricing].[item_extension_file_F5613]
+print 'add all [Pricing].[item_extension_file_F5613]'
 INSERT INTO
 Pricing.item_extension_file_F5613
 (
@@ -857,8 +861,25 @@ FROM
 	Integration.F5613_product_extension_file_Staging
 GO
 
+print 'add new BRS_CustomerVPA'
 
- -- [Pricing].[price_adjustment_enroll_F40314]
+INSERT INTO 
+	BRS_CustomerVPA (VPA)
+SELECT	
+	distinct (SNASN__adjustment_schedule)
+FROM	
+	Integration.F4070_price_adjustment_schedule_Staging s
+WHERE	
+	NOT EXISTS
+	(
+		SELECT * FROM [dbo].[BRS_CustomerVPA] 
+		WHERE [VPA]=S.SNASN__adjustment_schedule
+	)
+GO
+
+
+print 'add all [Pricing].[price_adjustment_enroll_F40314]'
+
 INSERT INTO
 Pricing.price_adjustment_enroll_F40314
 (
@@ -917,7 +938,7 @@ FROM
 GO
 
 
- -- [Pricing].[supplier_catalog_price_file_F41061]
+print 'add all [Pricing].[supplier_catalog_price_file_F41061]'
 -- de-dup
 INSERT INTO
 Pricing.supplier_catalog_price_file_F41061
@@ -993,7 +1014,8 @@ WHERE EXISTS
 GO
 
 
--- [Pricing].[price_adjustment_schedule_F4070]
+print 'add all [Pricing].[price_adjustment_schedule_F4070]'
+
 INSERT INTO
 Pricing.price_adjustment_schedule_F4070
 (
@@ -1037,28 +1059,16 @@ WHERE
 GO
 
 
-
-INSERT INTO 
-	BRS_CustomerVPA (VPA)
-SELECT	
-	distinct (SNASN__adjustment_schedule)
-FROM	
-	Integration.F4070_price_adjustment_schedule_Staging s
-WHERE	
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_CustomerVPA] 
-		WHERE [VPA]=S.SNASN__adjustment_schedule
-	)
-GO
-
+/*
 SELECT        BRS_CustomerVPA.VPA, BRS_CustomerVPA.VPADesc, BRS_CustomerVPA.VPATypeCd, BRS_CustomerVPA.LastReviewDate, BRS_CustomerVPA.AddedDt, 
                          BRS_CustomerVPA.NoteTxt, BRS_CustomerVPA.StatusCd, BRS_CustomerVPA.MarketClass, BRS_CustomerVPA.Specialty, BRS_CustomerVPA.VpaKey, 
                          BRS_CustomerVPA.comm_status_cd, BRS_CustomerVPA.comm_note_txt
 FROM            BRS_CustomerVPA CROSS JOIN
                          Pricing.price_adjustment_name_F4071
+*/
 
- -- [Pricing].[price_marketing_program_enroll_F40308]
+print 'add all [Pricing].[price_marketing_program_enroll_F40308]'
+
 INSERT INTO
 Pricing.price_marketing_program_enroll_F40308
 (
@@ -1131,7 +1141,8 @@ WHERE
 GO
 
 
--- [Pricing].[item_customer_keyid_master_file_F4094]
+print 'add all [Pricing].[item_customer_keyid_master_file_F4094]'
+
 INSERT INTO
 Pricing.item_customer_keyid_master_file_F4094
 (
@@ -1164,8 +1175,8 @@ FROM
 GO
 
 
--- [Pricing].[price_adjustment_enroll]
--- Class Contract Map 1 of 3  
+print 'add Class Contract Map 1 of 3 -- [Pricing].[price_adjustment_enroll]'
+
 INSERT INTO 
 Pricing.price_adjustment_enroll
 (
@@ -1209,7 +1220,8 @@ WHERE
 	(1 = 1)
 GO
 
--- Contract Map 2 of 3
+print 'add Contract Map 2 of 3 -- [Pricing].[price_adjustment_enroll]'
+
 INSERT INTO Pricing.price_adjustment_enroll
 (
 	BillTo,
@@ -1260,7 +1272,8 @@ GROUP BY
 GO
 
 
--- Special Pricing Map 3 of 3
+print 'add Special Pricing Map 3 of 3 -- [Pricing].[price_adjustment_enroll]'
+
 INSERT INTO Pricing.price_adjustment_enroll
 (
 	BillTo,
@@ -1312,3 +1325,5 @@ DRSY___product_code = '56' AND DRRT___user_defined_codes = 'SC'
 
 [DRDL01_description] = 'Disposables exam room products'
 */
+
+print 'done.'

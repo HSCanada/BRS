@@ -4,7 +4,8 @@
 
 --- update F0901 from ETL - run package to update F0901, F0909
 
--- update BU
+print 'add new [dbo].[BRS_BusinessUnit]'
+
 INSERT INTO [dbo].[BRS_BusinessUnit]
 (BusinessUnit)
 SELECT        Distinct GMMCU__business_unit 
@@ -15,7 +16,7 @@ WHERE NOT EXISTS
 	WHERE s.GMMCU__business_unit = b.BusinessUnit
 )
 
--- update Obj
+print 'add new [dbo].[BRS_Object]'
 INSERT INTO [dbo].[BRS_Object]
 ([GLAcctNumberObj])
 SELECT        Distinct GMOBJ__object_account 
@@ -26,8 +27,7 @@ WHERE NOT EXISTS
 	WHERE s.GMOBJ__object_account = o.[GLAcctNumberObj]
 )
 
--- update details
-
+print 'add new hfm.account_master_F0901'
 INSERT INTO hfm.account_master_F0901
                          (GMCO___company, GMAID__account_id, GMMCU__business_unit, GMOBJ__object_account, GMSUB__subsidiary, GMANS__free_form_3rd_acct_no, 
                          GMDL01_description, GMLDA__account_level_of_detail, GMBPC__budget_pattern_code, GMPEC__posting_edit, GMUSER_user_id, GMPID__program_id, 
@@ -45,7 +45,7 @@ WHERE NOT EXISTS
 		s.[GMSUB__subsidiary] = d.[GMSUB__subsidiary]
 )
 
--- update bu map
+print 'update bu map - hfm.account_master_F0901'
 UPDATE       
 	hfm.account_master_F0901
 SET                
@@ -62,7 +62,7 @@ WHERE
 
 
 
--- update Obj map
+print 'update Obj map - hfm.account_master_F0901'
 UPDATE       hfm.account_master_F0901
 SET                HFM_Account = [HFM_Account_TargetKey]
 FROM            hfm.account_master_F0901 INNER JOIN
@@ -105,7 +105,7 @@ WHERE
 	1=1
 */
 
--- update exec (rough , working)
+print 'reset Excl_key (rough , working, clear all...)'
 -- update Branded, 1m
 UPDATE
 	BRS_ItemHistory
@@ -115,7 +115,7 @@ FROM
 	BRS_ItemHistory 
 GO
 
--- update Exclusive, 30s
+print 'set Exclusives - Excl_key, 30s'
 UPDATE       
 	BRS_ItemHistory
 SET
@@ -137,7 +137,7 @@ WHERE
 GO
 
 
--- update private
+print 'set private - Excl_key'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -154,7 +154,7 @@ WHERE
 	(BRS_ItemHistory.Excl_key IS NULL)
 GO
 
--- update Branded
+print 'set Branded - Excl_key'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -164,7 +164,7 @@ FROM
 WHERE Excl_key IS NULL
 GO
 
--- 30 sec
+print 'update (full), MinorProductClass, Label, Brand -- 30 sec'
 UPDATE       BRS_ItemHistory
 SET                
 MinorProductClass = BRS_Item.MinorProductClass , 

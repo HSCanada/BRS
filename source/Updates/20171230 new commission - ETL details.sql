@@ -706,14 +706,6 @@ WHERE     (FiscalMonth BETWEEN 201701 AND 201712) AND ([WSSOQS_quantity_shipped]
                       ([FreeGoodsInvoicedInd] <> 1)
 -- Update FreeGoodsRedeemedInd - Comm
 
-UPDATE    [comm].[transaction_F555115]
-SET               FreeGoodsRedeemedInd = 1
-FROM         comm.free_goods_redeem s INNER JOIN
-                      [comm].[transaction_F555115] ON s.SalesOrderNumber = [comm].[transaction_F555115].[WSDOCO_salesorder_number] AND 
-                      s.Item = [comm].[transaction_F555115].[WSLITM_item_number]
-WHERE     (s.FiscalMonth BETWEEN 201701 AND 201712) AND ([comm].[transaction_F555115].[WSSOQS_quantity_shipped] <> 0) AND ([transaction_F555115].[transaction_amt] = 0) AND 
-                      ([comm].[transaction_F555115].FreeGoodsRedeemedInd <> 1)
-
 -- FREE GOODS END
 
 -- [salesperson_master_Staging] BEGIN
