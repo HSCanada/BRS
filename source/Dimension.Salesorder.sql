@@ -30,14 +30,15 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	14 Sep 17	tmc		Simplified model
+**	13 Jan 18	tmc		added AdvancedPricing flag for improved analysis
 **    
 *******************************************************************************/
 
 SELECT
 	f.SalesOrderNumber
-
-	,os.OrderSourceCodeDescr					AS OrderSource
-
+	,os.AdvancedPricingInd 
+	,os.OrderSourceCode + ' | ' 
+	+ os.OrderSourceCodeDescr					AS OrderSource
 	,pr.PromotionType
 	,RTRIM(pr.PromotionDescription) + ' | ' + pr.PromotionCode	AS Promotion
 	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
@@ -75,4 +76,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Salesorder order by 1
+-- SELECT top 10 * FROM Dimension.Salesorder 
