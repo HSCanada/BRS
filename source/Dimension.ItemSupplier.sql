@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	17 Oct 17	tmc		Add class & buygroup to supplier for vendor reporting
+--	24 Jan 18	tmc		Add Vendor Rebate Rollup 
 **    
 *******************************************************************************/
 
@@ -45,6 +46,7 @@ SELECT
 		THEN s.supplier_nm
 		ELSE sf.supplier_family_nm
 	END						AS SupplierFamilyName
+	,s.RebateRollup
 	
 FROM            
 	BRS_ItemSupplier s
