@@ -599,7 +599,8 @@ DEALLOCATE c;
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
 
--- Select FiscalMonth, YearFirstFiscalMonth_HIST, PriorFiscalMonth FROM BRS_Rollup_Support01
+-- Test settings
+-- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST  FROM BRS_Rollup_Support01
 
 INSERT INTO BRS_ItemHistory 
 (
@@ -673,7 +674,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201712 and 201712) 
+	(t.FiscalMonth between 201801 and 201801) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -694,9 +695,9 @@ FROM
 	ON h.HIST_TerritoryCd = b.TerritoryCd
 
 WHERE     
-	(t.Shipto > 0) AND 
+		(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201712 and 201712) 
+	(t.FiscalMonth between 201801 and 201801) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -720,7 +721,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201712 and 201712) 
+	(t.FiscalMonth between 201801 and 201801) 
 
 
 
@@ -732,7 +733,7 @@ where
 */
 
 
--- Select FiscalMonth, YearFirstFiscalMonth_HIST, PriorFiscalMonth FROM BRS_Rollup_Support01
+-- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
 
 -- 20m

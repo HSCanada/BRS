@@ -118,7 +118,7 @@ GO
 /*
 -- dup test1
 
-SELECT        QTITM__item_number_short, COUNT(*) AS Expr1
+SELECT        QTITM__item_number_short, COUNT(*) AS count
 FROM            Integration.F5698_item_market_adjustment_Staging
 where QTAC10_division_code = 'ALL'
 GROUP BY QTITM__item_number_short

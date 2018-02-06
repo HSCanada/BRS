@@ -32,8 +32,11 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	30 Nov 17	tmc		update Product to use sub-minor & use global rollup 4CC
+**	02 Feb 18	tmc		Update layout, based on 1 Feb meeting
 
 *******************************************************************************/
+
+Declare @sVer varchar(10) = '2018.02.02'
 
 BEGIN
 	SET NOCOUNT ON;
@@ -47,18 +50,13 @@ BEGIN
 			BRS_Rollup_Support01
 	END
 
-	-- Sales
+	-- Sales 1 of 2
 	SELECT     
---		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
---		,t.GL_Object_Sales					AS Test_GL_Object_Sales
---		,t.Shipto
---		,t.Item
---		'Test.SALES.ACT'					AS Test_Source
-
 		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,6)		AS Product
+		,LEFT(ih.MinorProductClass,9)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
+		,excl.Excl_Code						AS BrandLine
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
 		,CASE 
@@ -68,9 +66,8 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
-		,''								AS Version
+		,@sVer								AS Version
 		,SUM(t.[NetSalesAmt])				AS ValueAmt
---		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 
 	FROM         
 
@@ -100,37 +97,26 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) 
---		(t.FiscalMonth between 201712 AND 201712) 
 
 	GROUP BY 
 		t.FiscalMonth
---		,t.Shipto
---		,t.Item
---		,t.GL_BusinessUnit
---		,t.GL_Object_Sales
-
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
-
 		,excl.BrandEquityCategory
+		,excl.Excl_Code
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 
-
 	UNION ALL
 
-	-- Cost
+	-- Cost 2 of 3
 	SELECT     
---		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
---		,t.GL_Object_Sales					AS Test_GL_Object_Sales
---		,t.Shipto
---		,t.Item
---		,'Test.COST.ACT'					AS Test_Source
 		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,6)		AS Product
+		,LEFT(ih.MinorProductClass,9)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
+		,excl.Excl_Code						AS BrandLine
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
 		,CASE 
@@ -140,9 +126,8 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
-		,''									AS Version
+		,@sVer								AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
---		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -171,34 +156,26 @@ BEGIN
 
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) 
---		(t.FiscalMonth between 201712 AND 201712) 
 
 	GROUP BY 
 		t.FiscalMonth
---		,t.Shipto
---		,t.Item
---		,t.GL_BusinessUnit
---		,t.GL_Object_Sales
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
+		,excl.Excl_Code
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 
 	UNION ALL
 
-	-- Chargeback
+	-- Chargeback 3 of 3
 	SELECT     
---		t.GL_BusinessUnit					AS Test_GL_BusinessUnit
---		,t.GL_Object_Sales					AS Test_GL_Object_Sales
---		,t.Shipto
---		,t.Item
---		,'Test.CHARGEBACK.EST'					AS Test_Source
 		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,6)		AS Product
+		,LEFT(ih.MinorProductClass,9)		AS Product
 		,excl.BrandEquityCategory			AS BrandEquity
+		,excl.Excl_Code						AS BrandLine
 		,ch.HIST_MarketClass				AS CustomerCategory
 		,'CAD'								AS Currency
 		,CASE 
@@ -208,9 +185,8 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,'Actual'							AS Senario
-		,''									AS Version
+		,@sVer								AS Version
 		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
---		,CASE	WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -240,24 +216,18 @@ BEGIN
 	WHERE
 		(t.ExtChargebackAmt is NOT NULL) AND
 		(t.FiscalMonth between @StartMonth AND @EndMonth)
---		(t.FiscalMonth between 201712 AND 201712)
 
 	GROUP BY 
 		t.FiscalMonth
---		,t.Shipto
---		,t.Item
---		,t.GL_BusinessUnit
---		,t.GL_Object_Sales
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
+		,excl.Excl_Code						
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 
-
 END
-
 
 
 GO
@@ -266,15 +236,5 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
--- [hfm].global_cube_proc  201701, 201712
--- set month	276 @ 5s
--- param		139 @ 1:20, cancel
-
--- full year	192 480 @ 1.20
---						@ 1.15
--- item fix		189 252	@ 0.21
---				192 488 @ 0.21
-
-
-
+-- [hfm].global_cube_proc  201712, 201712
 
