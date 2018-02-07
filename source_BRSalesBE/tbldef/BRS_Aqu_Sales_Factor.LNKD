@@ -1,0 +1,4 @@
+﻿BRS_Aqu_Sales_Factor
+ODBC;DSN=BRSales;Description=BRSales;APP=Microsoft Office 2013;DATABASE=BRSales;TrustServerCertificate=Yes;Authentication=ActiveDirectoryIntegrated;
+dbo.BRS_Aqu_Sales_Factor
+ShipTo;+GLBU_Class;+Aqu_cd

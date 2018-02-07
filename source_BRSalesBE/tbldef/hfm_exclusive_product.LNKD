@@ -1,0 +1,4 @@
+﻿hfm_exclusive_product
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+hfm.exclusive_product
+Excl_Code

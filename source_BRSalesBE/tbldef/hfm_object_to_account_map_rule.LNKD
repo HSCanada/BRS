@@ -1,0 +1,4 @@
+﻿hfm_object_to_account_map_rule
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+hfm.object_to_account_map_rule
+Rule_WhereClauseLike

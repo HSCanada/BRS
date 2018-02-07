@@ -1,0 +1,4 @@
+﻿BRS_AGG_CDBGAD_Sales
+ODBC;DSN=BRSales;Description=BRSales;APP=Microsoft Office 2013;DATABASE=BRSales;TrustServerCertificate=Yes;Authentication=ActiveDirectoryIntegrated;
+dbo.BRS_AGG_CDBGAD_Sales
+SalesDate;+Branch;+GLBU_Class;+AdjCode;+SalesDivision;+Shipto;+FreeGoodsEstInd;+OrderSourceCode

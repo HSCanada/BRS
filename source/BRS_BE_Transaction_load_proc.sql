@@ -49,6 +49,8 @@ AS
 --  01 Nov 17	tmc		removed redundant GLaccounts (saved as BU & obj)
 --						fix GLBU logic to use BU + Obj + Sub
 --	30 Nov 17	tmc		Update TransExt Salesorder for RI
+**	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
+**							Marking init PO for DWTrans process fix
 **    
 *******************************************************************************/
 BEGIN
@@ -340,8 +342,8 @@ Begin
 		Print 'Add new Salesorder...'
 
 		INSERT INTO [dbo].[BRS_TransactionDW_Ext]
-							  ([SalesOrderNumber], [DocType])
-		SELECT DISTINCT t.SalesOrderNumber, t.DocType
+							  ([SalesOrderNumber], [DocType], [CustomerPOText1])
+		SELECT DISTINCT t.SalesOrderNumber, t.DocType, '<TO BE UPDATED>'
 		FROM         STAGE_BRS_Transaction_Load AS t
 		WHERE     (NOT EXISTS
 								  (SELECT     *
@@ -629,6 +631,8 @@ GROUP BY SalesDate
 
 -- prod run
 -- [BRS_BE_Transaction_load_proc] 0, 0
+
+
 
 
 

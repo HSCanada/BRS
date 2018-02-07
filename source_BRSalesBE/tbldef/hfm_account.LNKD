@@ -1,0 +1,4 @@
+﻿hfm_account
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+hfm.account
+HFM_Account

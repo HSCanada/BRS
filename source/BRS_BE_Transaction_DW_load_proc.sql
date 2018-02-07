@@ -748,16 +748,8 @@ truncate table STAGE_BRS_TransactionDW
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
 
-/*
-UPDATE       BRS_Transaction
-SET                ExtChargebackAmt = NULL
-WHERE        (FiscalMonth = 201712)
 
-Select  SalesDate, SUM(ISNULL(ExtChargebackAmt,0))
-FROM BRS_Transaction
-WHERE        (FiscalMonth = 201712)
-GROUP BY SalesDate
-ORDER BY 1
-
-*/
-
+SELECT        t.SalesOrderNumber, t.Date, t.SalesDivision, t.CustomerPOText1, e.CustomerPOText1 AS epo
+FROM            BRS_TransactionDW AS t INNER JOIN
+                         BRS_TransactionDW_Ext AS e ON t.SalesOrderNumber = e.SalesOrderNumber AND t.CustomerPOText1 <> e.CustomerPOText1
+ORDER BY t.Date

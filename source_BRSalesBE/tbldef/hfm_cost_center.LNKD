@@ -1,0 +1,4 @@
+﻿hfm_cost_center
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+hfm.cost_center
+CostCenter
