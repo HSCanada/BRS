@@ -1,4 +1,4 @@
 ﻿BRS_DocType
-ODBC;DSN=BRSales;Description=BRSales;APP=Microsoft Office 2013;DATABASE=BRSales;TrustServerCertificate=Yes;Authentication=ActiveDirectoryIntegrated;
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
 dbo.BRS_DocType
 DocType

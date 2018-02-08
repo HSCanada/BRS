@@ -47,6 +47,8 @@ AS
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
 --	17 Dec 17	tmc		Add DW Chargeback info to DS trans
 -- 03 Jan 18	tmc		sunset BRS_TS_Rollup
+**	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
+**							Updating PO from BRS_BE_Transaction_load_proc fix
 **    
 *******************************************************************************/
 BEGIN
@@ -273,6 +275,46 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+---
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Update PO Text ...'
+
+			UPDATE    
+				BRS_TransactionDW_Ext
+			SET              
+				[CustomerPOText1] =	[NEW_CustomerPOText1]
+
+--			select SalesOrderNumber, CustomerPOText1, NEW_CustomerPOText1
+			FROM         
+				BRS_TransactionDW_Ext 
+
+				INNER JOIN 
+				(
+					SELECT     
+							JDEORNO, 
+							ORDOTYCD, 
+							Left(MIN(RF1TT), 25) AS NEW_CustomerPOText1
+					FROM         
+							STAGE_BRS_TransactionDW
+					GROUP BY 
+						JDEORNO, 
+						ORDOTYCD 
+				) header
+				ON [SalesOrderNumber] = JDEORNO
+			WHERE 
+				-- magic init message set by BRS_BE_Transaction_load_proc
+				-- This ensure that ONLY init POs are updated, not post
+				-- changes
+				CustomerPOText1 = '<TO BE UPDATED>'
+
+
+			Set @nErrorCode = @@Error
+		End
+
+---
+
 		--	23 Sep 16	tmc		Map Promo tagged TS to Order-level TS Code 
 
 		If (@nErrorCode = 0) 
@@ -285,7 +327,8 @@ BEGIN
 			SET              
 				TsTerritoryOrgCd =	r.[TerritoryCd],
 				TsTerritoryCd=		r.[TerritoryCd]
-			--			select SalesOrderNumber, r.[TerritoryCd], CustomerPOText1
+
+--			select SalesOrderNumber, r.[TerritoryCd], CustomerPOText1
 			FROM         
 				BRS_TransactionDW_Ext 
 
@@ -417,7 +460,7 @@ BEGIN
 				ISNULL(p1.PMCD, '') AS PromotionCode, 
 				ISNULL(p2.PMCD, '') AS OrderPromotionCode,
 
-				-- Custom Logic Section BEGIN -----------------------------------------
+				-- Custom Logic Section BEGIN 
 
 				-- store ORG, ~ORG will be modified to follow
 				s.WJXBFS7                                       AS ExtPriceORG,         
@@ -511,7 +554,7 @@ BEGIN
 				2.0 * s.WJXBFS6                       AS ExtDiscAmt,
 
 
-				-- Custom Logic Section END -------------------------------------------
+				-- Custom Logic Section END 
 	 
 				ISNULL(s.PCADLINO,'')	AS	PricingAdjustmentLine,		 
 				ISNULL(s.BTADNO,0)		AS	SalesOrderBilltoNumber,		 
@@ -739,7 +782,6 @@ truncate table STAGE_BRS_TransactionDW
 
 -- Step 3:  run below script, after Dimension load.
 
--- BRS_BE_Transaction_DW_load_proc @bClearStage=1
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
@@ -748,8 +790,84 @@ truncate table STAGE_BRS_TransactionDW
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
 
+/*
 
-SELECT        t.SalesOrderNumber, t.Date, t.SalesDivision, t.CustomerPOText1, e.CustomerPOText1 AS epo
+-- test differences
+
+SELECT        t.SalesOrderNumber, t.doctype, t.Date, t.SalesDivision, t.CustomerPOText1, e.CustomerPOText1 AS epo
 FROM            BRS_TransactionDW AS t INNER JOIN
                          BRS_TransactionDW_Ext AS e ON t.SalesOrderNumber = e.SalesOrderNumber AND t.CustomerPOText1 <> e.CustomerPOText1
-ORDER BY t.Date
+--where t.SalesOrderNumber in (11069993, 11069994, 11070000, 11070010, 11070011, 11070012)
+where e.CustomerPOText1 = ''
+--where t.Date >= '2017-11-20'
+ORDER BY 3
+
+
+
+-- 299327
+
+-- test missed
+
+SELECT        BRS_TransactionDW_Ext.*, CustomerPOText1 AS Expr1
+FROM            BRS_TransactionDW_Ext
+WHERE        (CustomerPOText1 = N'<TO BE UPDATED>')
+
+-- 3293
+
+*/
+
+/*
+
+UPDATE    
+	BRS_TransactionDW_Ext
+SET              
+	[CustomerPOText1] =	[NEW_CustomerPOText1]
+
+--select SalesOrderNumber, CustomerPOText1, NEW_CustomerPOText1
+FROM         
+	BRS_TransactionDW_Ext 
+
+	INNER JOIN 
+	(
+		SELECT     
+				JDEORNO, 
+				ORDOTYCD, 
+				Left(MIN(RF1TT), 25) AS NEW_CustomerPOText1
+		FROM         
+				STAGE_BRS_TransactionDW
+		GROUP BY 
+			JDEORNO, 
+			ORDOTYCD 
+	) header
+	ON [SalesOrderNumber] = JDEORNO
+WHERE 
+	-- magic init message set by BRS_BE_Transaction_load_proc
+	-- This ensure that ONLY init POs are updated, not post
+	-- changes
+	CustomerPOText1 <> NEW_CustomerPOText1 
+
+
+---
+
+	UPDATE    
+		BRS_TransactionDW_Ext
+	SET              
+		TsTerritoryOrgCd =	r.[TerritoryCd],
+		TsTerritoryCd=		r.[TerritoryCd]
+
+--	select SalesOrderNumber, CustomerPOText1, r.[TerritoryCd], [TsTerritoryCd]
+	FROM         
+		BRS_TransactionDW_Ext 
+
+		INNER JOIN [dbo].[BRS_FSC_Rollup]  r
+		ON BRS_TransactionDW_Ext.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
+			r.Rule_WhereClauseLike <>''
+	WHERE     
+		EXISTS
+		(
+			Select * From [dbo].[STAGE_BRS_TransactionDW] s
+			Where JDEORNO = SalesOrderNumber 
+		) AND
+		TsTerritoryCd <> r.[TerritoryCd]
+
+*/

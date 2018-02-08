@@ -1,4 +1,0 @@
-﻿STAGE_BRS_CustomerFSC_History
-ODBC;DSN=BRSales;Description=BRSales;APP=Microsoft Office 2013;DATABASE=BRSales;TrustServerCertificate=Yes;Authentication=ActiveDirectoryIntegrated;
-dbo.STAGE_BRS_CustomerFSC_History
-Shipto;+FiscalMonth

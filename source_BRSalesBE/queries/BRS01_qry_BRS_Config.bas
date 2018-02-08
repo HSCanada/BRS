@@ -98,7 +98,7 @@ Begin
     Begin
         dbText "Name" ="BRS_Status.StatusDescr"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1770"
+        dbInteger "ColumnWidth" ="2190"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -122,8 +122,8 @@ Begin
     Bottom =730
     Left =-1
     Top =-1
-    Right =1138
-    Bottom =253
+    Right =1152
+    Bottom =236
     Left =0
     Top =0
     ColumnsShown =539

@@ -1,4 +1,4 @@
 ﻿hfm_account_master_F0901
-ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=BRSales
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
 hfm.account_master_F0901
 GMMCU__business_unit;+GMOBJ__object_account;+GMSUB__subsidiary

@@ -64,5 +64,6 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+-- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
 -- SELECT  * FROM Dimension.Period

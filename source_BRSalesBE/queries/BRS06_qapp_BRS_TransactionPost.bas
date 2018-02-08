@@ -1,5 +1,6 @@
 ﻿dbMemo "SQL" ="Exec BRS_BE_Transaction_post_proc 0"
-dbMemo "Connect" ="ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;DATABASE=BRSales"
+dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;DATABASE=DEV"
+    "_BRSales;"
 dbBoolean "ReturnsRecords" ="0"
 dbInteger "ODBCTimeout" ="0"
 dbBoolean "LogMessages" ="0"
