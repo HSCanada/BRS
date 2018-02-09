@@ -95,6 +95,7 @@ BEGIN
 	WHERE     
 		(t.FreeGoodsInvoicedInd = 0) AND
 		(t.FiscalMonth BETWEEN @nFirstFiscalMonth_LY AND @nPriorFiscalMonth) AND 
+--		(t.FiscalMonth BETWEEN 201801 AND 201801) AND 
 		(1=1)
 
 	GROUP BY 
@@ -144,6 +145,7 @@ BEGIN
 	WHERE     
 		(t.FreeGoodsInvoicedInd = 0) AND
 		(d.FiscalMonth = @nFiscalMonth ) AND 
+--		(d.FiscalMonth = 201801 ) AND 
 		(t.Date <= @dtLastDay ) AND
 		
 		(1=1)

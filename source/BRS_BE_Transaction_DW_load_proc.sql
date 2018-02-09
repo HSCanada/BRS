@@ -823,7 +823,7 @@ UPDATE
 SET              
 	[CustomerPOText1] =	[NEW_CustomerPOText1]
 
---select SalesOrderNumber, CustomerPOText1, NEW_CustomerPOText1
+-- select SalesOrderNumber, CustomerPOText1, NEW_CustomerPOText1
 FROM         
 	BRS_TransactionDW_Ext 
 
@@ -865,9 +865,10 @@ WHERE
 	WHERE     
 		EXISTS
 		(
-			Select * From [dbo].[STAGE_BRS_TransactionDW] s
-			Where JDEORNO = SalesOrderNumber 
+			Select * From [dbo].[BRS_TransactionDW] s
+			Where SalesOrderNumber = s.SalesOrderNumber 
+				AND s.[CalMonth] between 201712 and 201802
 		) AND
-		TsTerritoryCd <> r.[TerritoryCd]
+		TsTerritoryCd <> r.[TerritoryCd] and TsTerritoryCd = ''
 
 */

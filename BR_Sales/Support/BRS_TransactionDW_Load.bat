@@ -20,7 +20,7 @@ BCP %DB_DST%..STAGE_BRS_TransactionDW in ../Upload/BRS_TransactionDW.txt -c -T -
 
 ECHO LOAD Prod...
 
-PAUSE
+:: PAUSE
 
 SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=0; SELECT SalesDateLastWeekly FROM BRS_Config"
 
