@@ -46,6 +46,7 @@
 -- 17 Feb 17	tmc		Fix Summary Bug caught by Gary W
 -- 20 Feb 17	tmc		Make BRS_AGG_ICMBGAD_Sales symetrical ...
 --							to BRS_AGG_CMBGAD_Sales
+**	15 Feb 17	tmc		Add extra items to history for hfm
 
 **    
 *******************************************************************************/
@@ -606,12 +607,18 @@ INSERT INTO BRS_ItemHistory
 (
 	Item, 
 	FiscalMonth, 
-	Supplier
+	Supplier,
+	[MinorProductClass],
+	[Label],
+	[Brand]
 )
 SELECT     
 	BRS_Item.Item, 
 	BRS_Config.FiscalMonth, 
-	BRS_Item.Supplier
+	BRS_Item.Supplier,
+	[MinorProductClass],
+	[Label],
+	[Brand]
 FROM         
 	BRS_Item 
 	CROSS JOIN BRS_Config
@@ -627,9 +634,8 @@ INSERT INTO BRS_CustomerFSC_History
 	HIST_Specialty,
 	HIST_MarketClass,
 	HIST_SegCd,
-
-	-- 23 Sep 16	tmc		Add TS territory to snapshot
-	HIST_TsTerritoryCd
+	HIST_TsTerritoryCd,
+	HIST_SalesDivision
 )
 SELECT     
 	c.ShipTo, 
@@ -639,9 +645,8 @@ SELECT
 	c.Specialty,
 	c.MarketClass,
 	c.SegCd,
-
-	-- 23 Sep 16	tmc		Add TS territory to snapshot
-	c.TsTerritoryCd
+	c.TsTerritoryCd,
+	c.SalesDivision
 
 FROM         
 	BRS_Customer c

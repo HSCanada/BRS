@@ -105,6 +105,6 @@ GO
 
 -- SELECT top 10 * FROM BRS_ItemBaseHistory order by CalMonth ASC
 
--- SELECT top 10 * FROM BRS_ItemBaseHistory where calmonth = 0
+-- SELECT top 10 * FROM BRS_ItemBaseHistory where calmonth = 201712
 
 

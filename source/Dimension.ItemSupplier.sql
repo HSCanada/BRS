@@ -46,7 +46,7 @@ SELECT
 		THEN s.supplier_nm
 		ELSE sf.supplier_family_nm
 	END						AS SupplierFamilyName
-	,s.RebateRollup
+	,s.RebateRollup			
 	
 FROM            
 	BRS_ItemSupplier s

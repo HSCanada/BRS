@@ -95,11 +95,8 @@ GO
 -- Testing
 
 -- adhoc look at the data
-SELECT 
- top 10 
--- count 
-* 
-FROM Fact.SaleVendor
+SELECT count (*) 
+FROM [Fact].[SaleVendor]
 
 -- old market test
 select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)

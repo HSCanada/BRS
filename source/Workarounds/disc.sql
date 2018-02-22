@@ -39,7 +39,7 @@ WHERE
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(c.BillTo=2613256 ) AND
 	(t.FiscalMonth BETWEEN 
---		(201601 ) and 
+		(201601 ) and 
 		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 ) and 
 		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 )
 	)

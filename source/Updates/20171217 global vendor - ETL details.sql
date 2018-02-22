@@ -1,6 +1,6 @@
 -- Add the below logic to a post ETL load proc
 -- 17 Dec 17, tmc
--- AFTER data flow doc, est 5m
+-- AFTER data flow doc, est *** 5m ***
 
 --- update F0901 from ETL - run package to update F0901, F0909
 
