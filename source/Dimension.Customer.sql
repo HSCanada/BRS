@@ -32,6 +32,7 @@ AS
 **	14 Sep 17	tmc		Simplified model
 --	20 Sep 17	tmc		Fixed Market setment join bug resulting in missing rows
 --	07 Dec 17	tmc		add Commission info
+--	22 Feb 18	tmc		add ISR info
 
 **    
 *******************************************************************************/
@@ -61,6 +62,7 @@ SELECT
 	,fsa.Province
 	,fsa.Country
 	,Geo_Category										AS Abc_GeoCustomer
+	,c.PhoneNo											AS PhoneNumber
 
 	,ISNULL(padj.[SNAST__adjustment_name],'')			AS Adjustment
 	,ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
@@ -104,6 +106,50 @@ SELECT
 	,c.[comm_status_cd]									AS CommStatusCode
 	,c.[comm_note_txt]									AS CommStatusNote
 
+---
+	,terr.TerritoryCd		AS FscTerritoryCd
+	,terr.FSCStatusCode		AS FscStatusCode
+
+	,isr.TerritoryCd		AS IsrTerritoryCd
+	,isr.FSCName			AS IsrName
+	,isr.FSCStatusCode		AS IsrStatusCode
+
+	,ISNULL(isr_emp.[EmployeeKey], 1) AS IsrEmployeeKey
+	,ISNULL(isr_emp.LoginId, '') AS IsrLoginId
+
+-----------------------------------------
+--			|	TS		|	No
+-----------------------------------------
+--	FSC		|	Shared	|	Field
+-----------------------------------------
+--	House	|	Tele	|	Unassasigned
+-----------------------------------------
+
+	,CASE WHEN terr.FSCStatusCode LIKE 'F%' 
+		THEN 
+			CASE WHEN isr.FSCStatusCode LIKE 'T%' 
+				THEN 'Shared FSCs & TS'  
+				ELSE 'Field Only' 
+			END 
+		ELSE 
+			CASE WHEN isr.FSCStatusCode LIKE 'T%' 
+				THEN 'Telesales Only'  
+				ELSE 'Unassigned' 
+			END 
+	END AS SalesChannel
+
+	-- Closed -> Special Market -> Focus -> Default
+	,CASE WHEN c.AccountType ='D' 
+		THEN 'CLS'
+		ELSE
+			CASE WHEN mcroll.MarketRollup_L1 like 'SP%'
+				THEN 'SPC'
+				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE c.FocusCd End
+			END
+	END AS FocusCd
+
+
+
 FROM
 	BRS_Customer AS c 
 
@@ -115,7 +161,6 @@ FROM
 
 	INNER JOIN BRS_CustomerMarketClass AS mclass 
 	ON c.MarketClass = mclass.MarketClass 
-
 
 	INNER JOIN BRS_CustomerGroup AS cgrp
 	ON c.CustGrpWrk = cgrp.CustGrp
@@ -129,6 +174,12 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
+
+	INNER JOIN BRS_FSC_Rollup AS isr
+	ON c.TsTerritoryCd = isr.TerritoryCd
+
+	LEFT JOIN [dbo].[BRS_Employee] isr_emp
+	ON isr.[FSCRollup] = isr_emp.[IsrRollupCd]
 
 	INNER JOIN BRS_Branch AS b 
 	ON terr.Branch = b.Branch
@@ -192,3 +243,4 @@ HAVING        (COUNT(*) > 1)
 */
 
 -- Select top 10 * from [Dimension].[Customer]
+-- Select count(*) from [Dimension].[Customer]
