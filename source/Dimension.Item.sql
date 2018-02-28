@@ -34,6 +34,7 @@ AS
 **	14 Sep 17	tmc		Simplified model
 --	20 Sep 17	tmc		add GM 
 --	07 Dec 17	tmc		add Commission info
+--	27 Feb 18	tmc		add sized & strength for ISR consolidator
 **    
 *******************************************************************************/
 
@@ -64,7 +65,10 @@ SELECT
 	,ifs.ItemDescription + ' | ' 
 		+ i.FamilySetLeader				AS FamilySet
 	,i.Item								AS ItemCode
-	,i.ItemStatus					
+	,i.[Size]
+	,i.[Strength]
+	,i.ItemStatus
+	,i.[ManufPartNumber]
 	,i.Brand
 	,i.Label
 	,i.GLCategory						AS StockingCode

@@ -56,7 +56,7 @@ BEGIN
 	SELECT     
 		t.ID					AS FactKey
 		,CAST(d.SalesDate as date) AS SalesDate
-		,d.FiscalMonth
+--		,d.FiscalMonth
 		,t.Shipto
 		,i.ItemKey				AS ItemKey
 
@@ -70,7 +70,19 @@ BEGIN
 			WHEN (t2.TsTerritoryCd) = '' 
 			THEN 0 
 			ELSE 1
-		END AS TsTagInd
+		END						AS TsTagInd
+
+--		, hdr.LastSalesDate
+
+		,CASE 
+			WHEN 
+				t.Item = hdr.Item And 
+				t.Shipto = hdr.Shipto AND
+				t.Date = hdr.LastSalesDate
+			THEN 1
+			ELSE 0
+		END						AS LastOrderInd
+
 
 		,t.[ShippedQty]			AS Quantity
 		,t.NetSalesAmt			AS SalesAmt
@@ -105,10 +117,36 @@ BEGIN
 		INNER JOIN [dbo].[BRS_OrderSource] as src
 		ON t.OrderSourceCode = src.OrderSourceCode
 
+		-- identify last customer / item order
+		LEFT JOIN 
+		(
+			SELECT
+				tlast.shipto,
+				tlast.item,
+				Max(tlast.Date) AS LastSalesDate
+			FROM
+				dbo.BRS_TransactionDW AS tlast 
+			WHERE     
+				-- ensure sub-range and full match
+				(tlast.FreeGoodsInvoicedInd = 0) AND
+				(EXISTS 
+					(SELECT * FROM [Dimension].[Day] dd2 
+					WHERE tlast.Date = dd2.SalesDate)
+				) AND
+				(1=1)
+			GROUP BY 
+				tlast.[Shipto],
+				tlast.Item
+		) AS hdr
+		ON t.Shipto = hdr.Shipto AND
+			t.Item= hdr.Item
+
 	WHERE     
 		(t.FreeGoodsInvoicedInd = 0) AND
 		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
 --		(d.FiscalMonth = 201802 ) AND 
+--		t.Shipto = 1526768 AND
+--		i.ItemKey = 193494 AND
 		(1=1)
 
 END
