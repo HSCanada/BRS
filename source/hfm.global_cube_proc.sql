@@ -33,10 +33,17 @@ AS
 **	-----	----------	--------------------------------------------
 **	30 Nov 17	tmc		update Product to use sub-minor & use global rollup 4CC
 **	02 Feb 18	tmc		Update layout, based on 1 Feb meeting
+--	01 Mar 18	tmc		Update specs for load
+--	02 Mar 18	tmc		Update Analysis for GSP
 
 *******************************************************************************/
 
-Declare @sVer varchar(10) = '2018.02.02'
+-- it would be a_CAN_Jan-18 
+
+Declare @sVersion	varchar(10)		= 'Working'
+Declare @sCurrency	varchar(3)		= 'LOC'
+Declare @sAnalysis	varchar(10)		= 'NoAnalysis'
+
 
 BEGIN
 	SET NOCOUNT ON;
@@ -50,24 +57,24 @@ BEGIN
 			BRS_Rollup_Support01
 	END
 
-	-- Sales 1 of 2
+	-- Sales 1 of 3
 	SELECT     
-		cc.[Entity]							AS Entity
-		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,9)		AS Product
-		,excl.BrandEquityCategory			AS BrandEquity
-		,excl.Excl_Code						AS BrandLine
-		,ch.HIST_MarketClass				AS CustomerCategory
-		,'CAD'								AS Currency
+		cc.[Entity]							AS ENTITY 
+		,[HFM_Account]						AS ACCOUNT
+		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
+		,RTRIM(excl.BrandEquityCategory)	AS BRAND_EQUITY
+		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
+		,RTRIM(ch.HIST_MarketClass)			AS CUSTOMER
+		,@sCurrency							AS CURRENCY
+		,@sAnalysis							AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
 			ELSE 'Manual_Entry' 
-		END									AS ReportingSource
-		,t.FiscalMonth						AS Period
-		,'Actual'							AS Senario
-		,@sVer								AS Version
-		,SUM(t.[NetSalesAmt])				AS ValueAmt
+		END									AS REPORTING_SOURCE
+		,t.FiscalMonth						AS PERIOD
+		,@sVersion							AS VERSION
+		,SUM(t.[NetSalesAmt])				AS AMOUNT
 
 	FROM         
 
@@ -107,6 +114,9 @@ BEGIN
 		,excl.Excl_Code
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+	HAVING
+		(SUM(t.[NetSalesAmt]) <>0)
+
 
 	UNION ALL
 
@@ -114,19 +124,19 @@ BEGIN
 	SELECT     
 		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,9)		AS Product
-		,excl.BrandEquityCategory			AS BrandEquity
-		,excl.Excl_Code						AS BrandLine
-		,ch.HIST_MarketClass				AS CustomerCategory
-		,'CAD'								AS Currency
+		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
+		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
+		,RTRIM(excl.Excl_Code)				AS BrandLine
+		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
+		,@sCurrency							AS Currency
+		,@sAnalysis							AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
 			ELSE 'Manual_Entry' 
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
-		,'Actual'							AS Senario
-		,@sVer								AS Version
+		,@sVersion								AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 	FROM         
 
@@ -155,7 +165,7 @@ BEGIN
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between @StartMonth AND @EndMonth) 
+		(t.FiscalMonth between @StartMonth AND @EndMonth)
 
 	GROUP BY 
 		t.FiscalMonth
@@ -166,6 +176,8 @@ BEGIN
 		,excl.Excl_Code
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+	HAVING 
+		SUM(t.[ExtendedCostAmt])<>0
 
 	UNION ALL
 
@@ -173,19 +185,19 @@ BEGIN
 	SELECT     
 		cc.[Entity]							AS Entity
 		,[HFM_Account]						AS Account
-		,LEFT(ih.MinorProductClass,9)		AS Product
-		,excl.BrandEquityCategory			AS BrandEquity
-		,excl.Excl_Code						AS BrandLine
-		,ch.HIST_MarketClass				AS CustomerCategory
-		,'CAD'								AS Currency
+		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
+		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
+		,RTRIM(excl.Excl_Code)				AS BrandLine
+		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
+		,@sCurrency							AS Currency
+		,@sAnalysis							AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
 			ELSE 'Manual_Entry' 
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
-		,'Actual'							AS Senario
-		,@sVer								AS Version
+		,@sVersion							AS Version
 		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
 	FROM         
 
@@ -226,6 +238,9 @@ BEGIN
 		,excl.Excl_Code						
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+
+	HAVING
+		(SUM(t.[ExtChargebackAmt])<> 0)
 
 END
 
