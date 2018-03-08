@@ -35,6 +35,7 @@ AS
 **	02 Feb 18	tmc		Update layout, based on 1 Feb meeting
 --	01 Mar 18	tmc		Update specs for load
 --	02 Mar 18	tmc		Update Analysis for GSP
+--	07 Mar 18	tmc		Add GSP dimension to Analysis
 
 *******************************************************************************/
 
@@ -66,7 +67,7 @@ BEGIN
 		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
 		,RTRIM(ch.HIST_MarketClass)			AS CUSTOMER
 		,@sCurrency							AS CURRENCY
-		,@sAnalysis							AS ANALYSIS
+		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -77,7 +78,6 @@ BEGIN
 		,SUM(t.[NetSalesAmt])				AS AMOUNT
 
 	FROM         
-
 		[dbo].[BRS_Transaction] AS t 
 
 		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
@@ -102,6 +102,9 @@ BEGIN
 		INNER JOIN [dbo].[BRS_DocType] as doct
 		ON t.DocType = doct.DocType
 
+		LEFT JOIN [hfm].[gps_code] as g
+		ON t.GpsKey = g.GpsKey
+
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) 
 
@@ -112,6 +115,7 @@ BEGIN
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
+		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 	HAVING
@@ -129,7 +133,7 @@ BEGIN
 		,RTRIM(excl.Excl_Code)				AS BrandLine
 		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
 		,@sCurrency							AS Currency
-		,@sAnalysis							AS ANALYSIS
+		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -164,6 +168,9 @@ BEGIN
 		INNER JOIN [dbo].[BRS_DocType] as doct
 		ON t.DocType = doct.DocType
 
+		LEFT JOIN [hfm].[gps_code] as g
+		ON t.GpsKey = g.GpsKey
+
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth)
 
@@ -174,6 +181,7 @@ BEGIN
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
+		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 	HAVING 
@@ -190,7 +198,7 @@ BEGIN
 		,RTRIM(excl.Excl_Code)				AS BrandLine
 		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
 		,@sCurrency							AS Currency
-		,@sAnalysis							AS ANALYSIS
+		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -225,6 +233,9 @@ BEGIN
 		INNER JOIN [dbo].[BRS_DocType] as doct
 		ON t.DocType = doct.DocType
 
+		LEFT JOIN [hfm].[gps_code] as g
+		ON t.GpsKey = g.GpsKey
+
 	WHERE
 		(t.ExtChargebackAmt is NOT NULL) AND
 		(t.FiscalMonth between @StartMonth AND @EndMonth)
@@ -235,7 +246,8 @@ BEGIN
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
-		,excl.Excl_Code						
+		,excl.Excl_Code
+		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 
