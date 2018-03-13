@@ -277,6 +277,7 @@ where
 
 --- GPS
 
+
 SELECT top 100
 t.ID,
 r.GLBU_Class_WhereClauseLike, 
@@ -311,9 +312,11 @@ ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE        
 	(r.Sequence = 1) AND
-	(t.FiscalMonth = 201712)
+	(t.FiscalMonth = 201701)
 ORDER BY 
 1
+
+-- GPS update 1 & 2
 
 -- seq 1 of 2
 UPDATE
@@ -339,8 +342,7 @@ FROM
 
 WHERE
 	(r.Sequence = 1) AND 
-	(BRS_Transaction.FiscalMonth = 201802)
---	(BRS_Transaction.FiscalMonth = 201712)
+	(BRS_Transaction.FiscalMonth = 201712)
 
 -- seq 2 of 2
 UPDATE
@@ -367,7 +369,6 @@ FROM
 WHERE
 	(r.Sequence = 2) AND 
 	(BRS_Transaction.GpsKey IS NULL) AND
-	(BRS_Transaction.FiscalMonth = 201802)
---	(BRS_Transaction.FiscalMonth = 201712)
+	(BRS_Transaction.FiscalMonth = 201712)
 
 

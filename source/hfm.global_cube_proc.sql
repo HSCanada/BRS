@@ -263,5 +263,74 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
--- [hfm].global_cube_proc  201712, 201712
+-- [hfm].global_cube_proc  201704, 201704
 
+/*
+	SELECT     
+		cc.[Entity]							AS ENTITY 
+		,t.[GL_BusinessUnit]
+		,[HFM_Account]						AS ACCOUNT
+		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
+		,RTRIM(excl.BrandEquityCategory)	AS BRAND_EQUITY
+		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
+		,RTRIM(ch.HIST_MarketClass)			AS CUSTOMER
+		,'curr'							AS CURRENCY
+		,RTRIM(ISNULL(g.GpsCode, 'analysis'))	AS ANALYSIS
+		,CASE 
+			WHEN doct.SourceCd = 'JDE' 
+			THEN 'GL_Input' 
+			ELSE 'Manual_Entry' 
+		END									AS REPORTING_SOURCE
+		,t.FiscalMonth						AS PERIOD
+		,'ver'							AS VERSION
+		,SUM(t.[NetSalesAmt])				AS AMOUNT
+
+	FROM         
+		[dbo].[BRS_Transaction] AS t 
+
+		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+		ON t.Shipto = ch.[Shipto] AND
+			t.[FiscalMonth] = ch.[FiscalMonth]
+
+		INNER JOIN [dbo].[BRS_ItemHistory] as ih
+		ON t.Item = ih.[Item] AND
+			t.[FiscalMonth] = ih.[FiscalMonth]
+
+		INNER JOIN [hfm].[account_master_F0901] as hfm
+		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
+			t.[GL_Object_Sales] = hfm.[GMOBJ__object_account] AND
+			t.[GL_Subsidiary_Sales] = hfm.[GMSUB__subsidiary] 
+
+		INNER JOIN [hfm].[cost_center] as cc
+		ON hfm.HFM_CostCenter = cc.CostCenter
+
+		INNER JOIN [hfm].[exclusive_product] as excl
+		ON ih.Excl_key = excl.Excl_Key
+
+		INNER JOIN [dbo].[BRS_DocType] as doct
+		ON t.DocType = doct.DocType
+
+		LEFT JOIN [hfm].[gps_code] as g
+		ON t.GpsKey = g.GpsKey
+
+	WHERE
+		(t.FiscalMonth = 201802)  AND
+		([HFM_Account] in ('CgsMtrxEquip', 'MtrxCredEquip', 'MtrxEquip')) AND
+		( cc.[Entity]	is  NULL)
+
+	GROUP BY 
+		t.FiscalMonth
+		,cc.[Entity]
+		,t.[GL_BusinessUnit]
+		,hfm.[HFM_Account]
+		,ih.MinorProductClass
+		,excl.BrandEquityCategory
+		,excl.Excl_Code
+		,g.GpsCode
+		,ch.HIST_MarketClass
+		,doct.SourceCd
+	HAVING
+		(SUM(t.[NetSalesAmt]) <>0)
+
+
+*/
