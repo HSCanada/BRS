@@ -36,7 +36,7 @@ AS
 --	01 Mar 18	tmc		Update specs for load
 --	02 Mar 18	tmc		Update Analysis for GSP
 --	07 Mar 18	tmc		Add GSP dimension to Analysis
-
+--	19 Mar 18	tmc		add test logic fields (remove after sign-off)
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -76,6 +76,12 @@ BEGIN
 		,t.FiscalMonth						AS PERIOD
 		,@sVersion							AS VERSION
 		,SUM(t.[NetSalesAmt])				AS AMOUNT
+
+-- test
+		,t.GL_BusinessUnit					AS TEST_BusinessUnit
+		,t.GL_Object_Sales					AS TEST_Object
+		,t.SalesDivision					AS TEST_SalesDivision
+
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -118,6 +124,11 @@ BEGIN
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_Sales
+		,t.SalesDivision
+
 	HAVING
 		(SUM(t.[NetSalesAmt]) <>0)
 
@@ -142,6 +153,12 @@ BEGIN
 		,t.FiscalMonth						AS Period
 		,@sVersion								AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
+
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -184,6 +201,11 @@ BEGIN
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+
 	HAVING 
 		SUM(t.[ExtendedCostAmt])<>0
 
@@ -207,6 +229,13 @@ BEGIN
 		,t.FiscalMonth						AS Period
 		,@sVersion							AS Version
 		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
+
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_ChargeBack
+		,t.SalesDivision
+
+
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -250,6 +279,11 @@ BEGIN
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_ChargeBack
+		,t.SalesDivision
+
 
 	HAVING
 		(SUM(t.[ExtChargebackAmt])<> 0)
