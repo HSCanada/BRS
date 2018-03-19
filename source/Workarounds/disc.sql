@@ -1,3 +1,5 @@
+-- update discount to enable quick filter, tmc, 13 Mar 18
+
 SELECT        
 
 	t.FiscalMonth, 
@@ -16,7 +18,10 @@ SELECT
 	SUM(t.ExtDiscOrder) AS ExtDiscOrder, 
 	SUM(t.ExtDiscAmt)	AS ExtDiscAmt, 
 	SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt,
-	SUM(t.GPAmt)		AS GPAmt
+	SUM(t.GPAmt)		AS GPAmt,
+	MIN([HIST_MarketClass])  AS MarketClass,
+	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
+
 FROM            
 	BRS_AGG_CMI_DW_Sales AS t 
 
@@ -35,13 +40,11 @@ FROM
 
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
-
 	(t.FreeGoodsInvoicedInd = 0)  And 
-	(c.BillTo=2613256 ) AND
-	(t.FiscalMonth BETWEEN 
-		(201601 ) and 
-		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 ) and 
-		(Select [PriorFiscalMonth] FROM BRS_Rollup_Support01 )
+--	NOT (c.BillTo=2613256 ) AND
+	(
+		(t.FiscalMonth BETWEEN 201701 and 201702) OR
+		(t.FiscalMonth BETWEEN 201801 and 201802)
 	)
 
 GROUP BY 
@@ -53,7 +56,8 @@ GROUP BY
 	t.OrderSourceCode, 
 	t.PriceMethod, 
 	c.SalesDivision, 
-	c.SegCd
+	c.SegCd,
+	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END 
 
 ORDER BY 1
 
