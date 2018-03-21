@@ -91,7 +91,7 @@ SET                isrRollupCd = 'DTSNT'
 WHERE        (LoginId = N'CAHSI\Noah.Thompson')
 
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSJC'
+SET                isrRollupCd = 'DTSNX'
 WHERE        (LoginId = N'CAHSI\TCROWLey')
 
 UPDATE       BRS_Employee
@@ -116,3 +116,70 @@ FROM            BRS_FSC_Rollup INNER JOIN
 ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 -- ORG 738
+
+-- 
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup ADD
+	CategoryRollup_L1 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L1 DEFAULT (''),
+	CategoryRollup_L2 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L2 DEFAULT (''),
+	CategoryRollup_L3 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L3 DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
+	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup1 FOREIGN KEY
+	(
+	CategoryRollup_L1
+	) REFERENCES dbo.BRS_ItemCategoryRollup
+	(
+	CategoryRollup
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
+	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup2 FOREIGN KEY
+	(
+	CategoryRollup_L2
+	) REFERENCES dbo.BRS_ItemCategoryRollup
+	(
+	CategoryRollup
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
+	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup3 FOREIGN KEY
+	(
+	CategoryRollup_L3
+	) REFERENCES dbo.BRS_ItemCategoryRollup
+	(
+	CategoryRollup
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- set top 15
+
+UPDATE       BRS_ItemCategoryRollup
+SET                CategoryRollup_L1 = [CategoryRollup]
+WHERE        (CategoryRollup IN ('ANSTHC', 'CEMENT', 'COSMTC', 'CROBRG', 'DENINS', 'DSPSBL', 'ENDODN', 'FINPOL', 'GLOVES', 'HANPCE', 'IMPRES', 'INFCON', 'PRVNTV', 
+                         'ROTARY', 'RSTRTV'))
+
+UPDATE       BRS_ItemCategoryRollup
+SET                CategoryRollup_L1 = 'PRVNTV'
+WHERE        (CategoryRollup IN ('PRVMBR', 'PRVPBR'))
+
+UPDATE       BRS_ItemCategoryRollup
+SET                CategoryRollup_L1 = 'MEROTH'
+WHERE        CategoryClass_Rollup = 'MERCH' AND CategoryRollup_L1 = ''
+
+-- goals and spend
+ALTER TABLE dbo.BRS_Customer ADD
+	isr_target_amt money NOT NULL CONSTRAINT DF_BRS_Customer_isr_goal_amt DEFAULT (0),
+	potential_spend_amt money NOT NULL CONSTRAINT DF_BRS_Customer_potential_spend_amt DEFAULT (0)
+GO

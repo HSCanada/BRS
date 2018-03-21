@@ -33,6 +33,7 @@ AS
 --	20 Sep 17	tmc		Fixed Market setment join bug resulting in missing rows
 --	07 Dec 17	tmc		add Commission info
 --	22 Feb 18	tmc		add ISR info
+--	20 Mar 18	tmc		add goals and spend
 
 **    
 *******************************************************************************/
@@ -147,6 +148,9 @@ SELECT
 				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE c.FocusCd End
 			END
 	END AS FocusCd
+
+	,c.isr_target_amt			AS TargetAmount
+	,c.potential_spend_amt		As PotentialSpendAmount
 
 
 

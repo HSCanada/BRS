@@ -43,22 +43,21 @@ SELECT
 	i.ItemKey							AS ItemKey
 	,i.ItemDescription + ' | ' + i.Item	AS Item
 
-	,RTRIM(sc.SalesCategoryName) + ' | ' 
-		+ sc.SalesCategory				AS SalesCategory
+	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
 	,mpc.MPC_Category					AS Abc_MpcItem
 	,cr.category_rollup_desc 			AS CategoryRollup
-	,mpc.MajorProductClassDesc	+ ' | ' 
-		+ c.major_cd					AS Major
-	,c.submajor_desc			+ ' | ' 
-		+ c.submajor_cd					AS SubMajor	
-	,c.minor_desc				+ ' | ' 
-		+ c.MinorProductClass			AS Minor
+	,RTRIM(c.major_cd) + ' | ' 
+		+ mpc.MajorProductClassDesc		AS Major
+	,RTRIM(c.submajor_cd) + ' | ' 
+		+ c.submajor_desc				AS SubMajor	
+	,RTRIM(c.MinorProductClass) + ' | ' 
+		+ c.minor_desc					AS Minor
 
-	,RTRIM(s.Supplier) + ' | ' 
-		+ s.supplier_nm					AS Supplier
+	,s.supplier_nm + ' | ' 
+		+ RTRIM(s.Supplier)				AS Supplier
 	,s.Supplier_Category				AS Abc_SupplierItem
-	,RTRIM(sf.SupplierFamily) + ' | ' 
-		+ sf.supplier_family_nm			AS SupplierFamily
+	,sf.supplier_family_nm + ' | ' 
+		+ RTRIM(sf.SupplierFamily)		AS SupplierFamily
 	,sf.buying_group_cd					AS BuyingGroup
 	,sf.classificiation_cd				AS VendorClassification
 	
@@ -100,6 +99,8 @@ SELECT
 	,(sc.SalesCategory)					AS SalesCategoryCode
 	,(cr.CategoryRollup)				AS CategoryRollupCode
 	,(cr.CategoryClass_Rollup)			AS CategoryClassRollupCode
+	,(cr.CategoryRollup_L1)				AS CategoryRollupCode_ISR
+	,(cr_isr.category_rollup_desc)		AS CategoryRollup_ISR
 	,i.comm_group_cd					AS CommGroupCode
 	,i.comm_note_txt					AS CommGroupNote
 	,i.comm_group_cps_cd				AS CommGroupCpsCode
@@ -123,6 +124,8 @@ FROM
 	INNER JOIN [BRS_ItemCategoryRollup] as cr
 	ON c.CategoryRollup = cr.CategoryRollup 
 
+	INNER JOIN [BRS_ItemCategoryRollup] as cr_isr
+	ON cr.[CategoryRollup_L1] = cr_isr.CategoryRollup 
 
 	INNER JOIN BRS_ItemSalesCategory AS sc 
 	ON i.SalesCategory = sc.SalesCategory 
