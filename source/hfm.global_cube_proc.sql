@@ -37,6 +37,7 @@ AS
 --	02 Mar 18	tmc		Update Analysis for GSP
 --	07 Mar 18	tmc		Add GSP dimension to Analysis
 --	19 Mar 18	tmc		add test logic fields (remove after sign-off)
+--	21 Mar 18	tmc		add net gp logic - caught during testing
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -151,8 +152,10 @@ BEGIN
 			ELSE 'Manual_Entry' 
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
-		,@sVersion								AS Version
+		,@sVersion							AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
+
+
 
 -- test
 		,t.GL_BusinessUnit
@@ -188,8 +191,13 @@ BEGIN
 		LEFT JOIN [hfm].[gps_code] as g
 		ON t.GpsKey = g.GpsKey
 
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
+
 	WHERE
-		(t.FiscalMonth between @StartMonth AND @EndMonth)
+		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
+		(glru.ReportingClass <> 'NSA') AND
+		(1=1)
 
 	GROUP BY 
 		t.FiscalMonth
@@ -228,13 +236,13 @@ BEGIN
 		END									AS ReportingSource
 		,t.FiscalMonth						AS Period
 		,@sVersion							AS Version
-		,SUM(t.[ExtChargebackAmt])			AS ValueAmt
+		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
+		,-SUM(t.[ExtChargebackAmt])			AS ValueAmt
 
 -- test
 		,t.GL_BusinessUnit
 		,t.GL_Object_ChargeBack
 		,t.SalesDivision
-
 
 	FROM         
 
@@ -265,9 +273,14 @@ BEGIN
 		LEFT JOIN [hfm].[gps_code] as g
 		ON t.GpsKey = g.GpsKey
 
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
+
 	WHERE
 		(t.ExtChargebackAmt is NOT NULL) AND
-		(t.FiscalMonth between @StartMonth AND @EndMonth)
+		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
+		(glru.ReportingClass <> 'NSA') AND
+		(1=1)
 
 	GROUP BY 
 		t.FiscalMonth
