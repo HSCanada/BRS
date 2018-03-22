@@ -38,6 +38,7 @@ AS
 --	07 Mar 18	tmc		Add GSP dimension to Analysis
 --	19 Mar 18	tmc		add test logic fields (remove after sign-off)
 --	21 Mar 18	tmc		add net gp logic - caught during testing
+--	22 Mar 19	tmc		add GLBU & Adj codes to cube for testing, remove zzzEXC tbd
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -82,7 +83,8 @@ BEGIN
 		,t.GL_BusinessUnit					AS TEST_BusinessUnit
 		,t.GL_Object_Sales					AS TEST_Object
 		,t.SalesDivision					AS TEST_SalesDivision
-
+		,t.GLBU_Class						AS TEST_GLBU_Class
+		,t.AdjCode							AS TEST_AdjCode
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -129,6 +131,8 @@ BEGIN
 		,t.GL_BusinessUnit
 		,t.GL_Object_Sales
 		,t.SalesDivision
+		,t.GLBU_Class
+		,t.AdjCode
 
 	HAVING
 		(SUM(t.[NetSalesAmt]) <>0)
@@ -161,6 +165,8 @@ BEGIN
 		,t.GL_BusinessUnit
 		,t.GL_Object_Cost
 		,t.SalesDivision
+		,t.GLBU_Class						AS TEST_GLBU_Class
+		,t.AdjCode							AS TEST_AdjCode
 
 	FROM         
 
@@ -213,6 +219,8 @@ BEGIN
 		,t.GL_BusinessUnit
 		,t.GL_Object_Cost
 		,t.SalesDivision
+		,t.GLBU_Class
+		,t.AdjCode
 
 	HAVING 
 		SUM(t.[ExtendedCostAmt])<>0
@@ -243,6 +251,8 @@ BEGIN
 		,t.GL_BusinessUnit
 		,t.GL_Object_ChargeBack
 		,t.SalesDivision
+		,t.GLBU_Class						AS TEST_GLBU_Class
+		,t.AdjCode							AS TEST_AdjCode
 
 	FROM         
 
@@ -296,6 +306,8 @@ BEGIN
 		,t.GL_BusinessUnit
 		,t.GL_Object_ChargeBack
 		,t.SalesDivision
+		,t.GLBU_Class
+		,t.AdjCode
 
 
 	HAVING
