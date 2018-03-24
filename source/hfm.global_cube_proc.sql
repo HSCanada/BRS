@@ -115,7 +115,9 @@ BEGIN
 		ON t.GpsKey = g.GpsKey
 
 	WHERE
-		(t.FiscalMonth between @StartMonth AND @EndMonth) 
+		(t.FiscalMonth between @StartMonth AND @EndMonth)  AND
+		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
+		(1=1)
 
 	GROUP BY 
 		t.FiscalMonth
@@ -159,8 +161,6 @@ BEGIN
 		,@sVersion							AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 
-
-
 -- test
 		,t.GL_BusinessUnit
 		,t.GL_Object_Cost
@@ -203,6 +203,7 @@ BEGIN
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
 		(glru.ReportingClass <> 'NSA') AND
+		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(1=1)
 
 	GROUP BY 
@@ -290,6 +291,7 @@ BEGIN
 		(t.ExtChargebackAmt is NOT NULL) AND
 		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
 		(glru.ReportingClass <> 'NSA') AND
+		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(1=1)
 
 	GROUP BY 
@@ -322,5 +324,5 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
--- [hfm].global_cube_proc  201701, 201701
+-- [hfm].global_cube_proc  201701, 201802
 

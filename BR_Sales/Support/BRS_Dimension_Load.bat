@@ -24,7 +24,7 @@ bcp %DB_DST%..STAGE_BRS_ItemFull in ../Upload/BRSItemFull.txt -c -T -S %BRS_SQLS
 
 ECHO LOAD Prod...
 
-SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0; Exec BRS_BE_Transaction_post_proc 0"
+::SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0; Exec BRS_BE_Transaction_post_proc 0"
 
 
 PAUSE
