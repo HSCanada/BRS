@@ -114,7 +114,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth = 201802
+	FiscalMonth = 201803
 
 GO
 
@@ -292,7 +292,7 @@ r.SalesDivision_WhereClauseLike,
 t.SalesDivision, 
 r.Gps_Code_TargKey, 
 g.GpsKey,
-t.GpsKey
+t.GpsKey AS GpsKeyACT
 FROM
 BRS_ItemHistory AS h 
 INNER JOIN BRS_Transaction AS t 
@@ -311,12 +311,64 @@ INNER JOIN [hfm].[gps_code] as g
 ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE        
-	(r.Sequence = 1) AND
-	(t.FiscalMonth = 201701)
+	(r.Sequence = 2) AND
+	(r.RuleName = '29') AND
+	(t.FiscalMonth >= 201701) AND
+	(1=1)
 ORDER BY 
 1
 
+-- rule add as per Linda, 28 Mar 18
+INSERT INTO hfm.gps_code_rule
+                         (GLBU_Class_WhereClauseLike, BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
+                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd)
+
+SELECT        'MECAD', BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
+                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd
+FROM            hfm.gps_code_rule AS gps_code_rule_1
+WHERE        (GLBU_Class_WhereClauseLike = 'MERCH')
+
+
+INSERT INTO hfm.gps_code_rule
+                         (GLBU_Class_WhereClauseLike, BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
+                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd)
+
+SELECT        'MECAZ', BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
+                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd
+FROM            hfm.gps_code_rule AS gps_code_rule_1
+WHERE        (GLBU_Class_WhereClauseLike = 'MERCH')
+
+
+
+---
+
 -- GPS update 1 & 2
+
+-- seq 0 of 2
+
+UPDATE
+	BRS_Transaction
+SET
+	GpsKey = NULL
+FROM
+	BRS_ItemHistory AS h 
+	INNER JOIN BRS_Transaction 
+	ON h.Item = BRS_Transaction.Item AND 
+	h.FiscalMonth = BRS_Transaction.FiscalMonth 
+
+	INNER JOIN hfm.gps_code_rule AS r 
+	ON BRS_Transaction.GLBU_Class LIKE RTRIM(r.GLBU_Class_WhereClauseLike) AND 
+	BRS_Transaction.GL_BusinessUnit LIKE RTRIM(r.BusinessUnit_WhereClauseLike) AND 
+	h.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+	h.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+	BRS_Transaction.SalesDivision LIKE RTRIM(r.SalesDivision_WhereClauseLike) AND
+	1 = 1 
+
+	INNER JOIN hfm.gps_code AS g 
+	ON r.Gps_Code_TargKey = g.GpsCode
+
+WHERE
+	(BRS_Transaction.FiscalMonth between 201701 and 201802)
 
 -- seq 1 of 2
 UPDATE
@@ -342,7 +394,7 @@ FROM
 
 WHERE
 	(r.Sequence = 1) AND 
-	(BRS_Transaction.FiscalMonth = 201712)
+	(BRS_Transaction.FiscalMonth between 201701 and 201802)
 
 -- seq 2 of 2
 UPDATE
@@ -369,6 +421,6 @@ FROM
 WHERE
 	(r.Sequence = 2) AND 
 	(BRS_Transaction.GpsKey IS NULL) AND
-	(BRS_Transaction.FiscalMonth = 201712)
+	(BRS_Transaction.FiscalMonth between 201701 and 201802)
 
 

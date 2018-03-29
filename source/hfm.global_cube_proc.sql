@@ -324,5 +324,5 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
--- [hfm].global_cube_proc  201701, 201802
+-- [hfm].global_cube_proc  201801, 201801
 

@@ -45,7 +45,10 @@ WHERE
 	(
 		(t.FiscalMonth BETWEEN 201701 and 201702) OR
 		(t.FiscalMonth BETWEEN 201801 and 201802)
-	)
+	) AND
+--	i.[Supplier] = 'DENTZA' AND
+	(1=1)
+
 
 GROUP BY 
 	t.FiscalMonth, 
@@ -63,3 +66,4 @@ ORDER BY 1
 
 
 -- set Results to text!
+
