@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	31 Mar 18	tmc		added DSO to the list
 **    
 *******************************************************************************/
 
@@ -81,7 +82,7 @@ WHERE
 	(c.ShipTo > 0) AND
 	(c.AccountType <> 'D') AND
 	(c.SalesDivision = 'AAD') AND 
-	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP')) AND
+	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO')) AND
 	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT')) AND
 	(1=1)
 GO
@@ -94,3 +95,4 @@ GO
 
 -- SELECT top 10 * FROM eps.Customer 
 
+-- SELECT * FROM eps.Customer 

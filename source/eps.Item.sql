@@ -35,14 +35,19 @@ AS
 -- item
 -- 
 SELECT
-	(Item)							AS Item_Number, 
-	RTRIM(ItemDescription)			AS Item_Description, 
-	RTRIM(MajorProductClass)		AS Major_Product_Class, 
-	RTRIM(cat.major_desc)			AS Major_Product_Class_Description, 
-	RTRIM(i.MinorProductClass)		AS Sub_Minor_Prod_Class, 
-	RTRIM(cat.minor_desc)			AS Sub_Minor_Prod_Class_Description, 
-	RTRIM(p.[Excl_Code])			AS Supplier, 
-	RTRIM(P.Excl_Name)				AS Supplier_Description
+	Item							AS Item_Number
+	,RTRIM(ItemDescription)			AS Item_Description
+	,RTRIM(MajorProductClass)		AS Major_Product_Class
+	,RTRIM(cat.major_desc)			AS Major_Product_Class_Description
+	,RTRIM(i.MinorProductClass)		AS Sub_Minor_Prod_Class
+	,RTRIM(cat.minor_desc)			AS Sub_Minor_Prod_Class_Description
+	,RTRIM(p.[Excl_Code])			AS Supplier
+	,RTRIM(P.Excl_Name)				AS Supplier_Description
+	,CAST(i.ItemCreationDate AS Date) AS Item_Create_Date
+	,i.ItemStatus					AS Item_Status
+	,i.StockingType					AS Stocking_Type
+
+
 FROM
 	BRS_Item AS i
 
@@ -73,3 +78,4 @@ GO
 
 
 -- SELECT top 10 * FROM eps.Item
+-- SELECT * FROM eps.Item

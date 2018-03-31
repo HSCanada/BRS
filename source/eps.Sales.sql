@@ -108,5 +108,5 @@ GO
 -- [eps].Sales_proc
 
 -- Prod
--- [eps].Sales 0
+-- [eps].Sales_proc 0
 
