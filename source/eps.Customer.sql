@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	31 Mar 18	tmc		added DSO to the list
+**	04 Apr 18	tmc		finalize fields for production
 **    
 *******************************************************************************/
 
@@ -50,18 +51,18 @@ SELECT
 	RTRIM(f.[FSCName])	AS Field_Level_4_Description,
 	RTRIM(Specialty)	AS Specialty_Discription, 
 	t.[FSCName]		AS Inside_Sales_Name,
-	'.'				AS Inside_Sales_Mgr,
+--	'.'				AS Inside_Sales_Mgr,
 	SalesDivision	AS Sales_Division, 
 	BillTo			AS Bill_To, 
-	'.'				AS Field_Mgr_Name,
+--	'.'				AS Field_Mgr_Name,
 	'.'				AS Alert_Comment,
 	PracticeType	AS Practice_Type, 
 	BillTo			AS Jde_Bill_To, 
-	'.'				AS Eps_Name,
+--	'.'				AS Eps_Name,
 	'0'				AS Credit_Limit,
-	'.'				AS Credit_Rep,
-	'.'				AS Eps_Mgr_Name,
-	'.'				AS Priv_Level,
+--	'.'				AS Credit_Rep,
+--	'.'				AS Eps_Mgr_Name,
+--	'.'				AS Priv_Level,
 	'0'				AS Priv_Point,
 	RTRIM(SegCd)	AS Special_Market_Segment,
 	'.'				AS Special_Market_Segment_Description,
@@ -94,5 +95,7 @@ GO
 
 
 -- SELECT top 10 * FROM eps.Customer 
-
--- SELECT * FROM eps.Customer 
+/*
+SET NOCOUNT ON;
+SELECT * FROM eps.Customer 
+*/
