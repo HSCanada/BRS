@@ -5,12 +5,12 @@ SELECT
 	t.FiscalMonth, 
 	CAST (m.YearNum AS CHAR(4)) +'Q'+ CAST(m.QuarterNum AS CHAR(1)) AS year_qtr, 
 	m.YearNum,  
-	f.Branch, 
+	RTRIM(f.Branch)		AS Branch, 
 	i.SalesCategory, 
 	t.OrderSourceCode, 
 	t.PriceMethod, 
 	c.SalesDivision, 
-	c.SegCd, 
+	RTRIM(c.SegCd)		AS SegCd,
 	SUM(t.ExtBase)		AS ExtBase, 
 	SUM(t.SalesAmt)		AS SalesAmt, 
 	0					AS placeholder,
@@ -43,8 +43,8 @@ WHERE
 	(t.FreeGoodsInvoicedInd = 0)  And 
 --	NOT (c.BillTo=2613256 ) AND
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201702) OR
-		(t.FiscalMonth BETWEEN 201801 and 201802)
+		(t.FiscalMonth BETWEEN 201701 and 201703) OR
+		(t.FiscalMonth BETWEEN 201801 and 201803)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
