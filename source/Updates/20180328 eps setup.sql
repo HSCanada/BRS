@@ -50,6 +50,58 @@ UPDATE       hfm.exclusive_product
 SET                eps_track_ind = 1
 WHERE        (Excl_Code IN ('CAO', 'CAO_LASER', 'MILESTONE', 'ORTHO_TECHNOLOGIES', 'OSSTELL', 'EDGE_ENDO', 'CHANNELS'))
 
+-- add fiscal week
+
+ALTER TABLE dbo.BRS_SalesDay ADD
+	FiscWeekName char(10) NOT NULL CONSTRAINT DF_BRS_SalesDay_FiscWeekName DEFAULT ('')
+GO
+
+
+CREATE TABLE [dbo].[zzzDay](
+	[day] [date] NOT NULL,
+	[week] [nchar](10) NOT NULL,
+ CONSTRAINT [PK_zzzDay] PRIMARY KEY CLUSTERED 
+(
+	[day] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+-- load from excel
+
+UPDATE       BRS_SalesDay
+SET                FiscWeekName = zzzDay.week
+FROM            zzzDay INNER JOIN
+                         BRS_SalesDay ON zzzDay.day = BRS_SalesDay.SalesDate
+
+-- SELECT * FROM BRS_SalesDay WHERE FiscWeekName =''
+
+SELECT * FROM BRS_SalesDay where FiscalWeek = 12786
+
+UPDATE       BRS_SalesDay
+SET                FiscalWeek = w.fweek
+FROM            
+	BRS_SalesDay d 
+	INNER JOIN 
+	(
+		SELECT        FiscWeekName, MIN(DaySeq) AS fweek
+		FROM            BRS_SalesDay
+		GROUP BY FiscWeekName
+	) w
+ON 
+	d.FiscWeekName = w.FiscWeekName
+
+-- test
+SELECT        FiscalWeek, MIN(FiscalMonth) AS minf, MAX(FiscalMonth) AS maxf
+FROM            BRS_SalesDay
+where FiscalMonth between 201701 and 201812
+GROUP BY FiscalWeek
+HAVING MIN(FiscalMonth) <> MAX(FiscalMonth)
+
+
+
+
 
 
 

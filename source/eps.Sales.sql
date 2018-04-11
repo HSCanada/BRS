@@ -32,6 +32,9 @@ AS
 **    
 *******************************************************************************/
 
+Declare @nWeek	int = 0
+-- Declare @StartMonth int = 0
+
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
 	-- interfering with SELECT statements.
@@ -46,6 +49,15 @@ BEGIN
 	--Get Params
 	 
 	--Pull Cube based on Params
+	SELECT
+		@nWeek = d.FiscalWeek
+--		@StartMonth = d.FiscalMonth
+	FROM
+		BRS_Config AS c 
+
+		INNER JOIN BRS_SalesDay AS d 
+		ON c.SalesDateLastWeekly = d.SalesDate
+
 
 	SELECT
 		Customer_Number
@@ -54,9 +66,7 @@ BEGIN
 		,Practice_Name
 		,Field_Level_4
 		,(Field_Level_4_Description)			AS Field_Level_4_Description
---		,Eps_Name
 		,Field_Level_3
---		,Field_Level_3_Description
 		,Sales_Division
 		,(Address_Line1)						AS Address_Line1
 		,City
@@ -67,7 +77,6 @@ BEGIN
 		,[OriginalSalesOrderNumber]				AS Original_Sales_Order_Number
 		,[SalesOrderNumber]						AS Sales_Order_Number
 		,RTRIM([PromotionCode])					AS Promotion_Code
---		,'.'									AS Classification
 		,(i.Supplier)							AS Supplier
 		,i.Supplier_Description
 		,i.[Major_Product_Class]
@@ -77,9 +86,10 @@ BEGIN
 		,RTRIM(i.[Item_Number])					AS [Item_Number]
 		,i.[Item_Description]
 		,CAST(d.SalesDate as date)				AS Sales_Date
-		,RTRIM(t.CustomerPOText1)						AS PO_Number
+		,RTRIM(t.CustomerPOText1)				AS PO_Number
 		,t.NetSalesAmt							AS Net_Sales
 		,t.[ShippedQty]							AS Net_Quantity
+		,t.GPAtCommCostAmt						AS GP_Comm
 
 	FROM         
 		dbo.BRS_TransactionDW AS t 
@@ -95,7 +105,8 @@ BEGIN
 
 
 	WHERE     
-		(t.CalMonth Between 201401 and 201812) AND
+		(d.FiscalWeek = @nWeek) AND
+--		(t.CalMonth Between 201401 and 201812) AND
 		(1=1)
 
 END
