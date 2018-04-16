@@ -18,13 +18,6 @@ SELECT        Specialty, SpecialtyNm, SegType, SegCd, SegName, AddedDt, NoteTxt,
 FROM            BRSales.dbo.BRS_CustomerSpecialty AS src
 where not exists (SELECT * FROM BRS_CustomerSpecialty dst where dst.Specialty = src.Specialty)
 
--- load new accts in dev using dimension batch file
-
--- set specialty to new
-UPDATE       BRS_Customer
-SET                Specialty = STAGE_BRS_CustomerFull.Specialty
-FROM            STAGE_BRS_CustomerFull INNER JOIN
-                         BRS_Customer ON STAGE_BRS_CustomerFull.ShipTo = BRS_Customer.ShipTo AND STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty
 
 -- add new tracking
 
@@ -69,11 +62,12 @@ CREATE TABLE [dbo].[zzzDay](
 GO
 
 -- load from excel
+[dbo].[zzzDay]
 
 UPDATE       BRS_SalesDay
-SET                FiscWeekName = zzzDay.week
-FROM            zzzDay INNER JOIN
-                         BRS_SalesDay ON zzzDay.day = BRS_SalesDay.SalesDate
+SET                FiscWeekName = s.week
+FROM            DEV_BRSales.dbo.zzzDay s INNER JOIN
+                         BRS_SalesDay ON s.day = BRS_SalesDay.SalesDate
 
 -- SELECT * FROM BRS_SalesDay WHERE FiscWeekName =''
 
@@ -99,10 +93,41 @@ where FiscalMonth between 201701 and 201812
 GROUP BY FiscalWeek
 HAVING MIN(FiscalMonth) <> MAX(FiscalMonth)
 
+GRANT EXECUTE ON [eps].[Sales_proc] TO [dbo];
 
+---
+-- load new accts in dev using dimension batch file
 
+select [TerritoryCd], [FSCName], [FSCStatusCode], [Branch], [group_type] from [dbo].[BRS_FSC_Rollup] where [Branch] = ''
 
+-- set specialty to new
+-- test
+SELECT Shipto, salesdivision, Specialty, [UserAreaTxt]
+FROM BRS_Customer
+WHERE 
+	salesdivision = 'AAD' AND
+	Specialty <> [UserAreaTxt]
+	
 
+-- store
+UPDATE       BRS_Customer
+SET               [UserAreaTxt] = Specialty 
+                       
+-- update
+UPDATE       BRS_Customer
+SET                Specialty = STAGE_BRS_CustomerFull.Specialty
+FROM            STAGE_BRS_CustomerFull INNER JOIN
+                         BRS_Customer 
+						 ON STAGE_BRS_CustomerFull.ShipTo = BRS_Customer.ShipTo AND 
+--							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
+							(1=1)
 
+--XXX todo
+-- recall
+UPDATE       BRS_Customer
+SET				Specialty = [UserAreaTxt]
 
-
+SELECT        hfm.exclusive_product.Excl_Code, hfm.exclusive_product.Excl_Name, hfm.exclusive_product.eps_track_ind, hfm.exclusive_product_rule.StatusCd
+FROM            hfm.exclusive_product INNER JOIN
+                         hfm.exclusive_product_rule ON hfm.exclusive_product.Excl_Code = hfm.exclusive_product_rule.Excl_Code_TargKey
+WHERE        (hfm.exclusive_product.eps_track_ind = 1)

@@ -31,44 +31,39 @@ AS
 **	-----	----------	--------------------------------------------
 **	31 Mar 18	tmc		added DSO to the list
 **	04 Apr 18	tmc		finalize fields for production
+**	13 Apr 18	tmc		removed inactive filter to allow growth measure DCC
 **    
 *******************************************************************************/
 
 -- active cust only
 SELECT
-	ShipTo			AS Customer_Number, 
-	PracticeName	AS Practice_Name, 
-	'.'				AS First_Name,
-	MailingName		AS Last_Name, 
+	ShipTo					AS Customer_Number, 
+	PracticeName			AS Practice_Name, 
+	'.'						AS First_Name,
+	MailingName				AS Last_Name, 
 	RTRIM(AddressLine3 + ' ' + AddressLine4) AS Address_Line1, 
 	City, 
-	Province		AS State, 
-	RTRIM(Country)	AS Country,
-	RTRIM(PostalCode)	AS Zip,  
-	RTRIM(PhoneNo)	AS Phone_Number,
-	'CUSTOMER'		AS Status,
-	'S'				AS Bill_Type, 
-	RTRIM(f.[FSCName])	AS Field_Level_4_Description,
-	RTRIM(Specialty)	AS Specialty_Discription, 
-	t.[FSCName]		AS Inside_Sales_Name,
---	'.'				AS Inside_Sales_Mgr,
-	SalesDivision	AS Sales_Division, 
-	BillTo			AS Bill_To, 
---	'.'				AS Field_Mgr_Name,
-	'.'				AS Alert_Comment,
-	PracticeType	AS Practice_Type, 
-	BillTo			AS Jde_Bill_To, 
---	'.'				AS Eps_Name,
-	'0'				AS Credit_Limit,
---	'.'				AS Credit_Rep,
---	'.'				AS Eps_Mgr_Name,
---	'.'				AS Priv_Level,
-	'0'				AS Priv_Point,
-	RTRIM(SegCd)	AS Special_Market_Segment,
-	'.'				AS Special_Market_Segment_Description,
-	f.[TerritoryCd]	AS Field_Level_4,
-	f.Branch		AS Field_Level_3,
-	'.'				AS Field_Level_3_Description
+	Province				AS State, 
+	RTRIM(Country)			AS Country,
+	RTRIM(PostalCode)		AS Zip,  
+	RTRIM(PhoneNo)			AS Phone_Number,
+	RTRIM(c.AccountType)	AS Status,
+	'S'						AS Bill_Type, 
+	RTRIM(f.[FSCName])		AS Field_Level_4_Description,
+	RTRIM(Specialty)		AS Specialty_Discription, 
+	t.[FSCName]				AS Inside_Sales_Name,
+	SalesDivision			AS Sales_Division, 
+	BillTo					AS Bill_To, 
+	'.'						AS Alert_Comment,
+	PracticeType			AS Practice_Type, 
+	BillTo					AS Jde_Bill_To, 
+	'0'						AS Credit_Limit,
+	'0'						AS Priv_Point,
+	RTRIM(SegCd)			AS Special_Market_Segment,
+	'.'						AS Special_Market_Segment_Description,
+	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
+	f.Branch				AS Field_Level_3,
+	'.'						AS Field_Level_3_Description
 
 FROM
 	BRS_Customer AS c
@@ -81,7 +76,6 @@ FROM
 
 WHERE
 	(c.ShipTo > 0) AND
-	(c.AccountType <> 'D') AND
 	(c.SalesDivision = 'AAD') AND 
 	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO')) AND
 	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT')) AND
@@ -94,7 +88,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Customer 
+-- SELECT top 10 * FROM eps.Customer where customer_number = 1669334
 /*
 SET NOCOUNT ON;
 SELECT * FROM eps.Customer 

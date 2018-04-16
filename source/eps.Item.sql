@@ -77,5 +77,16 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Item
--- SELECT * FROM eps.Item
+-- SELECT top 10 * FROM eps.Item where Supplier = 'CAO'
+
+SELECT [Item_Number], COUNT (*) 
+FROM eps.Item 
+GROUP BY [Item_Number]
+having COUNT (*) > 1
+
+
+
+/*
+SET NOCOUNT ON;
+SELECT * FROM eps.Item
+*/

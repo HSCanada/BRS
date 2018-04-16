@@ -60,7 +60,7 @@ BEGIN
 
 
 	SELECT
-		Customer_Number
+		t.shipto								AS Customer_Number
 		,(Special_Market_Segment)				AS Special_Market_Segment
 		,Special_Market_Segment_Description
 		,Practice_Name
@@ -98,6 +98,8 @@ BEGIN
 		on t.item = i.Item_Number
 
 		INNER JOIN [eps].[Customer] as c
+-- test
+--		LEFT JOIN [eps].[Customer] as c
 		on t.Shipto = c.Customer_Number
 
 		INNER JOIN BRS_SalesDay AS d 
@@ -106,7 +108,12 @@ BEGIN
 
 	WHERE     
 		(d.FiscalWeek = @nWeek) AND
---		(t.CalMonth Between 201401 and 201812) AND
+--		(t.CalMonth Between 201801 and 201803) AND
+
+		(t.SalesDivision = 'AAD') AND
+-- test
+--		(c.Customer_Number is null) AND
+
 		(1=1)
 
 END
