@@ -93,9 +93,17 @@ where FiscalMonth between 201701 and 201812
 GROUP BY FiscalWeek
 HAVING MIN(FiscalMonth) <> MAX(FiscalMonth)
 
-GRANT EXECUTE ON [eps].[Sales_proc] TO [dbo];
 
+GO
+CREATE ROLE [eps_operator] AUTHORIZATION [dbo]
+GO
+GO
+ALTER ROLE [eps_operator] ADD MEMBER [CAHSI\TCrowley]
+GO
+GRANT EXECUTE ON [eps].[Sales_proc] TO [eps_operator];
 ---
+--XXX todo
+
 -- load new accts in dev using dimension batch file
 
 select [TerritoryCd], [FSCName], [FSCStatusCode], [Branch], [group_type] from [dbo].[BRS_FSC_Rollup] where [Branch] = ''
@@ -122,7 +130,7 @@ FROM            STAGE_BRS_CustomerFull INNER JOIN
 --							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
 							(1=1)
 
---XXX todo
+
 -- recall
 UPDATE       BRS_Customer
 SET				Specialty = [UserAreaTxt]
