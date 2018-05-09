@@ -38,12 +38,14 @@ AS
 --	07 Mar 18	tmc		Add GSP dimension to Analysis
 --	19 Mar 18	tmc		add test logic fields (remove after sign-off)
 --	21 Mar 18	tmc		add net gp logic - caught during testing
---	22 Mar 19	tmc		add GLBU & Adj codes to cube for testing, remove zzzEXC tbd
+--	22 Mar 18	tmc		add GLBU & Adj codes to cube for testing, remove zzzEXC tbd
+--	06 May 18	tmc		added new Marketclass for restate logic
+--	08 May 18	tmc		removed test fields
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
 
-Declare @sVersion	varchar(10)		= 'Working'
+Declare @sVersion	varchar(10)		= 'WRKNG'
 Declare @sCurrency	varchar(3)		= 'LOC'
 Declare @sAnalysis	varchar(10)		= 'NoAnalysis'
 
@@ -67,7 +69,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)	AS BRAND_EQUITY
 		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
-		,RTRIM(ch.HIST_MarketClass)			AS CUSTOMER
+		,RTRIM(ch.HIST_MarketClass_New)		AS CUSTOMER
 		,@sCurrency							AS CURRENCY
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -80,11 +82,14 @@ BEGIN
 		,SUM(t.[NetSalesAmt])				AS AMOUNT
 
 -- test
+/*
 		,t.GL_BusinessUnit					AS TEST_BusinessUnit
 		,t.GL_Object_Sales					AS TEST_Object
 		,t.SalesDivision					AS TEST_SalesDivision
 		,t.GLBU_Class						AS TEST_GLBU_Class
 		,t.AdjCode							AS TEST_AdjCode
+*/
+
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -127,14 +132,16 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass
+		,ch.HIST_MarketClass_New
 		,doct.SourceCd
 -- test
+/*
 		,t.GL_BusinessUnit
 		,t.GL_Object_Sales
 		,t.SalesDivision
 		,t.GLBU_Class
 		,t.AdjCode
+*/
 
 	HAVING
 		(SUM(t.[NetSalesAmt]) <>0)
@@ -149,7 +156,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
 		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
 		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
+		,RTRIM(ch.HIST_MarketClass_New)		AS CustomerCategory
 		,@sCurrency							AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -162,11 +169,13 @@ BEGIN
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 
 -- test
+/*
 		,t.GL_BusinessUnit
 		,t.GL_Object_Cost
 		,t.SalesDivision
 		,t.GLBU_Class						AS TEST_GLBU_Class
 		,t.AdjCode							AS TEST_AdjCode
+*/
 
 	FROM         
 
@@ -214,14 +223,16 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass
+		,ch.HIST_MarketClass_New
 		,doct.SourceCd
 -- test
+/*
 		,t.GL_BusinessUnit
 		,t.GL_Object_Cost
 		,t.SalesDivision
 		,t.GLBU_Class
 		,t.AdjCode
+*/
 
 	HAVING 
 		SUM(t.[ExtendedCostAmt])<>0
@@ -235,7 +246,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
 		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
 		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass)			AS CustomerCategory
+		,RTRIM(ch.HIST_MarketClass_New)		AS CustomerCategory
 		,@sCurrency							AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -249,11 +260,13 @@ BEGIN
 		,-SUM(t.[ExtChargebackAmt])			AS ValueAmt
 
 -- test
+/*
 		,t.GL_BusinessUnit
 		,t.GL_Object_ChargeBack
 		,t.SalesDivision
 		,t.GLBU_Class						AS TEST_GLBU_Class
 		,t.AdjCode							AS TEST_AdjCode
+*/
 
 	FROM         
 
@@ -302,15 +315,16 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass
+		,ch.HIST_MarketClass_New
 		,doct.SourceCd
 -- test
+/*
 		,t.GL_BusinessUnit
 		,t.GL_Object_ChargeBack
 		,t.SalesDivision
 		,t.GLBU_Class
 		,t.AdjCode
-
+*/
 
 	HAVING
 		(SUM(t.[ExtChargebackAmt])<> 0)
@@ -324,5 +338,5 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
--- [hfm].global_cube_proc  201801, 201801
+-- [hfm].global_cube_proc  201803, 201803
 

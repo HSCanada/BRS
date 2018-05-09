@@ -679,7 +679,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201803 and 201803) 
+	(t.FiscalMonth between 201804 and 201804) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -700,9 +700,9 @@ FROM
 	ON h.HIST_TerritoryCd = b.TerritoryCd
 
 WHERE     
-		(t.Shipto > 0) AND 
+	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201803 and 201803) 
+	(t.FiscalMonth between 201804 and 201804) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -726,7 +726,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201803 and 201803) 
+	(t.FiscalMonth between 201804 and 201804) 
 
 
 
@@ -734,7 +734,7 @@ where
 -- 1. set Monthend end & prior ME dates, after DS published
 -- 2. Run this script Summary builds (1 of 2) prior ME adj  
 --		a) set dates
---		c) run script (about 12 min, for DS first table, 90min for full run )
+--		c) run script (about 18 min, for DS first table, 90min for full run )
 */
 
 

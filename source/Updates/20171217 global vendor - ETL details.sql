@@ -77,8 +77,8 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 ---
 -- test exclusive map overlap with private
 
-/*
--- manual
+-- test rules
+
 SELECT       
 	r.Excl_Code_TargKey
 	,i.ItemDescription
@@ -103,10 +103,10 @@ WHERE
 --	Excl_Code_TargKey like 'CAO%' AND
 --	item in ('5848072'   , '5950085'   ) AND
 	1=1
-*/
+
+
 
 print 'reset Excl_key (rough , working, clear all...)'
--- update Branded, 1m
 UPDATE
 	BRS_ItemHistory
 SET
@@ -114,7 +114,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth = 201803
+	FiscalMonth BETWEEN 201701 AND 201803
 
 GO
 
@@ -136,7 +136,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	(BRS_ItemHistory.FiscalMonth = 201802)
+	FiscalMonth BETWEEN 201701 AND 201803
 GO
 
 
@@ -155,9 +155,9 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	(FiscalMonth = 201802)
-
+	FiscalMonth BETWEEN 201701 AND 201803
 GO
+
 
 print 'set Branded - Excl_key'
 UPDATE
@@ -168,7 +168,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth = 201802
+	FiscalMonth BETWEEN 201701 AND 201803
 GO
 
 /*
@@ -341,6 +341,12 @@ WHERE        (GLBU_Class_WhereClauseLike = 'MERCH')
 
 
 ---
+-- gps retro prep, 4 May 18
+
+UPDATE       BRS_ItemHistory
+SET                MinorProductClass = i.MinorProductClass, Label = i.Label, Brand =  i.Brand
+FROM            BRS_Item AS i INNER JOIN
+                         BRS_ItemHistory ON i.Item = BRS_ItemHistory.Item
 
 -- GPS update 1 & 2
 
@@ -368,7 +374,8 @@ FROM
 	ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE
-	(BRS_Transaction.FiscalMonth between 201701 and 201802)
+	(BRS_Transaction.FiscalMonth between 201701 and 201804)
+GO
 
 -- seq 1 of 2
 UPDATE
@@ -393,8 +400,17 @@ FROM
 	ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE
-	(r.Sequence = 1) AND 
-	(BRS_Transaction.FiscalMonth between 201701 and 201802)
+
+-- retro
+	(r.Sequence in (110, 121)) AND 
+	(BRS_Transaction.FiscalMonth between 201701 and 201801)
+
+-- live
+--	(r.Sequence in (110, 120)) AND 
+--	(BRS_Transaction.FiscalMonth between 201802 and 201803)
+
+GO
+
 
 -- seq 2 of 2
 UPDATE
@@ -419,8 +435,14 @@ FROM
 	ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE
-	(r.Sequence = 2) AND 
 	(BRS_Transaction.GpsKey IS NULL) AND
-	(BRS_Transaction.FiscalMonth between 201701 and 201802)
 
+-- retro
+	(r.Sequence in (230, 241)) AND 
+	(BRS_Transaction.FiscalMonth between 201701 and 201801)
+
+-- live
+--	(r.Sequence in (230, 240)) AND 
+--	(BRS_Transaction.FiscalMonth between 201802 and 201803)
+GO
 

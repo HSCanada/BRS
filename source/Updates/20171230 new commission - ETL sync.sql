@@ -3,7 +3,8 @@
 
 -- TODO: NEW load test & FG load, 12 Feb 18
 
--- 1. group - ADD 
+print '1. group - ADD'
+
 INSERT INTO comm.[group]
 (
 	comm_group_cd,
@@ -32,7 +33,7 @@ WHERE comm_group_cd <>'' AND
 	NOT EXISTS (SELECT * FROM comm.[group] WHERE comm_group_cd = CommBE.dbo.comm_group.comm_group_cd)
 GO
 
--- 2. group - UPATE
+print '2. group - UPATE'
 UPDATE       [comm].[group]
 SET                
 	comm_status_cd =CASE WHEN [SPM_comm_group_cd] like 'SPM%' AND SPM_EQOptOut = 'Y' THEN 'SMEQU' ELSE CASE WHEN [SPM_comm_group_cd] like 'SPM%' THEN 'SMSND' ELSE '' END END,
@@ -42,7 +43,7 @@ FROM            CommBE.dbo.[comm_group] c INNER JOIN
                          [comm].[group] ON c.[comm_group_cd] = [comm].[group].[comm_group_cd]
 GO
 
--- 3. rate - ADD
+print '3. rate - ADD'
 INSERT INTO comm.plan_group_rate
                          (
 	comm_plan_id,
@@ -69,7 +70,7 @@ WHERE NOT EXISTS
 )
 GO
 
--- 4. item - UPDATE
+print '4. item - UPDATE'
 UPDATE       BRS_Item
 SET                [comm_group_cd] = c.comm_group_cd,
 					[comm_note_txt] = LEFT(c.note_txt,50)
@@ -78,7 +79,8 @@ FROM            CommBE.dbo.comm_item_master AS c INNER JOIN
                          BRS_Item ON c.[item_id] = item
 GO
 
--- 5. map customer
+print '5. map customer'
+
 UPDATE       BRS_Customer
 SET                
 comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMNEQ' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMALL' ELSE '' END END,
@@ -88,7 +90,7 @@ FROM            CommBE.dbo.comm_customer_master c INNER JOIN
                          BRS_Customer ON c.hsi_shipto_id = BRS_Customer.ShipTo
 GO
 
--- 6. Branch update
+print '6. Branch update'
 UPDATE       BRS_Branch
 SET                ZoneName = [zone_cd]
 FROM            CommBE.dbo.comm_branch c INNER JOIN
@@ -106,7 +108,7 @@ FROM            BRS_Item INNER JOIN
                          DEV_BRSales.dbo.BRS_Item s ON BRS_Item.Item = s.Item
 */
 
--- 8. FSC - ADD
+print '8. FSC - ADD'
 INSERT INTO [dbo].[BRS_FSC_Rollup]
 ([TerritoryCd], [group_type], Branch)
 SELECT 
@@ -123,7 +125,7 @@ WHERE
 	)
 GO
 
--- 9. set branch for new terr
+print '9. set branch for new terr'
 UPDATE       BRS_FSC_Rollup
 SET                Branch = b.Branch
 FROM            Integration.F5553_territory_Staging AS s LEFT OUTER JOIN
@@ -132,7 +134,7 @@ FROM            Integration.F5553_territory_Staging AS s LEFT OUTER JOIN
 WHERE        (s.GD$TER_territory_code <> '') AND (b.Branch<> '') AND (BRS_FSC_Rollup.Branch = '')
 GO
 
--- 10. update new fsc ownership (for dups)
+print '10. update new fsc ownership (for dups)'
 UPDATE       BRS_FSC_Rollup
 SET                order_taken_by = s.WRTKBY_order_taken_by
 FROM            Integration.F55510_customer_territory_Staging s INNER JOIN
@@ -141,7 +143,7 @@ WHERE
 	order_taken_by <> s.WRTKBY_order_taken_by
 GO
 
--- 11. ID dup terr 
+print '11. ID dup terr'
 UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = s.TerritoryCd
 FROM            BRS_FSC_Rollup AS s INNER JOIN
@@ -166,7 +168,7 @@ WHERE
 ORDER BY s.FSCRollup, S.TerritoryCd
 */
 
--- 12. update names here...
+print '12. update names here...'
 UPDATE       BRS_FSC_Rollup
 SET                FSCName = s.GEDSC1_description 
 FROM            Integration.F5554_territory_name_Staging AS s INNER JOIN
@@ -174,21 +176,21 @@ FROM            Integration.F5554_territory_name_Staging AS s INNER JOIN
 WHERE        (s.GE$GTY_group_type <> 'DDTS')
 GO
 
--- 13. set terr BR
+print '13. set terr BR'
 UPDATE       BRS_FSC_Rollup
 SET                Branch = c.branch_cd
 FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
                          BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd AND c.branch_cd <> BRS_FSC_Rollup.Branch AND BRS_FSC_Rollup.Branch = ''
 GO
 
--- 14. set FSC name
+print '14. set FSC name'
 UPDATE       BRS_FSC_Rollup
 SET                [FSCName] = c.[salesperson_nm]
 FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
                          BRS_FSC_Rollup ON c.salesperson_cd = BRS_FSC_Rollup.TerritoryCd AND c.[salesperson_nm] <> [FSCName] AND c.[salesperson_nm] <> ''
 GO
 
--- 15. set salesperson_key_id
+print '15. set salesperson_key_id'
 UPDATE       BRS_FSC_Rollup
 SET                comm_salesperson_key_id = c.salesperson_key_id
 FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
@@ -197,7 +199,7 @@ WHERE EXISTS (SELECT * FROM comm.salesperson_master WHERE [salesperson_key_id] =
 
 GO
 
--- 16. add new salemaster code (should always be 0 adds)
+print '16. add new salemaster code (should always be 0 adds)'
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])
 SELECT        distinct master_salesperson_cd,
 ''
@@ -206,7 +208,7 @@ WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <>
 	not exists(select * from [dbo].[BRS_FSC_Rollup] where master_salesperson_cd = [TerritoryCd])
 GO
 
--- 17. Add new Salesperson
+print '17. Add new Salesperson'
 INSERT INTO comm.salesperson_master
 (
 	salesperson_key_id,

@@ -13,7 +13,6 @@ SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Dimension_load_proc @
 
 
 ECHO LOAD STAGE_BRS_CustomerFull...
-
 ::bcp %DB_DST%..STAGE_BRS_CustomerFull in ../Upload/BRSCustomerFull.txt -c -T -S %BRS_SQLSERVER% -e BRSCustomerFull_ERR.txt  -F 2
 
 
