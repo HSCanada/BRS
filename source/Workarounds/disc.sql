@@ -6,7 +6,7 @@ SELECT
 	CAST (m.YearNum AS CHAR(4)) +'Q'+ CAST(m.QuarterNum AS CHAR(1)) AS year_qtr, 
 	m.YearNum,  
 	RTRIM(f.Branch)		AS Branch, 
-	i.SalesCategory, 
+	RTRIM(i.SalesCategory) AS SalesCategory, 
 	t.OrderSourceCode, 
 	t.PriceMethod, 
 	c.SalesDivision, 
@@ -19,7 +19,7 @@ SELECT
 	SUM(t.ExtDiscAmt)	AS ExtDiscAmt, 
 	SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt,
 	SUM(t.GPAmt)		AS GPAmt,
-	MIN([HIST_MarketClass])  AS MarketClass,
+	RTRIM(MIN([HIST_MarketClass]))  AS MarketClass,
 	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
 
 FROM            
@@ -41,10 +41,9 @@ FROM
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
---	NOT (c.BillTo=2613256 ) AND
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201703) OR
-		(t.FiscalMonth BETWEEN 201801 and 201803)
+		(t.FiscalMonth BETWEEN 201701 and 201704) OR
+		(t.FiscalMonth BETWEEN 201801 and 201804)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
