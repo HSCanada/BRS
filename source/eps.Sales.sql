@@ -126,5 +126,10 @@ GO
 -- [eps].Sales_proc
 
 -- Prod
--- [eps].Sales_proc 0
-
+/*
+-- ^ delim
+SET NOCOUNT OFF;
+GO
+[eps].Sales_proc 0
+GO
+*/
