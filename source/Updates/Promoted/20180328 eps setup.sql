@@ -1,4 +1,3 @@
-
 -- eps setup, 28 Mar 18
 
 CREATE SCHEMA [eps] AUTHORIZATION [dbo]
@@ -117,25 +116,5 @@ WHERE
 	Specialty <> [UserAreaTxt]
 	
 
--- store
-UPDATE       BRS_Customer
-SET               [UserAreaTxt] = Specialty 
-                       
--- update
-UPDATE       BRS_Customer
-SET                Specialty = STAGE_BRS_CustomerFull.Specialty
-FROM            STAGE_BRS_CustomerFull INNER JOIN
-                         BRS_Customer 
-						 ON STAGE_BRS_CustomerFull.ShipTo = BRS_Customer.ShipTo AND 
---							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
-							(1=1)
+                      
 
-
--- recall
-UPDATE       BRS_Customer
-SET				Specialty = [UserAreaTxt]
-
-SELECT        hfm.exclusive_product.Excl_Code, hfm.exclusive_product.Excl_Name, hfm.exclusive_product.eps_track_ind, hfm.exclusive_product_rule.StatusCd
-FROM            hfm.exclusive_product INNER JOIN
-                         hfm.exclusive_product_rule ON hfm.exclusive_product.Excl_Code = hfm.exclusive_product_rule.Excl_Code_TargKey
-WHERE        (hfm.exclusive_product.eps_track_ind = 1)
