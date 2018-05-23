@@ -295,8 +295,9 @@ OCTOBER 21	              =>''
 -- fix3 add AZAZZ to DWext?
 -- fix4 ?
 SELECT 
-	* 
---	doc_id
+--	* 
+	fiscal_yearmo_num,
+	doc_id
 FROM CommBE.[dbo].[comm_transaction]
 WHERE hsi_shipto_div_cd not in ('AZA',
 'AZE') and  NOT EXISTS (
@@ -363,6 +364,21 @@ GROUP BY doc_id,
 doc_type_cd,
 line_id
 HAVING COUNT(*) >1
+)
+
+-- test / fix
+UPDATE       CommBE.dbo.comm_transaction
+SET                line_id = [record_id],[audit_id]=line_id 
+select
+               line_id = [record_id],[audit_id]=line_id 
+from
+       CommBE.dbo.comm_transaction
+where exists(
+SELECT         *
+FROM            comm.transaction_F555115 t
+WHERE	CAST(CommBE.dbo.comm_transaction.doc_id AS INT) =t.WSDOCO_salesorder_number and 
+CommBE.dbo.comm_transaction.doc_type_cd=t.[WSDCTO_order_type] and 
+CommBE.dbo.comm_transaction.line_id = t.[WSLNTY_line_type]
 )
 
 -- DATA - Migrate legacy
@@ -457,7 +473,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201712')
+	(fiscal_yearmo_num = '201801')
 
 --201601 - 201711; 201712 NEW format
 -- check load
