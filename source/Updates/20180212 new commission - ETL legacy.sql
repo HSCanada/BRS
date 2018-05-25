@@ -352,7 +352,8 @@ HAVING COUNT(*) >1
 
 -- fix duplicate linenumbers by setting to ID (all imports)
 UPDATE       CommBE.dbo.comm_transaction
-SET                line_id = [record_id],[audit_id]=line_id 
+SET                [audit_id]=[audit_id]
+--SET                line_id = [record_id],[audit_id]=line_id 
 where exists(
 SELECT         doc_id,
 doc_type_cd,
@@ -369,10 +370,7 @@ HAVING COUNT(*) >1
 -- test / fix
 UPDATE       CommBE.dbo.comm_transaction
 SET                line_id = [record_id],[audit_id]=line_id 
-select
-               line_id = [record_id],[audit_id]=line_id 
-from
-       CommBE.dbo.comm_transaction
+--SET                [audit_id]=[audit_id]
 where exists(
 SELECT         *
 FROM            comm.transaction_F555115 t
@@ -382,6 +380,16 @@ CommBE.dbo.comm_transaction.line_id = t.[WSLNTY_line_type]
 )
 
 -- DATA - Migrate legacy
+-- fix dups
+
+SELECT TOP  [FiscalMonth]
+      ,[WSCO___company]
+      ,[WSDOCO_salesorder_number]
+      ,[WSDCTO_order_type]
+      ,[WSLNTY_line_type]
+      ,[WSLNID_line_number]
+      ,[ID]
+  FROM [BRSales].[comm].[transaction_F555115] where WSLNID_line_number = 5117
 
 
 -- migrate legacy data AFTER Post adjustment, 40s per month

@@ -4,7 +4,7 @@
 CREATE SCHEMA [nes] AUTHORIZATION [dbo]
 GO
 
---
+-- DROP TABLE [Integration].[open_order_opordrpt]
 
 CREATE TABLE [Integration].[open_order_opordrpt](
 	[est_num] [char](6) NOT NULL,
