@@ -11,6 +11,11 @@ FROM            STAGE_BRS_CustomerFull INNER JOIN
 --							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
 							(1=1)
 
+-- current
+UPDATE       BRS_Customer
+SET                [MarketClass] = [MarketClass_New]
+
+-- hisorical
 UPDATE       BRS_CustomerFSC_History
 SET                HIST_MarketClass = HIST_MarketClass_New, HIST_SegCd = HIST_SegCd_New
 							

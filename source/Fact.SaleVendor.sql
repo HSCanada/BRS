@@ -95,8 +95,14 @@ GO
 -- Testing
 
 -- adhoc look at the data
-SELECT count (*) 
-FROM [Fact].[SaleVendor]
+SELECT HIST_MarketClassKey, count (*) 
+FROM [Fact].[SaleVendor] 
+WHERE        
+	(FiscalMonth BETWEEN 201701 AND 201712) AND 
+--	(FreeGoodsEstInd = 0) AND 
+	(1 = 1)
+GROUP BY HIST_MarketClassKey
+ORDER BY 1
 
 -- old market test
 select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
@@ -104,9 +110,19 @@ select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
 
 -- row count testing2 -- success
 
-SELECT        COUNT(*) AS line_count
-FROM            BRS_AGG_ICMBGAD_Sales AS t
-WHERE        (FiscalMonth BETWEEN 201701 AND 201708) AND (FreeGoodsEstInd = 0) AND (1 = 1)
+SELECT        
+	HIST_MarketClass, 
+	MIN([MarketClassKey]) as MarketClassKey,
+	COUNT(*) AS line_count
+FROM            
+	BRS_AGG_ICMBGAD_Sales AS t
+
+	INNER JOIN [dbo].[BRS_CustomerMarketClass] mc
+	ON t.HIST_MarketClass = mc.[MarketClass]
+WHERE        
+	(FiscalMonth BETWEEN 201701 AND 201712) AND 
+	(FreeGoodsEstInd = 0) AND 
+	(1 = 1)
 GROUP BY HIST_MarketClass
 
 -- ORG 1682277
