@@ -15,7 +15,7 @@ FROM            STAGE_BRS_CustomerFull INNER JOIN
 UPDATE       BRS_Customer
 SET                [MarketClass] = [MarketClass_New]
 
--- hisorical
+-- set historical NEW
 UPDATE       BRS_CustomerFSC_History
 SET                HIST_MarketClass = HIST_MarketClass_New, HIST_SegCd = HIST_SegCd_New
 							
@@ -49,6 +49,8 @@ SELECT   MarketClass, SegCd, COUNT(*) as cust_count
 FROM BRS_Customer
 GROUP BY MarketClass, SegCd
 ORDER BY 1, 2
+
+---
 
 print '1. clear'
 UPDATE       BRS_Customer

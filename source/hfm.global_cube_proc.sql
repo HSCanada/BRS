@@ -337,6 +337,8 @@ GO
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
+-- set results to text, CSV format
+-- a_CAN_Mar-18_RA.CSV
 
--- [hfm].global_cube_proc  201803, 201803
+-- [hfm].global_cube_proc  201804, 201804
 

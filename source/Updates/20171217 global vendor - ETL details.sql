@@ -4,8 +4,6 @@
 
 -- RUN THIS MANUALY UNTIL in proc
 
--- restructure this...
-
 --- update F0901 from ETL - run package to update F0901, F0909
 
 print 'add new [dbo].[BRS_BusinessUnit]'
@@ -65,7 +63,6 @@ WHERE
 	ISNULL(HFM_CostCenter,'') <> b.CostCenter
 
 
-
 print 'update Obj map - hfm.account_master_F0901'
 UPDATE       hfm.account_master_F0901
 SET                HFM_Account = [HFM_Account_TargetKey]
@@ -109,72 +106,7 @@ WHERE
 --	item in ('5848072'   , '5950085'   ) AND
 	1=1
 
-
-
-print 'reset Excl_key (rough , working, clear all...)'
-UPDATE
-	BRS_ItemHistory
-SET
-	Excl_key = Null
-FROM
-	BRS_ItemHistory 
-WHERE
-	FiscalMonth BETWEEN 201701 AND 201803
-
-GO
-
-print 'set Exclusives - Excl_key, 30s'
-UPDATE       
-	BRS_ItemHistory
-SET
-	Excl_key = p.[Excl_Key]
-FROM
-	BRS_ItemHistory 
-	INNER JOIN hfm.exclusive_product_rule AS r 
-	ON BRS_ItemHistory.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
-		BRS_ItemHistory.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
-		BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
-		BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
-		1 = 1 
-	
-	INNER JOIN hfm.exclusive_product AS p 
-	ON r.Excl_Code_TargKey = p.Excl_Code  
-WHERE        
-	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201701 AND 201803
-GO
-
-
-print 'set private - Excl_key'
-UPDATE
-	BRS_ItemHistory
-SET
-	Excl_key = 1
-FROM
-	BRS_ItemHistory 
-
-	INNER JOIN BRS_ItemMPC AS mpc 
-	ON mpc.MajorProductClass = LEFT(BRS_ItemHistory.MinorProductClass, 3)
-
-WHERE
-	(BRS_ItemHistory.Label = 'P') AND 
-	(mpc.PrivateLabelScopeInd = 1) AND 
-	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201701 AND 201803
-GO
-
-
-print 'set Branded - Excl_key'
-UPDATE
-	BRS_ItemHistory
-SET
-	Excl_key = 2
-FROM
-	BRS_ItemHistory 
-WHERE 
-	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201701 AND 201803
-GO
+---
 
 /*
 print 'update (full), MinorProductClass, Label, Brand -- 30 sec'
@@ -278,7 +210,7 @@ where
 	GL_Object_ChargeBack = '4730' AND
 --	GL_BusinessUnit in( '020020001011')
 	GL_BusinessUnit in( '020001001000')
-*/
+
 
 --- GPS
 
@@ -353,10 +285,98 @@ SET                MinorProductClass = i.MinorProductClass, Label = i.Label, Bra
 FROM            BRS_Item AS i INNER JOIN
                          BRS_ItemHistory ON i.Item = BRS_ItemHistory.Item
 
+*/
+
 -- GPS update 1 & 2
+
+---
+
+print 'test Excl_key - should be 0 null records'
+select count(*)
+FROM
+	BRS_ItemHistory 
+WHERE
+	Excl_key is null AND
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
+
+
+print 'reset Excl_key (rough , working, clear all...)'
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = Null
+FROM
+	BRS_ItemHistory 
+WHERE
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
+
+print 'set Exclusives - Excl_key, 30s'
+UPDATE       
+	BRS_ItemHistory
+SET
+	Excl_key = p.[Excl_Key]
+FROM
+	BRS_ItemHistory 
+	INNER JOIN hfm.exclusive_product_rule AS r 
+	ON BRS_ItemHistory.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+		BRS_ItemHistory.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
+		BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+		BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
+		1 = 1 
+	
+	INNER JOIN hfm.exclusive_product AS p 
+	ON r.Excl_Code_TargKey = p.Excl_Code  
+WHERE        
+	(r.StatusCd = 1) AND 
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
+
+
+print 'set private - Excl_key'
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 1
+FROM
+	BRS_ItemHistory 
+
+	INNER JOIN BRS_ItemMPC AS mpc 
+	ON mpc.MajorProductClass = LEFT(BRS_ItemHistory.MinorProductClass, 3)
+
+WHERE
+	(BRS_ItemHistory.Label = 'P') AND 
+	(mpc.PrivateLabelScopeInd = 1) AND 
+	(BRS_ItemHistory.Excl_key IS NULL) AND
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
+
+
+print 'set Branded - Excl_key'
+UPDATE
+	BRS_ItemHistory
+SET
+	Excl_key = 2
+FROM
+	BRS_ItemHistory 
+WHERE 
+	Excl_key IS NULL and
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
 
 -- seq 0 of 2
 
+print 'test GpsKey - should be > 0 records (30k-ish)'
+SELECT COUNT(*)
+FROM
+	BRS_Transaction
+WHERE
+	GpsKey is NOT null AND
+	FiscalMonth BETWEEN 201804 AND 201804
+GO
+
+print 'clear GpsKey, if needed'
 UPDATE
 	BRS_Transaction
 SET
@@ -379,10 +399,10 @@ FROM
 	ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE
-	(BRS_Transaction.FiscalMonth between 201701 and 201804)
+	(BRS_Transaction.FiscalMonth between 201804 and 201804)
 GO
 
--- seq 1 of 2
+print 'set GpsKey 1 of 2'
 UPDATE
 	BRS_Transaction
 SET
@@ -405,19 +425,15 @@ FROM
 	ON r.Gps_Code_TargKey = g.GpsCode
 
 WHERE
-
 -- retro
-	(r.Sequence in (110, 121)) AND 
-	(BRS_Transaction.FiscalMonth between 201701 and 201801)
-
+--	(r.Sequence in (110, 121)) AND 
+--	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
---	(r.Sequence in (110, 120)) AND 
---	(BRS_Transaction.FiscalMonth between 201802 and 201803)
-
+	(r.Sequence in (110, 120)) AND 
+	(BRS_Transaction.FiscalMonth between 201804 and 201804)
 GO
 
-
--- seq 2 of 2
+print 'set GpsKey 2 of 2'
 UPDATE
 	BRS_Transaction
 SET
@@ -438,16 +454,13 @@ FROM
 
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
-
 WHERE
 	(BRS_Transaction.GpsKey IS NULL) AND
-
 -- retro
-	(r.Sequence in (230, 241)) AND 
-	(BRS_Transaction.FiscalMonth between 201701 and 201801)
-
+--	(r.Sequence in (230, 241)) AND 
+--	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
---	(r.Sequence in (230, 240)) AND 
---	(BRS_Transaction.FiscalMonth between 201802 and 201803)
+	(r.Sequence in (230, 240)) AND 
+	(BRS_Transaction.FiscalMonth between 201804 and 201804)
 GO
 
