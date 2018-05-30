@@ -32,6 +32,7 @@ FROM BRS_Customer INNER JOIN
 zzzCustomerSM ON BRS_Customer.ShipTo = zzzCustomerSM.ShipTo
 GO
 
+-- revert OLD history
 UPDATE       BRS_CustomerFSC_History
 SET                HIST_MarketClass = HIST_MarketClass_Old, HIST_SegCd = HIST_SegCd_Old
 GO
