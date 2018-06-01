@@ -9,7 +9,7 @@ GO
 CREATE TABLE [Integration].[open_order_opordrpt](
 	[est_num] [char](6) NOT NULL,
 	[line_number] [int] NOT NULL,
-	[d1_branch] [char](4) NULL,
+	[d1_branch] [char](10) NULL,
 	[order_status] [char](2) NULL,
 	[work_order_num] [char](10) NULL,
 	[work_order_date] [date] NULL,
@@ -44,12 +44,16 @@ GO
 
 CREATE TABLE [Integration].[open_order_prorepr](
 	[work_order_num] [char](10) NOT NULL,
-	[d1_branch] [char](4) NULL,
+	[d1_branch] [char](10) NULL,
 	[rma_code] [char](5) NULL,
 	[order_status] [char](2) NULL,
-	[proj_arr_date] [date] NULL,
-	[proj_comp_date] [date] NULL,
-	[arrival_date] [date] NULL,
+
+	[order_received_date] [date] NULL,
+	[estimate_complete_date] [date] NULL,
+	[approved_date] [date] NULL,
+	[approved_part_release_date] [date] NULL,
+	[order_complete_date] [date] NULL,
+
 	[shipto] [int] NULL,
 	[practice_name] [varchar](40) NULL,
 	[priv_code] [char](5) NULL,
@@ -109,13 +113,16 @@ GO
 CREATE TABLE [nes].[order_open_prorepr](
 	[SalesDate]	 [datetime] NOT NULL,
 	[work_order_num] [char](10) NOT NULL,
-
 	[branch_code] [char](10) NOT NULL,
 	[rma_code] [char](5) NOT NULL,
 	[order_status_code] [char](2) NOT NULL,
-	[proj_arrival_date] [date] NULL,
-	[proj_complete_date] [date] NULL,
-	[arrival_date] [date] NULL,
+
+	[order_received_date] [date] NULL,
+	[estimate_complete_date] [date] NULL,
+	[approved_date] [date] NULL,
+	[approved_part_release_date] [date] NULL,
+	[order_complete_date] [date] NULL,
+
 	[shipto] [int] NOT NULL,
 	[privileges_code] [char](5) NOT NULL,
 	[model_number] [varchar](20) NOT NULL,
@@ -124,7 +131,10 @@ CREATE TABLE [nes].[order_open_prorepr](
 	[problem_code] [char](5) NOT NULL,
 	[cause_code] [char](5) NOT NULL,
 	[user_id] [char](10) NOT NULL,
-	[fact_id] int identity(1,1) NOT NULL 
+	[fact_id] int identity(1,1) NOT NULL,
+
+	[last_update_date] [date] NULL,
+
  CONSTRAINT [nes_open_order_prorepr_pk] PRIMARY KEY CLUSTERED 
 (
 	[SalesDate] ASC,
@@ -210,7 +220,12 @@ GO
 CREATE TABLE [nes].[cause](
 	[cause_code] [char](5) NOT NULL,
 	[cause_descr] [nvarchar](50) NOT NULL,
+	[owner] [nvarchar](50) NOT NULL,
+ 	[turnaround_time] [int] NOT NULL,
+	[fix_message] [nvarchar](50) NOT NULL,
+	[order_status_code] [char](2) NOT NULL,
  	[cause_key] [int] identity(1,1) NOT NULL,
+
  CONSTRAINT [nes_cause_code_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[cause_code] ASC
@@ -371,6 +386,18 @@ ALTER TABLE nes.[user] ADD CONSTRAINT
 	
 GO
 
+ALTER TABLE nes.cause ADD CONSTRAINT
+	FK_cause_order_status FOREIGN KEY
+	(
+	order_status_code
+	) REFERENCES nes.order_status
+	(
+	order_status_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
 ALTER TABLE nes.order_open_prorepr SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
@@ -387,20 +414,21 @@ VALUES        ('', N'UNASSIGNED')
 GO
 
 INSERT INTO 
-[nes].[cause]
+[nes].[order_status]
 VALUES        ('', N'UNASSIGNED')
 GO
+
+INSERT INTO 
+[nes].[cause]
+VALUES        ('', N'UNASSIGNED', '', 0, '', '')
+GO
+
 
 INSERT INTO 
 [nes].[order]
 VALUES        ('', N'UNASSIGNED')
 GO
 
-
-INSERT INTO 
-[nes].[order_status]
-VALUES        ('', N'UNASSIGNED')
-GO
 
 INSERT INTO 
 [nes].[privileges]
@@ -428,10 +456,22 @@ WHERE NOT EXISTS(
   SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
 )
 
+--
+INSERT INTO [nes].[order]
+([d1_user_id], [user)
+SELECT 
+DISTINCT [work_order_num], ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
+)
+
 
 INSERT INTO nes.order_open_prorepr
-                         (work_order_num, branch_code, rma_code, order_status_code, proj_arrival_date, proj_complete_date, arrival_date, shipto, privileges_code, model_number, 
-                         est_code, call_type_code, problem_code, cause_code, user_id)
-SELECT        work_order_num, d1_branch, rma_code, order_status, proj_arr_date, proj_comp_date, arrival_date, shipto, priv_code, model_number, est_num, call_type_code, 
-                         problem_code, cause_code, d1_user_id
-FROM            Integration.open_order_prorepr AS s
+                         (work_order_num, branch_code, rma_code, order_status_code, order_received_date, estimate_complete_date, approved_date, order_complete_date, shipto, 
+                         privileges_code, model_number, est_code, call_type_code, problem_code, cause_code, user_id, approved_part_release_date, SalesDate)
+SELECT        s.work_order_num, s.d1_branch, s.rma_code, s.order_status, s.order_received_date, s.estimate_complete_date, s.approved_date, s.order_complete_date, s.shipto, 
+                         s.priv_code, s.model_number, s.est_num, s.call_type_code, s.problem_code, s.cause_code, s.d1_user_id, s.approved_part_release_date, 
+                         BRS_Config.SalesDate
+FROM            Integration.open_order_prorepr AS s CROSS JOIN
+                         BRS_Config
