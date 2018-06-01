@@ -80,7 +80,7 @@ GO
 
 CREATE TABLE [Integration].[inventory_valuation_whvalrpt](
 	[item] [char](10) NULL,
-	[d1_warehouse] [char](10) NULL,
+	[branch_code] [char](10) NULL,
 	[tag_number] [varchar](20) NULL,
 	[supplier] [char](6) NULL,
 	[model_number] [varchar](20) NULL,
@@ -98,11 +98,11 @@ CREATE TABLE [Integration].[inventory_valuation_whvalrpt](
 	[reserved_extended_value] [money] NULL,
 	[reservation_quantity_list] [varchar](25) NULL,
 	[total_extended_value] [money] NULL,
-	[IdKey] [integer] identity(1,1) NOT NULL
+	[id_key] [integer] identity(1,1) NOT NULL
 
  CONSTRAINT [inventory_valuation_whvalrpt_pk] PRIMARY KEY NONCLUSTERED 
 (
-	[IdKey]  ASC
+	[id_key]  ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 
@@ -457,21 +457,42 @@ WHERE NOT EXISTS(
 )
 
 --
-INSERT INTO [nes].[order]
-([d1_user_id], [user)
+INSERT INTO [nes].[user]
 SELECT 
-DISTINCT [work_order_num], ''
+DISTINCT [d1_user_id], '', '', ''
 FROM [Integration].[open_order_prorepr] s
 WHERE NOT EXISTS(
-  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
+  SELECT * FROM [nes].[user] u where u.user_id = s.d1_user_id
 )
 
 
+-- TRUNCATE TABLE nes.order_open_prorepr
+
 INSERT INTO nes.order_open_prorepr
                          (work_order_num, branch_code, rma_code, order_status_code, order_received_date, estimate_complete_date, approved_date, order_complete_date, shipto, 
-                         privileges_code, model_number, est_code, call_type_code, problem_code, cause_code, user_id, approved_part_release_date, SalesDate)
-SELECT        s.work_order_num, s.d1_branch, s.rma_code, s.order_status, s.order_received_date, s.estimate_complete_date, s.approved_date, s.order_complete_date, s.shipto, 
+                         privileges_code, model_number, est_code, call_type_code, problem_code, cause_code, user_id, approved_part_release_date, SalesDate, [last_update_date])
+SELECT
+s.work_order_num, s.d1_branch, s.rma_code, s.order_status, 
+
+s.order_received_date, 
+s.estimate_complete_date, 
+s.approved_date, 
+
+s.order_complete_date, 
+
+s.shipto, 
                          s.priv_code, s.model_number, s.est_num, s.call_type_code, s.problem_code, s.cause_code, s.d1_user_id, s.approved_part_release_date, 
-                         BRS_Config.SalesDate
+                         BRS_Config.SalesDate,
+COALESCE ( 
+	s.order_complete_date, 
+	s.approved_part_release_date,
+	s.approved_date, 
+	s.estimate_complete_date, 
+	s.order_received_date
+)
+
 FROM            Integration.open_order_prorepr AS s CROSS JOIN
                          BRS_Config
+
+
+

@@ -6,6 +6,8 @@
 
 --- update F0901 from ETL - run package to update F0901, F0909
 
+--> START
+
 print 'add new [dbo].[BRS_BusinessUnit]'
 
 INSERT INTO [dbo].[BRS_BusinessUnit]
@@ -72,7 +74,7 @@ FROM            hfm.account_master_F0901 INNER JOIN
                           REPLACE(REPLACE(m.Rule_WhereClauseLike, '?', '_'), '*', '%')
 WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_TargetKey]
 
--- STOP
+--> STOP
 
 -- TODO Exclusive history, ...
 

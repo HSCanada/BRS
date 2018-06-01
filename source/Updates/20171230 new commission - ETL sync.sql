@@ -3,6 +3,8 @@
 
 -- TODO: NEW load test & FG load, 12 Feb 18
 
+--> START
+
 print '1. group - ADD'
 
 INSERT INTO comm.[group]
@@ -244,5 +246,6 @@ WHERE
 	)
 GO
 
--- END
+--> STOP
+
 

@@ -11,9 +11,15 @@ FROM            STAGE_BRS_CustomerFull INNER JOIN
 --							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
 							(1=1)
 
--- current
-UPDATE       BRS_Customer
-SET                [MarketClass] = [MarketClass_New]
+-- set to NEW
+UPDATE       
+	BRS_Customer
+SET
+	SegCd = [SegCd_New],
+	MarketClass = [MarketClass_New]
+FROM BRS_Customer 
+
+GO
 
 -- set historical NEW
 UPDATE       BRS_CustomerFSC_History
@@ -52,6 +58,8 @@ GROUP BY MarketClass, SegCd
 ORDER BY 1, 2
 
 ---
+
+--> START
 
 print '1. clear'
 UPDATE       BRS_Customer
@@ -173,3 +181,5 @@ UPDATE       BRS_Customer
 SET                MarketClass_New = 'PVTPRC', SegCd_New = ''
 WHERE        (SalesDivision = 'AAD') AND (MarketClass_New In ('ANIMAL','MEDICL','ZAHN'))
 GO
+
+--> STOP

@@ -1,5 +1,7 @@
 print 'Pricing update (RI sensitive order), 13 Jan 18, 60s'
 
+--> START
+
 print 'clear stage tables'
 
 truncate table [Pricing].[item_customer_keyid_master_file_F4094]
@@ -1327,3 +1329,5 @@ DRSY___product_code = '56' AND DRRT___user_defined_codes = 'SC'
 */
 
 print 'done.'
+
+--> STOP
