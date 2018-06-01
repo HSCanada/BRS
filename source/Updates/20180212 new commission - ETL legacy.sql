@@ -351,9 +351,9 @@ line_id
 HAVING COUNT(*) >1
 
 -- fix duplicate linenumbers by setting to ID (all imports)
-UPDATE       CommBE.dbo.comm_transaction
-SET                [audit_id]=[audit_id]
---SET                line_id = [record_id],[audit_id]=line_id 
+UPDATE       
+	CommBE.dbo.comm_transaction
+SET                line_id = [record_id],[audit_id]=line_id 
 where exists(
 SELECT         doc_id,
 doc_type_cd,
@@ -367,32 +367,43 @@ line_id
 HAVING COUNT(*) >1
 )
 
--- test / fix
+-- remove overlapping line#
+
 UPDATE       CommBE.dbo.comm_transaction
-SET                line_id = [record_id],[audit_id]=line_id 
 --SET                [audit_id]=[audit_id]
-where exists(
-SELECT         *
-FROM            comm.transaction_F555115 t
-WHERE	CAST(CommBE.dbo.comm_transaction.doc_id AS INT) =t.WSDOCO_salesorder_number and 
-CommBE.dbo.comm_transaction.doc_type_cd=t.[WSDCTO_order_type] and 
-CommBE.dbo.comm_transaction.line_id = t.[WSLNTY_line_type]
+SET                line_id = [record_id],[audit_id]=line_id 
+/*
+select 
+	fiscal_yearmo_num,
+	[doc_type_cd],
+	[doc_id],
+	line_id,
+	[audit_id]
+FROM
+	CommBE.dbo.comm_transaction
+*/
+where 
+fiscal_yearmo_num >= '201801' and
+exists(
+SELECT         
+	doc_id,
+	doc_type_cd,
+	line_id
+FROM            
+	comm.transaction_F555115 t
+WHERE 
+	CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
+	CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
+	CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
 )
 
+---
+
 -- DATA - Migrate legacy
--- fix dups
-
-SELECT TOP  [FiscalMonth]
-      ,[WSCO___company]
-      ,[WSDOCO_salesorder_number]
-      ,[WSDCTO_order_type]
-      ,[WSLNTY_line_type]
-      ,[WSLNID_line_number]
-      ,[ID]
-  FROM [BRSales].[comm].[transaction_F555115] where WSLNID_line_number = 5117
 
 
--- migrate legacy data AFTER Post adjustment, 40s per month
+-- 40s per month'
+print 'migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
 	FiscalMonth,
@@ -481,7 +492,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201801')
+	(fiscal_yearmo_num = '201804')
 
 --201601 - 201711; 201712 NEW format
 -- check load
