@@ -465,6 +465,27 @@ WHERE NOT EXISTS(
   SELECT * FROM [nes].[user] u where u.user_id = s.d1_user_id
 )
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Customer ADD
+	est_code char(5) NOT NULL CONSTRAINT DF_BRS_Customer_est_code DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_FSC_Rollup1 FOREIGN KEY
+	(
+	est_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Customer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- pop from Tony D1 list
 
 -- TRUNCATE TABLE nes.order_open_prorepr
 
@@ -493,6 +514,4 @@ COALESCE (
 
 FROM            Integration.open_order_prorepr AS s CROSS JOIN
                          BRS_Config
-
-
 

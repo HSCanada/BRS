@@ -35,6 +35,7 @@ AS
 --	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
 --	13 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 --	07 Jun 17	tmc		REVERSED - Fix SAIT. Proper fix once new VPA in place
+--	04 Jun 18	tmc		Update special Market logic 
 **    
 *******************************************************************************/
 BEGIN
@@ -112,251 +113,329 @@ Begin
 	Print ''
 End
 
--- Fix VPA
-
--- Fix Free Goods
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 1 - BRS20_qrySpec01a-VPA'
+		print '1. clear'
 
-	UPDATE    
+	UPDATE       
 		BRS_Customer
-	SET              
-		SpecialtyWrk = v.Specialty, 
-		StatusCd = 10
-	FROM         
-		BRS_Customer c 
+	SET                
+		MarketClass_New = '', 
+		SegCd_New = ''
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print ' 2. Set non Dental based on Division'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = d.MarketClass_New, 
+		SegCd_New = '' 
+	FROM            
+		BRS_Customer INNER JOIN
+
+		BRS_SalesDivision AS d 
+		ON BRS_Customer.SalesDivision = d.SalesDivision
+	WHERE        
+		(BRS_Customer.SalesDivision <> 'AAD') AND 
+		(BRS_Customer.MarketClass_New = '') 
+
+	Set @nErrorCode = @@Error
+End
+
+
+
+-- DCC BT set
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3. Set DCC based on BT=2613256 (Elite)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'ELITE', 
+		SegCd_New = 'NDSO'
+	WHERE        
+		(BillTo = 2613256) AND 
+		(MarketClass_New = '')
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3b. Set DCC based on BT=2613256 (Zahn -> ZahnSM)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'ZAHNSM', 
+		SegCd_New = 'DSO'
+	WHERE        
+		(BillTo = 2613256) AND 
+		(SalesDivision = 'AAL')
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3c. Set DCC based on Specialty (Various)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = s.MarketClass_New,
+		SegCd_New = s.SegCd_New
+	FROM            
+		BRS_Customer 
+		INNER JOIN BRS_CustomerSpecialty AS s 
+		ON BRS_Customer.Specialty = s.Specialty
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(BRS_Customer.CustGrpWrk = 'Dental Corp') AND
+		(s.MarketClass_New <> '') 
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3d. Set DCC based on DSO (Exception)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'PVTPRC', 
+		SegCd_New = ''
+	FROM            
+		BRS_Customer 
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(BRS_Customer.CustGrpWrk = 'Dental Corp') AND
+		(BRS_Customer.Specialty = 'DSO')
+
+	Set @nErrorCode = @@Error
+End
+	
+
+-- AO BT Set
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '4. Set Alpha Omega based on BT=1765054 (ELITE)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'ELITE', 
+		SegCd_New = 'NDSO'
+	WHERE        
+		(BillTo = 1765054) AND 
+		(MarketClass_New = '')
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5a. Set Dental Students - Primary (INSTIT)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'INSTIT', 
+		SegCd_New = 'PDS'
+	WHERE        
+		(Specialty	= 'STUD') AND 
+		(MarketClass_New = '')
+
+	Set @nErrorCode = @@Error
+End
+
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5b. Set Dental Students (INSTIT)'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'INSTIT', 
+		SegCd_New = 'DSH'
+	WHERE        
+		(Specialty	= 'STUA') AND 
+		(MarketClass_New = '')
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6. Zahn SM Exception'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'ZAHNSM', 
+		SegCd_New = 'DSO'
+	FROM            
+		BRS_Customer 
+		INNER JOIN BRS_CustomerGroup AS g 
+		ON BRS_Customer.CustGrpWrk = g.CustGrp
+	WHERE        
+		(BRS_Customer.MarketClass_New = 'ZAHN') AND 
+		(g.MarketClass_New = 'ZAHNSM')
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '7. MM Groups with VPAs'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = g.MarketClass_New, 
+		SegCd_New = g.SegCd_New
+	FROM            
+		BRS_Customer 
 
 		INNER JOIN BRS_CustomerVPA AS v 
-		ON c.VPA = v.VPA AND 
-			c.Specialty <> v.Specialty
-	WHERE     
-		(c.VPA <> '') AND 
-		(c.CustGrpWrk = '') AND 
-		(v.Specialty <> '')
-
-	Set @nErrorCode = @@Error
-End
-
-
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 2 - BRS21_qrySpec01b-Group update via VPA'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		CustGrpWrk = g.CustGrp
-	FROM         
-		BRS_Customer c 
+		ON BRS_Customer.VPA = v.VPA 
 
 		INNER JOIN BRS_CustomerGroup AS g 
-		ON c.VPA = g.VPA AND
-			c.CustGrpWrk <> g.CustGrp
-	WHERE     
-		(c.CustGrpWrk = '') AND 
-		(g.VPA <> '') 
+		ON v.CustGrp = g.CustGrp
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(v.CustGrp <> '') AND 
+		(g.MarketClass_New <> '')
 
 	Set @nErrorCode = @@Error
 End
 
--- BRS22_qrySpec02-Group & BRS23_qrySpec03-GroupDSO
+
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 3 - BRS22_qrySpec02-Group'
+		print '8. MM Groups with no VPAs'
 
-	UPDATE    
+	UPDATE       
 		BRS_Customer
-	SET              
-		SpecialtyWrk = g.Specialty, 
-		StatusCd = 10
-	FROM         
-		BRS_Customer c 
-
+	SET                
+		MarketClass_New = g.MarketClass_New, 
+		SegCd_New = g.SegCd_New
+	FROM            
+		BRS_Customer 
+	
 		INNER JOIN BRS_CustomerGroup AS g 
-		ON c.CustGrpWrk = g.CustGrp AND
-			c.Specialty <> g.Specialty AND
-			c.SpecialtyWrk <> g.Specialty 
+		ON BRS_Customer.CustGrpWrk = g.CustGrp
 
-	WHERE     
-		c.CustGrpWrk <> '' AND
-		c.Specialty <> 'STUD' 
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(g.MarketClass_New <> '')
 
 	Set @nErrorCode = @@Error
 End
 
 
--- BRS24_qrySpec04-GroupDCCfix (Dental Corp, Fix legacy private practice accounts)
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 4 - BRS24_qrySpec04-GroupDCCfix'
+		print '9. Set No Group based on Specialty'
 
-	UPDATE    
+	UPDATE       
 		BRS_Customer
-	SET              
-		SpecialtyWrk = '',
-		StatusCd = 20
-
-	FROM         
-		BRS_Customer c 
-
-		INNER JOIN BRS_CustomerGroup AS g 
-		ON c.CustGrpWrk = g.CustGrp
-
-	WHERE     
-		(c.CustGrpWrk = 'DENTAL CORP') AND 
-		(c.BillTo <> 2613256 ) 
-
-	Set @nErrorCode = @@Error
-End
-
--- BRS25_qrySpec05-GroupAOfix (Alpha Omega, Fix legacy private practice accounts)
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 5 - BRS25_qrySpec05-GroupAOfix'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		SpecialtyWrk = '',
-		StatusCd = 20
-
-	FROM         
-		BRS_Customer c 
-
-		INNER JOIN BRS_CustomerGroup AS g 
-		ON c.CustGrpWrk = g.CustGrp
-
-	WHERE     
-		(c.CustGrpWrk = 'Alpha Omega') AND 
-		(c.BillTo <> 1765054 ) 
-
-	Set @nErrorCode = @@Error
-End
-
--- BRS27_qrySpec06-UpdateSpec
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 6 - BRS27_qrySpec06-UpdateSpec'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		Specialty = SpecialtyWrk,
-		UserAreaTxt = Specialty
-	WHERE     
-		(SpecialtyWrk <> '') AND 
-		(StatusCd = 10) AND
-		(Specialty <> SpecialtyWrk)
-		
-
-	Set @nErrorCode = @@Error
-End
-
-/*
---	13 Sep 16	tmc		Fix SAIT. Proper fix once new VPA in place
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 6x - Exception Fix SAIT - BT 1528736'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		Specialty = 'GENP',
-		CustGrpWrk = ''
-
-	WHERE     
-		BillTo = 1528736
-
-	Set @nErrorCode = @@Error
-End
-*/
-
-
-----
--- BRS23_qrySpec09-UpdateCustSeg
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		Print 'Customer Update Step 7 - BRS23_qrySpec09-UpdateCustSeg'
-
-	UPDATE    
-		BRS_Customer
-	SET              
-		SegCd = s.SegCd
-	FROM         
-		BRS_Customer c 
-
+	SET                
+		MarketClass_New = s.MarketClass_New, 
+		SegCd_New = s.SegCd_New
+	FROM            
+		BRS_Customer 
+	
 		INNER JOIN BRS_CustomerSpecialty AS s 
-		ON c.Specialty = s.Specialty AND
-			c.SegCd <> s.SegCd
-	WHERE     
---	01 Mar 16	tmc		Fixed Customer Segment update bug
-		(s.Specialty <> '') 
---		(s.Specialty = '') 
+		ON BRS_Customer.Specialty = s.Specialty
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(s.MarketClass_New <> '')
 
 	Set @nErrorCode = @@Error
 End
 
-----
 
--- BRS28_qrySpec07-UpdateMarketGrp
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 8 - BRS28_qrySpec07-UpdateMarketGrp'
+		print '10. Zahn SM exception correction'
 
-	UPDATE    
+	UPDATE       
 		BRS_Customer
-	SET              
-		MarketClass = g.MarketClass
-	FROM         
-		BRS_Customer c 
-
-		INNER JOIN BRS_CustomerGroup AS g
-		ON c.CustGrpWrk = g.CustGrp AND
-			c.MarketClass <> g.MarketClass
-	WHERE     
-		(c.Specialty <> 'STUD') AND
-		(c.CustGrpWrk <> '') 
-
+	SET                
+		MarketClass_New = 'MIDMKT', 
+		SegCd_New = 'DSO'
+	WHERE        
+		(SalesDivision = 'AAD') AND 
+		(MarketClass_New = 'ZAHNSM')
 
 	Set @nErrorCode = @@Error
 End
 
--- BRS29_qrySpec08-UpdateMarketGrpNON
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		Print 'Customer Update Step 9 - BRS29_qrySpec08-UpdateMarketGrpNON'
+		print '11. Dental Specialty exception correction'
 
-	UPDATE    
+	UPDATE       
 		BRS_Customer
-	SET              
-		MarketClass = s.MarketClass
-	FROM         
-		BRS_Customer c 
-
-		INNER JOIN BRS_CustomerSpecialty AS s 
-		ON c.Specialty = s.Specialty AND
-			c.MarketClass <> s.MarketClass
-	WHERE 
-		((c.Specialty <> 'STUD') AND (c.CustGrpWrk = 'DENTAL CORP') AND (c.BillTo <> 2613256 )) OR
-		((c.Specialty <> 'STUD') AND (c.CustGrpWrk = 'Alpha Omega') AND (c.BillTo <> 1765054 )) OR
-		((c.Specialty =  'STUD') AND (c.CustGrpWrk <> '')) OR
-		((c.CustGrpWrk = '' )) 
+	SET                
+		MarketClass_New = 'PVTPRC', 
+		SegCd_New = ''
+	WHERE        
+		(SalesDivision = 'AAD') AND 
+		(MarketClass_New In ('ANIMAL','MEDICL','ZAHN'))
 
 	Set @nErrorCode = @@Error
 End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '12. merge new codes'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass = MarketClass_New, 
+		SegCd = SegCd_New
+	WHERE        
+		MarketClass = ''
+
+	Set @nErrorCode = @@Error
+End
+
 
 --	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 If (@bDebug <> 0)
@@ -588,12 +667,33 @@ Return @nErrorCode
 END
 GO
 
+
+/*
+UPDATE       
+	BRS_Customer
+SET                
+	MarketClass = '', 
+	SegCd = ''
+-- 62713 rows
+
+UPDATE       
+	BRS_Customer
+SET                
+	MarketClass = h.HIST_MarketClass, 
+	SegCd = h.HIST_SegCd
+FROM            
+	BRS_Customer 
+	INNER JOIN BRS_CustomerFSC_History AS h 
+	ON BRS_Customer.ShipTo = h.Shipto
+WHERE        
+	(h.FiscalMonth = 201805) AND
+	h.HIST_MarketClass <> ''
+-- 62712 rows
+*/
+
 -- Debug Run
 -- [BRS_BE_Transaction_post_proc] 
 
 -- Prod Run
 -- [BRS_BE_Transaction_post_proc] 0
-
-
-
 

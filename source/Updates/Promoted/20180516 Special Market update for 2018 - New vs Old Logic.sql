@@ -8,7 +8,6 @@ SET                Specialty = STAGE_BRS_CustomerFull.Specialty
 FROM            STAGE_BRS_CustomerFull INNER JOIN
                          BRS_Customer 
 						 ON STAGE_BRS_CustomerFull.ShipTo = BRS_Customer.ShipTo AND 
---							STAGE_BRS_CustomerFull.Specialty = BRS_Customer.Specialty AND
 							(1=1)
 
 -- set to NEW
