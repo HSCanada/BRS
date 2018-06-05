@@ -49,7 +49,7 @@ FROM
 
 	INNER JOIN dbo.BRS_CustomerMarketClass AS m 
 	ON c.MarketClass = m.MarketClass 
-		AND s.MarketClass = m.MarketClass
+--		AND s.MarketClass = m.MarketClass
 WHERE        
 	(c.ShipTo > 0) AND 
 	(c.SegCd <> 'ZZ-EXCLUDE')
@@ -63,6 +63,9 @@ GO
 
 -- SELECT top 10 * FROM sisense.customer_segmentation_source 
 
+-- SELECT top 10 * FROM sisense.customer_segmentation_source where ShipTo = 3035775
+
+-- SELECT distinct market_class_code FROM sisense.customer_segmentation_source 
 
 
 

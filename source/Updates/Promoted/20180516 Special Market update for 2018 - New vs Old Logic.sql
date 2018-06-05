@@ -182,3 +182,35 @@ WHERE        (SalesDivision = 'AAD') AND (MarketClass_New In ('ANIMAL','MEDICL',
 GO
 
 --> STOP
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerGroup
+	DROP CONSTRAINT FK_BRS_CustomerGroup_BRS_CustomerSpecialty
+GO
+ALTER TABLE dbo.BRS_CustomerSpecialty SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerGroup
+	DROP CONSTRAINT FK_BRS_CustomerGroup_BRS_CustomerMarketClass
+GO
+ALTER TABLE dbo.BRS_CustomerMarketClass SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerGroup
+	DROP CONSTRAINT DF_BRS_CustomerGroup_MarketClass
+GO
+ALTER TABLE dbo.BRS_CustomerGroup
+	DROP CONSTRAINT DF_BRS_CustomerGroup_Specialty
+GO
+ALTER TABLE dbo.BRS_CustomerGroup
+	DROP COLUMN MarketClass, Specialty
+GO
+ALTER TABLE dbo.BRS_CustomerGroup SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

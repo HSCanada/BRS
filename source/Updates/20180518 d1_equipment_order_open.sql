@@ -447,23 +447,7 @@ GO
 
 --
 
-INSERT INTO [nes].[order]
-([work_order_num], [note])
-SELECT 
-DISTINCT [work_order_num], ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
-)
-
 --
-INSERT INTO [nes].[user]
-SELECT 
-DISTINCT [d1_user_id], '', '', ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].[user] u where u.user_id = s.d1_user_id
-)
 
 BEGIN TRANSACTION
 GO
@@ -486,6 +470,25 @@ GO
 COMMIT
 
 -- pop from Tony D1 list
+INSERT INTO [nes].[order]
+([work_order_num], [note])
+SELECT 
+DISTINCT [work_order_num], ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
+)
+
+GO
+
+INSERT INTO [nes].[user]
+SELECT 
+DISTINCT [d1_user_id], '', '', ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [nes].[user] u where u.user_id = s.d1_user_id
+)
+GO
 
 -- TRUNCATE TABLE nes.order_open_prorepr
 
@@ -515,3 +518,8 @@ COALESCE (
 FROM            Integration.open_order_prorepr AS s CROSS JOIN
                          BRS_Config
 
+-- add these codes (w/f Tony)
+SELECT distinct [cause_code] from Integration.open_order_prorepr s
+where not exists (
+select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
+)
