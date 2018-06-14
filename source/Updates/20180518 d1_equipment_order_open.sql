@@ -490,6 +490,12 @@ WHERE NOT EXISTS(
 )
 GO
 
+-- add these codes TODO
+SELECT distinct [cause_code] from Integration.open_order_prorepr s
+where not exists (
+select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
+)
+
 -- TRUNCATE TABLE nes.order_open_prorepr
 
 INSERT INTO nes.order_open_prorepr
@@ -518,8 +524,44 @@ COALESCE (
 FROM            Integration.open_order_prorepr AS s CROSS JOIN
                          BRS_Config
 
--- add these codes (w/f Tony)
-SELECT distinct [cause_code] from Integration.open_order_prorepr s
-where not exists (
-select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
+
+/*
+--todo 0 add to EST task, 11 Jun 18
+
+
+fix est code in dev, add branch
+
+branch split by EST Branch (see Tony list)
+
+fix uers list 
+
+Add Prive priorty
+
+1. Priv wiht PMA
+2. Priv only
+3. rest
+
+
+Add Aging bucket for table time (
+5
+10
+15
+30
+60
+90
+
 )
+
+build summary idea
+
+oRG cause, total
+
+***
+
+resp (Cord, EST, Cust)
+  Cause (with buckets)
+
+
+****
+
+*/

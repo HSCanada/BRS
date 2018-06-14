@@ -57,6 +57,40 @@ GROUP BY MarketClass, SegCd
 ORDER BY 1, 2
 
 ---
+/*
+
+-- SM reset
+print '1. clear'
+UPDATE       BRS_Customer
+SET                MarketClass = '', SegCd = ''
+GO
+
+
+UPDATE       BRS_Customer
+SET                MarketClass = [HIST_MarketClass], SegCd = [HIST_SegCd]
+FROM            BRS_Customer INNER JOIN
+                         BRS_CustomerFSC_History ON BRS_Customer.ShipTo = BRS_CustomerFSC_History.Shipto
+WHERE
+	BRS_CustomerFSC_History.FiscalMonth = 201804
+
+SELECT        BRS_Customer.shipto, BRS_Customer.MarketClass, BRS_Customer.SegCd
+FROM            BRS_Customer INNER JOIN
+                         BRS_CustomerFSC_History ON BRS_Customer.ShipTo = BRS_CustomerFSC_History.Shipto
+WHERE        
+(BRS_CustomerFSC_History.FiscalMonth = 201805) AND
+(MarketClass <> [HIST_MarketClass] OR
+SegCd <> [HIST_SegCd])
+
+UPDATE       BRS_CustomerFSC_History
+SET                [HIST_MarketClass] = MarketClass,  [HIST_SegCd] = SegCd 
+FROM            BRS_Customer INNER JOIN
+                         BRS_CustomerFSC_History ON BRS_Customer.ShipTo = BRS_CustomerFSC_History.Shipto
+WHERE
+	BRS_CustomerFSC_History.FiscalMonth = 201805
+
+*/
+
+
 
 --> START
 

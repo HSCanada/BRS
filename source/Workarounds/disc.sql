@@ -1,4 +1,6 @@
 -- update discount to enable quick filter, tmc, 13 Mar 18
+SET NOCOUNT ON;
+GO
 
 SELECT        
 
@@ -42,8 +44,8 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201704) OR
-		(t.FiscalMonth BETWEEN 201801 and 201804)
+		(t.FiscalMonth BETWEEN 201701 and 201705) OR
+		(t.FiscalMonth BETWEEN 201801 and 201805)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
@@ -65,4 +67,6 @@ ORDER BY 1
 
 
 -- set Results to text!
+
+
 
