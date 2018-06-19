@@ -3,7 +3,6 @@
 --------------------------------------------------------------------------------
 
 SELECT 
-
     Top 5
     "Q3KCOO" AS Q3KCOO_order_number_document_company,
 	"Q3DCTO" AS Q3DCTO_order_type,
@@ -14,7 +13,8 @@ SELECT
 	"Q3LNGP" AS Q3LNGP_language,
 	"Q3INMG" AS Q3INMG_print_message,
 	"Q3$SNB" AS Q3$SNB_sequence_number,
-	"QCTRDJ" AS QCTRDJ_order_date 
+	"QCTRDJ" AS QCTRDJ_order_date,
+	HASHBYTES('SHA1', "Q3$PMQ") AS chksum
 
 --INTO Integration.F5503_canned_message_file_parameters_Staging
 
@@ -47,7 +47,7 @@ FROM
 		1=1
 
 --    ORDER BY
---        <insert custom code here>
+--        QCTRDJ desc
 ')
 
 --------------------------------------------------------------------------------
@@ -63,6 +63,8 @@ Q3LNID_line_number,
 Q3$SNB_sequence_number
 HAVING        (COUNT(*) > 1)
 ORDER BY 4 DESC
+
+-- truncate table Integration.F5503_canned_message_file_parameters_Staging
 
 BEGIN TRANSACTION
 GO
@@ -81,6 +83,9 @@ COMMIT
 
 ALTER TABLE Integration.F5503_canned_message_file_parameters_Staging 
 ADD id int identity(1,1)
+
+ALTER TABLE Integration.F5503_canned_message_file_parameters_Staging 
+ADD chksum binary(32)
 
 -- Q3$PMQ
 
@@ -191,4 +196,16 @@ FROM
 ')
 
 --------------------------------------------------------------------------------
+
+SELECT        
+--	distinct (Q3$PMQ_program_parameter) 
+	distinct(HASHBYTES('SHA2_256', Q3$PMQ_program_parameter)) AS chksum
+
+FROM            Integration.F5503_canned_message_file_parameters_Staging
+
+-- 10s, 725323
+-- 6s,  739916
+-- 8s, 739916
+
+	HASHBYTES('SHA1', "Q3$PMQ") AS chksum
 
