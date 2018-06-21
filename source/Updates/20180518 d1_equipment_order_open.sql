@@ -684,53 +684,6 @@ BRS_FSC_Rollup_1.Branch In ('MNTRL','QUEBC','TORNT','VACVR') AND
 
 
 --
-SELECT
-e.Branch AS Branch, 
-e.FSCName AS est_name, 
-t.est_code, 
-t.user_id, 
-u.user_name, 
-t.rma_code, 
-t.model_number, 
-ct.call_type_code, 
-ct.call_type_descr, 
-nes.privileges.priority_code, 
-c.turnaround_time, 
-t.cause_code, 
-c.cause_descr, 
-s.order_status_descr, 
-c.fix_message, 
-t.order_received_date, 
-t.last_update_date
-FROM 
-nes.order_open_prorepr t
 
-INNER JOIN nes.cause c
-ON t.cause_code = c.cause_code 
 
-INNER JOIN nes.order_status s
-ON t.order_status_code = s.order_status_code
 
-INNER JOIN nes.user_login u
-ON t.user_id = u.user_id
-
-INNER JOIN BRS_Customer cust
-ON t.shipto = cust.ShipTo
-
-INNER JOIN BRS_FSC_Rollup f
-ON cust.TerritoryCd = f.TerritoryCd
-
-INNER JOIN BRS_FSC_Rollup AS e 
-ON t.est_code = e.TerritoryCd
-
-INNER JOIN nes.branch b
-ON t.branch_code = b.branch_code
-
-INNER JOIN nes.privileges 
-ON t.privileges_code = nes.privileges.privileges_code 
-
-INNER JOIN nes.call_type ct
-ON t.call_type_code = ct.call_type_code
-
-WHERE 
-b.Branch not In ('MNTRL','QUEBC','TORNT','VACVR') 

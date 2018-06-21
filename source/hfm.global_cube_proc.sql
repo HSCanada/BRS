@@ -41,6 +41,7 @@ AS
 --	22 Mar 18	tmc		add GLBU & Adj codes to cube for testing, remove zzzEXC tbd
 --	06 May 18	tmc		added new Marketclass for restate logic
 --	08 May 18	tmc		removed test fields
+--	20 Jun 18	tmc		Point to Marketclass from new, as we are not in prod
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -69,7 +70,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)	AS BRAND_EQUITY
 		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
-		,RTRIM(ch.HIST_MarketClass_New)		AS CUSTOMER
+		,RTRIM(ch.HIST_MarketClass)		AS CUSTOMER
 		,@sCurrency							AS CURRENCY
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -132,7 +133,7 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass_New
+		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
 /*
@@ -156,7 +157,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
 		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
 		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass_New)		AS CustomerCategory
+		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
 		,@sCurrency							AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -223,7 +224,7 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass_New
+		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
 /*
@@ -246,7 +247,7 @@ BEGIN
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
 		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
 		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass_New)		AS CustomerCategory
+		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
 		,@sCurrency							AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
@@ -315,7 +316,7 @@ BEGIN
 		,excl.BrandEquityCategory
 		,excl.Excl_Code
 		,g.GpsCode
-		,ch.HIST_MarketClass_New
+		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
 /*
@@ -336,9 +337,90 @@ GO
 
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
+/*
+	SELECT     
+		cc.[Entity]							AS Entity
+		,[HFM_Account]						AS Account
+		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
+		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
+		,RTRIM(excl.Excl_Code)				AS BrandLine
+		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
+		,'curr'							AS Currency
+		,RTRIM(ISNULL(g.GpsCode, 'analy'))	AS ANALYSIS
+		,CASE 
+			WHEN doct.SourceCd = 'JDE' 
+			THEN 'GL_Input' 
+			ELSE 'Manual_Entry' 
+		END									AS ReportingSource
+		,t.FiscalMonth						AS Period
+		,'test'							AS Version
+		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
+
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+		,t.GLBU_Class						AS TEST_GLBU_Class
+		,t.AdjCode							AS TEST_AdjCode
+
+	FROM         
+
+		[dbo].[BRS_Transaction] AS t 
+
+		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+		ON t.Shipto = ch.[Shipto] AND
+			t.[FiscalMonth] = ch.[FiscalMonth]
+
+		INNER JOIN [dbo].[BRS_ItemHistory] as ih
+		ON t.Item = ih.[Item] AND
+			t.[FiscalMonth] = ih.[FiscalMonth]
+
+		INNER JOIN [hfm].[account_master_F0901] as hfm
+		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
+			t.[GL_Object_Cost] = hfm.[GMOBJ__object_account] AND
+			t.[GL_Subsidiary_Cost] = hfm.[GMSUB__subsidiary] 
+
+		INNER JOIN [hfm].[cost_center] as cc
+		ON hfm.HFM_CostCenter = cc.CostCenter
+
+		INNER JOIN [hfm].[exclusive_product] as excl
+		ON ih.Excl_key = excl.Excl_Key
+
+		INNER JOIN [dbo].[BRS_DocType] as doct
+		ON t.DocType = doct.DocType
+
+		LEFT JOIN [hfm].[gps_code] as g
+		ON t.GpsKey = g.GpsKey
+
+		INNER JOIN BRS_DS_GLBU_Rollup AS glru
+		ON	t.GLBU_Class = glru.GLBU_Class
+
+	WHERE
+		(t.FiscalMonth between 201805 AND 201805) AND
+		(glru.ReportingClass <> 'NSA') AND
+		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
+		(1=1)
+
+	GROUP BY 
+		t.FiscalMonth
+		,cc.[Entity]
+		,hfm.[HFM_Account]
+		,ih.MinorProductClass
+		,excl.BrandEquityCategory
+		,excl.Excl_Code
+		,g.GpsCode
+		,ch.HIST_MarketClass
+		,doct.SourceCd
+-- test
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+		,t.GLBU_Class
+		,t.AdjCode
+*/
 
 -- set results to text, CSV format
 -- a_CAN_Mar-18_RA.CSV
 
--- [hfm].global_cube_proc  201804, 201804
+-- [hfm].global_cube_proc  201805, 201805
 
