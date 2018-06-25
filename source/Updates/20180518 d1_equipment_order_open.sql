@@ -108,7 +108,7 @@ CREATE TABLE [Integration].[inventory_valuation_whvalrpt](
 
 GO
 
----
+--
 
 CREATE TABLE [nes].[order_open_prorepr](
 	[SalesDate]	 [datetime] NOT NULL,
@@ -269,7 +269,7 @@ CREATE TABLE [nes].[aging](
 ) ON [USERDATA]
 
 
----
+--
 
 BEGIN TRANSACTION
 GO
@@ -423,6 +423,79 @@ ALTER TABLE nes.order_open_prorepr SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+
+CREATE TABLE [nes].[inventory_valuation_whvalrpt](
+	[SalesDate]	 [datetime] NOT NULL,
+	[item] [char](10) NOT NULL,
+	[branch_code] [char](10) NOT NULL,
+	[tag_number] [varchar](20) NOT NULL,
+	[tag_date] date NULL,
+	[tag_cost_ind] [char](1) NOT NULL,
+	[bin_code] [char](10) NOT NULL,
+	[reservation_quantity_list] [varchar](25) NOT NULL,
+
+	[tag_or_avg_cost] [money] NOT NULL,
+	[available_extended_value] [money] NOT NULL,
+	[reserved_extended_value] [money] NOT NULL,
+	[total_extended_value] [money] NOT NULL,
+
+	[available_qty] [int] NOT NULL,
+	[allocation_qty] [int] NOT NULL,
+	[reserved_qty] [int] NOT NULL,
+	[total_qty] [int] NOT NULL,
+
+	[id_key] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [nes_inventory_valuation_whvalrpt_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[id_key] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+
+GO
+
+-- RI
+BEGIN TRANSACTION
+GO
+ALTER TABLE nes.inventory_valuation_whvalrpt ADD CONSTRAINT
+	FK_inventory_valuation_whvalrpt_BRS_SalesDay FOREIGN KEY
+	(
+	SalesDate
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDate
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.inventory_valuation_whvalrpt ADD CONSTRAINT
+	FK_inventory_valuation_whvalrpt_BRS_Item FOREIGN KEY
+	(
+	item
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.inventory_valuation_whvalrpt ADD CONSTRAINT
+	FK_inventory_valuation_whvalrpt_branch FOREIGN KEY
+	(
+	branch_code
+	) REFERENCES nes.branch
+	(
+	branch_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.inventory_valuation_whvalrpt SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+---
+
 -- populate
 INSERT INTO 
 nes.branch
@@ -555,8 +628,9 @@ COALESCE (
 	s.order_received_date
 )
 
-FROM            Integration.open_order_prorepr AS s CROSS JOIN
-                         BRS_Config
+FROM            Integration.open_order_prorepr AS s 
+
+CROSS JOIN BRS_Config
 
 
 
@@ -626,64 +700,98 @@ FROM            zzzItem AS i INNER JOIN
                          nes.branch ON i.Item = nes.branch.branch_code
 
 --
+
 SELECT
-BRS_FSC_Rollup_1.Branch AS Branch_Tech, 
-BRS_FSC_Rollup_1.FSCName AS est_name, 
-t.est_code, 
-t.user_id, 
-nes.user_login.user_name, 
-t.rma_code, 
-t.model_number, 
-nes.call_type.call_type_code, 
-nes.call_type.call_type_descr, 
-nes.privileges.priority_code, 
---DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding, 
-nes.cause.turnaround_time, 
-t.cause_code, 
-nes.cause.cause_descr, 
-nes.order_status.order_status_descr, 
-nes.cause.fix_message, 
-nes.aging.aging_display, 
-t.order_received_date, 
-t.last_update_date
+	BRS_FSC_Rollup_1.Branch AS Branch_Tech, 
+	BRS_FSC_Rollup_1.FSCName AS est_name, 
+	t.est_code, 
+	t.user_id, 
+	nes.user_login.user_name, 
+	t.rma_code, 
+	t.model_number, 
+	nes.call_type.call_type_code, 
+	nes.call_type.call_type_descr, 
+	nes.privileges.priority_code, 
+	--DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding, 
+	nes.cause.turnaround_time, 
+	t.cause_code, 
+	nes.cause.cause_descr, 
+	nes.order_status.order_status_descr, 
+	nes.cause.fix_message, 
+	nes.aging.aging_display, 
+	t.order_received_date, 
+	t.last_update_date
 FROM 
-nes.aging, 
-nes.order_open_prorepr t
+	nes.aging, 
+	nes.order_open_prorepr t
 
-INNER JOIN nes.cause 
-ON t.cause_code = nes.cause.cause_code 
+	INNER JOIN nes.cause 
+	ON t.cause_code = nes.cause.cause_code 
 
-INNER JOIN nes.order_status 
-ON t.order_status_code = nes.order_status.order_status_code
+	INNER JOIN nes.order_status 
+	ON t.order_status_code = nes.order_status.order_status_code
 
-INNER JOIN nes.user_login
-ON t.user_id = nes.user_login.user_id
+	INNER JOIN nes.user_login
+	ON t.user_id = nes.user_login.user_id
 
-INNER JOIN BRS_Customer 
-ON t.shipto = BRS_Customer.ShipTo
+	INNER JOIN BRS_Customer 
+	ON t.shipto = BRS_Customer.ShipTo
 
-INNER JOIN BRS_FSC_Rollup 
-ON BRS_Customer.TerritoryCd = BRS_FSC_Rollup.TerritoryCd
+	INNER JOIN BRS_FSC_Rollup 
+	ON BRS_Customer.TerritoryCd = BRS_FSC_Rollup.TerritoryCd
 
-INNER JOIN BRS_FSC_Rollup AS BRS_FSC_Rollup_1 
-ON t.est_code = BRS_FSC_Rollup_1.TerritoryCd
+	INNER JOIN BRS_FSC_Rollup AS BRS_FSC_Rollup_1 
+	ON t.est_code = BRS_FSC_Rollup_1.TerritoryCd
 
-INNER JOIN nes.branch 
-ON t.branch_code = nes.branch.branch_code
+	INNER JOIN nes.branch 
+	ON t.branch_code = nes.branch.branch_code
 
-INNER JOIN nes.privileges 
-ON t.privileges_code = nes.privileges.privileges_code 
+	INNER JOIN nes.privileges 
+	ON t.privileges_code = nes.privileges.privileges_code 
 
-INNER JOIN nes.call_type 
-ON t.call_type_code = nes.call_type.call_type_code
+	INNER JOIN nes.call_type 
+	ON t.call_type_code = nes.call_type.call_type_code
 
 WHERE 
-BRS_FSC_Rollup_1.Branch In ('MNTRL','QUEBC','TORNT','VACVR') AND 
+--	BRS_FSC_Rollup_1.Branch In ('MNTRL','QUEBC','TORNT','VACVR') AND 
 --((DateDiff("d",[order_received_date],[SalesDate])) Between [day_from] And [day_to]) AND
 1=1
 
-
 --
 
+INSERT INTO nes.inventory_valuation_whvalrpt
+                         (SalesDate, item, branch_code, tag_number, tag_date, available_qty, allocation_qty, reserved_qty, total_qty, tag_or_avg_cost, tag_cost_ind, available_extended_value, 
+                         reserved_extended_value, reservation_quantity_list, total_extended_value, bin_code)
+SELECT        
+BRS_Config.SalesDate,
+item,
+branch_code,
+tag_number,
+CAST (LEFT(tag_number,6) AS DATE) tag_date,
+available_qty,
+allocation_qty,
+reserved_qty,
+total_qty,
+tag_or_avg_cost,
+tag_cost_ind,
+available_extended_value,
+reserved_extended_value,
+reservation_quantity_list,
+total_extended_value,
+bin_code
+FROM            
+Integration.inventory_valuation_whvalrpt AS inventory_valuation_whvalrpt_1
+CROSS JOIN BRS_Config
 
+--
+-- jen fix branch code first
+SELECT        
+distinct (LTRIM(branch_code)) BR
+
+FROM            
+Integration.inventory_valuation_whvalrpt AS inventory_valuation_whvalrpt_1
+where  
+LTRIM(BRANCH_CODE) = 'BCVA35'
+
+NOT exists (select * from [nes].[branch] where RTRIM(LTRIM(inventory_valuation_whvalrpt_1.branch_code)) = nes.branch.branch_code)
 
