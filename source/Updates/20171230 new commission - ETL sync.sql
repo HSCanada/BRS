@@ -6,7 +6,6 @@
 --> START
 
 print '1. group - ADD'
-
 INSERT INTO comm.[group]
 (
 	comm_group_cd,

@@ -494,6 +494,9 @@ ALTER TABLE nes.inventory_valuation_whvalrpt SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+
+
 ---
 
 -- populate

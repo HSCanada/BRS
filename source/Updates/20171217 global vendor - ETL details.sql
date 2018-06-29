@@ -9,7 +9,6 @@
 --> START
 
 print 'add new [dbo].[BRS_BusinessUnit]'
-
 INSERT INTO [dbo].[BRS_BusinessUnit]
 (BusinessUnit)
 SELECT        Distinct GMMCU__business_unit 
