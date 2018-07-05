@@ -156,14 +156,16 @@ FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_CustomerBT] WHERE hsi_billto_id = [BillTo]
 )
+GO
 
 SELECT 
 	distinct	item_id
-
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_Item] WHERE Item = item_id
 )
+GO
+
 
 -- manually add RESTOCK         
 
@@ -171,17 +173,16 @@ WHERE NOT EXISTS (
 SELECT 
 	TOP 10
 	IMCLMJ
-
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_ItemMPC] WHERE IMCLMJ = [MajorProductClass]
 )
+GO
 
 --ok
 SELECT 
 	TOP 10
 	hsi_shipto_div_cd
-
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_SalesDivision] WHERE hsi_shipto_div_cd = [SalesDivision]
@@ -211,19 +212,21 @@ FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_OrderSource] WHERE order_source_cd = [OrderSourceCode]
 )
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                order_source_cd = ''
 WHERE        (order_source_cd IS NULL)
+GO
 
 -- fix *ERROR* -> ''
 SELECT 
 	vpa_cd
-
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_CustomerVPA] WHERE vpa_cd = [VPA]
 )
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                vpa_cd = N''
@@ -231,6 +234,7 @@ WHERE        (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_CustomerVPA
                                WHERE        (CommBE.dbo.comm_transaction.vpa_cd = VPA)))
+GO
 
 -- fix
 SELECT 
@@ -241,6 +245,7 @@ FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_SalesDay] WHERE transaction_dt = [SalesDate]
 )
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                transaction_dt = CAST(transaction_dt as date)
@@ -248,17 +253,18 @@ WHERE        (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_SalesDay
                                WHERE        (CommBE.dbo.comm_transaction.transaction_dt = SalesDate)))
+GO
 
 -- fix Left(1)
 SELECT 
 --	TOP 10
 	price_method_cd,
-LEFT(price_method_cd,1) pmfix
-
+	LEFT(price_method_cd,1) pmfix
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_PriceMethod] WHERE price_method_cd = [PriceMethod]
 )
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                price_method_cd = LEFT(price_method_cd,1)
@@ -266,25 +272,28 @@ WHERE        (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_PriceMethod
                                WHERE        (CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
+GO
 
 -- fix
 SELECT 
 	TOP 10
 	ess_salesperson_cd,
-ess_salesperson_key_id
-
+	ess_salesperson_key_id
 FROM CommBE.[dbo].[comm_transaction]
 WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE ess_salesperson_cd = [TerritoryCd]
 )
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                ess_salesperson_cd = N'ESS48'
 WHERE        (ess_salesperson_cd = 'ESS13')
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                ess_salesperson_cd = N''
 WHERE        (ess_salesperson_cd = 'OCTOBER 21')
+GO
 
 /*
 ESS13     	HouseNCZHESS -=>ESS48                 
@@ -303,10 +312,14 @@ WHERE hsi_shipto_div_cd not in ('AZA',
 'AZE') and  NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE ISNULL(doc_id,0) =[SalesOrderNumber] 
 )
+GO
+
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id = 'NA')
+GO
+
 
 UPDATE       BRS_Transaction
 SET                SalesOrderNumber = 0
@@ -314,10 +327,13 @@ WHERE        (DocType = 'aa')  AND (NOT EXISTS
                              (SELECT        * 
                                FROM            BRS_TransactionDW_Ext AS ext
                                WHERE        (BRS_Transaction.SalesOrderNumber = SalesOrderNumber)))
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id is null)
+GO
+
 
 -- 30s
 INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],
@@ -331,14 +347,15 @@ where
 	(
 		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber]
 	) 
+GO
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = '0'
 WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
                              (SELECT        *
                                FROM            BRS_TransactionDW_Ext
-                               WHERE        (ISNULL(CommBE.dbo.comm_transaction.doc_id,
-0) = SalesOrderNumber)))
+                               WHERE        (ISNULL(CommBE.dbo.comm_transaction.doc_id,0) = SalesOrderNumber)))
+GO
 
 SELECT         doc_id,
 doc_type_cd,
@@ -349,29 +366,38 @@ GROUP BY doc_id,
 doc_type_cd,
 line_id
 HAVING COUNT(*) >1
+GO
 
--- fix duplicate linenumbers by setting to ID (all imports)
+-- fix duplicate linenumbers by setting to ID (all imports), 1m40s
 UPDATE       
 	CommBE.dbo.comm_transaction
-SET                line_id = [record_id],[audit_id]=line_id 
+SET                
+	line_id = [record_id],
+	[audit_id]=line_id 
 where exists(
-SELECT         doc_id,
-doc_type_cd,
-line_id,
-COUNT(*) AS Expr1
-FROM            CommBE.dbo.comm_transaction t
-WHERE CommBE.dbo.comm_transaction.doc_id =t.doc_id and CommBE.dbo.comm_transaction.doc_type_cd=t.doc_type_cd and CommBE.dbo.comm_transaction.line_id = t.line_id
-GROUP BY doc_id,
-doc_type_cd,
-line_id
-HAVING COUNT(*) >1
+	SELECT         doc_id,
+		doc_type_cd,
+		line_id,
+		COUNT(*) AS Expr1
+	FROM            
+		CommBE.dbo.comm_transaction t
+	WHERE 
+		CommBE.dbo.comm_transaction.doc_id =t.doc_id and CommBE.dbo.comm_transaction.doc_type_cd=t.doc_type_cd and CommBE.dbo.comm_transaction.line_id = t.line_id
+	GROUP BY 
+		doc_id,
+		doc_type_cd,
+		line_id
+	HAVING 
+		COUNT(*) >1
 )
+GO
 
 -- remove overlapping line#
-
 UPDATE       CommBE.dbo.comm_transaction
 --SET                [audit_id]=[audit_id]
-SET                line_id = [record_id],[audit_id]=line_id 
+SET                
+	line_id = [record_id],
+	[audit_id]=line_id 
 /*
 select 
 	fiscal_yearmo_num,
@@ -383,19 +409,21 @@ FROM
 	CommBE.dbo.comm_transaction
 */
 where 
-fiscal_yearmo_num >= '201801' and
-exists(
-SELECT         
-	doc_id,
-	doc_type_cd,
-	line_id
-FROM            
-	comm.transaction_F555115 t
-WHERE 
-	CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
-	CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
-	CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
-)
+	fiscal_yearmo_num >= '201801' and
+	exists(
+		SELECT         
+			doc_id,
+			doc_type_cd,
+			line_id
+		FROM            
+			comm.transaction_F555115 t
+		WHERE 
+			CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
+			CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
+			CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
+	) and
+	line_id <> [record_id]
+GO
 
 ---
 
@@ -492,14 +520,17 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201804')
+	(fiscal_yearmo_num = '201805')
+GO
+
 
 --201601 - 201711; 201712 NEW format
 -- check load
 Select distinct  FiscalMonth from comm.transaction_F555115
 
+--- STOP
 
---- NEW
+--- NEW -- w/f Minnie
 
 -- [FiscalMonth]
 SELECT     * 
