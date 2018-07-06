@@ -44,8 +44,8 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201705) OR
-		(t.FiscalMonth BETWEEN 201801 and 201805)
+		(t.FiscalMonth BETWEEN 201701 and 201706) OR
+		(t.FiscalMonth BETWEEN 201801 and 201806)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
@@ -66,7 +66,7 @@ GROUP BY
 ORDER BY 1
 
 
--- set Results to text!
+-- Update end dates; set Results to tab-delim text!
 
 
 
