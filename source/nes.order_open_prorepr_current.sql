@@ -49,15 +49,10 @@ SELECT
 	,c.fix_message					AS next_step
 
 	,t.[work_order_num]
-	,CASE 
-		WHEN t.[rma_code] <> '' 
-		THEN t.[rma_code] 
-		ELSE 'NO' 
-	END								AS rma_code
+	,t.[rma_code] 
 
 	,c.cause_descr + ' | '
 	+ UPPER(RTRIM(t.[cause_code]))	AS cause
-
 
 	,e.FSCName 	+ ' | '
 	+t.[est_code]					AS tech_name

@@ -419,6 +419,17 @@ ALTER TABLE nes.cause ADD CONSTRAINT
 	
 GO
 
+ALTER TABLE nes.rma ADD CONSTRAINT
+	FK_rma_code FOREIGN KEY
+	(
+	rma_code
+	) REFERENCES nes.rma
+	(
+	rma_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+GO
+
 ALTER TABLE nes.order_open_prorepr SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
@@ -495,6 +506,17 @@ GO
 COMMIT
 
 --
+
+CREATE TABLE [nes].[rma](
+	[rma_code] [char](5) NOT NULL,
+	[rma_name] [nvarchar](50) NOT NULL,
+	[rma_key] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [nes_rma_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[rma_code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
 
 
 ---
@@ -578,65 +600,7 @@ ALTER TABLE nes.branch ADD CONSTRAINT
 	
 GO
 
----
--- pop from Tony D1 list
-INSERT INTO [nes].[order]
-([work_order_num], [note])
-SELECT 
-DISTINCT [work_order_num], ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
-)
-
-GO
-
-INSERT INTO [nes].[user_login]
-SELECT 
-DISTINCT [d1_user_id], '', '', ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].[user] u where u.user_id = s.d1_user_id
-)
-GO
-
--- add these codes TODO
-SELECT distinct [cause_code] from Integration.open_order_prorepr s
-where not exists (
-select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
-)
-
--- TRUNCATE TABLE nes.order_open_prorepr
-
-INSERT INTO nes.order_open_prorepr
-                         (work_order_num, branch_code, rma_code, order_status_code, order_received_date, estimate_complete_date, approved_date, order_complete_date, shipto, 
-                         privileges_code, model_number, est_code, call_type_code, problem_code, cause_code, user_id, approved_part_release_date, SalesDate, [last_update_date])
-SELECT
-s.work_order_num, s.d1_branch, s.rma_code, s.order_status, 
-
-s.order_received_date, 
-s.estimate_complete_date, 
-s.approved_date, 
-
-s.order_complete_date, 
-
-s.shipto, 
-                         s.priv_code, s.model_number, s.est_num, s.call_type_code, s.problem_code, s.cause_code, s.d1_user_id, s.approved_part_release_date, 
-                         BRS_Config.SalesDate,
-COALESCE ( 
-	s.order_complete_date, 
-	s.approved_part_release_date,
-	s.approved_date, 
-	s.estimate_complete_date, 
-	s.order_received_date
-)
-
-FROM            Integration.open_order_prorepr AS s 
-
-CROSS JOIN BRS_Config
-
-
-
+/*
 --todo 0 add to EST task, 11 Jun 18
 
 -- fix est code in dev, add branch
@@ -660,6 +624,116 @@ SELECT [TerritoryCd]
       ,[FSCStatusCode]
       ,[AddedDt]
 FROM [BRS_FSC_Rollup] where FSCStatusCode= 'S' order by 3
+
+UPDATE       nes.branch
+SET                Branch = i.Note1
+FROM            zzzItem AS i INNER JOIN
+                         nes.branch ON i.Item = nes.branch.branch_code
+
+*/
+
+---
+-- Upload order_open_prorepr
+
+-- order
+INSERT INTO [nes].[order]
+([work_order_num], [note])
+SELECT 
+DISTINCT [work_order_num], ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
+)
+GO
+
+-- user
+INSERT INTO [nes].[user_login]
+SELECT 
+DISTINCT [d1_user_id], '', '', ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [nes].user_login u where u.user_id = s.d1_user_id
+)
+GO
+
+-- EST
+INSERT INTO [dbo].[BRS_FSC_Rollup]
+([TerritoryCd], [Branch])
+SELECT 
+DISTINCT [est_num], ''
+FROM [Integration].[open_order_prorepr] s
+WHERE NOT EXISTS(
+  SELECT * FROM [dbo].[BRS_FSC_Rollup] f where f.TerritoryCd = s.est_num
+)
+GO
+
+-- add these codes TODO
+SELECT distinct [cause_code] from Integration.open_order_prorepr s
+where not exists (
+select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
+)
+
+
+-- TRUNCATE TABLE nes.order_open_prorepr
+
+INSERT INTO 
+	nes.order_open_prorepr 
+	(
+		work_order_num
+		,branch_code
+		,rma_code
+		,order_status_code
+		,order_received_date
+		,estimate_complete_date
+		,approved_date
+		,order_complete_date
+		,shipto
+		,privileges_code
+		,model_number
+		,est_code
+		,call_type_code
+		,problem_code
+		,cause_code
+		,user_id
+		,approved_part_release_date
+		,SalesDate
+		,last_update_date
+	)
+SELECT
+	s.work_order_num
+	,s.d1_branch
+	,CASE 
+		WHEN s.[rma_code] <> '' 
+		THEN s.[rma_code] 
+		ELSE 'NO' 
+	END								AS rma_code
+	,s.order_status
+	,s.order_received_date
+	,s.estimate_complete_date
+	,s.approved_date
+	,s.order_complete_date
+	,s.shipto
+	,s.priv_code
+	,s.model_number
+	,s.est_num
+	,s.call_type_code
+	,s.problem_code
+	,s.cause_code
+	,s.d1_user_id
+	,s.approved_part_release_date
+	,BRS_Config.SalesDate
+	,COALESCE ( 
+		s.order_complete_date, 
+		s.approved_part_release_date,
+		s.approved_date, 
+		s.estimate_complete_date, 
+		s.order_received_date
+	)
+FROM
+	Integration.open_order_prorepr AS s 
+CROSS JOIN 
+	BRS_Config
+
 
 /*
 -- Add Priv priorty, Manual
@@ -697,70 +771,11 @@ resp (Cord, EST, Cust)
 -- fix missing users list dups -> Tony
 */
 
-UPDATE       nes.branch
-SET                Branch = i.Note1
-FROM            zzzItem AS i INNER JOIN
-                         nes.branch ON i.Item = nes.branch.branch_code
 
 --
 
-SELECT
-	BRS_FSC_Rollup_1.Branch AS Branch_Tech, 
-	BRS_FSC_Rollup_1.FSCName AS est_name, 
-	t.est_code, 
-	t.user_id, 
-	nes.user_login.user_name, 
-	t.rma_code, 
-	t.model_number, 
-	nes.call_type.call_type_code, 
-	nes.call_type.call_type_descr, 
-	nes.privileges.priority_code, 
-	--DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding, 
-	nes.cause.turnaround_time, 
-	t.cause_code, 
-	nes.cause.cause_descr, 
-	nes.order_status.order_status_descr, 
-	nes.cause.fix_message, 
-	nes.aging.aging_display, 
-	t.order_received_date, 
-	t.last_update_date
-FROM 
-	nes.aging, 
-	nes.order_open_prorepr t
 
-	INNER JOIN nes.cause 
-	ON t.cause_code = nes.cause.cause_code 
-
-	INNER JOIN nes.order_status 
-	ON t.order_status_code = nes.order_status.order_status_code
-
-	INNER JOIN nes.user_login
-	ON t.user_id = nes.user_login.user_id
-
-	INNER JOIN BRS_Customer 
-	ON t.shipto = BRS_Customer.ShipTo
-
-	INNER JOIN BRS_FSC_Rollup 
-	ON BRS_Customer.TerritoryCd = BRS_FSC_Rollup.TerritoryCd
-
-	INNER JOIN BRS_FSC_Rollup AS BRS_FSC_Rollup_1 
-	ON t.est_code = BRS_FSC_Rollup_1.TerritoryCd
-
-	INNER JOIN nes.branch 
-	ON t.branch_code = nes.branch.branch_code
-
-	INNER JOIN nes.privileges 
-	ON t.privileges_code = nes.privileges.privileges_code 
-
-	INNER JOIN nes.call_type 
-	ON t.call_type_code = nes.call_type.call_type_code
-
-WHERE 
---	BRS_FSC_Rollup_1.Branch In ('MNTRL','QUEBC','TORNT','VACVR') AND 
---((DateDiff("d",[order_received_date],[SalesDate])) Between [day_from] And [day_to]) AND
-1=1
-
---
+---
 --truncate table nes.inventory_valuation_whvalrpt
 
 INSERT INTO nes.inventory_valuation_whvalrpt
