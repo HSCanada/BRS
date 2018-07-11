@@ -298,7 +298,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
 
@@ -310,10 +310,10 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
-print 'set Exclusives - Excl_key, 30s'
+print 'set Exclusives - Excl_key, 30s, 1 OF 3'
 UPDATE       
 	BRS_ItemHistory
 SET
@@ -326,16 +326,15 @@ FROM
 		BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
 		BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
 		1 = 1 
-	
 	INNER JOIN hfm.exclusive_product AS p 
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
 
-print 'set private - Excl_key'
+print 'set private - Excl_key, 2 OF 3'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -350,11 +349,11 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
 
-print 'set Branded - Excl_key'
+print 'set Branded - Excl_key, 3 of 3'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -363,7 +362,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
 -- seq 0 of 2
@@ -374,7 +373,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201805 AND 201805
+	FiscalMonth BETWEEN 201806 AND 201806
 GO
 
 print 'clear GpsKey, if needed'
@@ -398,9 +397,8 @@ FROM
 
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
-
 WHERE
-	(BRS_Transaction.FiscalMonth between 201805 and 201805)
+	(BRS_Transaction.FiscalMonth between 201806 and 201806)
 GO
 
 -- 1 min
@@ -411,28 +409,28 @@ SET
 	GpsKey = g.GpsKey
 FROM
 	BRS_ItemHistory AS h 
+
 	INNER JOIN BRS_Transaction 
 	ON h.Item = BRS_Transaction.Item AND 
-	h.FiscalMonth = BRS_Transaction.FiscalMonth 
+		h.FiscalMonth = BRS_Transaction.FiscalMonth 
 
 	INNER JOIN hfm.gps_code_rule AS r 
 	ON BRS_Transaction.GLBU_Class LIKE RTRIM(r.GLBU_Class_WhereClauseLike) AND 
-	BRS_Transaction.GL_BusinessUnit LIKE RTRIM(r.BusinessUnit_WhereClauseLike) AND 
-	h.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
-	h.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
-	BRS_Transaction.SalesDivision LIKE RTRIM(r.SalesDivision_WhereClauseLike) AND
-	1 = 1 
+		BRS_Transaction.GL_BusinessUnit LIKE RTRIM(r.BusinessUnit_WhereClauseLike) AND 
+		h.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+		h.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+		BRS_Transaction.SalesDivision LIKE RTRIM(r.SalesDivision_WhereClauseLike) AND
+		1 = 1 
 
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
-
 WHERE
 -- retro
 --	(r.Sequence in (110, 121)) AND 
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201805 and 201805)
+	(BRS_Transaction.FiscalMonth between 201806 and 201806)
 GO
 
 -- 30s
@@ -464,6 +462,21 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201805 and 201805)
+	(BRS_Transaction.FiscalMonth between 201806 and 201806)
 GO
 
+print 'test Excl_key - should be 0 null records'
+select count(*)
+FROM
+	BRS_ItemHistory 
+WHERE
+	Excl_key is null AND
+	FiscalMonth BETWEEN 201806 AND 201806
+GO
+
+
+--
+-- set results to text, CSV format
+-- a_CAN_Mar-18_RA.CSV
+
+-- [hfm].global_cube_proc  201806, 201806

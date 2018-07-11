@@ -419,8 +419,5 @@ GO
 		,t.AdjCode
 */
 
--- set results to text, CSV format
--- a_CAN_Mar-18_RA.CSV
-
 -- [hfm].global_cube_proc  201805, 201805
 
