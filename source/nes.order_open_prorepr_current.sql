@@ -33,7 +33,7 @@ AS
 *******************************************************************************/
 
 SELECT
-	UPPER(RTRIM(t.[branch_code]))	AS branch_d1
+	RTRIM(t.[branch_code])			AS branch
 
 	,RTRIM(CASE 
 		WHEN u.user_name <> '' 
@@ -41,57 +41,62 @@ SELECT
 		ELSE u.[user_id] 
 	END)							AS user_name
 
-	,priv.priority_code
+	,RTRIM(CASE 
+		WHEN e.FSCName <> '' 
+		THEN e.FSCName 
+		ELSE t.[est_code] 
+	END)							AS bench_tech
 
-	,RTRIM(age.aging_display)		AS days_outstanding_aging
-	,DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding
-	,c.turnaround_time				AS days_outstanding_limit
-	,c.fix_message					AS next_step
+	,RTRIM(age.aging_display)		AS aging
+	,RTRIM(std.next_action)			AS next_action
 
-	,t.[work_order_num]
-	,t.[rma_code] 
+	,r.[rma_name]					AS rma
 
-	,c.cause_descr + ' | '
-	+ UPPER(RTRIM(t.[cause_code]))	AS cause
+	,RTRIM(t.[order_status_code])	AS st
 
-	,e.FSCName 	+ ' | '
-	+t.[est_code]					AS tech_name
+	,t.[work_order_num]				AS workorder
+
+	,t.[last_update_date]			AS [Last Update]
+	,t.[order_received_date]		AS [Order Recv]
+	,t.[estimate_complete_date]		AS [Est Compl]
+	,t.[approved_date]				AS [Appr/Decl]
+	,t.[approved_part_release_date] AS [Appr Part]
+	,t.[order_complete_date]		AS [Order Comp]
 
 	,cust.PracticeName + ' | '
-	+CAST(t.[shipto] as varchar(7)) 	AS customer
+	+CAST(t.[shipto] as varchar(7)) AS customer
 
+	,RTRIM(t.[privileges_code])		AS priv
 	,RTRIM(t.[model_number])		AS model_number
 
+	,RTRIM(ct.call_type_descr) 		AS call_type
+
+	,RTRIM(prob.problem_descr)		AS problem
+
+	,RTRIM(t.[cause_code])	 + ' | '
+	+ c.cause_descr					AS cause
+
+
+
+	,t.[fact_id]
+	
+	,c.[work_flow]
+	,c.[owner]
+	,std.est_value_amt				AS est_value
+	,DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding
+	,c.turnaround_time				AS days_outstanding_limit
+	,priv.priority_code
 
 	,s.order_status_descr + ' | ' 
 	+ RTRIM(t.[order_status_code])			AS order_status
-
-	,ct.call_type_descr + ' | '
-	+UPPER(RTRIM(t.[call_type_code]))	AS call_type
-
-	,RTRIM(prob.problem_descr) + ' | '
-	+UPPER(RTRIM(t.[problem_code]))	AS problem
-
-	,t.[fact_id]
-
-	,t.[last_update_date]
-	,t.[order_received_date]
-	,t.[estimate_complete_date]
-	,t.[approved_date]
-	,t.[approved_part_release_date]
-	,t.[order_complete_date]
-
 
 	,CASE 
 		WHEN e.Branch In ('MNTRL','QUEBC','TORNT','VACVR') 
 		THEN e.Branch
 		ELSE 'CORP'
 	END	as branch_hub
-	,e.Branch						AS branch
-	,RTRIM(t.[privileges_code])		AS privileges_code
-
+	,e.Branch						AS branch_fsc
 	,CAST(t.[SalesDate] as date)	AS sales_date
-
 
 FROM 
 	nes.order_open_prorepr t
@@ -126,6 +131,16 @@ FROM
 	INNER JOIN nes.problem prob
 	ON t.problem_code = prob.problem_code
 
+	INNER JOIN nes.rma r
+	ON t.rma_code = r.rma_code
+
+	INNER JOIN [nes].[order_open_prorepr_standards] std
+	ON (t.cause_code = std.cause_code) AND
+		(t.problem_code = std.problem_code) AND
+		(t.call_type_code = std.call_type_code) AND
+		(t.order_status_code = std.order_status_code) AND
+		(t.rma_code = std.rma_code)
+
 	CROSS JOIN nes.aging age
 WHERE
 	DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
@@ -136,6 +151,5 @@ SET ANSI_NULLS OFF
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
-
 
 -- SELECT * FROM nes.order_open_prorepr_current

@@ -230,7 +230,6 @@ CREATE TABLE [nes].[cause](
 	[cause_descr] [nvarchar](50) NOT NULL,
 	[owner] [nvarchar](50) NOT NULL,
  	[turnaround_time] [int] NOT NULL,
-	[fix_message] [nvarchar](50) NOT NULL,
 	[order_status_code] [char](2) NOT NULL,
  	[cause_key] [int] identity(1,1) NOT NULL,
 
@@ -239,6 +238,10 @@ CREATE TABLE [nes].[cause](
 	[cause_code] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
+GO
+
+ALTER TABLE nes.cause ADD
+	work_flow nvarchar(50) NOT NULL CONSTRAINT DF_cause_work_flow DEFAULT ('.')
 GO
 
 --	[user_id] [char](10) NOT NULL,
@@ -600,6 +603,93 @@ ALTER TABLE nes.branch ADD CONSTRAINT
 	
 GO
 
+--
+-- drop table [nes].[order_open_prorepr_standards]
+
+CREATE TABLE [nes].[order_open_prorepr_standards](
+	[cause_code] [char](5) NOT NULL,
+	[problem_code] [char](5) NOT NULL,
+	[call_type_code] [char](5) NOT NULL,
+	[order_status_code] [char](2) NOT NULL,
+	[rma_code] [char](5) NOT NULL,
+	[id_key] [int] identity(1,1) NOT NULL,
+	[est_value_amt] [money] NULL,
+	[next_action] [nchar](30) NULL,
+ CONSTRAINT [nes_order_open_prorepr_standards_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[cause_code] ASC,
+	[problem_code] ASC,
+	[call_type_code] ASC,
+	[order_status_code] ASC,
+	[rma_code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE nes.order_open_prorepr_standards ADD CONSTRAINT
+	FK_order_open_prorepr_standards_cause FOREIGN KEY
+	(
+	cause_code
+	) REFERENCES nes.cause
+	(
+	cause_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.order_open_prorepr_standards ADD CONSTRAINT
+	FK_order_open_prorepr_standards_problem FOREIGN KEY
+	(
+	problem_code
+	) REFERENCES nes.problem
+	(
+	problem_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.order_open_prorepr_standards ADD CONSTRAINT
+	FK_order_open_prorepr_standards_call_type FOREIGN KEY
+	(
+	call_type_code
+	) REFERENCES nes.call_type
+	(
+	call_type_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.order_open_prorepr_standards ADD CONSTRAINT
+	FK_order_open_prorepr_standards_order_status FOREIGN KEY
+	(
+	order_status_code
+	) REFERENCES nes.order_status
+	(
+	order_status_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.order_open_prorepr_standards ADD CONSTRAINT
+	FK_order_open_prorepr_standards_rma FOREIGN KEY
+	(
+	rma_code
+	) REFERENCES nes.rma
+	(
+	rma_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.order_open_prorepr_standards SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
 /*
 --todo 0 add to EST task, 11 Jun 18
 
@@ -701,13 +791,13 @@ INSERT INTO
 	)
 SELECT
 	s.work_order_num
-	,s.d1_branch
-	,CASE 
+	,UPPER(s.d1_branch)				AS d1_branch
+	,UPPER(CASE 
 		WHEN s.[rma_code] <> '' 
 		THEN s.[rma_code] 
 		ELSE 'NO' 
-	END								AS rma_code
-	,s.order_status
+	END)							AS rma_code
+	,UPPER(s.order_status)			AS order_status
 	,s.order_received_date
 	,s.estimate_complete_date
 	,s.approved_date
@@ -716,9 +806,9 @@ SELECT
 	,s.priv_code
 	,s.model_number
 	,s.est_num
-	,s.call_type_code
-	,s.problem_code
-	,s.cause_code
+	,UPPER(s.call_type_code)		AS call_type_code
+	,UPPER(s.problem_code)			AS problem_code
+	,UPPER(s.cause_code)			AS cause_code
 	,s.d1_user_id
 	,s.approved_part_release_date
 	,BRS_Config.SalesDate
@@ -771,44 +861,9 @@ resp (Cord, EST, Cust)
 -- fix missing users list dups -> Tony
 */
 
-
---
-
-
 ---
---truncate table nes.inventory_valuation_whvalrpt
 
-INSERT INTO nes.inventory_valuation_whvalrpt
-                         (SalesDate, item, branch_code, tag_number, tag_date, available_qty, allocation_qty, reserved_qty, total_qty, tag_or_avg_cost, tag_cost_ind, available_extended_value, 
-                         reserved_extended_value, reservation_quantity_list, total_extended_value, bin_code)
-SELECT        
-BRS_Config.SalesDate,
-item,
-branch_code,
---SUBSTRING(branch_code,2,LEN(branch_code)-2) as branch_code,
-tag_number,
-CASE 
-	WHEN tag_number<>'' 
-	THEN CAST (LEFT(tag_number,6) AS DATE)
-	ELSE NULL
-END	AS tag_date,
-available_qty,
-allocation_qty,
-reserved_qty,
-total_qty,
-tag_or_avg_cost,
-tag_cost_ind,
-available_extended_value,
-reserved_extended_value,
-reservation_quantity_list,
-total_extended_value,
-UPPER(bin_code) AS bin_code
-FROM            
-Integration.inventory_valuation_whvalrpt AS inventory_valuation_whvalrpt_1
-CROSS JOIN BRS_Config
-
---
--- jen fix branch code first
+-- 
 INSERT INTO [nes].[branch]
 (branch_code, branch_name)
 SELECT        
@@ -818,3 +873,75 @@ Integration.inventory_valuation_whvalrpt AS i
 where  
 NOT exists (select * from [nes].[branch] where i.branch_code = nes.branch.branch_code)
 
+--truncate table nes.inventory_valuation_whvalrpt
+
+INSERT INTO
+	nes.inventory_valuation_whvalrpt
+	(
+		SalesDate,
+		item,
+		branch_code,
+		tag_number,
+		tag_date,
+		available_qty,
+		allocation_qty,
+		reserved_qty,
+		total_qty,
+		tag_or_avg_cost,
+		tag_cost_ind,
+		available_extended_value,
+		reserved_extended_value,
+		reservation_quantity_list,
+		total_extended_value,
+		bin_code
+)
+SELECT        
+	BRS_Config.SalesDate,
+	item,
+	branch_code,
+	tag_number,
+	CASE 
+		WHEN tag_number<>'' 
+		THEN CAST (LEFT(tag_number,6) AS DATE)
+		ELSE NULL
+	END	AS tag_date,
+	available_qty,
+	allocation_qty,
+	reserved_qty,
+	total_qty,
+	tag_or_avg_cost,
+	tag_cost_ind,
+	available_extended_value,
+	reserved_extended_value,
+	reservation_quantity_list,
+	total_extended_value,
+	UPPER(bin_code) AS bin_code
+FROM            
+	Integration.inventory_valuation_whvalrpt AS inventory_valuation_whvalrpt_1
+CROSS JOIN 
+	BRS_Config
+GO
+
+---
+
+
+INSERT INTO nes.order_open_prorepr_standards
+                         (cause_code, problem_code, call_type_code, order_status_code, rma_code)
+SELECT DISTINCT cause_code, problem_code, call_type_code, order_status_code, rma_code
+FROM            nes.order_open_prorepr s
+WHERE NOT EXISTS (
+SELECT * FROM nes.order_open_prorepr_standards d WHERE 
+(s.cause_code = d.cause_code) AND
+(s.problem_code = d.problem_code) AND
+(s.call_type_code = d.call_type_code) AND
+(s.order_status_code = d.order_status_code) AND
+(s.rma_code = d.rma_code)
+)
+
+UPDATE       nes.order_open_prorepr_standards
+SET                next_action = LEFT(fix_message,30)
+FROM            nes.cause INNER JOIN
+                         nes.order_open_prorepr_standards ON nes.cause.cause_code = nes.order_open_prorepr_standards.cause_code
+
+UPDATE       nes.order_open_prorepr_standards
+SET                est_value_amt = 300
