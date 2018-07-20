@@ -35,6 +35,7 @@ AS
 --	20 Sep 17	tmc		add GM 
 --	07 Dec 17	tmc		add Commission info
 --	27 Feb 18	tmc		add sized & strength for ISR consolidator
+--  18 Jul 18	tmc		add MPC code and removed CategoryRollup_L1 (need?)
 **    
 *******************************************************************************/
 
@@ -99,14 +100,16 @@ SELECT
 	,(sc.SalesCategory)					AS SalesCategoryCode
 	,(cr.CategoryRollup)				AS CategoryRollupCode
 	,(cr.CategoryClass_Rollup)			AS CategoryClassRollupCode
-	,(cr.CategoryRollup_L1)				AS CategoryRollupCode_ISR
-	,(cr_isr.category_rollup_desc)		AS CategoryRollup_ISR
+--	,(cr.CategoryRollup_L1)				AS CategoryRollupCode_ISR
+--	,(cr_isr.category_rollup_desc)		AS CategoryRollup_ISR
 	,i.comm_group_cd					AS CommGroupCode
 	,i.comm_note_txt					AS CommGroupNote
 	,i.comm_group_cps_cd				AS CommGroupCpsCode
 	,i.[custom_comm_group1_cd]			AS CustomCommGroup1Code
 	,i.[custom_comm_group2_cd]			AS CustomCommGroup2Code
 	,i.[custom_comm_group3_cd]			AS CustomCommGroup3Code
+	,RTRIM(c.major_cd)					AS MajorCode
+
 
 FROM            
 	BRS_Item AS i 
@@ -124,8 +127,8 @@ FROM
 	INNER JOIN [BRS_ItemCategoryRollup] as cr
 	ON c.CategoryRollup = cr.CategoryRollup 
 
-	INNER JOIN [BRS_ItemCategoryRollup] as cr_isr
-	ON cr.[CategoryRollup_L1] = cr_isr.CategoryRollup 
+--	INNER JOIN [BRS_ItemCategoryRollup] as cr_isr
+--	ON cr.[CategoryRollup_L1] = cr_isr.CategoryRollup 
 
 	INNER JOIN BRS_ItemSalesCategory AS sc 
 	ON i.SalesCategory = sc.SalesCategory 
