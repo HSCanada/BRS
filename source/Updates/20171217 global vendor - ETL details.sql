@@ -373,7 +373,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201801 AND 201806
 GO
 
 print 'clear GpsKey, if needed'
@@ -398,7 +398,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201806 and 201806)
+	(BRS_Transaction.FiscalMonth between 201801 and 201806)
 GO
 
 -- 1 min
@@ -430,7 +430,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201806 and 201806)
+	(BRS_Transaction.FiscalMonth between 201801 and 201806)
 GO
 
 -- 30s
@@ -462,7 +462,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201806 and 201806)
+	(BRS_Transaction.FiscalMonth between 201801 and 201806)
 GO
 
 print 'test Excl_key - should be 0 null records'

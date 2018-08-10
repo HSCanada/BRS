@@ -128,7 +128,7 @@ GO
 -- Prod
 /*
 -- ^ delim
--- HSC_SALES_20180518.txt
+-- HSC_SALES_20180706.txt
 
 SET NOCOUNT OFF;
 GO

@@ -419,5 +419,59 @@ GO
 		,t.AdjCode
 */
 
+--a_CAN_Jan-17_RA.csv
+-- [hfm].global_cube_proc  201701, 201701
+
+--a_CAN_Feb-17_RA.csv
+-- [hfm].global_cube_proc  201702, 201702
+
+--a_CAN_Mar-17_RA.csv
+-- [hfm].global_cube_proc  201703, 201703
+
+--a_CAN_Apr-17_RA.csv
+-- [hfm].global_cube_proc  201704, 201704
+
+--a_CAN_May-17_RA.csv
+-- [hfm].global_cube_proc  201705, 201705
+
+--a_CAN_Jun-17_RA.csv
+-- [hfm].global_cube_proc  201706, 201706
+
+--a_CAN_Jul-17_RA.csv
+-- [hfm].global_cube_proc  201707, 201707
+
+--a_CAN_Aug-17_RA.csv
+-- [hfm].global_cube_proc  201708, 201708
+
+--a_CAN_Sep-17_RA.csv
+-- [hfm].global_cube_proc  201709, 201709
+
+--a_CAN_Oct-17_RA.csv
+-- [hfm].global_cube_proc  201710, 201710
+
+--a_CAN_Nov-17_RA.csv
+-- [hfm].global_cube_proc  201711, 201711
+
+--a_CAN_Dec-17_RA.csv
+-- [hfm].global_cube_proc  201712, 201712
+
+--a_CAN_Jan-18_RA.csv
+-- [hfm].global_cube_proc  201801, 201801
+
+--a_CAN_Feb-18_RA.csv
+-- [hfm].global_cube_proc  201802, 201802
+
+--a_CAN_Mar-18_RA.csv
+-- [hfm].global_cube_proc  201803, 201803
+
+--a_CAN_Apr-18_RA.csv
+-- [hfm].global_cube_proc  201804, 201804
+
+--a_CAN_May-18_RA.csv
 -- [hfm].global_cube_proc  201805, 201805
+
+--a_CAN_Jun-18_RA.csv
+-- [hfm].global_cube_proc  201806, 201806
+
+-- [hfm].global_cube_proc  201701, 201807
 

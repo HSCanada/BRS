@@ -398,16 +398,6 @@ UPDATE       CommBE.dbo.comm_transaction
 SET                
 	line_id = [record_id],
 	[audit_id]=line_id 
-/*
-select 
-	fiscal_yearmo_num,
-	[doc_type_cd],
-	[doc_id],
-	line_id,
-	[audit_id]
-FROM
-	CommBE.dbo.comm_transaction
-*/
 where 
 	fiscal_yearmo_num >= '201801' and
 	exists(
@@ -520,7 +510,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201805')
+	(fiscal_yearmo_num = '201806')
 GO
 
 

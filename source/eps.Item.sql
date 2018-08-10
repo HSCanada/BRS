@@ -77,8 +77,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Item where Supplier = 'CAO'
+-- SELECT top 10 * FROM eps.Item where Supplier = 'BAINTE'
 
+-- dup test
 SELECT [Item_Number], COUNT (*) 
 FROM eps.Item 
 GROUP BY [Item_Number]
