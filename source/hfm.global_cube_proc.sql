@@ -473,5 +473,6 @@ GO
 --a_CAN_Jun-18_RA.csv
 -- [hfm].global_cube_proc  201806, 201806
 
--- [hfm].global_cube_proc  201701, 201807
+--a_CAN_Jul-18_RA.csv
+-- [hfm].global_cube_proc  201807, 201807
 

@@ -81,7 +81,7 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 -- test exclusive map overlap with private
 
 -- test rules
-
+/*
 SELECT       
 	r.Excl_Code_TargKey
 	,i.ItemDescription
@@ -106,7 +106,7 @@ WHERE
 --	Excl_Code_TargKey like 'CAO%' AND
 --	item in ('5848072'   , '5950085'   ) AND
 	1=1
-
+*/
 ---
 
 /*
@@ -298,7 +298,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 
@@ -310,7 +310,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 print 'set Exclusives - Excl_key, 30s, 1 OF 3'
@@ -330,7 +330,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 
@@ -349,7 +349,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 
@@ -362,7 +362,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 -- seq 0 of 2
@@ -373,7 +373,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201801 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 print 'clear GpsKey, if needed'
@@ -398,7 +398,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201801 and 201806)
+	(BRS_Transaction.FiscalMonth between 201807 and 201807)
 GO
 
 -- 1 min
@@ -430,7 +430,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201801 and 201806)
+	(BRS_Transaction.FiscalMonth between 201807 and 201807)
 GO
 
 -- 30s
@@ -462,7 +462,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201801 and 201806)
+	(BRS_Transaction.FiscalMonth between 201807 and 201807)
 GO
 
 print 'test Excl_key - should be 0 null records'
@@ -471,7 +471,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201806 AND 201806
+	FiscalMonth BETWEEN 201807 AND 201807
 GO
 
 
@@ -479,4 +479,4 @@ GO
 -- set results to text, CSV format
 -- a_CAN_Mar-18_RA.CSV
 
--- [hfm].global_cube_proc  201806, 201806
+-- [hfm].global_cube_proc  201807, 201807
