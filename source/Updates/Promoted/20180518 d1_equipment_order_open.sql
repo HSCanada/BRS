@@ -264,12 +264,24 @@ CREATE TABLE [nes].[aging](
 	[aging_display] [nchar](20) NULL,
 	[aging_sort] [smallint] NULL,
 	[aging_key] [smallint] IDENTITY(1,1) NOT NULL,
- CONSTRAINT [nes_aging] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [nes_aging_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[day_from] ASC,
 	[day_to] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
+
+CREATE TABLE [nes].[rma](
+	[rma_code] [char](5) NOT NULL,
+	[rma_name] [nvarchar](50) NOT NULL,
+	[rma_key] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [nes_rma_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[rma_code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
 
 
 --
@@ -510,64 +522,8 @@ COMMIT
 
 --
 
-CREATE TABLE [nes].[rma](
-	[rma_code] [char](5) NOT NULL,
-	[rma_name] [nvarchar](50) NOT NULL,
-	[rma_key] [int] IDENTITY(1,1) NOT NULL,
- CONSTRAINT [nes_rma_c_pk] PRIMARY KEY CLUSTERED 
-(
-	[rma_code] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
-) ON [USERDATA]
-GO
-
 
 ---
-
--- populate
-INSERT INTO 
-nes.branch
-VALUES        ('', N'UNASSIGNED')
-GO
-
-INSERT INTO 
-[nes].[call_type]
-VALUES        ('', N'UNASSIGNED')
-GO
-
-INSERT INTO 
-[nes].[order_status]
-VALUES        ('', N'UNASSIGNED')
-GO
-
-INSERT INTO 
-[nes].[cause]
-VALUES        ('', N'UNASSIGNED', '', 0, '', '')
-GO
-
-
-INSERT INTO 
-[nes].[order]
-VALUES        ('', N'UNASSIGNED')
-GO
-
-
-INSERT INTO 
-[nes].[privileges]
-VALUES        ('', N'UNASSIGNED')
-GO
-
-INSERT INTO 
-[nes].[problem]
-VALUES        ('', N'UNASSIGNED')
-GO
-
-INSERT INTO nes.[user_login]
-                         (user_id, user_name, branch_code, type_code)
-VALUES        ('', N'UNASSIGNED', '', '')
-GO
-
---
 
 --
 
@@ -689,7 +645,7 @@ ALTER TABLE nes.order_open_prorepr_standards SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
---
+-- STOP
 /*
 --todo 0 add to EST task, 11 Jun 18
 
@@ -722,226 +678,425 @@ FROM            zzzItem AS i INNER JOIN
 
 */
 
+
+select 
+    s.name +'.'+ o.name as [Name] 
+from
+    sys.all_objects o
+    inner join sys.schemas s on s.schema_id = o.schema_id 
+where
+    o.type in ('U') -- tables, views, and stored procedures
+	AND s.name ='nes'
+order by
+    s.name
+
 ---
--- Upload order_open_prorepr
 
--- order
-INSERT INTO [nes].[order]
-([work_order_num], [note])
-SELECT 
-DISTINCT [work_order_num], ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
-)
+-- populate
+INSERT INTO 
+nes.branch
+VALUES        ('', N'UNASSIGNED')
 GO
-
--- user
-INSERT INTO [nes].[user_login]
-SELECT 
-DISTINCT [d1_user_id], '', '', ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [nes].user_login u where u.user_id = s.d1_user_id
-)
-GO
-
--- EST
-INSERT INTO [dbo].[BRS_FSC_Rollup]
-([TerritoryCd], [Branch])
-SELECT 
-DISTINCT [est_num], ''
-FROM [Integration].[open_order_prorepr] s
-WHERE NOT EXISTS(
-  SELECT * FROM [dbo].[BRS_FSC_Rollup] f where f.TerritoryCd = s.est_num
-)
-GO
-
--- add these codes TODO
-SELECT distinct [cause_code] from Integration.open_order_prorepr s
-where not exists (
-select * from [nes].[cause] c where s.[cause_code] = c.[cause_code]
-)
-
-
--- TRUNCATE TABLE nes.order_open_prorepr
 
 INSERT INTO 
-	nes.order_open_prorepr 
-	(
-		work_order_num
-		,branch_code
-		,rma_code
-		,order_status_code
-		,order_received_date
-		,estimate_complete_date
-		,approved_date
-		,order_complete_date
-		,shipto
-		,privileges_code
-		,model_number
-		,est_code
-		,call_type_code
-		,problem_code
-		,cause_code
-		,user_id
-		,approved_part_release_date
-		,SalesDate
-		,last_update_date
-	)
-SELECT
-	s.work_order_num
-	,UPPER(s.d1_branch)				AS d1_branch
-	,UPPER(CASE 
-		WHEN s.[rma_code] <> '' 
-		THEN s.[rma_code] 
-		ELSE 'NO' 
-	END)							AS rma_code
-	,UPPER(s.order_status)			AS order_status
-	,s.order_received_date
-	,s.estimate_complete_date
-	,s.approved_date
-	,s.order_complete_date
-	,s.shipto
-	,s.priv_code
-	,s.model_number
-	,s.est_num
-	,UPPER(s.call_type_code)		AS call_type_code
-	,UPPER(s.problem_code)			AS problem_code
-	,UPPER(s.cause_code)			AS cause_code
-	,s.d1_user_id
-	,s.approved_part_release_date
-	,BRS_Config.SalesDate
-	,COALESCE ( 
-		s.order_complete_date, 
-		s.approved_part_release_date,
-		s.approved_date, 
-		s.estimate_complete_date, 
-		s.order_received_date
-	)
-FROM
-	Integration.open_order_prorepr AS s 
-CROSS JOIN 
-	BRS_Config
-
-
-/*
--- Add Priv priorty, Manual
-
-1. Priv with PMA
-2. Priv only
-3. rest
-*/
-
-/*
--- Add Aging bucket for table time (
-5
-10
-15
-30
-60
-90
-)
-
-
--- build summary idea
-
--- oRG cause, total
-
-branch split by EST Branch (see Tony list)
-
-***
-
-resp (Cord, EST, Cust)
-  Cause (with buckets)
-
-
-****
-
--- fix missing users list dups -> Tony
-*/
-
----
-
--- 
-INSERT INTO [nes].[branch]
-(branch_code, branch_name)
-SELECT        
-distinct (i.branch_code), '' descr
-FROM            
-Integration.inventory_valuation_whvalrpt AS i
-where  
-NOT exists (select * from [nes].[branch] where i.branch_code = nes.branch.branch_code)
-
---truncate table nes.inventory_valuation_whvalrpt
-
-INSERT INTO
-	nes.inventory_valuation_whvalrpt
-	(
-		SalesDate,
-		item,
-		branch_code,
-		tag_number,
-		tag_date,
-		available_qty,
-		allocation_qty,
-		reserved_qty,
-		total_qty,
-		tag_or_avg_cost,
-		tag_cost_ind,
-		available_extended_value,
-		reserved_extended_value,
-		reservation_quantity_list,
-		total_extended_value,
-		bin_code
-)
-SELECT        
-	BRS_Config.SalesDate,
-	item,
-	branch_code,
-	tag_number,
-	CASE 
-		WHEN tag_number<>'' 
-		THEN CAST (LEFT(tag_number,6) AS DATE)
-		ELSE NULL
-	END	AS tag_date,
-	available_qty,
-	allocation_qty,
-	reserved_qty,
-	total_qty,
-	tag_or_avg_cost,
-	tag_cost_ind,
-	available_extended_value,
-	reserved_extended_value,
-	reservation_quantity_list,
-	total_extended_value,
-	UPPER(bin_code) AS bin_code
-FROM            
-	Integration.inventory_valuation_whvalrpt AS inventory_valuation_whvalrpt_1
-CROSS JOIN 
-	BRS_Config
+[nes].[call_type]
+VALUES        ('', N'UNASSIGNED')
 GO
 
----
+INSERT INTO 
+[nes].[order_status]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO 
+[nes].[cause]
+VALUES        ('', N'UNASSIGNED', '', 0, '', '')
+GO
 
 
+INSERT INTO 
+[nes].[order]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+
+INSERT INTO 
+[nes].[privileges]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO 
+[nes].[problem]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO nes.[user_login]
+                         (user_id, user_name, branch_code, type_code)
+VALUES        ('', N'UNASSIGNED', '', '')
+GO
+
+--
+
+-- populate PROD
+
+SET IDENTITY_INSERT nes.branch ON
+go
+INSERT INTO 
+nes.branch
+select * from DEV_BRSales.nes.branch
+go
+SET IDENTITY_INSERT nes.branch OFF
+go
+
+INSERT INTO 
+[nes].[call_type]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO 
+[nes].[order_status]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO 
+[nes].[cause]
+VALUES        ('', N'UNASSIGNED', '', 0, '', '')
+GO
+
+
+INSERT INTO 
+[nes].[order]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+
+INSERT INTO 
+[nes].[privileges]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO 
+[nes].[problem]
+VALUES        ('', N'UNASSIGNED')
+GO
+
+INSERT INTO nes.[user_login]
+                         (user_id, user_name, branch_code, type_code)
+VALUES        ('', N'UNASSIGNED', '', '')
+GO
+
+
+--nes.branch
+INSERT INTO [nes].[branch]
+           (
+		   [branch_code]
+           ,[branch_name]
+           ,[Branch]
+		   )
+SELECT 
+           [branch_code]
+           ,[branch_name]
+           ,[Branch]
+FROM [DEV_BRSales].[nes].[branch]
+GO
+
+-- nes.call_type
+INSERT INTO nes.call_type
+           (
+		   [call_type_code]
+           ,[call_type_descr]
+		   )
+SELECT 
+		   [call_type_code]
+           ,[call_type_descr]
+
+FROM [DEV_BRSales].nes.call_type
+GO
+
+-- nes.order_status
+INSERT INTO nes.order_status
+           (
+		   [order_status_code],
+			[order_status_descr]
+		   )
+SELECT 
+		   [order_status_code],
+			[order_status_descr]
+
+FROM [DEV_BRSales].nes.order_status
+GO
+
+-- nes.cause
+INSERT INTO nes.cause
+           (
+		   [cause_code]
+           ,[cause_descr]
+           ,[owner]
+           ,[turnaround_time]
+           ,[order_status_code]
+           ,[work_flow]
+		   )
+SELECT 
+		   [cause_code]
+           ,[cause_descr]
+           ,[owner]
+           ,[turnaround_time]
+           ,[order_status_code]
+           ,[work_flow]
+
+FROM [DEV_BRSales].nes.cause
+GO
+
+-- nes.order
+INSERT INTO nes.[order]
+           (
+		   [work_order_num],
+			[note]
+		   )
+SELECT 
+		   [work_order_num],
+			[note]
+
+FROM [DEV_BRSales].nes.[order]
+GO
+
+-- nes.privileges
+INSERT INTO nes.privileges
+           (
+		   [privileges_code]
+           ,[privileges_descr]
+           ,[priority_code]
+		   )
+SELECT 
+		   [privileges_code]
+           ,[privileges_descr]
+           ,[priority_code]
+
+FROM [DEV_BRSales].nes.privileges
+GO
+
+-- nes.problem
+INSERT INTO nes.problem
+           (
+		   [problem_code],
+			[problem_descr]
+		   )
+SELECT 
+		   [problem_code],
+			[problem_descr]
+
+FROM [DEV_BRSales].nes.problem
+GO
+
+-- nes.user_login
+INSERT INTO nes.user_login
+           (
+		   [user_id]
+           ,[user_name]
+           ,[branch_code]
+           ,[type_code]
+		   )
+SELECT 
+		   [user_id]
+           ,[user_name]
+           ,[branch_code]
+           ,[type_code]
+
+FROM [DEV_BRSales].nes.user_login
+GO
+
+-- nes.aging
+INSERT INTO nes.aging
+           (
+		   [day_from]
+           ,[day_to]
+           ,[aging_display]
+           ,[aging_sort]
+		   )
+SELECT 
+		   [day_from]
+           ,[day_to]
+           ,[aging_display]
+           ,[aging_sort]
+
+FROM [DEV_BRSales].nes.aging
+GO
+
+-- nes.rma
+INSERT INTO nes.rma
+           (
+		   [rma_code],
+			[rma_name]
+		   )
+SELECT 
+		   [rma_code],
+			[rma_name]
+
+FROM [DEV_BRSales].nes.rma
+GO
+
+-- nes.order_open_prorepr_standards
 INSERT INTO nes.order_open_prorepr_standards
-                         (cause_code, problem_code, call_type_code, order_status_code, rma_code)
-SELECT DISTINCT cause_code, problem_code, call_type_code, order_status_code, rma_code
-FROM            nes.order_open_prorepr s
-WHERE NOT EXISTS (
-SELECT * FROM nes.order_open_prorepr_standards d WHERE 
-(s.cause_code = d.cause_code) AND
-(s.problem_code = d.problem_code) AND
-(s.call_type_code = d.call_type_code) AND
-(s.order_status_code = d.order_status_code) AND
-(s.rma_code = d.rma_code)
-)
+           (
+           [cause_code]
+           ,[problem_code]
+           ,[call_type_code]
+           ,[order_status_code]
+           ,[rma_code]
+           ,[est_value_amt]
+           ,[next_action]
 
-UPDATE       nes.order_open_prorepr_standards
-SET                next_action = LEFT(fix_message,30)
-FROM            nes.cause INNER JOIN
-                         nes.order_open_prorepr_standards ON nes.cause.cause_code = nes.order_open_prorepr_standards.cause_code
+		   )
+SELECT 
+           [cause_code]
+           ,[problem_code]
+           ,[call_type_code]
+           ,[order_status_code]
+           ,[rma_code]
+           ,[est_value_amt]
+           ,[next_action]
 
-UPDATE       nes.order_open_prorepr_standards
-SET                est_value_amt = 300
+FROM [DEV_BRSales].nes.order_open_prorepr_standards
+GO
+
+
+---
+-- nes.order_open_prorepr_standards
+
+INSERT INTO [dbo].[BRS_FSC_Rollup]
+           (
+           [TerritoryCd]
+           ,[FSCName]
+           ,[Branch]
+           ,[FSCStatusCode]
+           ,[LastReviewDate]
+           ,[StatusCd]
+           ,[AddedDt]
+           ,[FSCRollup]
+           ,[CategoryCode]
+           ,[NoteTxt]
+           ,[FSCNameShort]
+           ,[TS_CategoryCd]
+           ,[comm_salesperson_key_id]
+           ,[group_type]
+           ,[order_taken_by]
+           ,[Rule_WhereClauseLike]
+
+		   )
+SELECT 
+           [TerritoryCd]
+           ,[FSCName]
+           ,[Branch]
+           ,[FSCStatusCode]
+           ,[LastReviewDate]
+           ,[StatusCd]
+           ,[AddedDt]
+           ,[FSCRollup]
+           ,[CategoryCode]
+           ,[NoteTxt]
+           ,[FSCNameShort]
+           ,[TS_CategoryCd]
+           ,[comm_salesperson_key_id]
+           ,[group_type]
+           ,[order_taken_by]
+           ,[Rule_WhereClauseLike]
+
+FROM [DEV_BRSales].[dbo].[BRS_FSC_Rollup]
+where 
+	FSCStatusCode = 'S' AND
+	not exists (select * FROM [dbo].[BRS_FSC_Rollup] old where [DEV_BRSales].[dbo].[BRS_FSC_Rollup].TerritoryCd = old.TerritoryCd) 
+
+GO
+
+
+INSERT INTO [nes].[order_open_prorepr]
+           (
+           [SalesDate]
+           ,[work_order_num]
+           ,[branch_code]
+           ,[rma_code]
+           ,[order_status_code]
+           ,[order_received_date]
+           ,[estimate_complete_date]
+           ,[approved_date]
+           ,[approved_part_release_date]
+           ,[order_complete_date]
+           ,[shipto]
+           ,[privileges_code]
+           ,[model_number]
+           ,[est_code]
+           ,[call_type_code]
+           ,[problem_code]
+           ,[cause_code]
+           ,[user_id]
+           ,[last_update_date]
+
+		   )
+SELECT 
+           [SalesDate]
+           ,[work_order_num]
+           ,[branch_code]
+           ,[rma_code]
+           ,[order_status_code]
+           ,[order_received_date]
+           ,[estimate_complete_date]
+           ,[approved_date]
+           ,[approved_part_release_date]
+           ,[order_complete_date]
+           ,[shipto]
+           ,[privileges_code]
+           ,[model_number]
+           ,[est_code]
+           ,[call_type_code]
+           ,[problem_code]
+           ,[cause_code]
+           ,[user_id]
+           ,[last_update_date]
+
+FROM [DEV_BRSales].[nes].[order_open_prorepr]
+
+GO
+
+-- nes.order_open_prorepr_standards
+
+INSERT INTO [nes].[inventory_valuation_whvalrpt]
+           (
+           [SalesDate]
+           ,[item]
+           ,[branch_code]
+           ,[tag_number]
+           ,[tag_date]
+           ,[tag_cost_ind]
+           ,[bin_code]
+           ,[reservation_quantity_list]
+           ,[tag_or_avg_cost]
+           ,[available_extended_value]
+           ,[reserved_extended_value]
+           ,[total_extended_value]
+           ,[available_qty]
+           ,[allocation_qty]
+           ,[reserved_qty]
+           ,[total_qty]
+
+		   )
+SELECT 
+           [SalesDate]
+           ,[item]
+           ,[branch_code]
+           ,[tag_number]
+           ,[tag_date]
+           ,[tag_cost_ind]
+           ,[bin_code]
+           ,[reservation_quantity_list]
+           ,[tag_or_avg_cost]
+           ,[available_extended_value]
+           ,[reserved_extended_value]
+           ,[total_extended_value]
+           ,[available_qty]
+           ,[allocation_qty]
+           ,[reserved_qty]
+           ,[total_qty]
+
+FROM [DEV_BRSales].[nes].[inventory_valuation_whvalrpt]
+GO
+

@@ -420,7 +420,7 @@ GO
 -- DATA - Migrate legacy
 
 
--- 40s per month'
+-- first set month below; 40s per month'; why 5m34s on new system?  
 print 'migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
@@ -510,7 +510,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201807')
+	(fiscal_yearmo_num = '201808')
 GO
 
 
