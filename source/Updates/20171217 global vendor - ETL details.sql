@@ -75,218 +75,6 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 
 --> STOP
 
--- TODO Exclusive history, ...
-
----
--- test exclusive map overlap with private
-
--- test rules
-/*
-SELECT       
-	r.Excl_Code_TargKey
-	,i.ItemDescription
-	,i.Supplier
-	,i.Brand
-	,i.Item
-	,i.Label
-	,i.Est12MoSales
-FROM            
-	BRS_Item AS i 
-
-	INNER JOIN hfm.exclusive_product_rule AS r 
-	ON 
-		i.Supplier				like RTRIM(r.Supplier_WhereClauseLike) AND 
-		i.Brand					like RTRIM(r.Brand_WhereClauseLike) AND 
-		i.MinorProductClass		like RTRIM(r.MinorProductClass_WhereClauseLike) AND 
-		i.Item					like RTRIM(r.Item_WhereClauseLike) AND
-		1=1
-WHERE
-	r.StatusCd = 1 AND
-	label = 'p' AND
---	Excl_Code_TargKey like 'CAO%' AND
---	item in ('5848072'   , '5950085'   ) AND
-	1=1
-*/
----
-
-/*
-print 'update (full), MinorProductClass, Label, Brand -- 30 sec'
-UPDATE       BRS_ItemHistory
-SET                
-MinorProductClass = BRS_Item.MinorProductClass , 
-Label = BRS_Item.Label, 
-Brand = BRS_Item.Brand
-
-FROM            BRS_ItemHistory INNER JOIN
-                         BRS_Item ON BRS_ItemHistory.Item = BRS_Item.Item
-*/
----
-
---- Test RI -- sales, cost, cb all should be zero rows
-
--- sales
-/*
--- manual run
-SELECT        
-	TOP (10) 
-	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Sales, [GL_Subsidiary_Sales], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
-FROM            
-	BRS_Transaction as t
-where 
-	[NetSalesAmt] <>0 AND 
-	not exists 
-	(
-		select * from [hfm].[account_master_F0901] a
-		where 
-			[GMMCU__business_unit]=t.GL_BusinessUnit AND
-			[GMOBJ__object_account] = t.GL_Object_Sales AND
-			[GMSUB__subsidiary] = t.[GL_Subsidiary_Sales] 
-	) 
-
-*/
-
--- cost
-
-/*
--- manual run
-SELECT        
-	TOP (10) 
-	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_Cost, [GL_Subsidiary_Cost], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
-FROM            
-	BRS_Transaction as t
-where 
-	[ExtendedCostAmt] <>0 AND 
-	not exists 
-	(
-		select * from [hfm].[account_master_F0901] a
-			where 
-			[GMMCU__business_unit]=t.GL_BusinessUnit AND
-			[GMOBJ__object_account] = t.GL_Object_Cost AND
-			[GMSUB__subsidiary] = t.[GL_Subsidiary_Cost]
-	) 
-*/
-
-/*
--- TC todo
--- 020025000000 + 4579 -> BU '020001000000'
--- 020040000000 + 4579 -> BU '020001000000'
-
-UPDATE       BRS_Transaction
-SET                GL_BusinessUnit = '020001000000'
-WHERE        (ExtendedCostAmt <> 0) AND (GL_BusinessUnit IN ('020025000000', '020040000000')) AND (GL_Object_Cost = '4579')
-*/
-
--- cost cb
-
-/*
--- manual run
-SELECT        
-	TOP (10) 
-	FiscalMonth, [SalesOrderNumberKEY], DocType, [LineNumber], [AdjNote], [GLBU_Class], GL_BusinessUnit, GL_Object_ChargeBack, [GL_Subsidiary_ChargeBack], [NetSalesAmt], [ExtendedCostAmt], [ExtChargebackAmt]
-FROM            
-	BRS_Transaction as t
-where 
-	[ExtChargebackAmt] <>0 AND 
-	not exists 
-	(
-		select * from [hfm].[account_master_F0901] a
-			where 
-			[GMMCU__business_unit]=t.GL_BusinessUnit AND
-			[GMOBJ__object_account] = t.GL_Object_ChargeBack AND
-			[GMSUB__subsidiary] = t.[GL_Subsidiary_ChargeBack]
-	) 
-order by GL_BusinessUnit
-*/
-
-/*
--- TC todo
--- 4730 + 020020001011 -> BU 020001001011
--- 4730 + 020001001000 -> BU 020001000000
-
-UPDATE       BRS_Transaction
---SET                GL_BusinessUnit = '020001001011'
-SET                GL_BusinessUnit = '020001000000'
-where 
-	[ExtChargebackAmt] <>0 AND 
-	GL_Object_ChargeBack = '4730' AND
---	GL_BusinessUnit in( '020020001011')
-	GL_BusinessUnit in( '020001001000')
-
-
---- GPS
-
-
-SELECT top 100
-t.ID,
-r.GLBU_Class_WhereClauseLike, 
-t.GLBU_Class, 
-r.BusinessUnit_WhereClauseLike, 
-t.GL_BusinessUnit, 
-r.MinorProductClass_WhereClauseLike, 
-h.MinorProductClass, 
-r.Supplier_WhereClauseLike, 
-h.Supplier, 
-r.SalesDivision_WhereClauseLike, 
-t.SalesDivision, 
-r.Gps_Code_TargKey, 
-g.GpsKey,
-t.GpsKey AS GpsKeyACT
-FROM
-BRS_ItemHistory AS h 
-INNER JOIN BRS_Transaction AS t 
-	ON h.Item = t.Item AND 
-	h.FiscalMonth = t.FiscalMonth 
-
-INNER JOIN hfm.gps_code_rule AS r 
-ON t.GLBU_Class LIKE RTRIM(r.GLBU_Class_WhereClauseLike) AND 
-t.GL_BusinessUnit LIKE RTRIM(r.BusinessUnit_WhereClauseLike) AND 
-h.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
-h.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
-t.SalesDivision LIKE RTRIM(r.SalesDivision_WhereClauseLike) AND
-1=1
-
-INNER JOIN [hfm].[gps_code] as g
-ON r.Gps_Code_TargKey = g.GpsCode
-
-WHERE        
-	(r.Sequence = 2) AND
-	(r.RuleName = '29') AND
-	(t.FiscalMonth >= 201701) AND
-	(1=1)
-ORDER BY 
-1
-
--- rule add as per Linda, 28 Mar 18
-INSERT INTO hfm.gps_code_rule
-                         (GLBU_Class_WhereClauseLike, BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
-                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd)
-
-SELECT        'MECAD', BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
-                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd
-FROM            hfm.gps_code_rule AS gps_code_rule_1
-WHERE        (GLBU_Class_WhereClauseLike = 'MERCH')
-
-
-INSERT INTO hfm.gps_code_rule
-                         (GLBU_Class_WhereClauseLike, BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
-                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd)
-
-SELECT        'MECAZ', BusinessUnit_WhereClauseLike, MinorProductClass_WhereClauseLike, Supplier_WhereClauseLike, 
-                         SalesDivision_WhereClauseLike, Gps_Code_TargKey, Sequence, RuleName, LastReviewed, Note, StatusCd
-FROM            hfm.gps_code_rule AS gps_code_rule_1
-WHERE        (GLBU_Class_WhereClauseLike = 'MERCH')
-
-
-
----
--- gps retro prep, 4 May 18
-
-UPDATE       BRS_ItemHistory
-SET                MinorProductClass = i.MinorProductClass, Label = i.Label, Brand =  i.Brand
-FROM            BRS_Item AS i INNER JOIN
-                         BRS_ItemHistory ON i.Item = BRS_ItemHistory.Item
-
-*/
 
 -- GPS update 1 & 2
 
@@ -298,7 +86,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 
@@ -310,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 print 'set Exclusives - Excl_key, 30s, 1 OF 3'
@@ -330,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 
@@ -349,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 
@@ -362,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 -- seq 0 of 2
@@ -373,7 +161,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 print 'clear GpsKey, if needed'
@@ -398,7 +186,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201807 and 201807)
+	(BRS_Transaction.FiscalMonth between 201808 and 201808)
 GO
 
 -- 1 min
@@ -430,7 +218,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201807 and 201807)
+	(BRS_Transaction.FiscalMonth between 201808 and 201808)
 GO
 
 -- 30s
@@ -462,7 +250,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201807 and 201807)
+	(BRS_Transaction.FiscalMonth between 201808 and 201808)
 GO
 
 print 'test Excl_key - should be 0 null records'
@@ -471,7 +259,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201807 AND 201807
+	FiscalMonth BETWEEN 201808 AND 201808
 GO
 
 
@@ -479,4 +267,4 @@ GO
 -- set results to text, CSV format
 -- a_CAN_Mar-18_RA.CSV
 
--- [hfm].global_cube_proc  201807, 201807
+-- [hfm].global_cube_proc  201808, 201808
