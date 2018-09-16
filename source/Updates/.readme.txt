@@ -1,0 +1,5 @@
+12:27 PM 16/09/2018
+
+Current folder: changes in QA, pending promotion
+Promoted:	changes in production
+etl_working:	ETL work-arounds.  should be made procs, packages, and added to SSIS
