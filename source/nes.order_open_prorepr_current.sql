@@ -23,13 +23,13 @@ AS
 **	----------				-----------
 **
 **	Auth: tmc
-**	Date: 20 Jun 19
+**	Date: 20 Jun 18
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	16 Sep 18	tmc		Added filter so that newest day is shown    
 *******************************************************************************/
 
 SELECT
@@ -143,6 +143,7 @@ FROM
 
 	CROSS JOIN nes.aging age
 WHERE
+	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.order_open_prorepr) AND
 	DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
 
 GO
@@ -153,3 +154,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT * FROM nes.order_open_prorepr_current
+
+-- SELECT MAX(sales_date) FROM nes.order_open_prorepr_current
