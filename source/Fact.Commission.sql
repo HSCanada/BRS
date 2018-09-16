@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	16 Sep 18	tmc		add fsc territory for branch split
 **    
 *******************************************************************************/
 
@@ -36,6 +37,7 @@ SELECT
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 	,fsc.salesperson_master_key						AS FSC_SalespersonKey
+	,fsc_code.[FscKey]								AS FSC_SalespersonCodeKey
 	,fsc_grp.comm_group_key							AS FSC_CommGroupKey
 	,ess.salesperson_master_key						AS ESS_SalespersonKey
 	,ess_grp.comm_group_key							AS ESS_CommGroupKey
@@ -103,6 +105,9 @@ FROM
 	INNER JOIN [comm].[group] as ess_grp
 	ON ess_grp.comm_group_cd = t.[ess_comm_group_cd]
 
+	INNER JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
+	ON fsc_code.[TerritoryCd] = t.fsc_code
+
 	-- identify first sales order (for sales order dimension)
 	LEFT JOIN 
 	(
@@ -127,7 +132,7 @@ WHERE
 
 GO
 
--- SELECT top 10 * FROM Fact.Sale ORDER BY 1 
+-- SELECT top 10 * FROM Fact.Commission 
 /*
 SELECT 
 TOP 10 
@@ -139,3 +144,4 @@ WHERE [FiscalMonth] = 201710 and source_cd <>'JDE'
 -- SELECT count(*) FROM Fact.[Commission] 
 -- org 5 377 237, 10s
 
+select distinct FSC_SalespersonCodeKey from Fact.Commission 
