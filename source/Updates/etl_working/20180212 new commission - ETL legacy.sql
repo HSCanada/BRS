@@ -1,42 +1,13 @@
 -- LEGACY Prod comm LOAD
 -- run manually, AFTER Dimension sync
+-- S:\BR\zDev\BRS\source\Updates\etl_working\20171230 new commission - ETL sync
 
--- RI check
-/*
-select name from sys.foreign_keys where name like 'FK_transaction_F555115%' 
+-- 2 minutes
+/** START ***********************/
 
-FK_transaction_F555115_BRS_FiscalMonth
-FK_transaction_F555115_BRS_FSC_Rollup
-FK_transaction_F555115_BRS_FSC_Rollup1
-FK_transaction_F555115_BRS_FSC_Rollup2
-FK_transaction_F555115_BRS_FSC_Rollup3
-FK_transaction_F555115_BRS_SalesDay
-FK_transaction_F555115_BRS_TransactionDW_Ext
-FK_transaction_F555115_BRS_OrderSource
-FK_transaction_F555115_BRS_Item
-FK_transaction_F555115_salesperson_master
-FK_transaction_F555115_salesperson_master1
-FK_transaction_F555115_plan
-FK_transaction_F555115_plan1
-FK_transaction_F555115_group
-FK_transaction_F555115_group1
-FK_transaction_F555115_BRS_DocType
-FK_transaction_F555115_BRS_Customer
-FK_transaction_F555115_BRS_CustomerBT
-FK_transaction_F555115_BRS_ItemMPC
-FK_transaction_F555115_BRS_SalesDivision
-FK_transaction_F555115_BRS_CustomerVPA
-
-FK_transaction_F555115_BRS_FSC_Rollup4
-FK_transaction_F555115_BRS_BusinessUnit
-FK_transaction_F555115_BRS_CustomerSpecialty
-FK_transaction_F555115_BRS_ItemSupplier
-FK_transaction_F555115_group2
-FK_transaction_F555115_plan2
-FK_transaction_F555115_salesperson_master2
-*/
 
 -- ok
+print 'check fiscal_yearmo_num'
 SELECT
 	TOP 10
 	fiscal_yearmo_num
@@ -47,6 +18,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check salesperson_cd'
 SELECT 
 	TOP 10
 	salesperson_cd
@@ -58,6 +30,7 @@ WHERE NOT EXISTS (
 
 
 --ok
+print 'check pmts_salesperson_cd'
 SELECT 
 	TOP 10
 	pmts_salesperson_cd
@@ -68,6 +41,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check salesperson_key_id'
 SELECT 
 	TOP 10
 	salesperson_key_id
@@ -78,6 +52,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check ess_salesperson_key_id'
 SELECT 
 	TOP 10
 	ess_salesperson_key_id
@@ -88,6 +63,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check comm_plan_id'
 SELECT 
 	TOP 10
 	comm_plan_id
@@ -98,6 +74,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check ess_comm_plan_id'
 SELECT 
 	TOP 10
 	ess_comm_plan_id
@@ -108,6 +85,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check item_comm_group_cd'
 SELECT 
 	TOP 10
 	item_comm_group_cd
@@ -118,6 +96,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check ess_comm_group_cd'
 SELECT 
 	TOP 10
 	ess_comm_group_cd
@@ -128,6 +107,7 @@ WHERE NOT EXISTS (
 )
 
 -- ok
+print 'check ess_comm_group_cd'
 SELECT 
 	TOP 10
 	doc_type_cd
@@ -138,6 +118,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check hsi_shipto_id'
 SELECT 
 	TOP 10
 	hsi_shipto_id
@@ -148,6 +129,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
+print 'check hsi_billto_id'
 SELECT 
 	TOP 10
 	hsi_billto_id
@@ -157,6 +139,8 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_CustomerBT] WHERE hsi_billto_id = [BillTo]
 )
 GO
+
+print 'check item_id'
 
 SELECT 
 	distinct	item_id
@@ -170,6 +154,7 @@ GO
 -- manually add RESTOCK         
 
 -- ok
+print 'check IMCLMJ'
 SELECT 
 	TOP 10
 	IMCLMJ
@@ -180,6 +165,7 @@ WHERE NOT EXISTS (
 GO
 
 --ok
+print 'check hsi_shipto_div_cd'
 SELECT 
 	TOP 10
 	hsi_shipto_div_cd
@@ -189,45 +175,19 @@ WHERE NOT EXISTS (
 )
 
 
--- fix null
-SELECT 
-	TOP 10
-	item_id,
-*
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_Item] WHERE item_id = [Item]
-)
+print 'fix null item'
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                item_id = ''
 WHERE        (item_id IS NULL)
 
--- fix null
-SELECT 
-	TOP 10
-	order_source_cd
-
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_OrderSource] WHERE order_source_cd = [OrderSourceCode]
-)
-GO
-
+print 'fix null order_source_cd'
 UPDATE       CommBE.dbo.comm_transaction
 SET                order_source_cd = ''
 WHERE        (order_source_cd IS NULL)
 GO
 
--- fix *ERROR* -> ''
-SELECT 
-	vpa_cd
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_CustomerVPA] WHERE vpa_cd = [VPA]
-)
-GO
-
+print 'fix vpa *ERROR* -> {blank}'
 UPDATE       CommBE.dbo.comm_transaction
 SET                vpa_cd = N''
 WHERE        (NOT EXISTS
@@ -236,17 +196,7 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.vpa_cd = VPA)))
 GO
 
--- fix
-SELECT 
-	transaction_dt,
-CAST(transaction_dt as date) as d2
-
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_SalesDay] WHERE transaction_dt = [SalesDate]
-)
-GO
-
+print 'fix datetime to date'
 UPDATE       CommBE.dbo.comm_transaction
 SET                transaction_dt = CAST(transaction_dt as date)
 WHERE        (NOT EXISTS
@@ -255,17 +205,7 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.transaction_dt = SalesDate)))
 GO
 
--- fix Left(1)
-SELECT 
---	TOP 10
-	price_method_cd,
-	LEFT(price_method_cd,1) pmfix
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_PriceMethod] WHERE price_method_cd = [PriceMethod]
-)
-GO
-
+print 'fix pricemethod sized 2 to 1'
 UPDATE       CommBE.dbo.comm_transaction
 SET                price_method_cd = LEFT(price_method_cd,1)
 WHERE        (NOT EXISTS
@@ -274,53 +214,13 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
 GO
 
--- fix
-SELECT 
-	TOP 10
-	ess_salesperson_cd,
-	ess_salesperson_key_id
-FROM CommBE.[dbo].[comm_transaction]
-WHERE NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE ess_salesperson_cd = [TerritoryCd]
-)
-GO
-
-UPDATE       CommBE.dbo.comm_transaction
-SET                ess_salesperson_cd = N'ESS48'
-WHERE        (ess_salesperson_cd = 'ESS13')
-GO
-
-UPDATE       CommBE.dbo.comm_transaction
-SET                ess_salesperson_cd = N''
-WHERE        (ess_salesperson_cd = 'OCTOBER 21')
-GO
-
-/*
-ESS13     	HouseNCZHESS -=>ESS48                 
-ESS13     	HouseNCZHESS                  
-OCTOBER 21	              =>''                
-*/
-
--- fix3 add AZAZZ to DWext?
--- fix4 ?
-SELECT 
---	* 
-	fiscal_yearmo_num,
-	doc_id
-FROM CommBE.[dbo].[comm_transaction]
-WHERE hsi_shipto_div_cd not in ('AZA',
-'AZE') and  NOT EXISTS (
-	SELECT * FROM [dbo].[BRS_TransactionDW_Ext] WHERE ISNULL(doc_id,0) =[SalesOrderNumber] 
-)
-GO
-
-
+print 'fix NA doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id = 'NA')
 GO
 
-
+print 'fix null SalesOrderNumber'
 UPDATE       BRS_Transaction
 SET                SalesOrderNumber = 0
 WHERE        (DocType = 'aa')  AND (NOT EXISTS
@@ -329,13 +229,17 @@ WHERE        (DocType = 'aa')  AND (NOT EXISTS
                                WHERE        (BRS_Transaction.SalesOrderNumber = SalesOrderNumber)))
 GO
 
+print 'fix null doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id is null)
 GO
 
 
+
 -- 30s
+print 'add missing SalesOrderNumber'
+
 INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],
 DocType)
 SELECT         distinct SalesOrderNumber,
@@ -349,6 +253,7 @@ where
 	) 
 GO
 
+print 'fix bad doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = '0'
 WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
@@ -357,18 +262,9 @@ WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
                                WHERE        (ISNULL(CommBE.dbo.comm_transaction.doc_id,0) = SalesOrderNumber)))
 GO
 
-SELECT         doc_id,
-doc_type_cd,
-line_id,
-COUNT(*) AS Expr1
-FROM            CommBE.dbo.comm_transaction t
-GROUP BY doc_id,
-doc_type_cd,
-line_id
-HAVING COUNT(*) >1
-GO
 
--- fix duplicate linenumbers by setting to ID (all imports), 1m40s
+-- 1m40s
+print 'fix duplicate linenumbers by setting to ID (all imports)'
 UPDATE       
 	CommBE.dbo.comm_transaction
 SET                
@@ -392,9 +288,8 @@ where exists(
 )
 GO
 
--- remove overlapping line#
+print 'fix remove overlapping line'
 UPDATE       CommBE.dbo.comm_transaction
---SET                [audit_id]=[audit_id]
 SET                
 	line_id = [record_id],
 	[audit_id]=line_id 
@@ -415,12 +310,13 @@ where
 	line_id <> [record_id]
 GO
 
----
+/** STOP ***********************/
 
+------------------------------------------------------------------------------------------------------
 -- DATA - Migrate legacy
+------------------------------------------------------------------------------------------------------
 
-
--- first set month below; 40s per month'; why 5m34s on new system?  
+-- first set month below; 1m15s per month'
 print 'migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
@@ -513,12 +409,40 @@ WHERE
 	(fiscal_yearmo_num = '201808')
 GO
 
+/*
+print 'source trans'
+SELECT        
+count (*) source_count
+FROM            
+	CommBE.dbo.comm_transaction
+WHERE        
+	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
+	(fiscal_yearmo_num = '201808')
+GO
+
+print 'dest trans'
+SELECT        
+count (*) dest_count
+FROM            
+	comm.transaction_F555115
+WHERE        
+	(FiscalMonth = '201808')
+GO
+
+DELETE FROM            
+	comm.transaction_F555115
+WHERE        
+	(FiscalMonth = '201808')
+GO
+
+*/
 
 --201601 - 201711; 201712 NEW format
 -- check load
 Select distinct  FiscalMonth from comm.transaction_F555115
 
---- STOP
+
+/** STOP ***********************/
 
 --- NEW -- w/f Minnie
 
