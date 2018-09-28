@@ -45,6 +45,7 @@ SELECT
 	,b.Branch					AS BranchCode
 	,b.BranchName
 	,b.ZoneName
+	,ISNULL(tc.BranchCount,0)	AS BranchCount
 
   FROM 
 	[comm].[salesperson_master] s
@@ -54,6 +55,18 @@ SELECT
 
 	INNER JOIN [dbo].[BRS_Branch] b
 	ON f.Branch = b.Branch
+
+	LEFT JOIN (
+		SELECT        
+		comm_salesperson_key_id
+		,COUNT(distinct  Branch) AS BranchCount
+		FROM
+			BRS_FSC_Rollup
+		GROUP BY 
+			comm_salesperson_key_id
+	) AS tc
+	ON s.[salesperson_key_id] = tc.comm_salesperson_key_id
+
 GO
       
 
@@ -66,3 +79,4 @@ GO
 
 
 --  SELECT  * FROM Dimension.SalespersonCommission order by 2
+

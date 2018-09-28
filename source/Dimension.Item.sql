@@ -36,23 +36,24 @@ AS
 --	07 Dec 17	tmc		add Commission info
 --	27 Feb 18	tmc		add sized & strength for ISR consolidator
 --  18 Jul 18	tmc		add MPC code and removed CategoryRollup_L1 (need?)
+--  27 Sep 18	tmc		update for business review requirements
 **    
 *******************************************************************************/
 
 SELECT         
 
 	i.ItemKey							AS ItemKey
-	,i.ItemDescription + ' | ' + i.Item	AS Item
+	,RTRIM(i.ItemDescription + ' | ' + i.Item)	AS Item
 
 	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
-	,mpc.MPC_Category					AS Abc_MpcItem
-	,cr.category_rollup_desc 			AS CategoryRollup
+	,RTRIM(mpc.MPC_Category)			AS Abc_MpcItem
+	,RTRIM(cr.category_rollup_desc) 	AS CategoryRollup
 	,RTRIM(c.major_cd) + ' | ' 
-		+ mpc.MajorProductClassDesc		AS Major
+		+ RTRIM(mpc.MajorProductClassDesc) AS Major
 	,RTRIM(c.submajor_cd) + ' | ' 
-		+ c.submajor_desc				AS SubMajor	
+		+ RTRIM(c.submajor_desc)		AS SubMajor	
 	,RTRIM(c.MinorProductClass) + ' | ' 
-		+ c.minor_desc					AS Minor
+		+ RTRIM(c.minor_desc)			AS Minor
 
 	,s.supplier_nm + ' | ' 
 		+ RTRIM(s.Supplier)				AS Supplier
@@ -65,17 +66,17 @@ SELECT
 	,ifs.ItemDescription + ' | ' 
 		+ i.FamilySetLeader				AS FamilySet
 	,i.Item								AS ItemCode
-	,i.[Size]
-	,i.[Strength]
-	,i.ItemStatus
-	,i.[ManufPartNumber]
-	,i.Brand
-	,i.Label
-	,i.GLCategory						AS StockingCode
-	,mpc.CategoryManager				AS CategorySpecialist
+	,RTRIM(i.[Size])					AS Size
+	,RTRIM(i.[Strength])				AS Strength
+	,RTRIM(i.ItemStatus)				AS ItemStatus
+	,RTRIM(i.[ManufPartNumber])			AS ManufPartNumber
+	,RTRIM(i.Brand)						AS BrandCode
+	,RTRIM(i.Label)						AS Label
+	,RTRIM(i.GLCategory)				AS StockingCode
+	,RTRIM(mpc.CategoryManager)			AS CategorySpecialist
 
-	,s.Supplier							AS Current_SupplierCode
-	,ISNULL(b.Currency, '')				AS Current_CurrencyCode
+	,RTRIM(s.Supplier)					AS Current_SupplierCode
+	,RTRIM(ISNULL(b.Currency, ''))		AS Current_CurrencyCode
 	,ISNULL(b.SupplierCost,0)			AS Current_SupplierCost
 	,ISNULL(b.FX_per_CAD_mrk_rt,0)		AS Current_FxMarketing
 	,ISNULL(b.FX_per_CAD_pnl_rt,0)		AS Current_FxFinance
@@ -100,8 +101,6 @@ SELECT
 	,(sc.SalesCategory)					AS SalesCategoryCode
 	,(cr.CategoryRollup)				AS CategoryRollupCode
 	,(cr.CategoryClass_Rollup)			AS CategoryClassRollupCode
---	,(cr.CategoryRollup_L1)				AS CategoryRollupCode_ISR
---	,(cr_isr.category_rollup_desc)		AS CategoryRollup_ISR
 	,i.comm_group_cd					AS CommGroupCode
 	,i.comm_note_txt					AS CommGroupNote
 	,i.comm_group_cps_cd				AS CommGroupCpsCode
@@ -160,3 +159,15 @@ GO
 
 -- integrity check
 -- SELECT * FROM BRS_Item WHERE NOT EXISTS (SELECT * FROM Dimension.Item WHERE ItemCode = BRS_Item.Item)
+
+-- select SalesCategoryName, LEFT(SalesCategoryName, LEN(SalesCategoryName)-2), SalesCategory from BRS_ItemSalesCategory WHERE SalesCategory <> ''
+
+/*
+
+select SalesCategoryName, SalesCategory from BRS_ItemSalesCategory WHERE SalesCategory <> ''
+
+update 
+BRS_ItemSalesCategory
+set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
+WHERE SalesCategory <> ''
+*/
