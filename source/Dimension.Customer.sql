@@ -34,55 +34,55 @@ AS
 --	07 Dec 17	tmc		add Commission info
 --	22 Feb 18	tmc		add ISR info
 --	20 Mar 18	tmc		add goals and spend
-
+--	28 Sep 18	tmc		add data to support Business Review model
 **    
 *******************************************************************************/
 
 SELECT
 	c.ShipTo
 	,c.Billto
-	,c.PracticeName + ' | ' + CAST(c.ShipTo as char)	AS Customer
+	,c.PracticeName + ' | ' + RTRIM(CAST(c.ShipTo as char))	AS Customer
 
 	,CASE 
 		WHEN c.CustGrpWrk	<> '' 
-		THEN c.CustGrpWrk
-		ELSE 'BT_' + CAST(c.Billto as char) 
+		THEN RTRIM(c.CustGrpWrk)
+		ELSE 'BT_' + RTRIM(CAST(c.Billto as char))
 	END													AS CustomerGroup
-	,VPADesc + ' | ' + RTRIM(v.VPA)  					AS SalesPlan
+	,RTRIM(VPADesc) + ' | ' + RTRIM(v.VPA)  			AS SalesPlan
 	,RTRIM(v.VPA)  										AS SalesPlanCode
 	,CASE
 		WHEN ISNULL(padj.[EnrollSource],'') = ''
-		THEN [VPATypeCd]
-		ELSE padj.[EnrollSource]
+		THEN RTRIM([VPATypeCd])
+		ELSE RTRIM(padj.[EnrollSource])
 	END													AS SalesPlanType
-	,sroll.FSCName										AS FieldSales
-	,b.BranchName										AS Branch
-	,fsa.FSA
-	,fsa.City
-	,fsa.Region
-	,fsa.Province
-	,fsa.Country
-	,Geo_Category										AS Abc_GeoCustomer
-	,c.PhoneNo											AS PhoneNumber
+	,RTRIM(sroll.FSCName)								AS FieldSales
+	,RTRIM(b.BranchName)								AS Branch
+	,RTRIM(fsa.FSA)										AS FSA
+	,RTRIM(fsa.City)									AS City
+	,RTRIM(fsa.Region)									AS Region
+	,RTRIM(fsa.Province)								AS Province
+	,RTRIM(fsa.Country)									AS Country
+	,RTRIM(Geo_Category)								AS Abc_GeoCustomer
+	,RTRIM(c.PhoneNo)									AS PhoneNumber
 
-	,ISNULL(padj.[SNAST__adjustment_name],'')			AS Adjustment
-	,ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01')	AS AdjEffectiveDate
-	,ISNULL(padj.[PJEXDJ_expired_date],'1980-01-01')	AS AdjExpiredDate
-	,ISNULL(padj.[PJUSER_user_id],'')					AS AdjUserId
-	,ISNULL(padj.[EnrollSource],'')						AS AdjEnrollSource
-	,ISNULL(padj.[PriceMethod],'')						AS AdjPriceMethod
+	,RTRIM(ISNULL(padj.[SNAST__adjustment_name],''))			AS Adjustment
+	,RTRIM(ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01'))	AS AdjEffectiveDate
+	,RTRIM(ISNULL(padj.[PJEXDJ_expired_date],'1980-01-01'))		AS AdjExpiredDate
+	,RTRIM(ISNULL(padj.[PJUSER_user_id],''))					AS AdjUserId
+	,RTRIM(ISNULL(padj.[EnrollSource],''))						AS AdjEnrollSource
+	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
 	
-	,spend.Spend_Category								AS Abc_SpendCustomer
+	,RTRIM(spend.Spend_Category)						AS Abc_SpendCustomer
 	,cgrp.PotentialSpendAmt								AS Spend_PotentialAmt
-	,spend.Spend_Display		
+	,RTRIM(spend.Spend_Display)							AS Spend_Display
 	,spend.Spend_Rank
 	,spend.Spend_Discount_Rate
 
-	,div.SalesDivisionDesc								AS SalesDivision
-	,mcroll.MarketClassDesc								AS MarketClassRollup
-	,mclass.MarketClassDesc								AS MarketClass
-	,s.SegName											AS Segment
-	,s.SpecialtyNm + ' | ' + s.Specialty				AS Specialty
+	,RTRIM(div.SalesDivisionDesc)						AS SalesDivision
+	,RTRIM(mcroll.MarketClassDesc)						AS MarketClassRollup
+	,RTRIM(mclass.MarketClassDesc)						AS MarketClass
+	,RTRIM(s.SegName)									AS Segment
+	,s.SpecialtyNm + ' | ' + RTRIM(s.Specialty)			AS Specialty
 	,iif(c.AccountType='D',
 		'Closed',
 		'Active'
@@ -100,21 +100,21 @@ SELECT
 	)													As Focus
 	,CAST(c.DateAccountOpened AS date)					AS DateAccountOpened
 
-	,(div.SalesDivision)								AS SalesDivisionCode
-	,(b.Branch)											AS BranchCode
-	,mclass.MarketClass									AS MarketClassCode
+	,RTRIM(div.SalesDivision)							AS SalesDivisionCode
+	,RTRIM(b.Branch)									AS BranchCode
+	,RTRIM(mclass.MarketClass)							AS MarketClassCode
 
-	,c.[comm_status_cd]									AS CommStatusCode
-	,c.[comm_note_txt]									AS CommStatusNote
+	,RTRIM(c.[comm_status_cd])							AS CommStatusCode
+	,RTRIM(c.[comm_note_txt])							AS CommStatusNote
 
 ---
-	,terr.TerritoryCd		AS FscTerritoryCd
-	,terr.FSCStatusCode		AS FscStatusCode
+	,RTRIM(terr.TerritoryCd)							AS FscTerritoryCd
+	,RTRIM(terr.FSCStatusCode)							AS FscStatusCode
 
-	,isr.TerritoryCd		AS IsrTerritoryCd
-	,isr.FSCName			AS IsrName
-	,isr.FSCStatusCode		AS IsrStatusCode
-
+	,RTRIM(isr.TerritoryCd)								AS IsrTerritoryCd
+	,RTRIM(isr.FSCName)									AS IsrName
+	,RTRIM(isr.FSCStatusCode)							AS IsrStatusCode
+/*
 	,ISNULL(isr_emp.[EmployeeKey], 1) AS IsrEmployeeKey
 	,ISNULL(isr_emp.LoginId, '') AS IsrLoginId
 
@@ -138,20 +138,23 @@ SELECT
 				ELSE 'Unassigned' 
 			END 
 	END AS SalesChannel
-
+*/
 	-- Closed -> Special Market -> Focus -> Default
 	,CASE WHEN c.AccountType ='D' 
 		THEN 'CLS'
 		ELSE
 			CASE WHEN mcroll.MarketRollup_L1 like 'SP%'
 				THEN 'SPC'
-				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE c.FocusCd End
+				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE RTRIM(c.FocusCd) End
 			END
 	END AS FocusCd
 
+/*
 	,c.isr_target_amt			AS TargetAmount
 	,c.potential_spend_amt		As PotentialSpendAmount
+*/
 
+	,[DSO_ParentShipTo]
 
 
 FROM
@@ -181,9 +184,10 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
-
+/*
 	LEFT JOIN [dbo].[BRS_Employee] isr_emp
 	ON isr.[FSCRollup] = isr_emp.[IsrRollupCd]
+*/
 
 	INNER JOIN BRS_Branch AS b 
 	ON terr.Branch = b.Branch
@@ -246,5 +250,8 @@ GROUP BY BillTo
 HAVING        (COUNT(*) > 1)
 */
 
--- Select top 10 * from [Dimension].[Customer]
 -- Select count(*) from [Dimension].[Customer]
+
+-- Select top 10 * from [Dimension].[Customer]
+
+

@@ -37,7 +37,7 @@ SELECT
 
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
--- add salescategoryKey 
+	,icr.[CategoryRollupKey]						AS [CategoryRollupKey]
 	,CAST(FORMAT(t.Date,'yyyyMM') AS INT)			AS CalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
@@ -74,6 +74,12 @@ FROM
 	INNER JOIN BRS_Item AS i 
 	ON i.Item = t.Item 
 
+	INNER JOIN [dbo].[BRS_ItemCategory] AS ic
+	ON i.[MinorProductClass] = ic.[MinorProductClass]
+
+	INNER JOIN [dbo].[BRS_ItemCategoryRollup] AS icr
+	ON ic.[CategoryRollup] = icr.[CategoryRollup]
+
 	INNER JOIN BRS_Customer AS c 
 	ON t.Shipto = c.ShipTo 
 
@@ -98,10 +104,6 @@ FROM
 
 WHERE        
 	(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE CAST(FORMAT(t.Date,'yyyyMM') AS INT) = dd.CalMonth)) AND
-
-
-	-- test
-
 	(1 = 1)
 
 GO

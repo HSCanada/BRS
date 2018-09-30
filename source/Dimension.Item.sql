@@ -43,7 +43,7 @@ AS
 SELECT         
 
 	i.ItemKey							AS ItemKey
-	,RTRIM(i.ItemDescription + ' | ' + i.Item)	AS Item
+	,RTRIM(i.ItemDescription) + ' | ' + RTRIM(i.Item)	AS Item
 
 	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
 	,RTRIM(mpc.MPC_Category)			AS Abc_MpcItem
@@ -71,6 +71,7 @@ SELECT
 	,RTRIM(i.ItemStatus)				AS ItemStatus
 	,RTRIM(i.[ManufPartNumber])			AS ManufPartNumber
 	,RTRIM(i.Brand)						AS BrandCode
+	,RTRIM(sbrand.supplier_nm)			AS Brand
 	,RTRIM(i.Label)						AS Label
 	,RTRIM(i.GLCategory)				AS StockingCode
 	,RTRIM(mpc.CategoryManager)			AS CategorySpecialist
@@ -144,6 +145,11 @@ FROM
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS b 
 	ON b.Item = i.Item AND b.CalMonth = 0
 
+	LEFT JOIN BRS_ItemSupplier AS sbrand 
+	ON i.brand = sbrand.Supplier 
+
+
+
 GO
 
 SET ANSI_NULLS OFF
@@ -152,8 +158,6 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Item
--- SELECT Count(*) FROM Dimension.Item
 
 -- SELECT * FROM Dimension.Item where Current_FxMarketing = -1
 
@@ -171,3 +175,6 @@ BRS_ItemSalesCategory
 set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
 WHERE SalesCategory <> ''
 */
+
+-- SELECT top 10 * FROM Dimension.Item
+-- SELECT top 10 BrandCode FROM Dimension.Item

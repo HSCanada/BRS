@@ -1,0 +1,16 @@
+-- add data to tables to support Business Review mode
+-- 28 Sep 18
+
+
+-- Dimension.[ItemCategory]
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup ADD
+	active_ind bit NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_active_ind DEFAULT 1,
+	top15_ind bit NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_top15_ind DEFAULT 0,
+	CategorySharePercent float(53) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategorySharePercent DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_ItemCategoryRollup SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
