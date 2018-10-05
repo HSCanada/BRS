@@ -41,7 +41,8 @@ AS
 --	25 May 17	tmc		Added FSA for GEO ranking
 --	19 Jul 17	tmc		Added Brand to Item for Pricing
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
--- 03 Jan 18	tmc		sunset BRS_TS_Rollup
+--	03 Jan 18	tmc		sunset BRS_TS_Rollup
+--	05 Oct 18	tmc		Add Brand to supplier load for RI
 **    
 *******************************************************************************/
 
@@ -385,6 +386,23 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new Brand (ItemFull) ...'
+
+				INSERT INTO BRS_ItemSupplier
+									  (Supplier)
+				SELECT DISTINCT ISNULL(t.Brand,'') AS dt
+				FROM         STAGE_BRS_ItemFull AS t
+				WHERE     (NOT EXISTS
+										  (SELECT     *
+											FROM          BRS_ItemSupplier AS BRS_ItemCategory_1
+											WHERE       Supplier = ISNULL(t.Brand,'') ))
+			Set @nErrorCode = @@Error
+		End
+
+
 
 
 		If (@nErrorCode = 0) 
@@ -539,7 +557,7 @@ BEGIN
 		Set @sMessage = @sMessage + ':  Return(' + Convert(varchar, @nErrorCode) + ')'
 		Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-		RAISERROR (13000, 9, 1, @sMessage )
+		RAISERROR ('%s', 9, 1, @sMessage )
 
 		Rollback Tran mytran
 
@@ -560,25 +578,11 @@ GO
 
 -- This must be run AFTER the Daily sales update (to catch any new FSC territories, 10 Nov 15
 
-/*
 
--- 1 of 4:  Clear tables
 
-truncate table STAGE_BRS_CustomerFull
-truncate table STAGE_BRS_ItemFull
+-- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0
 
-*/
-
--- 2 of 4:  run S:\Business Reporting\_BR_Sales\Upload BRS_Dimension_Load
- 
--- 3 of 4:  Prod Load 
--- 
--- 
--- Exec BRS_BE_Dimension_load_proc @bClearStage=1, @bDebug=0
-
--- 4 of 4:  Cleanup info
--- Exec BRS_BE_Transaction_post_proc 0
-
+-- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=1
 
 
 

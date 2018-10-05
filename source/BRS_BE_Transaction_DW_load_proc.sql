@@ -49,6 +49,7 @@ AS
 -- 03 Jan 18	tmc		sunset BRS_TS_Rollup
 **	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
 **							Updating PO from BRS_BE_Transaction_load_proc fix
+--	05 Oct 18	tmc		fix alert logic to use text
 **    
 *******************************************************************************/
 BEGIN
@@ -749,7 +750,7 @@ BEGIN
 
 		Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-		RAISERROR (13000, 9, 1, @sMessage )
+		RAISERROR ('%s', 9, 1, @sMessage )
 
 		Rollback Tran mytran
 
@@ -770,105 +771,12 @@ GO
 
 -- Test logic
 
--- Step 1:  clear tables (run below)
-
-/*
-
-truncate table STAGE_BRS_Promotion 
-truncate table STAGE_BRS_TransactionDW
-
-*/
--- Step 2:  load tables via "S:\Business Reporting\_BR_Sales\Upload\BRS_TransactionDW_Load.bat"
-
--- Step 3:  run below script, after Dimension load.
-
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=1
 
--- ensure date is last business day
--- SELECT SalesDateLastWeekly FROM BRS_Config
-
-/*
-
--- test differences
-
-SELECT        t.SalesOrderNumber, t.doctype, t.Date, t.SalesDivision, t.CustomerPOText1, e.CustomerPOText1 AS epo
-FROM            BRS_TransactionDW AS t INNER JOIN
-                         BRS_TransactionDW_Ext AS e ON t.SalesOrderNumber = e.SalesOrderNumber AND t.CustomerPOText1 <> e.CustomerPOText1
---where t.SalesOrderNumber in (11069993, 11069994, 11070000, 11070010, 11070011, 11070012)
-where e.CustomerPOText1 = ''
---where t.Date >= '2017-11-20'
-ORDER BY 3
 
 
 
--- 299327
 
--- test missed
-
-SELECT        BRS_TransactionDW_Ext.*, CustomerPOText1 AS Expr1
-FROM            BRS_TransactionDW_Ext
-WHERE        (CustomerPOText1 = N'<TO BE UPDATED>')
-
--- 3293
-
-*/
-
-/*
-
-UPDATE    
-	BRS_TransactionDW_Ext
-SET              
-	[CustomerPOText1] =	[NEW_CustomerPOText1]
-
--- select SalesOrderNumber, CustomerPOText1, NEW_CustomerPOText1
-FROM         
-	BRS_TransactionDW_Ext 
-
-	INNER JOIN 
-	(
-		SELECT     
-				JDEORNO, 
-				ORDOTYCD, 
-				Left(MIN(RF1TT), 25) AS NEW_CustomerPOText1
-		FROM         
-				STAGE_BRS_TransactionDW
-		GROUP BY 
-			JDEORNO, 
-			ORDOTYCD 
-	) header
-	ON [SalesOrderNumber] = JDEORNO
-WHERE 
-	-- magic init message set by BRS_BE_Transaction_load_proc
-	-- This ensure that ONLY init POs are updated, not post
-	-- changes
-	CustomerPOText1 <> NEW_CustomerPOText1 
-
-
----
-
-	UPDATE    
-		BRS_TransactionDW_Ext
-	SET              
-		TsTerritoryOrgCd =	r.[TerritoryCd],
-		TsTerritoryCd=		r.[TerritoryCd]
-
---	select SalesOrderNumber, CustomerPOText1, r.[TerritoryCd], [TsTerritoryCd]
-	FROM         
-		BRS_TransactionDW_Ext 
-
-		INNER JOIN [dbo].[BRS_FSC_Rollup]  r
-		ON BRS_TransactionDW_Ext.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
-			r.Rule_WhereClauseLike <>''
-	WHERE     
-		EXISTS
-		(
-			Select * From [dbo].[BRS_TransactionDW] s
-			Where SalesOrderNumber = s.SalesOrderNumber 
-				AND s.[CalMonth] between 201712 and 201802
-		) AND
-		TsTerritoryCd <> r.[TerritoryCd] and TsTerritoryCd = ''
-
-*/
