@@ -6,7 +6,7 @@
 
 --- update F0901 from ETL - run package to update F0901, F0909
 
---> START
+--> START to STEOP *** Manually ****
 
 print 'add new [dbo].[BRS_BusinessUnit]'
 INSERT INTO [dbo].[BRS_BusinessUnit]
@@ -86,7 +86,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 
@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 print 'set Exclusives - Excl_key, 30s, 1 OF 3'
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 -- seq 0 of 2
@@ -161,7 +161,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 print 'clear GpsKey, if needed'
@@ -186,7 +186,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201808 and 201808)
+	(BRS_Transaction.FiscalMonth between 201809 and 201809)
 GO
 
 -- 1 min
@@ -218,7 +218,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201808 and 201808)
+	(BRS_Transaction.FiscalMonth between 201809 and 201809)
 GO
 
 -- 30s
@@ -250,7 +250,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201808 and 201808)
+	(BRS_Transaction.FiscalMonth between 201809 and 201809)
 GO
 
 print 'test Excl_key - should be 0 null records'
@@ -259,12 +259,12 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201808 AND 201808
+	FiscalMonth BETWEEN 201809 AND 201809
 GO
 
 
 --
 -- set results to text, CSV format
--- a_CAN_Mar-18_RA.CSV
+-- a_CAN_Sep-18_RA.CSV
 
--- [hfm].global_cube_proc  201808, 201808
+-- [hfm].global_cube_proc  201809, 201809

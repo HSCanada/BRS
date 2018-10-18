@@ -46,6 +46,7 @@ SELECT
 	,RTRIM(i.ItemDescription) + ' | ' + RTRIM(i.Item)	AS Item
 
 	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
+	,RTRIM(sc2.SalesCategoryName)		AS SalesCategoryRollup
 	,RTRIM(mpc.MPC_Category)			AS Abc_MpcItem
 	,RTRIM(cr.category_rollup_desc) 	AS CategoryRollup
 	,RTRIM(c.major_cd) + ' | ' 
@@ -123,7 +124,6 @@ FROM
 	INNER JOIN BRS_ItemCategory AS c 
 	ON i.MinorProductClass = c.MinorProductClass 
 
-
 	INNER JOIN [BRS_ItemCategoryRollup] as cr
 	ON c.CategoryRollup = cr.CategoryRollup 
 
@@ -132,6 +132,9 @@ FROM
 
 	INNER JOIN BRS_ItemSalesCategory AS sc 
 	ON i.SalesCategory = sc.SalesCategory 
+
+	INNER JOIN BRS_ItemSalesCategory AS sc2 
+	ON sc.SalesCategoryRollup = sc2.SalesCategory 
 
 	INNER JOIN BRS_ItemMPC AS mpc 
 	ON i.MajorProductClass = mpc.MajorProductClass 

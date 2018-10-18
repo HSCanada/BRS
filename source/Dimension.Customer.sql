@@ -35,6 +35,7 @@ AS
 --	22 Feb 18	tmc		add ISR info
 --	20 Mar 18	tmc		add goals and spend
 --	28 Sep 18	tmc		add data to support Business Review model
+--	17 Oct 18	tmc		cosmetic change on VPA
 **    
 *******************************************************************************/
 
@@ -48,7 +49,7 @@ SELECT
 		THEN RTRIM(c.CustGrpWrk)
 		ELSE 'BT_' + RTRIM(CAST(c.Billto as char))
 	END													AS CustomerGroup
-	,RTRIM(VPADesc) + ' | ' + RTRIM(v.VPA)  			AS SalesPlan
+	,RTRIM(v.VPA) + ' | ' + RTRIM(VPADesc)  			AS SalesPlan
 	,RTRIM(v.VPA)  										AS SalesPlanCode
 	,CASE
 		WHEN ISNULL(padj.[EnrollSource],'') = ''

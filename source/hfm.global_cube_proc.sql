@@ -476,3 +476,4 @@ GO
 --a_CAN_Jul-18_RA.csv
 -- [hfm].global_cube_proc  201807, 201807
 
+-- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql

@@ -36,7 +36,9 @@ SELECT
 	f.SalesOrderNumber
 	,os.AdvancedPricingInd 
 	,os.OrderSourceCode + ' | ' 
-	+ os.OrderSourceCodeDescr					AS OrderSource
+	+ RTRIM(os.OrderSourceCodeDescr)			AS OrderSource
+	 
+	,RTRIM(os2.OrderSourceCodeDescr)			AS OrderSourceRollup
 	,pr.PromotionType
 	,RTRIM(pr.PromotionDescription) + ' | ' + pr.PromotionCode	AS Promotion
 	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
@@ -57,6 +59,9 @@ FROM
 
 	INNER JOIN BRS_OrderSource AS os 
 	ON f.OrderSourceCode = os.OrderSourceCode
+
+	INNER JOIN BRS_OrderSource AS os2 
+	ON os.OrderSourceRollup = os2.OrderSourceCode
 
 	LEFT JOIN BRS_Promotion p2 
 	ON pr.PromotionTrackingCode = p2.PromotionCode AND
