@@ -36,6 +36,7 @@ AS
 --	20 Mar 18	tmc		add goals and spend
 --	28 Sep 18	tmc		add data to support Business Review model
 --	17 Oct 18	tmc		cosmetic change on VPA
+--	19 Oct 18	tmc		add Privileges code
 **    
 *******************************************************************************/
 
@@ -156,6 +157,7 @@ SELECT
 */
 
 	,[DSO_ParentShipTo]
+	,[PrivilegesCode]
 
 
 FROM
