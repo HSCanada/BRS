@@ -1,17 +1,20 @@
-﻿$File_path = 'S:\BR\Projects\service_automation\working\'
+﻿# updated 23 Oct 18, tmc
 
-$file_in  = 'ProRepair-Template.xlsm'
-$file_out = 'ProRepair-Corporate.xlsm'
+$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181023.xlsm'
+
+$file_out = 'S:\Pro-Repair\Corporate\ProRepair-All.xlsm'
 
 
-Remove-Item –path ($File_path + $file_out)
+Remove-Item –path ($file_out) -ErrorAction Ignore
 
 $x1 = New-Object -ComObject "Excel.Application"
-$x1.Visible = $false
-$wb = $x1.workbooks.Open($File_path + $file_in)
+#$x1.Visible = $false
+$x1.Visible = $true
+
+$wb = $x1.workbooks.Open($file_in)
 
 $wb.refreshAll()
-$wb.SaveAs($File_path + $file_out)
+$wb.SaveAs($file_out)
 
 $wb.Close()
 $x1.Quit()

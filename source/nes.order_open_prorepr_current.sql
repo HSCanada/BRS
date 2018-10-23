@@ -30,6 +30,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	16 Sep 18	tmc		Added filter so that newest day is shown    
+**	22 Oct 18	tmc		Cosmetic chagnes as per Service team
+**	23 Oct 18	tmc		Cosmetic chagnes as per Service team
 *******************************************************************************/
 
 SELECT
@@ -65,11 +67,14 @@ SELECT
 
 	,cust.PracticeName + ' | '
 	+CAST(t.[shipto] as varchar(7)) AS customer
+	,RTRIM(cust.PracticeName)		AS PracticeName
+	,t.[shipto]
 
 	,RTRIM(t.[privileges_code])		AS priv
 	,RTRIM(t.[model_number])		AS model_number
 
 	,RTRIM(ct.call_type_descr) 		AS call_type
+	,RTRIM(t.call_type_code) 		AS call_type_code
 
 	,RTRIM(prob.problem_descr)		AS problem
 
@@ -93,7 +98,7 @@ SELECT
 	,CASE 
 		WHEN e.Branch In ('MNTRL','QUEBC','TORNT','VACVR') 
 		THEN e.Branch
-		ELSE 'CORP'
+		ELSE 'OTHER'
 	END	as branch_hub
 	,e.Branch						AS branch_fsc
 	,CAST(t.[SalesDate] as date)	AS sales_date
@@ -153,6 +158,6 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT * FROM nes.order_open_prorepr_current
-
 -- SELECT MAX(sales_date) FROM nes.order_open_prorepr_current
+
+-- SELECT top 10 * FROM nes.order_open_prorepr_current
