@@ -37,6 +37,7 @@ AS
 --	28 Sep 18	tmc		add data to support Business Review model
 --	17 Oct 18	tmc		cosmetic change on VPA
 --	19 Oct 18	tmc		add Privileges code
+--	23 Oct 18	tmc		reactiveate ISR
 **    
 *******************************************************************************/
 
@@ -116,17 +117,32 @@ SELECT
 	,RTRIM(isr.TerritoryCd)								AS IsrTerritoryCd
 	,RTRIM(isr.FSCName)									AS IsrName
 	,RTRIM(isr.FSCStatusCode)							AS IsrStatusCode
-/*
+
+	-- Closed -> Special Market -> Focus -> Default
+	,CASE WHEN c.AccountType ='D' 
+		THEN 'CLS'
+		ELSE
+			CASE WHEN mcroll.MarketRollup_L1 like 'SP%'
+				THEN 'SPC'
+				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE RTRIM(c.FocusCd) End
+			END
+	END AS FocusCd
+
+
+	,[DSO_ParentShipTo]
+	,[PrivilegesCode]
+
+
 	,ISNULL(isr_emp.[EmployeeKey], 1) AS IsrEmployeeKey
 	,ISNULL(isr_emp.LoginId, '') AS IsrLoginId
 
------------------------------------------
---			|	TS		|	No
------------------------------------------
---	FSC		|	Shared	|	Field
------------------------------------------
---	House	|	Tele	|	Unassasigned
------------------------------------------
+	-----------------------------------------
+	--			|	TS		|	No
+	-----------------------------------------
+	--	FSC		|	Shared	|	Field
+	-----------------------------------------
+	--	House	|	Tele	|	Unassasigned
+	-----------------------------------------
 
 	,CASE WHEN terr.FSCStatusCode LIKE 'F%' 
 		THEN 
@@ -140,24 +156,10 @@ SELECT
 				ELSE 'Unassigned' 
 			END 
 	END AS SalesChannel
-*/
-	-- Closed -> Special Market -> Focus -> Default
-	,CASE WHEN c.AccountType ='D' 
-		THEN 'CLS'
-		ELSE
-			CASE WHEN mcroll.MarketRollup_L1 like 'SP%'
-				THEN 'SPC'
-				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE RTRIM(c.FocusCd) End
-			END
-	END AS FocusCd
 
-/*
 	,c.isr_target_amt			AS TargetAmount
 	,c.potential_spend_amt		As PotentialSpendAmount
-*/
 
-	,[DSO_ParentShipTo]
-	,[PrivilegesCode]
 
 
 FROM
@@ -187,10 +189,10 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
-/*
+
 	LEFT JOIN [dbo].[BRS_Employee] isr_emp
 	ON isr.[FSCRollup] = isr_emp.[IsrRollupCd]
-*/
+
 
 	INNER JOIN BRS_Branch AS b 
 	ON terr.Branch = b.Branch
@@ -253,8 +255,8 @@ GROUP BY BillTo
 HAVING        (COUNT(*) > 1)
 */
 
--- Select count(*) from [Dimension].[Customer]
+-- Select count(*) from [Dimension].[Customer] where IsrLoginId <>''
 
--- Select top 10 * from [Dimension].[Customer]
+-- Select top 10 * from [Dimension].[Customer] where IsrTerritoryCd = 'DTSNT'
 
 

@@ -8,7 +8,7 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: BRS_TS_Cube_proc
+**	Name: [Fact].Sales_isr
 **	Desc: Telesales Sales pull  
 **
 **              
@@ -143,10 +143,8 @@ BEGIN
 
 	WHERE     
 		(t.FreeGoodsInvoicedInd = 0) AND
-		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
---		(d.FiscalMonth = 201802 ) AND 
---		t.Shipto = 1526768 AND
---		i.ItemKey = 193494 AND
+--		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
+		(d.FiscalMonth = 201802 ) AND 
 		(1=1)
 
 END
@@ -155,9 +153,9 @@ GO
 
 --	Select FiscalMonth, PriorFiscalMonth, FirstFiscalMonth_LY, SalesDateLastWeekly FROM BRS_TS_Config g
 
--- Debug
--- [Fact].Sales_isr
 
 -- Prod
 -- BRS_TS_Cube_proc 0
 
+-- Debug
+-- [Fact].Sales_isr

@@ -52,6 +52,13 @@ ALTER TABLE dbo.BRS_Employee ADD CONSTRAINT
 	
 GO
 
+-- goals and spend
+ALTER TABLE dbo.BRS_Customer ADD
+	isr_target_amt money NOT NULL CONSTRAINT DF_BRS_Customer_isr_goal_amt DEFAULT (0),
+	potential_spend_amt money NOT NULL CONSTRAINT DF_BRS_Customer_potential_spend_amt DEFAULT (0)
+GO
+
+-- SELECT [CalMonth], count(*) from [dbo].[BRS_TransactionDW] group by [CalMonth]
 
 INSERT INTO BRS_Employee
                          (SamAccountName, EmailAddress, LoginId, fscRollupCd, isrRollupCd, Note)
@@ -59,6 +66,8 @@ VALUES        (N'', N'', N'', '', '', N'Unassigned')
 
 -- manually add from Get-ADUser -filter * -Properties SID, GivenName, Surname, EmployeeNumber, Office, MobilePhone, EmailAddress, thumbnailPhoto, Title, Department | where {$_.Enabled -eq “True”} | Export-Csv ./users.txt
 -- S:\Business Reporting\Projects\BR Connex\BRS_Employee Load.xlsx
+
+--LoginId = N'CAHSI\Noah.Thompson
 
 
 SELECT  
@@ -70,9 +79,27 @@ SELECT
 FROM [DEV_BRSales].[dbo].[BRS_FSC_Rollup]
 where [group_type] = 'DDTS' and ISNULL([Rule_WhereClauseLike],'')  =''
 
+-- test TS rollup for mapping
 UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = [TerritoryCd]
 where [group_type] = 'DDTS' and [Rule_WhereClauseLike]  <>''
+
+-- manually fix dups
+
+-- set test rights
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSNT'
+WHERE        (LoginId = N'CAHSI\Tcrowley')
+
+-- test
+
+SELECT        BRS_FSC_Rollup.TerritoryCd, BRS_FSC_Rollup.FSCRollup, BRS_Employee.LoginId, BRS_Employee.EmployeeKey
+FROM            BRS_FSC_Rollup INNER JOIN
+                         BRS_Employee ON BRS_FSC_Rollup.FSCRollup = BRS_Employee.IsrRollupCd
+ORDER BY BRS_FSC_Rollup.TerritoryCd
+
+
+/*
 
 UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = 'DTSNM'
@@ -90,16 +117,13 @@ UPDATE       BRS_Employee
 SET                isrRollupCd = 'DTSNT'
 WHERE        (LoginId = N'CAHSI\Noah.Thompson')
 
-UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSNX'
-WHERE        (LoginId = N'CAHSI\TCROWLey')
 
 UPDATE       BRS_Employee
 SET                isrRollupCd = 'DTSFP'
 WHERE        (LoginId = N'CAHSI\Gary.Winslow')
 
 
-
+*/
 
 SELECT        SamAccountName, EmailAddress, LoginId, IsrRollupCd, Note
 FROM            BRS_Employee
@@ -110,14 +134,11 @@ FROM            BRS_FSC_Rollup INNER JOIN
                          BRS_Employee ON BRS_FSC_Rollup.FSCRollup = BRS_Employee.FscRollupCd
 ORDER BY BRS_FSC_Rollup.TerritoryCd
 
-SELECT        BRS_FSC_Rollup.TerritoryCd, BRS_FSC_Rollup.FSCRollup, BRS_Employee.LoginId, BRS_Employee.EmployeeKey
-FROM            BRS_FSC_Rollup INNER JOIN
-                         BRS_Employee ON BRS_FSC_Rollup.FSCRollup = BRS_Employee.IsrRollupCd
-ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 -- ORG 738
 
 -- 
+/*
 
 BEGIN TRANSACTION
 GO
@@ -178,8 +199,5 @@ UPDATE       BRS_ItemCategoryRollup
 SET                CategoryRollup_L1 = 'MEROTH'
 WHERE        CategoryClass_Rollup = 'MERCH' AND CategoryRollup_L1 = ''
 
--- goals and spend
-ALTER TABLE dbo.BRS_Customer ADD
-	isr_target_amt money NOT NULL CONSTRAINT DF_BRS_Customer_isr_goal_amt DEFAULT (0),
-	potential_spend_amt money NOT NULL CONSTRAINT DF_BRS_Customer_potential_spend_amt DEFAULT (0)
-GO
+*/
+
