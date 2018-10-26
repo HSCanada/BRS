@@ -54,14 +54,14 @@ BEGIN
 	--Pull Cube based on Params
 
 	SELECT     
-		t.ID					AS FactKey
-		,CAST(d.SalesDate as date) AS SalesDate
+		t.ID							AS FactKey
+		,CAST(d.SalesDate as date)		AS SalesDate
 --		,d.FiscalMonth
 		,t.Shipto
-		,i.ItemKey				AS ItemKey
+		,i.ItemKey						AS ItemKey
 
-		,t.[SalesOrderNumber]	AS SalesOrderNumber
-		,t.[LineNumber]			AS LineNumber
+		,t.[SalesOrderNumber]			AS SalesOrderNumber
+		,t.[LineNumber]					AS LineNumber
 		,ISNULL(isr_emp.[EmployeeKey], 1) AS IsrEmployeeKey
 		,src.OrderSourceCodeKey
 		,dtype.DocTypeKey
@@ -70,9 +70,7 @@ BEGIN
 			WHEN (t2.TsTerritoryCd) = '' 
 			THEN 0 
 			ELSE 1
-		END						AS TsTagInd
-
---		, hdr.LastSalesDate
+		END								AS TsTagInd
 
 		,CASE 
 			WHEN 
@@ -81,12 +79,11 @@ BEGIN
 				t.Date = hdr.LastSalesDate
 			THEN 1
 			ELSE 0
-		END						AS LastOrderInd
+		END								AS LastOrderInd
 
-
-		,t.[ShippedQty]			AS Quantity
-		,t.NetSalesAmt			AS SalesAmt
-		,t.GPAtCommCostAmt		AS GPcommAmt
+		,t.[ShippedQty]					AS Quantity
+		,t.NetSalesAmt					AS SalesAmt
+		,t.GPAtCommCostAmt				AS GPcommAmt
 
 
 	FROM         
@@ -155,7 +152,7 @@ GO
 
 
 -- Prod
--- BRS_TS_Cube_proc 0
+-- [Fact].Sales_isr 0
 
 -- Debug
 -- [Fact].Sales_isr
