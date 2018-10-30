@@ -32,6 +32,7 @@ AS
 **	16 Sep 18	tmc		Added filter so that newest day is shown    
 **	22 Oct 18	tmc		Cosmetic chagnes as per Service team
 **	23 Oct 18	tmc		Cosmetic chagnes as per Service team
+**	30 Oct 18	tmc		Fixed INNER JOIN bug on [order_open_prorepr_standards]
 *******************************************************************************/
 
 SELECT
@@ -50,7 +51,7 @@ SELECT
 	END)							AS bench_tech
 
 	,RTRIM(age.aging_display)		AS aging
-	,RTRIM(std.next_action)			AS next_action
+	,RTRIM(ISNULL(std.next_action, '***Undefined***')) AS next_action
 
 	,r.[rma_name]					AS rma
 
@@ -87,7 +88,7 @@ SELECT
 	
 	,c.[work_flow]
 	,c.[owner]
-	,std.est_value_amt				AS est_value
+	,ISNULL(std.est_value_amt,0)	AS est_value
 	,DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding
 	,c.turnaround_time				AS days_outstanding_limit
 	,priv.priority_code
@@ -139,7 +140,7 @@ FROM
 	INNER JOIN nes.rma r
 	ON t.rma_code = r.rma_code
 
-	INNER JOIN [nes].[order_open_prorepr_standards] std
+	LEFT JOIN [nes].[order_open_prorepr_standards] std
 	ON (t.cause_code = std.cause_code) AND
 		(t.problem_code = std.problem_code) AND
 		(t.call_type_code = std.call_type_code) AND
@@ -160,4 +161,13 @@ GO
 
 -- SELECT MAX(sales_date) FROM nes.order_open_prorepr_current
 
--- SELECT top 10 * FROM nes.order_open_prorepr_current
+
+--SELECT count(*) FROM nes.order_open_prorepr_current
+-- ORG 1516
+-- Fix 1890
+
+
+--SELECT count(*) FROM [Integration].[open_order_prorepr]
+
+
+-- SELECT top 10 * FROM nes.order_open_prorepr_current where rma not in('rma', '')
