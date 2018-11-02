@@ -144,6 +144,8 @@ WHERE
 	order_taken_by <> s.WRTKBY_order_taken_by
 GO
 
+/*
+-- not comfortable with this fix.  ensure bad NOT over good.  tmc, 1 Nov 18
 print '11. ID dup terr'
 UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = s.TerritoryCd
@@ -155,18 +157,6 @@ WHERE
 	s.FSCRollup <> BRS_FSC_Rollup.FSCRollup AND
 	1=1
 GO
-
-/*
--- review problems -- fix this, 8 jan 17 -- no dups should be left...
-SELECT        s.TerritoryCd, s.FSCRollup, s.comm_salesperson_key_id, s.order_taken_by, s.FSCRollup as s_roll, d.FSCRollup as d_roll, S.FSCName, D.FSCName
-FROM            BRS_FSC_Rollup AS s INNER JOIN
-                         BRS_FSC_Rollup AS d ON s.order_taken_by = d.order_taken_by
-WHERE 
-	s.order_taken_by NOT IN (' ', 'OPEN') AND
-	s.FSCRollup <> '' AND
-	s.FSCRollup <> d.FSCRollup AND
-	1=1
-ORDER BY s.FSCRollup, S.TerritoryCd
 */
 
 print '12. update names here...'

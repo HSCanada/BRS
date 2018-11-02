@@ -144,4 +144,4 @@ WHERE [FiscalMonth] = 201710 and source_cd <>'JDE'
 -- SELECT count(*) FROM Fact.[Commission] 
 -- org 5 377 237, 10s
 
-select distinct FSC_SalespersonCodeKey from Fact.Commission 
+-- select distinct FSC_SalespersonCodeKey from Fact.Commission 
