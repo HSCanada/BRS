@@ -60,7 +60,7 @@ FROM
 
 WHERE
 	d.FiscalMonth >= (SELECT YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01) AND 
-	d.salesdate < (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) AND
+	d.salesdate <= (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) AND
 	(1=1)
 
 GO
@@ -72,4 +72,4 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
--- SELECT  * FROM Dimension.Day
+-- SELECT  * FROM Dimension.Day order by 1 desc

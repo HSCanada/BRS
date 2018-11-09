@@ -88,8 +88,18 @@ where [group_type] = 'DDTS' and [Rule_WhereClauseLike]  <>''
 
 -- set test rights
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSNT'
+SET                isrRollupCd = 'DTSFP'
 WHERE        (LoginId = N'CAHSI\Tcrowley')
+
+-- set test rights
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSNT'
+WHERE        (LoginId = N'CAHSI\Noah.Thompson')
+
+-- set test rights
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSED'
+WHERE        (LoginId = N'CAHSI\Gary.Winslow')
 
 -- test
 

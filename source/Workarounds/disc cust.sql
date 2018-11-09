@@ -45,13 +45,13 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201707) OR
-		(t.FiscalMonth BETWEEN 201801 and 201807)
+		(t.FiscalMonth BETWEEN 201701 and 201710) OR
+		(t.FiscalMonth BETWEEN 201801 and 201810)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	c.SalesDivision = 'AAD' AND
 	SegCd <> '' AND
-	PriceMethod = 'Q' AND
+	PriceMethod = 'P' AND
 	(1=1)
 
 GROUP BY 
