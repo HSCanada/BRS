@@ -69,7 +69,81 @@ VALUES        (N'', N'', N'', '', '', N'Unassigned')
 
 --LoginId = N'CAHSI\Noah.Thompson
 
+-- set top 15
 
+UPDATE
+	[dbo].[BRS_ItemCategoryRollup]
+SET [active_ind] = 0
+
+
+UPDATE
+	[dbo].[BRS_ItemCategoryRollup]
+SET [active_ind] = 1
+where 
+  [CategoryRollup] in ('ANSTHC', 'CEMENT', 'COSMTC', 'CROBRG', 'DENINS', 'DSPSBL', 'ENDODN', 'FINPOL', 'GLOVES', 'HANPCE', 'IMPRES', 'INFCON', 'PRVNTV', 
+                         'ROTARY', 'RSTRTV','PRVMBR', 'PRVPBR')
+
+
+-- Focus begin
+
+CREATE TABLE [dbo].[BRS_CustomerFocus](
+	[FocusCd] [nchar](5) NOT NULL,
+	[FocusDescr] [nchar](50) NULL,
+	[FocusKey] [int] IDENTITY(1,1) NOT NULL,
+	[Note] [nvarchar](100) NULL,
+	[IsActiveInd] [bit] NOT NULL,
+ CONSTRAINT [PK_BRS_CustomerFocus] PRIMARY KEY CLUSTERED 
+(
+	[FocusCd] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+ALTER TABLE [dbo].[BRS_CustomerFocus] ADD  CONSTRAINT [DF_BRS_CustomerFocus_FocusCd]  DEFAULT ('') FOR [FocusCd]
+GO
+
+ALTER TABLE [dbo].[BRS_CustomerFocus] ADD  CONSTRAINT [DF_BRS_CustomerFocus_IsActiveInd]  DEFAULT ((1)) FOR [IsActiveInd]
+GO
+
+INSERT INTO [dbo].[BRS_CustomerFocus]
+	([FocusCd], [FocusDescr])
+VALUES ('','Unassigned')
+GO
+
+INSERT INTO [dbo].[BRS_CustomerFocus]
+	([FocusCd], [FocusDescr])
+VALUES ('','Unassigned')
+GO
+
+INSERT INTO [dbo].[BRS_CustomerFocus]
+	([FocusCd], [FocusDescr])
+VALUES 
+('AAA',	'1. Regular Accounts'),
+('CLS',	'5. Closed'),
+('D04K',	'3. Focus Accounts < $10k'),
+('D10K',	'3. Focus Accounts < $10k'),
+('L10K',	'3. Focus Accounts < $10k'),
+('M02K5', '3. Focus Accounts < $10k'),
+('M06K',	'3. Focus Accounts < $10k'),
+('M2K5',	'3. Focus Accounts < $10k'),
+('SPC',	'2. Special Markets'),
+('WINBK', '4. Win-Back')
+
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_CustomerFocus FOREIGN KEY
+	(
+	FocusCd
+	) REFERENCES dbo.BRS_CustomerFocus
+	(
+	FocusCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+-- Focus End
+
+-- Territory Begin
 SELECT  
 		[TerritoryCd]
       ,[FSCName]
@@ -109,31 +183,6 @@ FROM            BRS_FSC_Rollup INNER JOIN
 ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 
-/*
-
-UPDATE       BRS_FSC_Rollup
-SET                FSCRollup = 'DTSNM'
-where [group_type] = 'DDTS' and ISNULL([Rule_WhereClauseLike],'')  =''
-
-UPDATE       BRS_FSC_Rollup
-SET                FSCRollup = 'DTSNT'
-WHERE        (TerritoryCd IN ('DTSNT', 'DTSN2', 'DTSN3'))
-
-UPDATE       BRS_FSC_Rollup
-SET                FSCRollup = 'DTSJC'
-WHERE        (TerritoryCd IN ('DTSJC'))
-
-UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSNT'
-WHERE        (LoginId = N'CAHSI\Noah.Thompson')
-
-
-UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSFP'
-WHERE        (LoginId = N'CAHSI\Gary.Winslow')
-
-
-*/
 
 SELECT        SamAccountName, EmailAddress, LoginId, IsrRollupCd, Note
 FROM            BRS_Employee
@@ -145,69 +194,8 @@ FROM            BRS_FSC_Rollup INNER JOIN
 ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 
--- ORG 738
-
 -- 
-/*
 
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_ItemCategoryRollup ADD
-	CategoryRollup_L1 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L1 DEFAULT (''),
-	CategoryRollup_L2 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L2 DEFAULT (''),
-	CategoryRollup_L3 char(10) NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryRollup_L3 DEFAULT ('')
-GO
-ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
-	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup1 FOREIGN KEY
-	(
-	CategoryRollup_L1
-	) REFERENCES dbo.BRS_ItemCategoryRollup
-	(
-	CategoryRollup
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
-	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup2 FOREIGN KEY
-	(
-	CategoryRollup_L2
-	) REFERENCES dbo.BRS_ItemCategoryRollup
-	(
-	CategoryRollup
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_ItemCategoryRollup ADD CONSTRAINT
-	FK_BRS_ItemCategoryRollup_BRS_ItemCategoryRollup3 FOREIGN KEY
-	(
-	CategoryRollup_L3
-	) REFERENCES dbo.BRS_ItemCategoryRollup
-	(
-	CategoryRollup
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_ItemCategoryRollup SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
--- set top 15
 
-UPDATE       BRS_ItemCategoryRollup
-SET                CategoryRollup_L1 = [CategoryRollup]
-WHERE        (CategoryRollup IN ('ANSTHC', 'CEMENT', 'COSMTC', 'CROBRG', 'DENINS', 'DSPSBL', 'ENDODN', 'FINPOL', 'GLOVES', 'HANPCE', 'IMPRES', 'INFCON', 'PRVNTV', 
-                         'ROTARY', 'RSTRTV'))
-
-UPDATE       BRS_ItemCategoryRollup
-SET                CategoryRollup_L1 = 'PRVNTV'
-WHERE        (CategoryRollup IN ('PRVMBR', 'PRVPBR'))
-
-UPDATE       BRS_ItemCategoryRollup
-SET                CategoryRollup_L1 = 'MEROTH'
-WHERE        CategoryClass_Rollup = 'MERCH' AND CategoryRollup_L1 = ''
-
-*/
 

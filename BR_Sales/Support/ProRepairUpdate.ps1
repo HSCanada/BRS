@@ -1,7 +1,7 @@
 ﻿# ProRepair:  Daily Refresh & file distribution.  
-# updated 05 Nov 18, tmc
+# updated 13 Nov 18, tmc, enable refresh after filter set
 
-$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181105.xlsm'
+$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181113.xlsm'
 
 
 $x1 = New-Object -ComObject "Excel.Application"
@@ -24,35 +24,35 @@ $wb.Connections.Item(1).Delete()
 $file_out = 'S:\Pro-Repair\Corporate\update\ProRepair-All.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'AAAAA'
-$wb.refreshAll()
+$x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
 
 # MNTRL	Montreal
 $file_out = 'S:\Pro-Repair\Montreal\update\ProRepair-Montreal.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'MNTRL'
-$wb.refreshAll()
+$x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
 
 # QUEBC	Quebec
 $file_out = 'S:\Pro-Repair\Quebec\update\ProRepair-Quebec.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'QUEBC'
-$wb.refreshAll()
+$x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
 
 # TORNT	Toronto
 $file_out = 'S:\Pro-Repair\Toronto\update\ProRepair-Toronto.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'TORNT'
-$wb.refreshAll()
+$x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
 
 # VACVR	Vancouver
 $file_out = 'S:\Pro-Repair\Vancouver\update\ProRepair-Vancouver.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'VACVR'
-$wb.refreshAll()
+$x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
 
 $wb.Close()

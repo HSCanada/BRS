@@ -38,6 +38,7 @@ AS
 --	17 Oct 18	tmc		cosmetic change on VPA
 --	19 Oct 18	tmc		add Privileges code
 --	23 Oct 18	tmc		reactiveate ISR
+--	13 Nov 18	tmc		replace focus with focusCode
 **    
 *******************************************************************************/
 
@@ -97,10 +98,6 @@ SELECT
 		'Post',
 		'Prior'
 	)													AS DCC_TrackingCode
-	,iif(c.FocusCd='',
-		'Non-Focus',
-		'Focus'
-	)													As Focus
 	,CAST(c.DateAccountOpened AS date)					AS DateAccountOpened
 
 	,RTRIM(div.SalesDivision)							AS SalesDivisionCode
