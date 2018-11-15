@@ -49,6 +49,12 @@ SELECT
 	,RTRIM(sc2.SalesCategoryName)		AS SalesCategoryRollup
 	,RTRIM(mpc.MPC_Category)			AS Abc_MpcItem
 	,RTRIM(cr.category_rollup_desc) 	AS CategoryRollup
+
+	,CASE
+		WHEN cr.top15_ind = 1
+		THEN RTRIM(cr.category_rollup_desc)
+		ELSE 'Other'
+	END									AS Top15
 	,RTRIM(c.major_cd) + ' | ' 
 		+ RTRIM(mpc.MajorProductClassDesc) AS Major
 	,RTRIM(c.submajor_cd) + ' | ' 
@@ -150,7 +156,6 @@ FROM
 
 	LEFT JOIN BRS_ItemSupplier AS sbrand 
 	ON i.brand = sbrand.Supplier 
-
 
 
 GO

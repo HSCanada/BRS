@@ -73,12 +73,12 @@ VALUES        (N'', N'', N'', '', '', N'Unassigned')
 
 UPDATE
 	[dbo].[BRS_ItemCategoryRollup]
-SET [active_ind] = 0
+SET [top15_ind] = 0
 
 
 UPDATE
 	[dbo].[BRS_ItemCategoryRollup]
-SET [active_ind] = 1
+SET [top15_ind] = 1
 where 
   [CategoryRollup] in ('ANSTHC', 'CEMENT', 'COSMTC', 'CROBRG', 'DENINS', 'DSPSBL', 'ENDODN', 'FINPOL', 'GLOVES', 'HANPCE', 'IMPRES', 'INFCON', 'PRVNTV', 
                          'ROTARY', 'RSTRTV','PRVMBR', 'PRVPBR')
@@ -141,6 +141,12 @@ ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
 	
 GO
 
+-- add credit limits, add users
+
+ALTER TABLE dbo.BRS_CustomerBT ADD
+	CreditLimit money NULL
+GO
+
 -- Focus End
 
 -- Territory Begin
@@ -153,27 +159,102 @@ SELECT
 FROM [DEV_BRSales].[dbo].[BRS_FSC_Rollup]
 where [group_type] = 'DDTS' and ISNULL([Rule_WhereClauseLike],'')  =''
 
--- test TS rollup for mapping
 UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = [TerritoryCd]
 where [group_type] = 'DDTS' and [Rule_WhereClauseLike]  <>''
 
--- manually fix dups
 
--- set test rights
+-- SET TS rollup for mapping
+
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSFP'
-WHERE        (LoginId = N'CAHSI\Tcrowley')
+SET                isrRollupCd = 'DTSHS'
+WHERE        (LoginId = N'CAHSI\tcrowley')
+GO
 
--- set test rights
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSHS'
+WHERE        (LoginId = N'CAHSI\gary.winslow')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSMK'
+WHERE        (LoginId = N'CAHSI\Madeleine.Khodaverdi')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSJE'
+WHERE        (LoginId = N'CAHSI\Julie.Emery')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSED'
+WHERE        (LoginId = N'CAHSI\Eric.Dorfman')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSWS'
+WHERE        (LoginId = N'CAHSI\Willen.Sun')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSSJ'
+WHERE        (LoginId = N'CAHSI\Shenila.Jaffer')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSKF'
+WHERE        (LoginId = N'CAHSI\Kristina.Fowler')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSKF'
+WHERE        (LoginId = N'CAHSI\Kristina.Fowler')
+GO	
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'MTSJD'
+WHERE        (LoginId = N'CAHSI\Janet.Dunphy')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSNX'
+WHERE        (LoginId = N'CAHSI\Nadia.Xavier')
+GO
+
 UPDATE       BRS_Employee
 SET                isrRollupCd = 'DTSNT'
 WHERE        (LoginId = N'CAHSI\Noah.Thompson')
+GO
 
--- set test rights
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'ZTSED'
-WHERE        (LoginId = N'CAHSI\Gary.Winslow')
+SET                isrRollupCd = 'DTSLE'
+WHERE        (LoginId = N'CAHSI\Lina.Evraire')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSLB'
+WHERE        (LoginId = N'CAHSI\Lori.Bonn')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSGB'
+WHERE        (LoginId = N'CAHSI\Grace.Brohman')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSFP'
+WHERE        (LoginId = N'CAHSI\Franca.Parente')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSEB'
+WHERE        (LoginId = N'CAHSI\Emilia.Bronowicki')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'DTSAR'
+WHERE        (LoginId = N'CAHSI\Amanda.Russell')
+GO
 
 -- test
 
@@ -194,7 +275,7 @@ FROM            BRS_FSC_Rollup INNER JOIN
 ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 
--- 
+
 
 
 

@@ -39,6 +39,7 @@ AS
 --	19 Oct 18	tmc		add Privileges code
 --	23 Oct 18	tmc		reactiveate ISR
 --	13 Nov 18	tmc		replace focus with focusCode
+--	15 Nov 18	tmc		add Credit Limit
 **    
 *******************************************************************************/
 
@@ -156,6 +157,7 @@ SELECT
 
 	,c.isr_target_amt			AS TargetAmount
 	,c.potential_spend_amt		As PotentialSpendAmount
+	,bt.CreditLimit
 
 
 

@@ -33,6 +33,7 @@ AS
 **	29 Aug 17	tmc		change to dynamic dat
 **  14 Sep 17	tmc		renamed to Period
 --	22 Feb 18	tmc		copied from Period and converted to day
+--	15 Nov 18	tmc		Add fiscal week logic
 *******************************************************************************/
 
 SELECT
@@ -43,13 +44,14 @@ SELECT
 	,fm.FiscalMonth
 	,RTRIM(fm.MonthName) AS MonthName
 	,fm.MonthNum
-	,'Q' + CAST(fm.QuarterNum AS char) AS QuarterName
+	,'Q' + CAST(fm.QuarterNum AS char)	AS QuarterName
 	,fm.YearNum
 
 	,fm.WorkingDaysMonth
 	,fm.MonthSeq
 	,fm.FirstMonthSeqInQtr
 	,fm.FirstMonthSeqInYear
+	,d.FiscalWeek						AS FirstWeekSeqInDay
 
 FROM
 	BRS_SalesDay d
@@ -72,4 +74,5 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
--- SELECT  * FROM Dimension.Day order by 1 desc
+-- SELECT  top 10 * FROM Dimension.Day order by 1 desc
+-- SELECT  * FROM Dimension.Day where FirstWeekSeqInDay = 12499
