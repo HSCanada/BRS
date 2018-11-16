@@ -1,7 +1,8 @@
 ﻿# ProRepair:  Daily Refresh & file distribution.  
-# updated 13 Nov 18, tmc, enable refresh after filter set
+# 13 Nov 18, tmc, enable refresh after filter set
+# 16 Nov 18, tmc, added Calgary, Edmonton, Ottawa to set
 
-$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181113.xlsm'
+$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181116.xlsm'
 
 
 $x1 = New-Object -ComObject "Excel.Application"
@@ -54,6 +55,28 @@ Remove-Item –path ($file_out) -ErrorAction Ignore
 $Data.Cells.Item(1,2) = 'VACVR'
 $x1.Run('ThisWorkbook.setDefaultFilter')
 $wb.SaveAs($file_out)
+
+#CALGY	Calgary
+$file_out = 'S:\Pro-Repair\Calgary\update\ProRepair-Calgary.xlsm'
+Remove-Item –path ($file_out) -ErrorAction Ignore
+$Data.Cells.Item(1,2) = 'CALGY'
+$x1.Run('ThisWorkbook.setDefaultFilter')
+$wb.SaveAs($file_out)
+
+#EDMON	Edmonton
+$file_out = 'S:\Pro-Repair\Edmonton\update\ProRepair-Edmonton.xlsm'
+Remove-Item –path ($file_out) -ErrorAction Ignore
+$Data.Cells.Item(1,2) = 'EDMON'
+$x1.Run('ThisWorkbook.setDefaultFilter')
+$wb.SaveAs($file_out)
+
+#OTTWA	Ottawa
+$file_out = 'S:\Pro-Repair\Ottawa\update\ProRepair-Ottawa.xlsm'
+Remove-Item –path ($file_out) -ErrorAction Ignore
+$Data.Cells.Item(1,2) = 'OTTWA'
+$x1.Run('ThisWorkbook.setDefaultFilter')
+$wb.SaveAs($file_out)
+
 
 $wb.Close()
 $x1.Quit()

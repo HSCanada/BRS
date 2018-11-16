@@ -33,6 +33,7 @@ AS
 **	22 Oct 18	tmc		Cosmetic chagnes as per Service team
 **	23 Oct 18	tmc		Cosmetic chagnes as per Service team
 **	30 Oct 18	tmc		Fixed INNER JOIN bug on [order_open_prorepr_standards]
+**	16 Nov 18	tmc		Remove Other from hardcode logic
 *******************************************************************************/
 
 SELECT
@@ -97,7 +98,8 @@ SELECT
 	+ RTRIM(t.[order_status_code])			AS order_status
 
 	,CASE 
-		WHEN e.Branch In ('MNTRL','QUEBC','TORNT','VACVR') 
+		WHEN e.Branch <> ''
+--		WHEN e.Branch In ('MNTRL','QUEBC','TORNT','VACVR') 
 		THEN e.Branch
 		ELSE 'OTHER'
 	END	as branch_hub
@@ -171,3 +173,11 @@ GO
 
 
 -- SELECT top 10 * FROM nes.order_open_prorepr_current where rma not in('rma', '')
+
+
+-- SELECT FROM nes.order_open_prorepr_current where rma not in('rma', '')
+
+SELECT branch_hub, count(*) FROM nes.order_open_prorepr_current group by branch_hub
+
+
+

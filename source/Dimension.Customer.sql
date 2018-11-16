@@ -158,6 +158,7 @@ SELECT
 	,c.isr_target_amt			AS TargetAmount
 	,c.potential_spend_amt		As PotentialSpendAmount
 	,bt.CreditLimit
+	,(bt.ReviewTrackingInd | v.ReviewTrackingInd) AS ReviewTrackingInd
 
 
 
@@ -258,4 +259,5 @@ HAVING        (COUNT(*) > 1)
 
 -- Select top 10 * from [Dimension].[Customer] where IsrTerritoryCd = 'DTSNT'
 
+-- Select top 10 * from [Dimension].[Customer] where ReviewTrackingInd = 1
 
