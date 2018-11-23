@@ -67,6 +67,13 @@ VALUES        (N'', N'', N'', '', '', N'Unassigned')
 -- manually add from Get-ADUser -filter * -Properties SID, GivenName, Surname, EmployeeNumber, Office, MobilePhone, EmailAddress, thumbnailPhoto, Title, Department | where {$_.Enabled -eq “True”} | Export-Csv ./users.txt
 -- S:\Business Reporting\Projects\BR Connex\BRS_Employee Load.xlsx
 
+-- load emp from dev to prod
+INSERT INTO BRS_Employee
+                         (SamAccountName, IsrRollupCd, EmailAddress, LoginId, Note, FscRollupCd)
+SELECT        SamAccountName, IsrRollupCd, EmailAddress, LoginId, Note, FscRollupCd
+FROM            DEV_BRSales..BRS_Employee AS BRS_Employee_1 where SamAccountName <>''
+
+
 --LoginId = N'CAHSI\Noah.Thompson
 
 -- set top 15
@@ -103,11 +110,6 @@ ALTER TABLE [dbo].[BRS_CustomerFocus] ADD  CONSTRAINT [DF_BRS_CustomerFocus_Focu
 GO
 
 ALTER TABLE [dbo].[BRS_CustomerFocus] ADD  CONSTRAINT [DF_BRS_CustomerFocus_IsActiveInd]  DEFAULT ((1)) FOR [IsActiveInd]
-GO
-
-INSERT INTO [dbo].[BRS_CustomerFocus]
-	([FocusCd], [FocusDescr])
-VALUES ('','Unassigned')
 GO
 
 INSERT INTO [dbo].[BRS_CustomerFocus]
@@ -163,33 +165,38 @@ UPDATE       BRS_FSC_Rollup
 SET                FSCRollup = [TerritoryCd]
 where [group_type] = 'DDTS' and [Rule_WhereClauseLike]  <>''
 
+---
 
 -- SET TS rollup for mapping
 
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'DTSHS'
+SET                isrRollupCd = null
+--SET                isrRollupCd = 'ZTSED'
+WHERE        (LoginId = N'CAHSI\Eric.Dorfman')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSED'
 WHERE        (LoginId = N'CAHSI\tcrowley')
 GO
 
 UPDATE       BRS_Employee
-SET                isrRollupCd = 'MTSHS'
+SET                isrRollupCd = null
+--SET                isrRollupCd = 'ZTSJE'
+WHERE        (LoginId = N'CAHSI\Julie.Emery')
+GO
+
+UPDATE       BRS_Employee
+SET                isrRollupCd = 'ZTSJE'
 WHERE        (LoginId = N'CAHSI\gary.winslow')
 GO
+
 
 UPDATE       BRS_Employee
 SET                isrRollupCd = 'ZTSMK'
 WHERE        (LoginId = N'CAHSI\Madeleine.Khodaverdi')
 GO
 
-UPDATE       BRS_Employee
-SET                isrRollupCd = 'ZTSJE'
-WHERE        (LoginId = N'CAHSI\Julie.Emery')
-GO
-
-UPDATE       BRS_Employee
-SET                isrRollupCd = 'ZTSED'
-WHERE        (LoginId = N'CAHSI\Eric.Dorfman')
-GO
 
 UPDATE       BRS_Employee
 SET                isrRollupCd = 'MTSWS'
@@ -267,7 +274,7 @@ ORDER BY BRS_FSC_Rollup.TerritoryCd
 
 SELECT        SamAccountName, EmailAddress, LoginId, IsrRollupCd, Note
 FROM            BRS_Employee
-WHERE        (IsrRollupCd = 'DTSJC')
+WHERE        (IsrRollupCd = 'DTSJE')
 
 SELECT        BRS_FSC_Rollup.TerritoryCd, BRS_FSC_Rollup.FSCRollup, BRS_Employee.LoginId, BRS_Employee.EmployeeKey
 FROM            BRS_FSC_Rollup INNER JOIN

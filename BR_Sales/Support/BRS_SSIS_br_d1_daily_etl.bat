@@ -15,4 +15,3 @@ osql -S %BRS_SQLSERVER% -E -r -p -Q"exec msdb.dbo.sp_start_job 'SSIS_br_d1_daily
 
 PAUSE
 
-del "..\Upload\prorepr.csv"
