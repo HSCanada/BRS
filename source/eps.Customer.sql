@@ -89,6 +89,9 @@ GO
 
 
 -- SELECT top 10 * FROM eps.Customer where customer_number = 1669334
+
+-- eps_customer.txt
+
 /*
 SET NOCOUNT ON;
 SELECT * FROM eps.Customer 
