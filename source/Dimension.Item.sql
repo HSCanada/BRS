@@ -184,5 +184,5 @@ set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
 WHERE SalesCategory <> ''
 */
 
--- SELECT top 10 * FROM Dimension.Item
+-- SELECT top 10 * FROM Dimension.Item where itemcode = ''
 -- SELECT top 10 BrandCode FROM Dimension.Item

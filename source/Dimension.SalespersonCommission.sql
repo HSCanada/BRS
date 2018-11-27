@@ -45,7 +45,6 @@ SELECT
 	,b.Branch					AS BranchCode
 	,b.BranchName
 	,b.ZoneName
-	,ISNULL(tc.BranchCount,0)	AS BranchCount
 
   FROM 
 	[comm].[salesperson_master] s

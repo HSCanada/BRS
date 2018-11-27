@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	26 Nov 18	tmc		Link Salesperson code to SalespersonMaster
 **    
 *******************************************************************************/
 
@@ -36,6 +37,9 @@ AS
 SELECT 
 	[TerritoryCd]				AS FSC_SalespersonCode
 	,[FSCName]					AS SalespersonName
+	,sm.EmployeeNumber
+	,sm.CommPlanCode
+	,CAST([AddedDt] AS Date)	AS TerritoryStart
 	,[FscKey]					AS FSC_SalespersonCodeKey
 	,[FSCRollup]
 	,b.Branch					AS BranchCode
@@ -49,9 +53,14 @@ FROM
 	INNER JOIN [dbo].[BRS_Branch] b
 	ON s.Branch = b.Branch
 
+	INNER JOIN Dimension.SalespersonCommission sm
+	ON s.comm_salesperson_key_id = sm.salespersonid
+
 WHERE
-	group_type = 'AAFS' OR
-	[TerritoryCd] = ''
+	-- cross branch
+	(sm.BranchCount > 1) OR
+	-- ensure unassigned is included
+	([TerritoryCd] = '')
 
 	
 GO
@@ -65,6 +74,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
---  SELECT  top 10 * FROM Dimension.SalespersonCodeCommission 
+--  SELECT   * FROM Dimension.SalespersonCodeCommission order by 1
+--select count(*) from Dimension.SalespersonCodeCommission
+--ORG 496
 --  SELECT  * FROM Dimension.SalespersonCodeCommission 
 --  SELECT  DISTINCT [group_type], FSCStatusCode FROM Dimension.SalespersonCodeCommission  ORDER BY 1
