@@ -42,6 +42,7 @@ AS
 --	06 May 18	tmc		added new Marketclass for restate logic
 --	08 May 18	tmc		removed test fields
 --	20 Jun 18	tmc		Point to Marketclass from new, as we are not in prod
+--  29 Nov 18	tmc		add new Exclusive public field for rename flexabiltity
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
