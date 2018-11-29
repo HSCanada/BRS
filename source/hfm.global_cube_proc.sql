@@ -65,13 +65,13 @@ BEGIN
 
 	-- Sales 1 of 3
 	SELECT     
-		cc.[Entity]							AS ENTITY 
-		,[HFM_Account]						AS ACCOUNT
+		cc.[Entity]								AS ENTITY 
+		,[HFM_Account]							AS ACCOUNT
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
-		,RTRIM(excl.BrandEquityCategory)	AS BRAND_EQUITY
-		,RTRIM(excl.Excl_Code)				AS BRAND_LINE
-		,RTRIM(ch.HIST_MarketClass)		AS CUSTOMER
-		,@sCurrency							AS CURRENCY
+		,RTRIM(excl.BrandEquityCategory)		AS BRAND_EQUITY
+		,RTRIM(excl.Excl_Code_Public)			AS BRAND_LINE
+		,RTRIM(ch.HIST_MarketClass)				AS CUSTOMER
+		,@sCurrency								AS CURRENCY
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
@@ -131,7 +131,7 @@ BEGIN
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
-		,excl.Excl_Code
+		,excl.Excl_Code_Public
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
@@ -152,13 +152,13 @@ BEGIN
 
 	-- Cost 2 of 3
 	SELECT     
-		cc.[Entity]							AS Entity
-		,[HFM_Account]						AS Account
+		cc.[Entity]								AS Entity
+		,[HFM_Account]							AS Account
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
-		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
-		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
-		,@sCurrency							AS Currency
+		,RTRIM(excl.BrandEquityCategory)		AS BrandEquity
+		,RTRIM(excl.Excl_Code_Public)			AS BrandLine
+		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
+		,@sCurrency								AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
@@ -222,7 +222,7 @@ BEGIN
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
-		,excl.Excl_Code
+		,excl.Excl_Code_Public
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
@@ -242,13 +242,13 @@ BEGIN
 
 	-- Chargeback 3 of 3
 	SELECT     
-		cc.[Entity]							AS Entity
-		,[HFM_Account]						AS Account
+		cc.[Entity]								AS Entity
+		,[HFM_Account]							AS Account
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
-		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
-		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
-		,@sCurrency							AS Currency
+		,RTRIM(excl.BrandEquityCategory)		AS BrandEquity
+		,RTRIM(excl.Excl_Code_Public)			AS BrandLine
+		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
+		,@sCurrency								AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
@@ -314,7 +314,7 @@ BEGIN
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
 		,excl.BrandEquityCategory
-		,excl.Excl_Code
+		,excl.Excl_Code_Public
 		,g.GpsCode
 		,ch.HIST_MarketClass
 		,doct.SourceCd
