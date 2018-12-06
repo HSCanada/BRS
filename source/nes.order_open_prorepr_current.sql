@@ -151,8 +151,14 @@ FROM
 
 	CROSS JOIN nes.aging age
 WHERE
-	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.order_open_prorepr) AND
-	DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
+	(
+		[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.order_open_prorepr) AND
+		DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
+	) OR
+	(
+		[SalesDate] = '2012-01-01' AND
+		age.aging_key = 1
+	) 
 
 GO
 
@@ -172,12 +178,12 @@ GO
 --SELECT count(*) FROM [Integration].[open_order_prorepr]
 
 
--- SELECT top 10 * FROM nes.order_open_prorepr_current where rma not in('rma', '')
 
 
 -- SELECT FROM nes.order_open_prorepr_current where rma not in('rma', '')
 
-SELECT branch_hub, count(*) FROM nes.order_open_prorepr_current group by branch_hub
+-- SELECT branch_hub, count(*) FROM nes.order_open_prorepr_current group by branch_hub
 
 
+-- SELECT * FROM nes.order_open_prorepr_current where sales_date = '20120101'
 

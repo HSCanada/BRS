@@ -7,7 +7,7 @@
 
 
 -- ok
-print 'check fiscal_yearmo_num'
+print '1. check fiscal_yearmo_num'
 SELECT
 	TOP 10
 	fiscal_yearmo_num
@@ -18,7 +18,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check salesperson_cd'
+print '2. check salesperson_cd'
 SELECT 
 	TOP 10
 	salesperson_cd
@@ -30,7 +30,7 @@ WHERE NOT EXISTS (
 
 
 --ok
-print 'check pmts_salesperson_cd'
+print '3. check pmts_salesperson_cd'
 SELECT 
 	TOP 10
 	pmts_salesperson_cd
@@ -41,7 +41,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check salesperson_key_id'
+print '4. check salesperson_key_id'
 SELECT 
 	TOP 10
 	salesperson_key_id
@@ -52,7 +52,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check ess_salesperson_key_id'
+print '5. check ess_salesperson_key_id'
 SELECT 
 	TOP 10
 	ess_salesperson_key_id
@@ -63,7 +63,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check comm_plan_id'
+print '6. check comm_plan_id'
 SELECT 
 	TOP 10
 	comm_plan_id
@@ -74,7 +74,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check ess_comm_plan_id'
+print '7. check ess_comm_plan_id'
 SELECT 
 	TOP 10
 	ess_comm_plan_id
@@ -85,7 +85,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check item_comm_group_cd'
+print '8. check item_comm_group_cd'
 SELECT 
 	TOP 10
 	item_comm_group_cd
@@ -96,7 +96,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check ess_comm_group_cd'
+print '9. check ess_comm_group_cd'
 SELECT 
 	TOP 10
 	ess_comm_group_cd
@@ -107,7 +107,7 @@ WHERE NOT EXISTS (
 )
 
 -- ok
-print 'check ess_comm_group_cd'
+print '10. check ess_comm_group_cd'
 SELECT 
 	TOP 10
 	doc_type_cd
@@ -118,7 +118,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check hsi_shipto_id'
+print '11. check hsi_shipto_id'
 SELECT 
 	TOP 10
 	hsi_shipto_id
@@ -129,7 +129,7 @@ WHERE NOT EXISTS (
 )
 
 --ok
-print 'check hsi_billto_id'
+print '12. check hsi_billto_id'
 SELECT 
 	TOP 10
 	hsi_billto_id
@@ -140,7 +140,7 @@ WHERE NOT EXISTS (
 )
 GO
 
-print 'check item_id'
+print '13. check item_id'
 
 SELECT 
 	distinct	item_id
@@ -154,7 +154,7 @@ GO
 -- manually add RESTOCK         
 
 -- ok
-print 'check IMCLMJ'
+print '14. check IMCLMJ'
 SELECT 
 	TOP 10
 	IMCLMJ
@@ -165,7 +165,7 @@ WHERE NOT EXISTS (
 GO
 
 --ok
-print 'check hsi_shipto_div_cd'
+print '15. check hsi_shipto_div_cd'
 SELECT 
 	TOP 10
 	hsi_shipto_div_cd
@@ -175,19 +175,19 @@ WHERE NOT EXISTS (
 )
 
 
-print 'fix null item'
+print '16. fix null item'
 
 UPDATE       CommBE.dbo.comm_transaction
 SET                item_id = ''
 WHERE        (item_id IS NULL)
 
-print 'fix null order_source_cd'
+print '17. fix null order_source_cd'
 UPDATE       CommBE.dbo.comm_transaction
 SET                order_source_cd = ''
 WHERE        (order_source_cd IS NULL)
 GO
 
-print 'fix vpa *ERROR* -> {blank}'
+print '18. fix vpa *ERROR* -> {blank}'
 UPDATE       CommBE.dbo.comm_transaction
 SET                vpa_cd = N''
 WHERE        (NOT EXISTS
@@ -196,7 +196,7 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.vpa_cd = VPA)))
 GO
 
-print 'fix datetime to date'
+print '19. fix datetime to date'
 UPDATE       CommBE.dbo.comm_transaction
 SET                transaction_dt = CAST(transaction_dt as date)
 WHERE        (NOT EXISTS
@@ -205,7 +205,7 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.transaction_dt = SalesDate)))
 GO
 
-print 'fix pricemethod sized 2 to 1'
+print '20. fix pricemethod sized 2 to 1'
 UPDATE       CommBE.dbo.comm_transaction
 SET                price_method_cd = LEFT(price_method_cd,1)
 WHERE        (NOT EXISTS
@@ -214,13 +214,13 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
 GO
 
-print 'fix NA doc_id'
+print '21. fix NA doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id = 'NA')
 GO
 
-print 'fix null SalesOrderNumber'
+print '22. fix null SalesOrderNumber'
 UPDATE       BRS_Transaction
 SET                SalesOrderNumber = 0
 WHERE        (DocType = 'aa')  AND (NOT EXISTS
@@ -229,7 +229,7 @@ WHERE        (DocType = 'aa')  AND (NOT EXISTS
                                WHERE        (BRS_Transaction.SalesOrderNumber = SalesOrderNumber)))
 GO
 
-print 'fix null doc_id'
+print '23. fix null doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = N'0'
 WHERE        (doc_id is null)
@@ -238,7 +238,7 @@ GO
 
 
 -- 30s
-print 'add missing SalesOrderNumber'
+print '24. add missing SalesOrderNumber'
 
 INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],
 DocType)
@@ -253,7 +253,7 @@ where
 	) 
 GO
 
-print 'fix bad doc_id'
+print '25. fix bad doc_id'
 UPDATE       CommBE.dbo.comm_transaction
 SET                doc_id = '0'
 WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
@@ -264,7 +264,7 @@ GO
 
 
 -- 1m40s
-print 'fix duplicate linenumbers by setting to ID (all imports)'
+print '26. fix duplicate linenumbers by setting to ID (all imports)'
 UPDATE       
 	CommBE.dbo.comm_transaction
 SET                
@@ -288,7 +288,7 @@ where exists(
 )
 GO
 
-print 'fix remove overlapping line'
+print '27. fix remove overlapping line'
 UPDATE       CommBE.dbo.comm_transaction
 SET                
 	line_id = [record_id],
@@ -406,8 +406,10 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201809')
+	(fiscal_yearmo_num = '201810')
 GO
+
+-- import to SSAS next
 
 /*
 print 'source trans'

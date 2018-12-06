@@ -593,7 +593,7 @@ END
 CLOSE c;
 DEALLOCATE c;
 
-
+-- add alert here to say when done?
 
 /*
 -- Below needs to be streamlined and possibly moved (W/F Gary!  27 Oct 16)
@@ -679,7 +679,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201810 and 201810) 
+	(t.FiscalMonth between 201811 and 201811) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -702,7 +702,7 @@ FROM
 WHERE     
 	(t.Shipto > 0) AND 
 	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201810 and 201810) 
+	(t.FiscalMonth between 201811 and 201811) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -718,15 +718,14 @@ SELECT DISTINCT
 	'' as HIST_Specialty,
 	'' as HIST_MarketClass,
 	'' as HIST_SegCd
-
-FROM         BRS_Transaction t
-
+FROM         
+	BRS_Transaction t
 where 
 	(t.Shipto > 0) And 
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201810 and 201810) 
+	(t.FiscalMonth between 201811 and 201811) 
 
 
 

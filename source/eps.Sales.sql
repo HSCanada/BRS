@@ -127,12 +127,26 @@ GO
 
 -- Prod
 /*
+
 -- ^ delim
--- HSC_SALES_20181123.txt
+-- HSC_SALES_20181130.txt
 
 SET NOCOUNT OFF;
 GO
 [eps].Sales_proc 0
 GO
 
+-- eps_customer.txt
+
+SET NOCOUNT ON;
+SELECT * FROM eps.Customer 
+
+GO
+
+-- eps_item.txt
+
+SET NOCOUNT ON;
+SELECT * FROM eps.Item
+
 */
+

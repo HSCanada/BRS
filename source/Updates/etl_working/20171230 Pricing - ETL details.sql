@@ -800,6 +800,7 @@ WHERE
 		SELECT * FROM [dbo].[BRS_CustomerBT] b 
 		WHERE b.BillTo = s.[ADAN8__billto]
 	) 
+
 GO
 
 
