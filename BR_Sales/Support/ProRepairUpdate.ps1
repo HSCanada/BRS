@@ -4,6 +4,7 @@
 
 $File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181116.xlsm'
 
+# Part 1 - Pull data into 1 template
 
 $x1 = New-Object -ComObject "Excel.Application"
 #$x1.Visible = $false
@@ -21,6 +22,13 @@ $Data= $wb.Worksheets.Item(4)
 # remove connection for reporting
 $wb.Connections.Item(1).Delete()
 
+
+# Part 2 - Save Branch version to staging Area (avoid locks)
+
+# This should be in loop
+
+
+# Update SS
 # AAAAA	All
 $file_out = 'S:\Pro-Repair\Corporate\update\ProRepair-All.xlsm'
 Remove-Item –path ($file_out) -ErrorAction Ignore
@@ -82,3 +90,42 @@ $wb.Close()
 $x1.Quit()
 
 Remove-Variable wb,x1
+
+
+# Part 3 - Copy Stage areas to Production (locks may happen)
+
+# This should be in loop
+
+# AAAAA	All
+$file_out = 'S:\Pro-Repair\Corporate\update\ProRepair-All.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Corporate
+
+
+# MNTRL	Montreal
+$file_out = 'S:\Pro-Repair\Montreal\update\ProRepair-Montreal.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Montreal
+
+# QUEBC	Quebec
+$file_out = 'S:\Pro-Repair\Quebec\update\ProRepair-Quebec.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Quebec
+
+# TORNT	Toronto
+$file_out = 'S:\Pro-Repair\Toronto\update\ProRepair-Toronto.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Toronto
+
+# VACVR	Vancouver
+$file_out = 'S:\Pro-Repair\Vancouver\update\ProRepair-Vancouver.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Vancouver
+
+#CALGY	Calgary
+$file_out = 'S:\Pro-Repair\Calgary\update\ProRepair-Calgary.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Calgary
+
+#EDMON	Edmonton
+$file_out = 'S:\Pro-Repair\Edmonton\update\ProRepair-Edmonton.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Edmonton
+
+#OTTWA	Ottawa
+$file_out = 'S:\Pro-Repair\Ottawa\update\ProRepair-Ottawa.xlsm'
+Copy-Item $file_out -destination S:\Pro-Repair\Ottawa
+

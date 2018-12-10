@@ -40,6 +40,7 @@ SELECT
 	,CategorySharePercent
 	,top15_ind
 	,[CategoryClass_Rollup]			AS CategoryClass
+	,CategoryBrandCount
 
 
 FROM 

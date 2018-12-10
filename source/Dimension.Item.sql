@@ -104,6 +104,7 @@ SELECT
 	END 								AS Current_PriceGM
 
 	,icomp.ItemKey						AS CompetitiveMatchKey
+	,i.[Item_Competitive_Conversion_rt]
 
 	,(sf.SupplierFamily)				AS SupplierFamilyCode
 	,(sc.SalesCategory)					AS SalesCategoryCode

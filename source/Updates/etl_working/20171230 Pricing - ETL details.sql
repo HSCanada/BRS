@@ -1220,6 +1220,9 @@ WHERE
 	(atn.ATCPGP_customer_price_group = '') AND 
 	(atn.ATSDGR_order_detail_group = '') AND 
 	(atn.ATLBT__level_break_type = 1) AND
+	-- terrible work-around for terrible pricing practices, 7 Dec 18
+	sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123') AND
+	
 	(1 = 1)
 GO
 

@@ -40,6 +40,7 @@ AS
 --	23 Oct 18	tmc		reactiveate ISR
 --	13 Nov 18	tmc		replace focus with focusCode
 --	15 Nov 18	tmc		add Credit Limit
+--  07 Dec 18	tmc		add Business Review items
 **    
 *******************************************************************************/
 
@@ -160,6 +161,9 @@ SELECT
 	,bt.CreditLimit
 	,(bt.ReviewTrackingInd | v.ReviewTrackingInd) AS ReviewTrackingInd
 
+	,terr_ess.FSCName			AS ESTName
+	,priv.pma_ind
+
 
 
 FROM
@@ -186,6 +190,13 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
+
+	INNER JOIN BRS_FSC_Rollup AS terr_ess
+	ON c.est_code = terr_ess.[TerritoryCd]
+
+	INNER JOIN [nes].[privileges] AS priv
+	ON c.PrivilegesCode = priv.privileges_code
+
 
 	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
@@ -242,7 +253,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Customer where  billto = 2613256 order by 1
+-- SELECT top 10 * FROM Dimension.Customer 
+-- where  billto = 2613256 order by 1
 
 -- integrity check
 -- SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
