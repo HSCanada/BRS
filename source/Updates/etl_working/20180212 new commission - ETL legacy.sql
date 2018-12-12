@@ -406,7 +406,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201810')
+	(fiscal_yearmo_num = '201811')
 GO
 
 -- import to SSAS next

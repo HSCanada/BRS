@@ -1,8 +1,9 @@
 ﻿# ProRepair:  Daily Refresh & file distribution.  
 # 13 Nov 18, tmc, enable refresh after filter set
 # 16 Nov 18, tmc, added Calgary, Edmonton, Ottawa to set
+# 12 Dec 18, tmc, added FSC, EST to detail
 
-$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181116.xlsm'
+$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
 
 # Part 1 - Pull data into 1 template
 

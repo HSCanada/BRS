@@ -34,6 +34,7 @@ AS
 **	23 Oct 18	tmc		Cosmetic chagnes as per Service team
 **	30 Oct 18	tmc		Fixed INNER JOIN bug on [order_open_prorepr_standards]
 **	16 Nov 18	tmc		Remove Other from hardcode logic
+**	12 Dec 18	tmc		Add EST and FSC to pull, fix branch_fsc bug
 *******************************************************************************/
 
 SELECT
@@ -95,7 +96,7 @@ SELECT
 	,priv.priority_code
 
 	,s.order_status_descr + ' | ' 
-	+ RTRIM(t.[order_status_code])			AS order_status
+	+ RTRIM(t.[order_status_code])	AS order_status
 
 	,CASE 
 		WHEN e.Branch <> ''
@@ -103,8 +104,10 @@ SELECT
 		THEN e.Branch
 		ELSE 'OTHER'
 	END	as branch_hub
-	,e.Branch						AS branch_fsc
+	,f.Branch						AS branch_fsc
 	,CAST(t.[SalesDate] as date)	AS sales_date
+	,RTRIM(f.FSCName)				AS fsc
+	,RTRIM(ec.FSCName)				AS est
 
 FROM 
 	nes.order_open_prorepr t
@@ -126,6 +129,9 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS e 
 	ON t.est_code = e.TerritoryCd
+
+	INNER JOIN BRS_FSC_Rollup AS ec 
+	ON cust.est_code = ec.TerritoryCd
 
 	INNER JOIN nes.branch b
 	ON t.branch_code = b.branch_code
@@ -187,3 +193,6 @@ GO
 
 -- SELECT * FROM nes.order_open_prorepr_current where sales_date = '20120101'
 
+-- SELECT top 10 * FROM nes.order_open_prorepr_current order by sales_date desc
+
+-- SELECT * FROM nes.order_open_prorepr_current order by sales_date desc
