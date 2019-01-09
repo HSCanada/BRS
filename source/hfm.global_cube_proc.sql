@@ -43,6 +43,7 @@ AS
 --	08 May 18	tmc		removed test fields
 --	20 Jun 18	tmc		Point to Marketclass from new, as we are not in prod
 --  29 Nov 18	tmc		add new Exclusive public field for rename flexabiltity
+--	09 Jan 19	tmc		add temp test scafolding to find missing Sales order
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -84,13 +85,13 @@ BEGIN
 		,SUM(t.[NetSalesAmt])				AS AMOUNT
 
 -- test
-/*
-		,t.GL_BusinessUnit					AS TEST_BusinessUnit
-		,t.GL_Object_Sales					AS TEST_Object
-		,t.SalesDivision					AS TEST_SalesDivision
-		,t.GLBU_Class						AS TEST_GLBU_Class
-		,t.AdjCode							AS TEST_AdjCode
-*/
+
+--		,t.GL_BusinessUnit					AS TEST_BusinessUnit
+--		,t.GL_Object_Sales					AS TEST_Object
+--		,t.SalesDivision					AS TEST_SalesDivision
+--		,t.GLBU_Class						AS TEST_GLBU_Class
+--		,t.AdjCode							AS TEST_AdjCode
+
 
 
 	FROM         
@@ -124,7 +125,10 @@ BEGIN
 	WHERE
 		(t.FiscalMonth between @StartMonth AND @EndMonth)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
+--		test
+--		t.SalesOrderNumber = 1109883 AND
 		(1=1)
+
 
 	GROUP BY 
 		t.FiscalMonth
@@ -137,13 +141,13 @@ BEGIN
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
-/*
-		,t.GL_BusinessUnit
-		,t.GL_Object_Sales
-		,t.SalesDivision
-		,t.GLBU_Class
-		,t.AdjCode
-*/
+
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Sales
+--		,t.SalesDivision
+--		,t.GLBU_Class
+--		,t.AdjCode
+
 
 	HAVING
 		(SUM(t.[NetSalesAmt]) <>0)
@@ -171,13 +175,13 @@ BEGIN
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 
 -- test
-/*
-		,t.GL_BusinessUnit
-		,t.GL_Object_Cost
-		,t.SalesDivision
-		,t.GLBU_Class						AS TEST_GLBU_Class
-		,t.AdjCode							AS TEST_AdjCode
-*/
+
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Cost
+--		,t.SalesDivision
+--		,t.GLBU_Class						AS TEST_GLBU_Class
+--		,t.AdjCode							AS TEST_AdjCode
+
 
 	FROM         
 
@@ -215,6 +219,10 @@ BEGIN
 		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
 		(glru.ReportingClass <> 'NSA') AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
+
+--		test
+--		t.SalesOrderNumber = 1109883 AND
+
 		(1=1)
 
 	GROUP BY 
@@ -228,13 +236,13 @@ BEGIN
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
-/*
-		,t.GL_BusinessUnit
-		,t.GL_Object_Cost
-		,t.SalesDivision
-		,t.GLBU_Class
-		,t.AdjCode
-*/
+
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_Cost
+--		,t.SalesDivision
+--		,t.GLBU_Class
+--		,t.AdjCode
+
 
 	HAVING 
 		SUM(t.[ExtendedCostAmt])<>0
@@ -262,13 +270,13 @@ BEGIN
 		,-SUM(t.[ExtChargebackAmt])			AS ValueAmt
 
 -- test
-/*
-		,t.GL_BusinessUnit
-		,t.GL_Object_ChargeBack
-		,t.SalesDivision
-		,t.GLBU_Class						AS TEST_GLBU_Class
-		,t.AdjCode							AS TEST_AdjCode
-*/
+
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_ChargeBack
+--		,t.SalesDivision
+--		,t.GLBU_Class						AS TEST_GLBU_Class
+--		,t.AdjCode							AS TEST_AdjCode
+
 
 	FROM         
 
@@ -307,6 +315,10 @@ BEGIN
 		(t.FiscalMonth between @StartMonth AND @EndMonth) AND
 		(glru.ReportingClass <> 'NSA') AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
+
+--		test
+--		t.SalesOrderNumber = 1109883 AND
+
 		(1=1)
 
 	GROUP BY 
@@ -320,13 +332,13 @@ BEGIN
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
-/*
-		,t.GL_BusinessUnit
-		,t.GL_Object_ChargeBack
-		,t.SalesDivision
-		,t.GLBU_Class
-		,t.AdjCode
-*/
+
+--		,t.GL_BusinessUnit
+--		,t.GL_Object_ChargeBack
+--		,t.SalesDivision
+--		,t.GLBU_Class
+--		,t.AdjCode
+
 
 	HAVING
 		(SUM(t.[ExtChargebackAmt])<> 0)
@@ -338,87 +350,7 @@ GO
 
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
-/*
-	SELECT     
-		cc.[Entity]							AS Entity
-		,[HFM_Account]						AS Account
-		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
-		,RTRIM(excl.BrandEquityCategory)	AS BrandEquity
-		,RTRIM(excl.Excl_Code)				AS BrandLine
-		,RTRIM(ch.HIST_MarketClass)		AS CustomerCategory
-		,'curr'							AS Currency
-		,RTRIM(ISNULL(g.GpsCode, 'analy'))	AS ANALYSIS
-		,CASE 
-			WHEN doct.SourceCd = 'JDE' 
-			THEN 'GL_Input' 
-			ELSE 'Manual_Entry' 
-		END									AS ReportingSource
-		,t.FiscalMonth						AS Period
-		,'test'							AS Version
-		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
 
--- test
-		,t.GL_BusinessUnit
-		,t.GL_Object_Cost
-		,t.SalesDivision
-		,t.GLBU_Class						AS TEST_GLBU_Class
-		,t.AdjCode							AS TEST_AdjCode
-
-	FROM         
-
-		[dbo].[BRS_Transaction] AS t 
-
-		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
-		ON t.Shipto = ch.[Shipto] AND
-			t.[FiscalMonth] = ch.[FiscalMonth]
-
-		INNER JOIN [dbo].[BRS_ItemHistory] as ih
-		ON t.Item = ih.[Item] AND
-			t.[FiscalMonth] = ih.[FiscalMonth]
-
-		INNER JOIN [hfm].[account_master_F0901] as hfm
-		ON t.[GL_BusinessUnit] = hfm.[GMMCU__business_unit] AND
-			t.[GL_Object_Cost] = hfm.[GMOBJ__object_account] AND
-			t.[GL_Subsidiary_Cost] = hfm.[GMSUB__subsidiary] 
-
-		INNER JOIN [hfm].[cost_center] as cc
-		ON hfm.HFM_CostCenter = cc.CostCenter
-
-		INNER JOIN [hfm].[exclusive_product] as excl
-		ON ih.Excl_key = excl.Excl_Key
-
-		INNER JOIN [dbo].[BRS_DocType] as doct
-		ON t.DocType = doct.DocType
-
-		LEFT JOIN [hfm].[gps_code] as g
-		ON t.GpsKey = g.GpsKey
-
-		INNER JOIN BRS_DS_GLBU_Rollup AS glru
-		ON	t.GLBU_Class = glru.GLBU_Class
-
-	WHERE
-		(t.FiscalMonth between 201805 AND 201805) AND
-		(glru.ReportingClass <> 'NSA') AND
-		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
-		(1=1)
-
-	GROUP BY 
-		t.FiscalMonth
-		,cc.[Entity]
-		,hfm.[HFM_Account]
-		,ih.MinorProductClass
-		,excl.BrandEquityCategory
-		,excl.Excl_Code
-		,g.GpsCode
-		,ch.HIST_MarketClass
-		,doct.SourceCd
--- test
-		,t.GL_BusinessUnit
-		,t.GL_Object_Cost
-		,t.SalesDivision
-		,t.GLBU_Class
-		,t.AdjCode
-*/
 
 --a_CAN_Jan-17_RA.csv
 -- [hfm].global_cube_proc  201701, 201701
@@ -478,3 +410,5 @@ GO
 -- [hfm].global_cube_proc  201807, 201807
 
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
+
+-- [hfm].global_cube_proc  201812, 201812
