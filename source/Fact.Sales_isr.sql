@@ -140,6 +140,7 @@ BEGIN
 
 	WHERE     
 		(t.FreeGoodsInvoicedInd = 0) AND
+		(i.SalesCategory in ('MERCH', 'SMEQU')) AND
 		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
 --		(d.FiscalMonth = 201802 ) AND 
 		(1=1)

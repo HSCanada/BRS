@@ -52,7 +52,7 @@ SELECT
 
 	,CASE
 		WHEN cr.top15_ind = 1
-		THEN RTRIM(cr.category_rollup_desc)
+		THEN RTRIM(cr.category_rollup_desc) + ' - ' + FORMAT( cr.[CategorySharePercent],'P1')
 		ELSE 'Other'
 	END									AS Top15
 	,RTRIM(c.major_cd) + ' | ' 
@@ -185,5 +185,7 @@ set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
 WHERE SalesCategory <> ''
 */
 
--- SELECT top 10 * FROM Dimension.Item where itemcode = ''
+-- SELECT top 10 * FROM Dimension.Item where SalesCategoryCode in ('MERCH')
 -- SELECT top 10 BrandCode FROM Dimension.Item
+
+
