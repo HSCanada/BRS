@@ -158,3 +158,4 @@ GO
 
 
 -- SELECT top 10 * FROM BRS_ItemMarketAdjustFix where ma_heavy_ind = 1
+-- SELECT * FROM BRS_ItemMarketAdjustFix 

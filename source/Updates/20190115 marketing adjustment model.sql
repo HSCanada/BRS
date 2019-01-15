@@ -37,7 +37,6 @@ ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
 	Label
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
-	
 GO
 
 -- set
@@ -94,7 +93,6 @@ ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
 	[StockingType]
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
-	
 GO
 
 -- set
@@ -161,3 +159,4 @@ SET
 
 -- CALC
 
+-- see BRS_ItemMarketAdjustFix
