@@ -47,3 +47,59 @@ ALTER TABLE dbo.BRS_ItemCategoryRollup ADD
 	CategoryBrandCount smallint NOT NULL CONSTRAINT DF_BRS_ItemCategoryRollup_CategoryBrandCount DEFAULT 0
 GO
 ALTER TABLE dbo.BRS_ItemCategoryRollup SET (LOCK_ESCALATION = TABLE)
+
+
+-- 
+
+-- Add coupa start date to DCC, customer
+
+ALTER TABLE dbo.BRS_Customer ADD
+	coupa_start_date date NULL
+GO
+
+
+-- temp fix subs
+
+UPDATE 
+	BRS_Item
+SET 
+	[Item_Competitive_Conversion_rt] = 1
+WHERE        
+	(Item_Competitive_Match > '0')
+
+
+-- Merch Subs to Item dim for performance
+
+SELECT
+--	TOP 10
+	i.ItemKey,
+	i.Item,
+	i.SalesCategory,
+	i.SalesCategoryRollup,
+	i.Major,
+	i.SubMajor,
+	i.ItemCode,
+	i.Size,
+	i.Strength,
+	i.ItemStatus,
+	i.Brand,
+	i.CompetitiveMatchKey,
+	i.Label,
+	i.Current_BasePrice,
+	i.FamilySet,
+	i.Supplier,
+
+	CASE 
+		WHEN isub.ItemKey = 1 
+		THEN ''
+		ELSE isub.Item
+	END										AS SubstItem,
+	isub.Current_BasePrice					AS SubsItemBasePrice,
+	ISNULL(i.Item_Competitive_Conversion_rt,0) AS SubsItem2Subs_factor
+
+FROM
+	Dimension.Item AS i 
+
+	INNER JOIN Dimension.Item AS isub 
+	ON i.CompetitiveMatchKey = isub.ItemKey
+

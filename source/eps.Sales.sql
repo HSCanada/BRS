@@ -108,8 +108,8 @@ BEGIN
 
 	WHERE     
 		(d.FiscalWeek = @nWeek) AND
+--		CAST(d.SalesDate as date) between '2018-09-30' AND '2019-01-11' AND
 --		(t.CalMonth Between 201801 and 201803) AND
-
 		(t.SalesDivision = 'AAD') AND
 -- test
 --		(c.Customer_Number is null) AND

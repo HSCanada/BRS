@@ -32,6 +32,7 @@ AS
 **	31 Mar 18	tmc		added DSO to the list
 **	04 Apr 18	tmc		finalize fields for production
 **	13 Apr 18	tmc		removed inactive filter to allow growth measure DCC
+--	17 Jan 19	tmc		add Hygine accout to feed
 **    
 *******************************************************************************/
 
@@ -77,7 +78,7 @@ FROM
 WHERE
 	(c.ShipTo > 0) AND
 	(c.SalesDivision = 'AAD') AND 
-	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO')) AND
+	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO', 'HYGEN')) AND
 	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT')) AND
 	(1=1)
 GO
@@ -89,6 +90,7 @@ GO
 
 
 -- SELECT top 10 * FROM eps.Customer where customer_number = 1669334
+-- SELECT * FROM eps.Customer where Specialty_Discription = 'HYGEN'
 
 -- eps_customer.txt
 

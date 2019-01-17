@@ -41,6 +41,7 @@ AS
 --	13 Nov 18	tmc		replace focus with focusCode
 --	15 Nov 18	tmc		add Credit Limit
 --  07 Dec 18	tmc		add Business Review items
+--	16 Jan 18	tmc		add coupa start date for SM project
 **    
 *******************************************************************************/
 
@@ -163,7 +164,7 @@ SELECT
 
 	,terr_ess.FSCName			AS ESTName
 	,priv.pma_ind
-
+	,coupa_start_date			AS CoupaStartDate
 
 
 FROM
