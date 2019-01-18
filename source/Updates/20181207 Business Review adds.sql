@@ -1,4 +1,5 @@
--- update 
+-- Update Business Review Tables
+-- updated 18 Jan 19
 
 ALTER TABLE nes.[privileges] ADD
 	pma_ind char(1) NOT NULL CONSTRAINT DF_privileges_pma_ind DEFAULT ''
@@ -52,6 +53,7 @@ ALTER TABLE dbo.BRS_ItemCategoryRollup SET (LOCK_ESCALATION = TABLE)
 -- 
 
 -- Add coupa start date to DCC, customer
+-- added 18 Jan 19
 
 ALTER TABLE dbo.BRS_Customer ADD
 	coupa_start_date date NULL
@@ -75,7 +77,7 @@ WHERE
 	(Item_Competitive_Match > '0')
 
 
--- Merch Subs to Item dim for performance
+-- DAX Merch Subs to Item dim for performance
 
 SELECT
 --	TOP 10
@@ -111,7 +113,7 @@ FROM
 	ON i.CompetitiveMatchKey = isub.ItemKey
 
 
--- Fact
+-- DAX Fact
 
 SELECT
 	FactKey, 
@@ -137,3 +139,7 @@ SELECT
 
 FROM
 	Fact.Sale_brs AS f
+
+
+
+-- update views, Dim Item, Dim Cust, FactBRS
