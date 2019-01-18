@@ -57,6 +57,13 @@ ALTER TABLE dbo.BRS_Customer ADD
 	coupa_start_date date NULL
 GO
 
+-- improve subs join pref
+CREATE NONCLUSTERED INDEX BRS_Item_idx_04 ON dbo.BRS_Item
+	(
+	Item_Competitive_Match
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
 
 -- temp fix subs
 
@@ -103,3 +110,30 @@ FROM
 	INNER JOIN Dimension.Item AS isub 
 	ON i.CompetitiveMatchKey = isub.ItemKey
 
+
+-- Fact
+
+SELECT
+	FactKey, 
+	ShipTo, 
+	ItemKey, 
+	CategoryRollupKey, 
+	CalMonth,
+	DateKey,
+	SalesOrderNumber,
+	LineNumber,
+	FreeGoodsInvoicedInd,
+	Quantity,
+	SalesAmt,
+	GPAmt, 
+	GPAtCommCostAmt,
+	ExtChargebackAmt,
+	ExtBaseAmt,
+	DiscountAmt,
+	DiscountLineAmt,
+	DiscountOrderAmt,
+	SubsQuantity,
+	SubsSalesAmt
+
+FROM
+	Fact.Sale_brs AS f

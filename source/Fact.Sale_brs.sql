@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+** 17 Jan 18	tmc		Add SubSavings metrics
 **    
 *******************************************************************************/
 
@@ -54,6 +55,14 @@ SELECT
 	,(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)  AS DiscountAmt
 	,(t.ExtListPrice  + 0          -  NetSalesAmt)  AS DiscountLineAmt
 	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
+
+	
+	-- Substitute logic
+
+	,t.ShippedQty/NULLIF(i.Item_Competitive_Conversion_rt,0)						AS SubsQuantity
+	,(t.NetSalesAmt) * (isub.CurrentCorporatePrice / NULLIF(i.CurrentCorporatePrice,0)) AS SubsSalesAmt
+
+
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
 	,c.BillTo
@@ -84,7 +93,12 @@ FROM
 	ON t.Shipto = c.ShipTo 
 
 	INNER JOIN BRS_PriceMethod AS pm 
-	ON t.PriceMethod = pm.PriceMethod 
+	ON t.PriceMethod = pm.PriceMethod
+
+	
+	INNER JOIN BRS_Item AS isub 
+	ON i.Item_Competitive_Match = isub.Item
+	 
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -115,3 +129,7 @@ GO
 
 -- SELECT top 10 * FROM Fact.Sale_brs
 
+-- SELECT count (*) FROM Fact.Sale_brs
+
+--9 094 783, 1m20s
+--9 094 783, 1m25s
