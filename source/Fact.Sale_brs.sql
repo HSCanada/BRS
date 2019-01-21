@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 ** 17 Jan 18	tmc		Add SubSavings metrics
+-- 21 Jan 19	tmc		Add Brand Key for Business Review
 **    
 *******************************************************************************/
 
@@ -39,7 +40,7 @@ SELECT
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
 	,icr.[CategoryRollupKey]						AS [CategoryRollupKey]
-	,CAST(FORMAT(t.Date,'yyyyMM') AS INT)			AS CalMonth	
+	,sup.SupplierKey								AS BrandKey,CAST(FORMAT(t.Date,'yyyyMM') AS INT)			AS CalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
 	,t.LineNumber
@@ -98,6 +99,9 @@ FROM
 	
 	INNER JOIN BRS_Item AS isub 
 	ON i.Item_Competitive_Match = isub.Item
+
+	INNER JOIN [dbo].[BRS_ItemSupplier] sup
+	ON i.Brand = sup.Supplier
 	 
 
 	-- identify first sales order (for sales order dimension)
@@ -133,3 +137,15 @@ GO
 
 --9 094 783, 1m20s
 --9 094 783, 1m25s
+
+	,RTRIM(i.Brand)						AS BrandCode
+	,RTRIM(sbrand.supplier_nm)			AS Brand
+
+
+SELECT        
+	--top 10 
+	SupplierKey			AS BrandKey,
+	RTRIM(Supplier)		AS BrandCode, 
+	RTRIM(supplier_nm)  AS Brand
+FROM
+BRS_ItemSupplier
