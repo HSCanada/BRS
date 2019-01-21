@@ -100,7 +100,7 @@ select distinct [FiscalMonth]	 from comm.transaction_F555115
 -- 
 
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201712
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
 
 -- load new data source
 INSERT INTO comm.transaction_F555115
