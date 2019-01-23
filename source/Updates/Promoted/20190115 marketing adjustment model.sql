@@ -160,3 +160,62 @@ SET
 -- CALC
 
 -- see BRS_ItemMarketAdjustFix
+
+-- setup new roll
+
+
+CREATE ROLE [purch_role] AUTHORIZATION [dbo]
+GO
+
+GRANT SELECT ON [dbo].[BRS_ItemMarketAdjustFix] TO [purch_role]
+GO
+
+CREATE USER [CAHSI\Mickey.Clair] FOR LOGIN [CAHSI\Mickey.Clair]
+GO
+
+ALTER ROLE [purch_role] ADD MEMBER [CAHSI\Mickey.Clair]
+GO
+
+
+CREATE USER [CAHSI\Jad.Narbutt] FOR LOGIN [CAHSI\Jad.Narbutt]
+GO
+
+ALTER ROLE [purch_role] ADD MEMBER [CAHSI\Jad.Narbutt]
+GO
+
+USE [master]
+GO
+CREATE LOGIN [CAHSI\Jad.Narbutt] FROM WINDOWS WITH DEFAULT_DATABASE=[master]
+GO
+CREATE LOGIN [CAHSI\tdolinar] FROM WINDOWS WITH DEFAULT_DATABASE=[master]
+GO
+CREATE LOGIN [CAHSI\Kate.Rocco] FROM WINDOWS WITH DEFAULT_DATABASE=[master]
+GO
+CREATE LOGIN [CAHSI\DMichael] FROM WINDOWS WITH DEFAULT_DATABASE=[master]
+GO
+
+-- set db
+
+CREATE USER [CAHSI\tdolinar] FOR LOGIN [CAHSI\tdolinar]
+GO
+ALTER ROLE [purch_role] ADD MEMBER [CAHSI\tdolinar]
+GO
+
+
+CREATE USER [CAHSI\Kate.Rocco] FOR LOGIN [CAHSI\Kate.Rocco]
+GO
+ALTER ROLE [purch_role] ADD MEMBER [CAHSI\Kate.Rocco]
+GO
+
+
+CREATE USER [CAHSI\DMichael] FOR LOGIN [CAHSI\DMichael]
+GO
+ALTER ROLE [purch_role] ADD MEMBER [CAHSI\DMichael]
+GO
+
+
+
+
+
+
+
