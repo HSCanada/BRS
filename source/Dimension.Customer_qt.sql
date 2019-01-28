@@ -50,6 +50,13 @@ SELECT
 	,RTRIM(c.SalesDivision)								AS SalesDivisionCode
 	,RTRIM(mclass.MarketClassDesc)						AS MarketClass
 
+	,RTRIM(ISNULL(padj.[SNAST__adjustment_name],''))			AS Adjustment
+	,RTRIM(ISNULL(padj.[PJEFTJ_effective_date],'1980-01-01'))	AS AdjEffectiveDate
+	,RTRIM(ISNULL(padj.[PJEXDJ_expired_date],'1980-01-01'))		AS AdjExpiredDate
+	,RTRIM(ISNULL(padj.[PJUSER_user_id],''))					AS AdjUserId
+	,RTRIM(ISNULL(padj.[EnrollSource],''))						AS AdjEnrollSource
+	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
+
 
 
 FROM
@@ -71,6 +78,24 @@ FROM
 
 	INNER JOIN BRS_Branch AS b 
 	ON terr.Branch = b.Branch
+
+	-- de-dup enroll (due to contract + special price enroll)
+	LEFT JOIN 
+	(
+		SELECT 
+			*
+		FROM            
+			[Pricing].[price_adjustment_enroll] AS s
+		WHERE EXISTS 
+		(
+			SELECT MIN(s2.ID) AS id_unique 
+			FROM [Pricing].[price_adjustment_enroll] s2
+			GROUP BY s2.BillTo
+			HAVING s.[ID] = MIN(s2.ID)
+		)
+	)  padj
+	ON bt.BillTo = padj.BillTo
+
 
 WHERE 
 --	test
@@ -94,15 +119,10 @@ GO
 
 -- dup check
 /*
-SELECT        BillTo, COUNT(*) AS Expr1
+SELECT        BillTo, COUNT(*) AS Expr1, MIN(
 FROM            Pricing.price_adjustment_enroll
 GROUP BY BillTo
 HAVING        (COUNT(*) > 1)
 */
 
--- Select count(*) from [Dimension].[Customer] where IsrLoginId <>''
-
--- Select top 10 * from [Dimension].[Customer] where IsrTerritoryCd = 'DTSNT'
-
--- Select top 10 * from [Dimension].[Customer] where ReviewTrackingInd = 1
 
