@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
 **    
 *******************************************************************************/
 
@@ -70,6 +71,7 @@ SELECT
 	,[EnteredBy]
 	,[OrderTakenBy]
 	,pm.PriceMethod
+	,i.SalesCategory
 	
 
 FROM            
