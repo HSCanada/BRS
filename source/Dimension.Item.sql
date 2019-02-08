@@ -37,6 +37,7 @@ AS
 --	27 Feb 18	tmc		add sized & strength for ISR consolidator
 --  18 Jul 18	tmc		add MPC code and removed CategoryRollup_L1 (need?)
 --  27 Sep 18	tmc		update for business review requirements
+--  06 Feb 19	tmc		add ClassGroup for PCW project
 **    
 *******************************************************************************/
 
@@ -117,6 +118,7 @@ SELECT
 	,i.[custom_comm_group2_cd]			AS CustomCommGroup2Code
 	,i.[custom_comm_group3_cd]			AS CustomCommGroup3Code
 	,RTRIM(c.major_cd)					AS MajorCode
+	,RTRIM(cr.ClassGroup)				AS ClassGroup	
 
 
 FROM            
