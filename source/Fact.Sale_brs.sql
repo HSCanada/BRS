@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 ** 17 Jan 18	tmc		Add SubSavings metrics
 -- 21 Jan 19	tmc		Add Brand Key for Business Review
+-- 15 Feb 19	tmc		Add Price Method Key for PAR
 **    
 *******************************************************************************/
 
@@ -45,6 +46,8 @@ SELECT
 	,t.SalesOrderNumber
 	,t.LineNumber
 	,t.FreeGoodsInvoicedInd
+	,pm.PriceMethodKey
+
 	
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
@@ -72,7 +75,6 @@ SELECT
 	,[OrderSourceCode]
 	,[EnteredBy]
 	,[OrderTakenBy]
-	,pm.PriceMethod
 	
 
 FROM            
@@ -138,14 +140,5 @@ GO
 --9 094 783, 1m20s
 --9 094 783, 1m25s
 
-	,RTRIM(i.Brand)						AS BrandCode
-	,RTRIM(sbrand.supplier_nm)			AS Brand
 
-
-SELECT        
-	--top 10 
-	SupplierKey			AS BrandKey,
-	RTRIM(Supplier)		AS BrandCode, 
-	RTRIM(supplier_nm)  AS Brand
-FROM
-BRS_ItemSupplier
+-- select top 10 * from [Fact].[Sale_brs]

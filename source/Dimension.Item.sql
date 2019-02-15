@@ -38,6 +38,7 @@ AS
 --  18 Jul 18	tmc		add MPC code and removed CategoryRollup_L1 (need?)
 --  27 Sep 18	tmc		update for business review requirements
 --  06 Feb 19	tmc		add ClassGroup for PCW project
+--	15 Feb 19	tmc		add size_factor
 **    
 *******************************************************************************/
 
@@ -119,6 +120,7 @@ SELECT
 	,i.[custom_comm_group3_cd]			AS CustomCommGroup3Code
 	,RTRIM(c.major_cd)					AS MajorCode
 	,RTRIM(cr.ClassGroup)				AS ClassGroup	
+	,i.size_factor
 
 
 FROM            
