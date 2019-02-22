@@ -45,8 +45,8 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 201701 and 201710) OR
-		(t.FiscalMonth BETWEEN 201801 and 201810)
+		(t.FiscalMonth BETWEEN 201801 and 201801) OR
+		(t.FiscalMonth BETWEEN 201901 and 201901)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	c.SalesDivision = 'AAD' AND
