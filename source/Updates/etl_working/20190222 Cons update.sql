@@ -1,15 +1,25 @@
 -- refersh Schein Saver from SQ03
 
+-- clear prod
 truncate table Redemptions_tbl_Main
 GO
 truncate table Redemptions_tbl_Items
 GO
 
+-- clear stage
 drop table Redemptions_tbl_Items_stage
 GO
-
 drop table Redemptions_tbl_Main_stage
 GO
+
+-- run package to pull data into pre-stage
+
+-- migrate from pre-stage to stage
+EXEC sp_rename 'tbl_Items', 'Redemptions_tbl_Items_stage'
+GO
+EXEC sp_rename 'tbl_Main', 'Redemptions_tbl_Main_stage'
+GO
+
 
 -- rename redemptions_tbl_Items_stage
 -- rename redemptions_tbl_Items_stagetbl_Main_stage
@@ -22,6 +32,7 @@ INSERT INTO [dbo].[Redemptions_tbl_Main]
            (0, '', '')
 GO
 
+-- set day today
 INSERT INTO Redemptions_tbl_Main
                          (RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired)
 SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
@@ -51,10 +62,12 @@ GROUP BY
 	i.ItemNumber
 --
 
--- must be zero
+-- test
+-- must be null
 SELECT        i.ItemNumber, COUNT(d.RecID) AS deal_code
 FROM            Redemptions_tbl_Main AS d INNER JOIN
                          Redemptions_tbl_Items AS i ON d.RecID = i.RecID
 GROUP BY i.ItemNumber
 HAVING        (COUNT(d.RecID) > 1) order by 2 desc
+
 
