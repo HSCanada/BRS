@@ -10,7 +10,7 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: BRS_BE_Transaction_DW_load_proc
+**	Name: open_order_opordrpt_proc
 **	Desc: Load open EQ 
 **
 **              
@@ -24,7 +24,7 @@ AS
 **	@bDebug - debug = rollback changes
 **
 **	Auth: tmc
-**	Date: 31 Jan 19
+**	Date: 27 Feb 19
 *******************************************************************************
 **	Change History
 *******************************************************************************
@@ -45,7 +45,7 @@ BEGIN
 	if (@bDebug <> 0) 
 	Begin
 		Print '---------------------------------------------------------'
-		Print 'Proc: [nes].[order_open_prorepr_load_proc]'
+		Print 'Proc: [nes].[open_order_opordrpt_proc]'
 		Print 'Desc: Update prorepair snapshot'
 		Print 'Mode: DEBUG'
 		Print '---------------------------------------------------------'
@@ -74,71 +74,39 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new workorder...'
+			Print 'Add new order_ets...'
 
 			-- order
-			INSERT INTO [nes].[order]
-			([work_order_num], [note])
-			SELECT 
-			DISTINCT [work_order_num], ''
-			FROM [Integration].[open_order_prorepr] s
-			WHERE NOT EXISTS(
-			  SELECT * FROM [nes].[order] o where o.work_order_num = s.work_order_num
+			INSERT INTO [nes].[order_ets] 
+			(
+				[ets_num]
+				,[note]
 			)
-		Set @nErrorCode = @@Error
-	End
-
-
-	If (@nErrorCode = 0) 
-	Begin
-		if (@bDebug <> 0)
-			Print 'Add new user...'
-		-- user
-		INSERT INTO [nes].[user_login]
-		SELECT 
-		DISTINCT [d1_user_id], '', '', ''
-		FROM [Integration].[open_order_prorepr] s
-		WHERE NOT EXISTS(
-		  SELECT * FROM [nes].user_login u where u.user_id = s.d1_user_id
-		)
+			SELECT
+				distinct est_num, '' as note
+			FROM
+				Integration.open_order_opordrpt s
+			WHERE NOT EXISTS (SELECT * FROM [nes].[order_ets] d where d.ets_num = s.est_num)
 
 		Set @nErrorCode = @@Error
 	End
 
-
-	If (@nErrorCode = 0) 
-	Begin
-		if (@bDebug <> 0)
-			Print 'Add new EST...'
-		-- EST
-		INSERT INTO [dbo].[BRS_FSC_Rollup]
-		([TerritoryCd], [Branch],[group_type] )
-		SELECT 
-		DISTINCT [est_num], '', 'DEST'
-		FROM [Integration].[open_order_prorepr] s
-		WHERE NOT EXISTS(
-		  SELECT * FROM [dbo].[BRS_FSC_Rollup] f where f.TerritoryCd = s.est_num
-		)
-
- 		Set @nErrorCode = @@Error
-	End
-
-
-	-- ESS
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
 			Print 'Add new order_status...'
 
-		-- order status
-		INSERT INTO [nes].[order_status]
-		([order_status_code], [order_status_descr] )
-		SELECT 
-		distinct [order_status], ''
-		FROM Integration.open_order_prorepr s
-		where not exists (
-		select * from [nes].[order_status] c where s.[order_status] = c.[order_status_code]
-		)
+			-- order
+			INSERT INTO [nes].[order_status]
+			(
+				[order_status_code]
+				,[order_status_descr]
+			)
+			SELECT
+				distinct order_status, '' as note
+			FROM
+				Integration.open_order_opordrpt s
+			WHERE NOT EXISTS (SELECT * FROM [nes].[order_status] d where d.[order_status_code] = s.[order_status])
 
 		Set @nErrorCode = @@Error
 	End
@@ -146,68 +114,100 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'LOAD nes.order_open_prorepr'
+			Print 'Add new order...'
 
-		INSERT INTO 
-			nes.order_open_prorepr 
+			-- order
+			INSERT INTO [nes].[order]
 			(
-				work_order_num
-				,branch_code
-				,rma_code
-				,order_status_code
-				,order_received_date
-				,estimate_complete_date
-				,approved_date
-				,order_complete_date
-				,shipto
-				,privileges_code
-				,model_number
-				,est_code
-				,call_type_code
-				,problem_code
-				,cause_code
-				,user_id
-				,approved_part_release_date
-				,SalesDate
-				,last_update_date
+				[work_order_num]
+				,[note]
 			)
+			SELECT
+				distinct work_order_num, '' as note
+			FROM
+				Integration.open_order_opordrpt s
+			WHERE NOT EXISTS (SELECT * FROM [nes].[order] d where d.[work_order_num] = s.[work_order_num])
 
--- add select here
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new item_status...'
+
+			-- order
+			INSERT INTO [nes].[item_status]
+			(
+				[item_status]
+				,[note]
+			)
+			SELECT
+				distinct item_status, '' as note
+			FROM
+				Integration.open_order_opordrpt s
+			WHERE NOT EXISTS (SELECT * FROM [nes].[item_status] d where d.[item_status] = s.[item_status])
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'LOAD nes.open_order_opordrpt'
+
+		INSERT INTO nes.open_order_opordrpt 
+		(
+			SalesDate,
+			ets_num, 
+			line_number, 
+			d1_branch, 
+			order_status, 
+			work_order_num, 
+			work_order_date, 
+			shipto, 
+			install_date, 
+			item_status, 
+			item, 
+			supplier, 
+			order_qty, 
+			received_qty, 
+			received_date, 
+			net_sales_amount, 
+			extended_cost_amount, 
+			ess_code, 
+			dts_code, 
+			cps_code, 
+			fsc_code
+		)
 
 		SELECT
-			s.work_order_num
-			,UPPER(s.d1_branch)				AS d1_branch
-			,UPPER(CASE 
-				WHEN s.[rma_code] <> '' 
-				THEN s.[rma_code] 
-				ELSE 'NO' 
-			END)							AS rma_code
-			,UPPER(s.order_status)			AS order_status
-			,s.order_received_date
-			,s.estimate_complete_date
-			,s.approved_date
-			,s.order_complete_date
-			,s.shipto
-			,s.priv_code
-			,s.model_number
-			,s.est_num
-			,UPPER(s.call_type_code)		AS call_type_code
-			,UPPER(s.problem_code)			AS problem_code
-			,UPPER(s.cause_code)			AS cause_code
-			,s.d1_user_id
-			,s.approved_part_release_date
-			,BRS_Config.SalesDate
-			,COALESCE ( 
-				s.order_complete_date, 
-				s.approved_part_release_date,
-				s.approved_date, 
-				s.estimate_complete_date, 
-				s.order_received_date
-			)
+			c.SalesDateLastWeekly,
+			est_num, 
+			line_number, 
+			d1_branch, 
+			order_status, 
+			work_order_num, 
+			work_order_date, 
+			shipto, 
+			install_date, 
+			item_status, 
+			item, supplier, 
+			order_qty, 
+			received_qty, 
+			received_date, 
+			net_sales_amount, 
+			extended_cost_amount, 
+			ess_code, 
+			dts_code, 
+			cps_code, 
+			fsc_code
 		FROM
-			Integration.open_order_prorepr AS s 
-		CROSS JOIN 
-			BRS_Config
+			Integration.open_order_opordrpt s
+
+			CROSS JOIN
+			[dbo].[BRS_Config] c
 
 		Select @nErrorCode = @@Error, @nRowCount = @@Rowcount
 	End
@@ -260,12 +260,12 @@ GO
 
 -- Test logic
 -- ensure date is last business day
--- SELECT SalesDateLastWeekly FROM BRS_Config
+-- SELECT CAST(SalesDateLastWeekly AS Date) FROM BRS_Config
 
 
 -- prod run 
--- [nes].[order_open_prorepr_load_proc] @bDebug=0
+-- [nes].[open_order_opordrpt_proc] @bDebug=0
 
--- [nes].[order_open_prorepr_load_proc] @bDebug=1
+-- [nes].[open_order_opordrpt_proc] @bDebug=1
 
 
