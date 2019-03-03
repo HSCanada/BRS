@@ -73,6 +73,45 @@ ALTER TABLE dbo.BRS_Branch ADD
 	bx_active_ind bit NOT NULL CONSTRAINT DF_BRS_Branch_bx_active_ind DEFAULT 0
 GO
 
+ALTER TABLE [nes].[order_status] ADD
+	bx_active_ind bit NOT NULL CONSTRAINT DF_nex_order_status_bx_active_ind DEFAULT 0
+GO
+
+UPDATE [nes].[order_status]
+SET bx_active_ind = 1
+WHERE[order_status_code] = 'QA'
+
+
+ALTER TABLE dbo.BRS_Config ADD
+	bx_order_thresh money NOT NULL CONSTRAINT DF_BRS_Config_bx_order_thresh DEFAULT 0
+GO
+
+UPDATE dbo.BRS_Config
+SET bx_order_thresh = 10000
+GO
+
+
+ALTER TABLE [dbo].[BRS_Employee] ADD
+	bx_user_id int NULL
+GO
+
+ALTER TABLE dbo.BRS_Employee ADD
+	Branch char(5) NOT NULL CONSTRAINT DF_BRS_Employee_Branch DEFAULT ''
+GO
+
+ALTER TABLE dbo.BRS_Employee ADD CONSTRAINT
+	FK_BRS_Employee_BRS_Branch FOREIGN KEY
+	(
+	Branch
+	) REFERENCES dbo.BRS_Branch
+	(
+	Branch
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+
 ALTER TABLE dbo.BRS_FSC_Rollup ADD
 	bx_user_id int NULL
 GO
