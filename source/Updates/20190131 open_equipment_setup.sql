@@ -73,13 +73,24 @@ ALTER TABLE dbo.BRS_Branch ADD
 	bx_active_ind bit NOT NULL CONSTRAINT DF_BRS_Branch_bx_active_ind DEFAULT 0
 GO
 
+
+UPDATE BRS_Branch
+	SET bx_active_ind = 1
+WHERE [Branch]= 'OTTWA'
+GO
+
+ALTER TABLE [dbo].BRS_Branch ADD
+	bx_user_id int NULL
+GO
+
+
 ALTER TABLE [nes].[order_status] ADD
 	bx_active_ind bit NOT NULL CONSTRAINT DF_nex_order_status_bx_active_ind DEFAULT 0
 GO
 
 UPDATE [nes].[order_status]
 SET bx_active_ind = 1
-WHERE[order_status_code] = 'QA'
+WHERE[order_status_code] in ('QA', 'QP', 'WO')
 
 
 ALTER TABLE dbo.BRS_Config ADD
@@ -121,6 +132,11 @@ ALTER TABLE dbo.BRS_Customer ADD
 	bx_group_id int NULL
 GO
 
+/*
+ALTER TABLE dbo.BRS_Customer ADD
+	bx_invite_ind int NULL
+GO
+*/
 
 ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
 	FK_BRS_Customer_bx_setup_date FOREIGN KEY
@@ -171,6 +187,12 @@ CREATE TABLE nes.[open_order_opordrpt](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
+
+
+ALTER TABLE nes.open_order_opordrpt ADD
+	fact_id int NOT NULL IDENTITY(1,1)
+GO
+
 
 
 BEGIN TRANSACTION
@@ -368,6 +390,36 @@ COMMIT
 
 
 --- pop 
+
+
+UPDATE [dbo].[BRS_FSC_Rollup]
+	SET [bx_user_id] = 6
+WHERE 
+	[Branch] = 'OTTWA' AND
+	[group_type] = 'AAFS'
+GO
+
+
+UPDATE [dbo].[BRS_FSC_Rollup]
+	SET [bx_user_id] = 4
+WHERE 
+	[Branch] = 'OTTWA' AND
+	[group_type] = 'AAES'
+GO
+
+
+UPDATE BRS_Branch
+	SET [bx_user_id] = 33
+WHERE [Branch]= 'OTTWA'
+GO
+
+
+SELECT  [TerritoryCd]
+      ,[Branch]
+      ,[group_type]
+      ,[bx_user_id]
+  FROM [DEV_BRSales].[dbo].[BRS_FSC_Rollup]
+  WHERE [Branch] = 'OTTWA'
 
 
 -- truncate table [nes].[open_order_opordrpt]

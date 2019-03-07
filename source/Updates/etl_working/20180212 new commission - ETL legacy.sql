@@ -316,7 +316,7 @@ GO
 -- DATA - Migrate legacy
 ------------------------------------------------------------------------------------------------------
 
--- first set month below; 1m15s per month'
+-- first set month below; 1m15s per month, 7m'
 print 'migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
@@ -406,7 +406,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201901')
+	(fiscal_yearmo_num = '201902')
 GO
 
 -- import to SSAS next
