@@ -35,6 +35,7 @@ SELECT
 	s.shipto			
 	,MIN(fsc.bx_user_id)						AS bx_user_id_fsc
 	,MIN(ess.bx_user_id)						AS bx_user_id_ess
+	,MIN(br.[bx_user_id])						AS bx_user_id_branch
 
 	,MIN(c.PracticeName) + ' - '
 	+CAST(s.[shipto] as varchar(7)) +' - TBD'	AS NAME

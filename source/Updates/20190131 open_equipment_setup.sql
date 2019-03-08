@@ -132,11 +132,11 @@ ALTER TABLE dbo.BRS_Customer ADD
 	bx_group_id int NULL
 GO
 
-/*
+
 ALTER TABLE dbo.BRS_Customer ADD
 	bx_invite_ind int NULL
 GO
-*/
+
 
 ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
 	FK_BRS_Customer_bx_setup_date FOREIGN KEY
