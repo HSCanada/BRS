@@ -32,9 +32,9 @@ AS
 *******************************************************************************/
 
 SELECT        
-	s.shipto			
-	,MIN(fsc.bx_user_id)						AS bx_user_id_fsc
+	s.shipto									AS bx_shipto
 	,MIN(ess.bx_user_id)						AS bx_user_id_ess
+	,MIN(fsc.bx_user_id)						AS bx_user_id_fsc
 	,MIN(br.[bx_user_id])						AS bx_user_id_branch
 
 	,MIN(c.PracticeName) + ' - '

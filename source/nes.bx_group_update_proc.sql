@@ -41,6 +41,7 @@ BEGIN
 	SET                
 		bx_setup_date = @SetDate
 		, bx_group_id = @GroupId
+		, [bx_invite_ind] =  ISNULL([bx_invite_ind],0) + 1
 	WHERE
 		ShipTo = @Shipto
 
@@ -51,7 +52,7 @@ GO
 
 
 --Exec [nes].bx_group_update_proc 0, 0, '2019-03-07'
-
-
+-- EXEC [nes].[bx_group_update_proc] @Shipto = 1671260, @GroupId = 315, @SetDate = '31/03/2019'
+-- 
 
 
