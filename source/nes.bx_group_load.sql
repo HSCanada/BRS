@@ -48,7 +48,7 @@ SELECT
 	+' | ' + LOWER(RTRIM(MIN(ess.FSCName)))	
 	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))			AS DESCRIPTION
 
-	,'Y'										AS VISIBLE	
+	,'N'										AS VISIBLE	
 	,'N'										AS OPENED
 	,LOWER(MIN(br.BranchName))					AS KEYWORDS
 	,'K'										AS INITIATE_PERMS

@@ -393,7 +393,7 @@ COMMIT
 
 
 UPDATE [dbo].[BRS_FSC_Rollup]
-	SET [bx_user_id] = 6
+	SET [bx_user_id] = 33
 WHERE 
 	[Branch] = 'OTTWA' AND
 	[group_type] = 'AAFS'
@@ -409,7 +409,7 @@ GO
 
 
 UPDATE BRS_Branch
-	SET [bx_user_id] = 33
+	SET [bx_user_id] = 50
 WHERE [Branch]= 'OTTWA'
 GO
 
@@ -422,4 +422,22 @@ SELECT  [TerritoryCd]
   WHERE [Branch] = 'OTTWA'
 
 
+-- truncate table [nes].[order_open_prorepr]
+
 -- truncate table [nes].[open_order_opordrpt]
+
+
+-- Test
+
+-- truncate table [nes].[open_order_opordrpt]
+
+select * from [Integration].[open_order_opordrpt] where [est_num]= 'P32661'
+go
+
+select * from [nes].[open_order_opordrpt] where [ets_num]= 'P32661'
+go
+
+
+UPDATE       BRS_Customer
+SET                bx_setup_date = NULL, bx_group_id = NULL, bx_invite_ind = NULL
+WHERE        (NOT (bx_group_id IS NULL))
