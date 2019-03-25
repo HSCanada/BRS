@@ -5,7 +5,13 @@ GO
 ALTER PROCEDURE [nes].bx_group_update_proc
 	@Shipto int , 
 	@GroupId int , 
-	@SetDate Date
+	@SetDate Date ,
+	@InstallDate Date,
+	@bx_cps_code char(5),
+	@bx_ess_code char(5),
+	@bx_dts_code char(5),
+	@bx_fsc_code char(5)
+	
 AS
 
 /******************************************************************************
@@ -29,6 +35,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	21 Mar 19	tmc		added eq terr for deferred rights
 *******************************************************************************/
 
 
@@ -40,8 +47,14 @@ BEGIN
 		BRS_Customer
 	SET                
 		bx_setup_date = @SetDate
-		, bx_group_id = @GroupId
-		, [bx_invite_ind] =  ISNULL([bx_invite_ind],0) + 1
+		,bx_install_date = @InstallDate
+		,bx_group_id = @GroupId
+		,[bx_invite_ind] =  ISNULL([bx_invite_ind],0) + 1
+		,bx_cps_code = @bx_cps_code
+		,bx_ess_code = @bx_ess_code
+		,bx_dts_code = @bx_dts_code
+		,bx_fsc_code = @bx_fsc_code
+
 	WHERE
 		ShipTo = @Shipto
 

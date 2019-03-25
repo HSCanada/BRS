@@ -55,7 +55,7 @@ set bx_active_ind = 1
 WHERE [group_type] IN ('AAES', 'AAFS', 'DEST')
 GO
 
--- XXX
+-- 
 ALTER TABLE [dbo].[BRS_FSC_Rollup] ADD CONSTRAINT
 	FK_BRS_FSC_Rollup_group_type FOREIGN KEY
 	(
@@ -129,6 +129,7 @@ GO
 
 ALTER TABLE dbo.BRS_Customer ADD
 	bx_setup_date datetime NULL,
+	bx_install_date datetime NULL,
 	bx_group_id int NULL
 GO
 
@@ -438,6 +439,215 @@ select * from [nes].[open_order_opordrpt] where [ets_num]= 'P32661'
 go
 
 
+
+
+--- 21 mar 19
+
+--drop table nes.bx_role
+
+
+CREATE TABLE [nes].[bx_role](
+	[role_key] [int] IDENTITY(1,1) NOT NULL,
+	[role_cd][char](30) NOT NULL,
+	[role_descr] [nvarchar](50) NOT NULL,
+	bx_active_ind bit NOT NULL CONSTRAINT DF_role_bx_active_ind DEFAULT 0
+ CONSTRAINT [nes_bx_role_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[role_key] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+INSERT INTO [nes].[bx_role](
+	[role_cd],
+	[role_descr])
+     VALUES
+           ('', '')
+GO
+
+INSERT INTO [nes].[bx_role](
+	[role_cd],
+	[role_descr])
+     VALUES
+           ('designer', ''),
+           ('equipment_coordinator', ''),
+           ('installation_team_lead', ''),
+		   ('service','')
+GO
+
+UPDATE [nes].[bx_role]
+SET [bx_active_ind] = 1
+WHERE [role_cd] <> ''
+GO
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Customer ADD
+	bx_ess_code char(5) NULL,
+	bx_dts_code char(5) NULL,
+	bx_cps_code char(5) NULL,
+	bx_fsc_code char(5) NULL
+GO
+ALTER TABLE dbo.BRS_Customer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+go
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_FSC_Rollup2 FOREIGN KEY
+	(
+	bx_cps_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_FSC_Rollup3 FOREIGN KEY
+	(
+	bx_dts_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_FSC_Rollup4 FOREIGN KEY
+	(
+	bx_ess_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Customer ADD CONSTRAINT
+	FK_BRS_Customer_BRS_FSC_Rollup5 FOREIGN KEY
+	(
+	bx_fsc_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Customer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD
+	bx_sales_category varchar(6) NULL
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD CONSTRAINT
+	FK_BRS_ItemMPC_BRS_ItemSalesCategory FOREIGN KEY
+	(
+	bx_sales_category
+	) REFERENCES dbo.BRS_ItemSalesCategory
+	(
+	SalesCategory
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemMPC SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+INSERT INTO [dbo].[BRS_ItemSalesCategory]
+([SalesCategory])
+VALUES ('DIGIMP')
+GO
+
+
+UPDATE [dbo].[BRS_ItemMPC]
+SET bx_sales_category = 'DENTRX'
+WHERE
+MajorProductClass in ('856','858')
+GO
+
+UPDATE [dbo].[BRS_ItemMPC]
+SET bx_sales_category = 'HITECH'
+WHERE
+MajorProductClass in ('840','845', '855')
+GO
+
+UPDATE [dbo].[BRS_ItemMPC]
+SET bx_sales_category = 'EQUIPM'
+WHERE
+MajorProductClass in ('800')
+GO
+
+UPDATE [dbo].[BRS_ItemMPC]
+SET bx_sales_category = 'DIGIMP'
+WHERE
+MajorProductClass in ('373', '850', '826')
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee ADD
+	bx_role_key int NULL
+GO
+ALTER TABLE dbo.BRS_Employee ADD CONSTRAINT
+	FK_BRS_Employee_bx_role FOREIGN KEY
+	(
+	bx_role_key
+	) REFERENCES nes.bx_role
+	(
+	role_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+UPDATE dbo.BRS_Employee
+Set 
+	bx_user_id = 4,
+	Branch = 'OTTWA',
+	bx_role_key = 2
+WHERE
+	EmployeeKey = 784
+GO
+
+UPDATE dbo.BRS_Employee
+Set 
+	bx_user_id = 50,
+	Branch = 'OTTWA',
+	bx_role_key = 3
+WHERE
+	EmployeeKey = 593
+GO
+
+UPDATE dbo.BRS_Employee
+Set 
+	bx_user_id = 33,
+	Branch = 'OTTWA',
+	bx_role_key = 4
+WHERE
+	EmployeeKey = 144
+GO
+
+---
+
 UPDATE       BRS_Customer
-SET                bx_setup_date = NULL, bx_group_id = NULL, bx_invite_ind = NULL
+SET                bx_setup_date = NULL, bx_install_date=NULL, bx_group_id = NULL, bx_invite_ind = NULL,
+					[bx_ess_code] = NULL, [bx_dts_code] = NULL, [bx_cps_code] = NULL, [bx_fsc_code] = NULL
 WHERE        (NOT (bx_group_id IS NULL))

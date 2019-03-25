@@ -1,4 +1,4 @@
--- refersh Schein Saver from SQ03
+-- refresh Schein Saver from SQ03
 
 
 
@@ -41,7 +41,7 @@ SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, 
 
 FROM            Redemptions_tbl_Main_stage
 
-WHERE        (CAST('2019-02-22' AS DATETIME) BETWEEN EffDate AND Expired)
+WHERE        (CAST('2019-03-20' AS DATETIME) BETWEEN EffDate AND Expired)
 
 
 
@@ -50,7 +50,7 @@ WHERE        (CAST('2019-02-22' AS DATETIME) BETWEEN EffDate AND Expired)
 INSERT INTO Redemptions_tbl_Items
 	(RecID, ItemNumber, ItemID)
 SELECT        
-	(MAX(i.RecID)), i.ItemNumber, MAX(i.ItemID) AS ItemID
+	(MIN(i.RecID)), i.ItemNumber, MAX(i.ItemID) AS ItemID
 FROM            
 	Redemptions_tbl_Items_stage AS i 
 
@@ -74,7 +74,7 @@ HAVING        (COUNT(d.RecID) > 1) order by 2 desc
 
 
 
----
+---  STOP
 
 --
 

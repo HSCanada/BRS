@@ -29,13 +29,22 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+** 21 Mar 19	tmc		Add full territory codes for deferred rights & sales 
 *******************************************************************************/
 
 SELECT        
 	s.shipto									AS bx_shipto
-	,MIN(ess.bx_user_id)						AS bx_user_id_ess
-	,MIN(fsc.bx_user_id)						AS bx_user_id_fsc
-	,MIN(br.[bx_user_id])						AS bx_user_id_branch
+	,0											AS bx_group_id
+	,RTRIM(MIN(s.[cps_code]))					AS bx_cps_code
+	,RTRIM(MIN(s.[ess_code]))					AS bx_ess_code
+	,RTRIM(MIN(s.[dts_code]))					AS bx_dts_code
+	,RTRIM(MIN(s.[fsc_code]))					AS bx_fsc_code
+	
+	,SUM(CASE WHEN mpc.bx_sales_category = 'DIGIMP' THEN net_sales_amount ELSE 0 END)	AS cadcam_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'HITECH' THEN net_sales_amount ELSE 0 END)	AS hitech_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS large_equip_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS dentrix_sales
+
 
 	,MIN(c.PracticeName) + ' - '
 	+CAST(s.[shipto] as varchar(7)) +' - TBD'	AS NAME
@@ -46,7 +55,7 @@ SELECT
 	+' | ' + MIN([Province])		
 	+' | ' + MIN([PhoneNo])
 	+' | ' + LOWER(RTRIM(MIN(ess.FSCName)))	
-	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))			AS DESCRIPTION
+	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))		AS DESCRIPTION
 
 	,'N'										AS VISIBLE	
 	,'N'										AS OPENED
@@ -54,7 +63,7 @@ SELECT
 	,'K'										AS INITIATE_PERMS
 	,'Y'										AS PROJECT 
 	,MIN(sales_date)							AS PROJECT_DATE_START 
-	,CAST('2040-12-31' AS date)					AS PROJECT_DATE_FINISH 
+	,MIN(install_date)							AS PROJECT_DATE_FINISH 
 
 
 FROM
@@ -74,6 +83,12 @@ ON fsc.Branch = br.Branch
 
 INNER JOIN nes.order_status 
 ON s.order_status_code = nes.order_status.order_status_code 
+
+INNER JOIN dbo.BRS_Item as i
+ON s.item = i.Item
+
+INNER JOIN dbo.BRS_ItemMPC mpc
+ON i.MajorProductClass = mpc.MajorProductClass
 
 
 WHERE
@@ -98,19 +113,17 @@ GO
 --
 SELECT TOP 10 * FROM nes.bx_group_load
 
+
 /*
-NAME - group name (required field),
-DESCRIPTION - group description,
-VISIBLE - Y/N flag, defines group visibility in the group list,
-OPENED - Y/N flag defines if the group is open to be joined,
+SELECT   ProductNumber, Category =  
+      CASE ProductLine  
+         WHEN 'R' THEN 'Road'  
+         WHEN 'M' THEN 'Mountain'  
+         WHEN 'T' THEN 'Touring'  
+         WHEN 'S' THEN 'Other sale items'  
+         ELSE 'Not for sale'  
+      END,  
+   Name  
+FROM Production.Product  
 
-KEYWORDS - keywords,
-INITIATE_PERMS - specifies, if the user has access permission to invite users into the group (required field): SONET_ROLES_OWNER - group owner only, SONET_ROLES_MODERATOR - group owner and moderators, SONET_ROLES_USER - all group members,
-
-CLOSED - Y/N flag - defines if the group is archived,
-SPAM_PERMS - defines who has the access permission to send messages to group (required field): SONET_ROLES_OWNER - group owner only, SONET_ROLES_MODERATOR - group owner and moderators, SONET_ROLES_USER - all group members, SONET_ROLES_ALL - all users.
-
-PROJECT Y/N. Defines if the group is classified as project or not. It is not a project by default. (Starting from version 18.0.0)
-PROJECT_DATE_FINISH Defines project finish date. (Available from version 18.0.0)
-PROJECT_DATE_START Defines the project start. (Available from version 18.0.0)
 */
