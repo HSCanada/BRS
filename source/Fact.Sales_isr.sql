@@ -142,6 +142,10 @@ BEGIN
 		(t.FreeGoodsInvoicedInd = 0) AND
 		(i.SalesCategory in ('MERCH', 'SMEQU')) AND
 		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
+
+		-- test case
+--		t.SalesOrderNumber in( 9952412, 10174200, 10205806, 10657109, 11950720, 11950757) AND
+
 --		(d.FiscalMonth = 201802 ) AND 
 		(1=1)
 
@@ -157,3 +161,4 @@ GO
 
 -- Debug
 -- [Fact].Sales_isr
+

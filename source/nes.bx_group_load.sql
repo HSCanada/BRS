@@ -30,25 +30,16 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 ** 21 Mar 19	tmc		Add full territory codes for deferred rights & sales 
+** 30 Mar 19	tmc		Add design sales for new office identify
 *******************************************************************************/
 
-SELECT        
+SELECT
+--	TOP 1
+	        
 	s.shipto									AS bx_shipto
-	,0											AS bx_group_id
-	,RTRIM(MIN(s.[cps_code]))					AS bx_cps_code
-	,RTRIM(MIN(s.[ess_code]))					AS bx_ess_code
-	,RTRIM(MIN(s.[dts_code]))					AS bx_dts_code
-	,RTRIM(MIN(s.[fsc_code]))					AS bx_fsc_code
-	
-	,SUM(CASE WHEN mpc.bx_sales_category = 'DIGIMP' THEN net_sales_amount ELSE 0 END)	AS cadcam_sales
-	,SUM(CASE WHEN mpc.bx_sales_category = 'HITECH' THEN net_sales_amount ELSE 0 END)	AS hitech_sales
-	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS large_equip_sales
-	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS dentrix_sales
-
-
+	,MIN(c.bx_group_id)							AS bx_group_id
 	,MIN(c.PracticeName) + ' - '
-	+CAST(s.[shipto] as varchar(7)) +' - TBD'	AS NAME
-
+	+CAST(s.[shipto] as varchar(7))	+ ' - <TBD>'	AS NAME
 	,RTRIM(MIN([AddressLine3])) 
 	+' | ' + RTRIM(MIN([AddressLine4]))	
 	+' | ' + MIN([City])			
@@ -56,14 +47,23 @@ SELECT
 	+' | ' + MIN([PhoneNo])
 	+' | ' + LOWER(RTRIM(MIN(ess.FSCName)))	
 	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))		AS DESCRIPTION
-
-	,'N'										AS VISIBLE	
-	,'N'										AS OPENED
 	,LOWER(MIN(br.BranchName))					AS KEYWORDS
-	,'K'										AS INITIATE_PERMS
-	,'Y'										AS PROJECT 
-	,MIN(sales_date)							AS PROJECT_DATE_START 
-	,MIN(install_date)							AS PROJECT_DATE_FINISH 
+
+	,MIN(br.Branch)								AS bx_branch_code
+	,MIN(br.language_cd)						AS bx_language_code
+	,RTRIM(MIN(s.[cps_code]))					AS bx_cps_code
+	,RTRIM(MIN(s.[ess_code]))					AS bx_ess_code
+	,RTRIM(MIN(s.[dts_code]))					AS bx_dts_code
+	,RTRIM(MIN(s.[fsc_code]))					AS bx_fsc_code
+	
+	,SUM(CASE WHEN mpc.bx_sales_category = 'DIGIMP' THEN net_sales_amount ELSE 0 END)	AS bx_cadcam_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'HITECH' THEN net_sales_amount ELSE 0 END)	AS bx_hitech_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS bx_large_equip_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS bx_dentrix_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'ITSL'	THEN net_sales_amount ELSE 0 END)	AS bx_design_sales
+
+	,MIN(sales_date)							AS bx_sales_date
+	,MIN(install_date)							AS bx_install_date
 
 
 FROM
@@ -94,7 +94,8 @@ ON i.MajorProductClass = mpc.MajorProductClass
 WHERE
 	(br.bx_active_ind = 1) AND 
 	(order_status.bx_active_ind = 1)  AND
-	(c.bx_group_id IS NULL)
+	--	(c.[bx_invite_ind] < 3) AND
+	(1=1)
 
 GROUP BY 
 	s.shipto
@@ -111,7 +112,11 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 --
-SELECT TOP 10 * FROM nes.bx_group_load
+
+SELECT 
+-- TOP 10 
+* 
+FROM nes.bx_group_load
 
 
 /*

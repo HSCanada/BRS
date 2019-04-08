@@ -162,6 +162,13 @@ FROM
 	LEFT JOIN BRS_ItemSupplier AS sbrand 
 	ON i.brand = sbrand.Supplier 
 
+WHERE
+-- test case
+--	i.[ItemKey]in (83572, 104862, 108067, 4128, 4250, 180220, 4128, 4250, 4128, 4250) AND
+	(1=1)
+
+
+
 
 GO
 

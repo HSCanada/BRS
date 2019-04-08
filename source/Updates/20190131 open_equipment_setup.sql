@@ -123,9 +123,6 @@ ALTER TABLE dbo.BRS_Employee ADD CONSTRAINT
 GO
 
 
-ALTER TABLE dbo.BRS_FSC_Rollup ADD
-	bx_user_id int NULL
-GO
 
 ALTER TABLE dbo.BRS_Customer ADD
 	bx_setup_date datetime NULL,
@@ -392,7 +389,7 @@ COMMIT
 
 --- pop 
 
-
+/*
 UPDATE [dbo].[BRS_FSC_Rollup]
 	SET [bx_user_id] = 33
 WHERE 
@@ -413,13 +410,12 @@ UPDATE BRS_Branch
 	SET [bx_user_id] = 50
 WHERE [Branch]= 'OTTWA'
 GO
-
+*/
 
 SELECT  [TerritoryCd]
       ,[Branch]
       ,[group_type]
-      ,[bx_user_id]
-  FROM [DEV_BRSales].[dbo].[BRS_FSC_Rollup]
+  FROM [dbo].[BRS_FSC_Rollup]
   WHERE [Branch] = 'OTTWA'
 
 
@@ -469,10 +465,15 @@ INSERT INTO [nes].[bx_role](
 	[role_cd],
 	[role_descr])
      VALUES
-           ('designer', ''),
-           ('equipment_coordinator', ''),
-           ('installation_team_lead', ''),
-		   ('service','')
+           ('design', ''),
+           ('coord', ''),
+           ('install', ''),
+		   ('service',''),
+		   ('operations',''),
+		   ('finance','')
+
+
+
 GO
 
 UPDATE [nes].[bx_role]
@@ -568,7 +569,8 @@ COMMIT
 
 INSERT INTO [dbo].[BRS_ItemSalesCategory]
 ([SalesCategory])
-VALUES ('DIGIMP')
+VALUES ('DIGIMP'),
+VALUES ('ITSL')
 GO
 
 
@@ -596,33 +598,19 @@ WHERE
 MajorProductClass in ('373', '850', '826')
 GO
 
+UPDATE [dbo].[BRS_ItemMPC]
+SET bx_sales_category = 'ITSL'
+WHERE
+MajorProductClass in ('801')
+GO
+
 --
 
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_Employee ADD
-	bx_role_key int NULL
-GO
-ALTER TABLE dbo.BRS_Employee ADD CONSTRAINT
-	FK_BRS_Employee_bx_role FOREIGN KEY
-	(
-	bx_role_key
-	) REFERENCES nes.bx_role
-	(
-	role_key
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 UPDATE dbo.BRS_Employee
 Set 
 	bx_user_id = 4,
-	Branch = 'OTTWA',
-	bx_role_key = 2
+	Branch = 'OTTWA'
 WHERE
 	EmployeeKey = 784
 GO
@@ -630,8 +618,7 @@ GO
 UPDATE dbo.BRS_Employee
 Set 
 	bx_user_id = 50,
-	Branch = 'OTTWA',
-	bx_role_key = 3
+	Branch = 'OTTWA'
 WHERE
 	EmployeeKey = 593
 GO
@@ -639,15 +626,261 @@ GO
 UPDATE dbo.BRS_Employee
 Set 
 	bx_user_id = 33,
-	Branch = 'OTTWA',
-	bx_role_key = 4
+	Branch = 'OTTWA'
 WHERE
 	EmployeeKey = 144
 GO
 
----
+-- reset group create
 
 UPDATE       BRS_Customer
 SET                bx_setup_date = NULL, bx_install_date=NULL, bx_group_id = NULL, bx_invite_ind = NULL,
 					[bx_ess_code] = NULL, [bx_dts_code] = NULL, [bx_cps_code] = NULL, [bx_fsc_code] = NULL
 WHERE        (NOT (bx_group_id IS NULL))
+
+
+-- add task table
+-- drop table [nes].[bx_task_template]
+
+CREATE TABLE [nes].[bx_task_template](
+	[bx_task_id] [int] NOT NULL,
+	[bx_title] [nvarchar](100) NULL,
+	[bx_description] [nvarchar](500) NULL,
+	[bx_parent_task_id] [int] NOT NULL CONSTRAINT [DF_bx_task_template_parent_task]  DEFAULT ((0)),
+	[bx_previous_task_id] [int] NOT NULL CONSTRAINT [DF_bx_task_template_previous_task]  DEFAULT ((0)),
+	[role_key] [int] NOT NULL CONSTRAINT [DF_bx_task_template_role_key]  DEFAULT ((1)),
+	[milestone_ind] [bit] NOT NULL CONSTRAINT [DF_bx_task_template_milestone_ind]  DEFAULT ((0)),
+	[effort_hours] [int] NOT NULL CONSTRAINT [DF_bx_task_template_effort_hours]  DEFAULT ((0)),
+	[offset_start_date] [int] NOT NULL CONSTRAINT [DF_bx_task_template_offset_start_date]  DEFAULT ((0)),
+	[offset_end_date] [int] NOT NULL CONSTRAINT [DF_bx_task_template_offset_end_date]  DEFAULT ((0)),
+	[note] [nvarchar](50) NULL,
+	[load_seq] [int] NOT NULL CONSTRAINT [DF_bx_task_template_load_seq]  DEFAULT ((0)),
+	[active_ind] [bit] NOT NULL CONSTRAINT [DF_bx_task_template_active_ind]  DEFAULT ((1)),
+ CONSTRAINT [bx_task_template_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[bx_task_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE nes.bx_task_template ADD CONSTRAINT
+	FK_bx_task_template_bx_role FOREIGN KEY
+	(
+	role_key
+	) REFERENCES nes.bx_role
+	(
+	role_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_task_template ADD CONSTRAINT
+	FK_bx_task_template_bx_task_template FOREIGN KEY
+	(
+	bx_parent_task_id
+	) REFERENCES nes.bx_task_template
+	(
+	bx_task_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_task_template ADD CONSTRAINT
+	FK_bx_task_template_bx_task_template1 FOREIGN KEY
+	(
+	bx_previous_task_id
+	) REFERENCES nes.bx_task_template
+	(
+	bx_task_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_task_template SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+go
+
+
+
+
+INSERT INTO [nes].[bx_task_template]
+           ([bx_task_id]
+           ,[bx_title] )
+     VALUES
+           (0
+           ,'unassigned')
+GO
+
+
+INSERT INTO nes.bx_task_template
+                         (bx_task_id, bx_title, bx_previous_task_id, bx_parent_task_id, milestone_ind, role_key, effort_hours, offset_start_date, offset_end_date, load_seq)
+SELECT        bx_task_id, Task, PreviousTask, Parent_Task, Milestone, Responsible_Role, Est_Avg_Effort__hrs_, Start_Date__offset_, Due_date__offset_, sort_id
+FROM            nes.zzzeqload
+ORDER BY sort_id
+GO
+
+ALTER TABLE dbo.BRS_Branch
+	DROP COLUMN bx_user_id
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee
+	DROP CONSTRAINT FK_BRS_Employee_BRS_Branch
+GO
+ALTER TABLE dbo.BRS_Branch SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee
+	DROP CONSTRAINT DF_BRS_Employee_Branch
+GO
+ALTER TABLE dbo.BRS_Employee
+	DROP COLUMN Branch
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+ALTER TABLE dbo.BRS_Branch ADD
+	language_cd char(2) NOT NULL CONSTRAINT DF_branch_language_cd DEFAULT 'EN'
+GO
+
+UPDATE dbo.BRS_Branch
+set language_cd = 'FR'
+where
+branch in ('QUEBC', 'MNTRL')
+go
+
+ALTER TABLE nes.bx_task_template ADD
+	bx_checklist nvarchar(500) NULL,
+	bx_title_fr nvarchar(100) NULL,
+	bx_description_fr nvarchar(500) NULL,
+	bx_checklist_fr nvarchar(500) NULL
+GO
+
+
+UPDATE nes.bx_task_template
+set 
+	bx_description = 'description TBD',
+	bx_checklist ='checklist TBD',
+	bx_title_fr = LEFT(bx_title,40) + ' <French>',
+	bx_description_fr = 'description TBD <French>',
+	bx_checklist_fr = 'checklist TBD <French>'
+
+go
+
+--
+
+INSERT INTO nes.bx_role_branch
+                         (Branch, role_key, unique_id)
+SELECT        BRS_Branch.Branch, nes.bx_role.role_key, 1 AS unique_id
+FROM            BRS_Branch CROSS JOIN
+                         nes.bx_role
+WHERE        (nes.bx_role.role_key > 1)
+ORDER BY BRS_Branch.Branch
+go
+
+UPDATE nes.bx_role_branch
+SET bx_active_ind = 1
+where Branch = 'OTTWA'
+go
+
+UPDATE [dbo].[BRS_Employee] 
+set bx_user_id =1
+where SamAccountName = ''
+GO
+
+
+ALTER TABLE dbo.BRS_FSC_Rollup
+	DROP COLUMN bx_user_id
+GO
+
+--
+
+-- drop table [nes].[bx_role_branch]
+
+CREATE TABLE [nes].[bx_role_branch](
+	[Branch] [char](5) NOT NULL,
+	[role_key] [int] NOT NULL,
+	[unique_id] [int] NOT NULL CONSTRAINT [DF_bx_role_branch_unique_id]  DEFAULT ((1)),
+	[SamAccountName] [nchar](20) NOT NULL CONSTRAINT [DF_role_branch_SameAccountName]  DEFAULT (''),
+	[bx_active_ind] [bit] NOT NULL CONSTRAINT [DF_role_branch_bx_active_ind]  DEFAULT ((0)),
+	[note] [nvarchar](50) NULL,
+ CONSTRAINT [PK_bx_role_branch] PRIMARY KEY CLUSTERED 
+(
+	[Branch] ASC,
+	[role_key] ASC,
+	[unique_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE nes.bx_role_branch ADD CONSTRAINT
+	FK_bx_role_branch_BRS_Branch FOREIGN KEY
+	(
+	Branch
+	) REFERENCES dbo.BRS_Branch
+	(
+	Branch
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_role_branch ADD CONSTRAINT
+	FK_bx_role_branch_bx_role FOREIGN KEY
+	(
+	role_key
+	) REFERENCES nes.bx_role
+	(
+	role_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_role_branch ADD CONSTRAINT
+	FK_bx_role_branch_BRS_Employee FOREIGN KEY
+	(
+	SamAccountName
+	) REFERENCES dbo.BRS_Employee
+	(
+	SamAccountName
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE nes.bx_role_branch SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_FSC_Rollup ADD
+	SamAccountName nchar(20) NOT NULL CONSTRAINT DF_BRS_FSC_Rollup_SamAccountName DEFAULT ''
+GO
+ALTER TABLE dbo.BRS_FSC_Rollup ADD CONSTRAINT
+	FK_BRS_FSC_Rollup_BRS_Employee FOREIGN KEY
+	(
+	SamAccountName
+	) REFERENCES dbo.BRS_Employee
+	(
+	SamAccountName
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_FSC_Rollup SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

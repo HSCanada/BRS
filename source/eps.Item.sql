@@ -78,13 +78,13 @@ GO
 
 
 -- SELECT top 10 * FROM eps.Item where Supplier = 'BAINTE'
-
+/*
 -- dup test
 SELECT [Item_Number], COUNT (*) 
 FROM eps.Item 
 GROUP BY [Item_Number]
 having COUNT (*) > 1
-
+*/
 
 -- eps_item.txt
 

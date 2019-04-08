@@ -44,6 +44,7 @@ AS
 --	20 Jun 18	tmc		Point to Marketclass from new, as we are not in prod
 --  29 Nov 18	tmc		add new Exclusive public field for rename flexabiltity
 --	09 Jan 19	tmc		add temp test scafolding to find missing Sales order
+--  29 Mar 19	tmc		add specialty & Supplier to feed
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -66,7 +67,9 @@ BEGIN
 	END
 
 	-- Sales 1 of 3
-	SELECT     
+	SELECT   
+--		top 10  
+
 		cc.[Entity]								AS ENTITY 
 		,[HFM_Account]							AS ACCOUNT
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
@@ -75,6 +78,11 @@ BEGIN
 		,RTRIM(ch.HIST_MarketClass)				AS CUSTOMER
 		,@sCurrency								AS CURRENCY
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
+
+		-- new
+		,RTRIM(ih.Supplier)						AS SUPPLIER
+		,RTRIM(ch.HIST_Specialty)				AS CUSTOMER_SPECIALTY
+
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -135,9 +143,13 @@ BEGIN
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
+		-- new
+		,ih.Supplier
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
 		,g.GpsCode
+		-- new
+		,ch.HIST_Specialty
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
@@ -157,6 +169,8 @@ BEGIN
 
 	-- Cost 2 of 3
 	SELECT     
+--		top 10
+
 		cc.[Entity]								AS Entity
 		,[HFM_Account]							AS Account
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
@@ -165,6 +179,11 @@ BEGIN
 		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
 		,@sCurrency								AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
+
+		-- new
+		,RTRIM(ih.Supplier)						AS SUPPLIER
+		,RTRIM(ch.HIST_Specialty)				AS CUSTOMER_SPECIALTY
+
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -230,9 +249,13 @@ BEGIN
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
+		-- new
+		,ih.Supplier
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
 		,g.GpsCode
+		-- new
+		,ch.HIST_Specialty
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test
@@ -251,6 +274,8 @@ BEGIN
 
 	-- Chargeback 3 of 3
 	SELECT     
+--		top 10 
+
 		cc.[Entity]								AS Entity
 		,[HFM_Account]							AS Account
 		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
@@ -259,6 +284,11 @@ BEGIN
 		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
 		,@sCurrency								AS Currency
 		,RTRIM(ISNULL(g.GpsCode, @sAnalysis))	AS ANALYSIS
+
+		-- new
+		,RTRIM(ih.Supplier)						AS SUPPLIER
+		,RTRIM(ch.HIST_Specialty)				AS CUSTOMER_SPECIALTY
+
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -326,9 +356,13 @@ BEGIN
 		,cc.[Entity]
 		,hfm.[HFM_Account]
 		,ih.MinorProductClass
+		-- new
+		,ih.Supplier
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
 		,g.GpsCode
+		-- new
+		,ch.HIST_Specialty
 		,ch.HIST_MarketClass
 		,doct.SourceCd
 -- test

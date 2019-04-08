@@ -1,0 +1,34 @@
+-- mdm tracking setup, tmc, 2 Apr 19
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD
+	mdm_phase int NOT NULL CONSTRAINT DF_BRS_ItemMPC_mdm_phase DEFAULT 0,
+	mdm_level smallint NOT NULL CONSTRAINT DF_BRS_ItemMPC_mdm_level DEFAULT 0,
+	mdm_note varchar(50) NULL
+GO
+ALTER TABLE dbo.BRS_ItemMPC SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+---
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD
+	SalesCategory varchar(6) NOT NULL CONSTRAINT DF_BRS_ItemMPC_SalesCategory DEFAULT ''
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD CONSTRAINT
+	FK_BRS_ItemMPC_BRS_ItemSalesCategory2 FOREIGN KEY
+	(
+	SalesCategory
+	) REFERENCES dbo.BRS_ItemSalesCategory
+	(
+	SalesCategory
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemMPC SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	04 Apr 18	tmc		finalize fields for production
+--	26 Mar 19	tmc		extend to Quebec Zone & add EPS
 **    
 *******************************************************************************/
 
@@ -90,6 +91,8 @@ BEGIN
 		,t.NetSalesAmt							AS Net_Sales
 		,t.[ShippedQty]							AS Net_Quantity
 		,t.GPAtCommCostAmt						AS GP_Comm
+		,RTRIM(c.EPS_code)						AS Eps_Code
+
 
 	FROM         
 		dbo.BRS_TransactionDW AS t 
@@ -108,11 +111,11 @@ BEGIN
 
 	WHERE     
 		(d.FiscalWeek = @nWeek) AND
---		CAST(d.SalesDate as date) between '2018-09-30' AND '2019-01-11' AND
---		(t.CalMonth Between 201801 and 201803) AND
 		(t.SalesDivision = 'AAD') AND
 -- test
---		(c.Customer_Number is null) AND
+--		CAST(d.SalesDate as date) between '2019-01-01' AND '2019-03-22' AND
+--		(t.CalMonth Between 201801 and 201803) AND
+--		(c.Eps_Code = 'EPQUE') AND
 
 		(1=1)
 
@@ -129,7 +132,8 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20190315.txt
+-- HSC_SALES_20190405.txt
+
 
 SET NOCOUNT OFF;
 GO

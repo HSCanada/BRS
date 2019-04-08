@@ -33,6 +33,7 @@ AS
 **	04 Apr 18	tmc		finalize fields for production
 **	13 Apr 18	tmc		removed inactive filter to allow growth measure DCC
 --	17 Jan 19	tmc		add Hygine accout to feed
+--	26 Mar 19	tmc		extend to Quebec Zone & add EPS
 **    
 *******************************************************************************/
 
@@ -64,7 +65,8 @@ SELECT
 	'.'						AS Special_Market_Segment_Description,
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
-	'.'						AS Field_Level_3_Description
+	'.'						AS Field_Level_3_Description,
+	RTRIM(b.EPS_code)		AS Eps_Code
 
 FROM
 	BRS_Customer AS c
@@ -75,11 +77,14 @@ FROM
 	INNER JOIN BRS_FSC_Rollup AS t 
 	ON c.TsTerritoryCd = t.TerritoryCd 
 
+	INNER JOIN [dbo].[BRS_Branch] AS b
+	ON f.Branch = b.Branch
+
 WHERE
 	(c.ShipTo > 0) AND
 	(c.SalesDivision = 'AAD') AND 
 	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO', 'HYGEN')) AND
-	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT')) AND
+	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT', 'MNTRL', 'QUEBC')) AND
 	(1=1)
 GO
 
@@ -89,7 +94,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Customer where customer_number = 1669334
+-- SELECT top 10 * FROM eps.Customer WHERE Field_Level_3_Description = 'EPQUE'
 -- SELECT * FROM eps.Customer where Specialty_Discription = 'HYGEN'
 
 -- eps_customer.txt

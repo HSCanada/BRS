@@ -294,7 +294,7 @@ SET
 	line_id = [record_id],
 	[audit_id]=line_id 
 where 
-	fiscal_yearmo_num >= '201801' and
+	fiscal_yearmo_num >= '201901' and
 	exists(
 		SELECT         
 			doc_id,
@@ -419,7 +419,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201901')
+	(fiscal_yearmo_num = '201902')
 GO
 
 print 'dest trans'
@@ -428,13 +428,13 @@ count (*) dest_count
 FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201901')
+	(FiscalMonth = '201902')
 GO
 
 DELETE FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201901')
+	(FiscalMonth = '201902')
 GO
 
 */

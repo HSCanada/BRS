@@ -1,4 +1,5 @@
--- refresh Schein Saver from SQ03
+-- refresh Schein Saver from Redemptions DB
+-- updated 3 Apr 19
 
 
 
@@ -8,23 +9,6 @@ GO
 truncate table Redemptions_tbl_Items
 GO
 
--- clear stage
-drop table Redemptions_tbl_Items_stage
-GO
-drop table Redemptions_tbl_Main_stage
-GO
-
--- run package to pull data into pre-stage
-
--- migrate from pre-stage to stage
-EXEC sp_rename 'tbl_Items', 'Redemptions_tbl_Items_stage'
-GO
-EXEC sp_rename 'tbl_Main', 'Redemptions_tbl_Main_stage'
-GO
-
-
--- rename redemptions_tbl_Items_stage
--- rename redemptions_tbl_Items_stagetbl_Main_stage
 
 INSERT INTO [dbo].[Redemptions_tbl_Main]
            ([RecID]
@@ -39,20 +23,22 @@ INSERT INTO Redemptions_tbl_Main
                          (RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired)
 SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
 
-FROM            Redemptions_tbl_Main_stage
+FROM            
+	Redemptions..tbl_Main
+WHERE        
+--	RecID = 7889 AND
+	(CAST('2019-04-03' AS DATETIME) BETWEEN EffDate AND Expired) AND
+	(1=1)
+GO
 
-WHERE        (CAST('2019-03-20' AS DATETIME) BETWEEN EffDate AND Expired)
-
-
-
--- truncate table Redemptions_tbl_Items
 
 INSERT INTO Redemptions_tbl_Items
 	(RecID, ItemNumber, ItemID)
+
 SELECT        
-	(MIN(i.RecID)), i.ItemNumber, MAX(i.ItemID) AS ItemID
+	(MIN(i.RecID)), ibr.Item, MAX(ibr.ItemKey) AS ItemID
 FROM            
-	Redemptions_tbl_Items_stage AS i 
+	Redemptions..tbl_Items AS i 
 
 	INNER JOIN Redemptions_tbl_Main AS d 
 	ON i.RecID = d.RecID 
@@ -60,8 +46,13 @@ FROM
 	INNER JOIN BRS_Item AS ibr 
 	ON i.ItemNumber = ibr.Item
 
+WHERE 
+	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
+	(1=1)
+
 GROUP BY 
-	i.ItemNumber
+	ibr.Item
+
 --
 
 -- test
