@@ -1,4 +1,4 @@
--- updated 31 Jan 19
+updated 31 Jan 19
 
 
 CREATE TABLE [nes].[order_ets](
@@ -609,26 +609,37 @@ GO
 
 UPDATE dbo.BRS_Employee
 Set 
-	bx_user_id = 4,
-	Branch = 'OTTWA'
+	bx_user_id = 4
 WHERE
-	EmployeeKey = 784
+	SamAccountName = 'craig.faris'
 GO
 
 UPDATE dbo.BRS_Employee
 Set 
-	bx_user_id = 50,
-	Branch = 'OTTWA'
+	bx_user_id = 6
 WHERE
-	EmployeeKey = 593
+	SamAccountName = 'tcrowley'
 GO
 
 UPDATE dbo.BRS_Employee
 Set 
-	bx_user_id = 33,
-	Branch = 'OTTWA'
+	bx_user_id = 8
 WHERE
-	EmployeeKey = 144
+	SamAccountName = 'gary.winslow'
+GO
+
+UPDATE dbo.BRS_Employee
+Set 
+	bx_user_id = 33
+WHERE
+	SamAccountName ='Naghmeh.Hafezi'
+GO
+
+UPDATE dbo.BRS_Employee
+Set 
+	bx_user_id = 7
+WHERE
+	SamAccountName = 'jli'
 GO
 
 -- reset group create
@@ -636,7 +647,7 @@ GO
 UPDATE       BRS_Customer
 SET                bx_setup_date = NULL, bx_install_date=NULL, bx_group_id = NULL, bx_invite_ind = NULL,
 					[bx_ess_code] = NULL, [bx_dts_code] = NULL, [bx_cps_code] = NULL, [bx_fsc_code] = NULL
-WHERE        (NOT (bx_group_id IS NULL))
+WHERE        (NOT (bx_invite_ind IS NULL))
 
 
 -- add task table
@@ -645,7 +656,7 @@ WHERE        (NOT (bx_group_id IS NULL))
 CREATE TABLE [nes].[bx_task_template](
 	[bx_task_id] [int] NOT NULL,
 	[bx_title] [nvarchar](100) NULL,
-	[bx_description] [nvarchar](500) NULL,
+	[bx_description] [nvarchar](1000) NULL,
 	[bx_parent_task_id] [int] NOT NULL CONSTRAINT [DF_bx_task_template_parent_task]  DEFAULT ((0)),
 	[bx_previous_task_id] [int] NOT NULL CONSTRAINT [DF_bx_task_template_previous_task]  DEFAULT ((0)),
 	[role_key] [int] NOT NULL CONSTRAINT [DF_bx_task_template_role_key]  DEFAULT ((1)),
@@ -759,10 +770,10 @@ branch in ('QUEBC', 'MNTRL')
 go
 
 ALTER TABLE nes.bx_task_template ADD
-	bx_checklist nvarchar(500) NULL,
+	bx_checklist nvarchar(2000) NULL,
 	bx_title_fr nvarchar(100) NULL,
-	bx_description_fr nvarchar(500) NULL,
-	bx_checklist_fr nvarchar(500) NULL
+	bx_description_fr nvarchar(1000) NULL,
+	bx_checklist_fr nvarchar(2000) NULL
 GO
 
 
@@ -884,3 +895,51 @@ GO
 ALTER TABLE dbo.BRS_FSC_Rollup SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+---
+
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'craig.faris'
+where  branch = 'ottwa' AND [role_key] = 2 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'JLi'
+where  branch = 'ottwa' AND [role_key] = 3 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'Naghmeh.Hafezi'
+where  branch = 'ottwa' AND [role_key] = 4 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'TCrowley'
+where  branch = 'ottwa' AND [role_key] = 5 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'Jake.Banaszkiewicz'
+where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'gary.winslow'
+where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
+GO
+
+-- map to prod
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE nes.bx_task_template ADD
+	bx_task_id_map int NULL
+GO
+ALTER TABLE nes.bx_task_template SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+UPDATE       nes.bx_task_template
+SET                bx_title2 =bx_title, bx_description2 = bx_description, bx_checklist2 =bx_checklist, bx_title_fr2 = bx_title_fr, bx_description_fr2 = bx_description_fr, bx_checklist_fr2 = bx_checklist_fr
+

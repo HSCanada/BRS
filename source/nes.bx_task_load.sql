@@ -84,7 +84,8 @@ FROM
 
 	INNER JOIN nes.bx_role_branch br
 	ON g.bx_branch_code = br.Branch AND
-		t.role_key = br.role_key
+		t.role_key = br.role_key AND
+		br.unique_id = 1
 
 	INNER JOIN dbo.BRS_Employee AS e
 	ON br.SamAccountName = e.SamAccountName
@@ -93,8 +94,9 @@ FROM
 
 
 WHERE
---	(t.active_ind > 0) AND 
 	(t.bx_task_id > 0) AND
+	(g.bx_invite_ind < 1) AND
+--	(g.bx_group_id > 0) AND
 	(1=1)
 
 
@@ -107,5 +109,6 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 --
+
 SELECT  * FROM nes.bx_task_load  order by GROUP_ID, bx_task_id_org_seq
 

@@ -61,9 +61,11 @@ SELECT
 	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS bx_large_equip_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS bx_dentrix_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'ITSL'	THEN net_sales_amount ELSE 0 END)	AS bx_design_sales
+	,LOWER(MIN(c.MarketClass))					AS bx_market_class
 
 	,MIN(sales_date)							AS bx_sales_date
 	,MIN(install_date)							AS bx_install_date
+	,MIN(c.bx_invite_ind)						AS bx_invite_ind
 
 
 FROM
@@ -94,7 +96,7 @@ ON i.MajorProductClass = mpc.MajorProductClass
 WHERE
 	(br.bx_active_ind = 1) AND 
 	(order_status.bx_active_ind = 1)  AND
-	--	(c.[bx_invite_ind] < 3) AND
+	(ISNULL(c.[bx_invite_ind],0) < 1) AND
 	(1=1)
 
 GROUP BY 

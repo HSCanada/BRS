@@ -4,20 +4,21 @@ SET QUOTED_IDENTIFIER ON
 GO
 ALTER PROCEDURE [nes].bx_group_update_proc
 	@Shipto int , 
-	@GroupId int , 
-	@SetDate Date ,
-	@InstallDate Date,
-	@bx_cps_code char(5),
-	@bx_ess_code char(5),
-	@bx_dts_code char(5),
-	@bx_fsc_code char(5)
+	@nMode int,
+	@GroupId int = NULL, 
+	@SetDate Date = NULL,
+	@InstallDate Date = NULL,
+	@bx_cps_code char(5) = NULL,
+	@bx_ess_code char(5) = NULL,
+	@bx_dts_code char(5) = NULL,
+	@bx_fsc_code char(5) = NULL
 	
 AS
 
 /******************************************************************************
 **	File: 
 **	Name: [nes].bx_group_update_proc
-**	Desc: 
+**	Desc: mode init = NULL, set group = 0, set rights = 1
 **              
 **	Return values:  @@Error
 **
@@ -43,20 +44,34 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	UPDATE       
-		BRS_Customer
-	SET                
-		bx_setup_date = @SetDate
-		,bx_install_date = @InstallDate
-		,bx_group_id = @GroupId
-		,[bx_invite_ind] =  ISNULL([bx_invite_ind],0) + 1
-		,bx_cps_code = @bx_cps_code
-		,bx_ess_code = @bx_ess_code
-		,bx_dts_code = @bx_dts_code
-		,bx_fsc_code = @bx_fsc_code
+	if (@nMode = 0) 
+	Begin
+		UPDATE       
+			BRS_Customer
+		SET                
+			bx_setup_date = @SetDate
+			,bx_invite_ind = 0
+			,bx_install_date = @InstallDate
+			,bx_group_id = @GroupId
+			,bx_cps_code = @bx_cps_code
+			,bx_ess_code = @bx_ess_code
+			,bx_dts_code = @bx_dts_code
+			,bx_fsc_code = @bx_fsc_code
+		WHERE
+			ShipTo = @Shipto
+	End
 
-	WHERE
-		ShipTo = @Shipto
+	if (@nMode = 1) 
+	Begin
+		UPDATE       
+			BRS_Customer
+		SET                
+			bx_setup_date = @SetDate
+			,bx_invite_ind = 1
+		WHERE
+			ShipTo = @Shipto
+	End
+
 
 END
 
