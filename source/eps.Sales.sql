@@ -132,7 +132,7 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20190412.txt
+-- HSC_SALES_20190419.txt
 
 
 SET NOCOUNT OFF;
@@ -144,13 +144,13 @@ GO
 
 SET NOCOUNT ON;
 SELECT * FROM eps.Customer 
-
 GO
 
 -- eps_item.txt
 
 SET NOCOUNT ON;
 SELECT * FROM eps.Item
+GO
 
 */
 
