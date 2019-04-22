@@ -1,4 +1,4 @@
-updated 31 Jan 19
+--updated 31 Jan 19
 
 
 CREATE TABLE [nes].[order_ets](
@@ -69,6 +69,7 @@ ALTER TABLE [dbo].[BRS_FSC_Rollup] ADD CONSTRAINT
 GO
 
 --
+
 ALTER TABLE dbo.BRS_Branch ADD
 	bx_active_ind bit NOT NULL CONSTRAINT DF_BRS_Branch_bx_active_ind DEFAULT 0
 GO
@@ -79,14 +80,7 @@ UPDATE BRS_Branch
 WHERE [Branch]= 'OTTWA'
 GO
 
-ALTER TABLE [dbo].BRS_Branch ADD
-	bx_user_id int NULL
-GO
 
-
-ALTER TABLE [nes].[order_status] ADD
-	bx_active_ind bit NOT NULL CONSTRAINT DF_nex_order_status_bx_active_ind DEFAULT 0
-GO
 
 UPDATE [nes].[order_status]
 SET bx_active_ind = 1
@@ -125,9 +119,9 @@ GO
 
 
 ALTER TABLE dbo.BRS_Customer ADD
-	bx_setup_date datetime NULL,
-	bx_install_date datetime NULL,
-	bx_group_id int NULL
+--	bx_setup_date datetime NULL,
+	bx_install_date datetime NULL
+--	bx_group_id int NULL
 GO
 
 
@@ -437,7 +431,9 @@ go
 
 
 
+
 --- 21 mar 19
+-- move to prod -> 22 Apr 19
 
 --drop table nes.bx_role
 
@@ -471,8 +467,6 @@ INSERT INTO [nes].[bx_role](
 		   ('service',''),
 		   ('operations',''),
 		   ('finance','')
-
-
 
 GO
 
@@ -570,7 +564,7 @@ COMMIT
 INSERT INTO [dbo].[BRS_ItemSalesCategory]
 ([SalesCategory])
 VALUES ('DIGIMP'),
-VALUES ('ITSL')
+('ITSL')
 GO
 
 
@@ -643,7 +637,7 @@ WHERE
 GO
 
 -- reset group create
-
+-- 
 UPDATE       BRS_Customer
 SET                bx_setup_date = NULL, bx_install_date=NULL, bx_group_id = NULL, bx_invite_ind = NULL,
 					[bx_ess_code] = NULL, [bx_dts_code] = NULL, [bx_cps_code] = NULL, [bx_fsc_code] = NULL
@@ -726,12 +720,17 @@ INSERT INTO [nes].[bx_task_template]
 GO
 
 
+-- 
+
 INSERT INTO nes.bx_task_template
-                         (bx_task_id, bx_title, bx_previous_task_id, bx_parent_task_id, milestone_ind, role_key, effort_hours, offset_start_date, offset_end_date, load_seq)
-SELECT        bx_task_id, Task, PreviousTask, Parent_Task, Milestone, Responsible_Role, Est_Avg_Effort__hrs_, Start_Date__offset_, Due_date__offset_, sort_id
-FROM            nes.zzzeqload
-ORDER BY sort_id
-GO
+                         (bx_task_id, bx_parent_task_id, bx_previous_task_id, role_key, milestone_ind, effort_hours, offset_start_date, offset_end_date, note, load_seq, active_ind, 
+                         bx_task_id_map, bx_title, bx_description, bx_checklist, bx_title_fr, bx_description_fr, bx_checklist_fr)
+SELECT        bx_task_id, bx_parent_task_id, bx_previous_task_id, role_key, milestone_ind, effort_hours, offset_start_date, offset_end_date, note, load_seq, active_ind, 
+                         bx_task_id_map, bx_title, bx_description, bx_checklist, bx_title_fr, bx_description_fr, bx_checklist_fr
+FROM            DEV_BRSales.nes.bx_task_template AS bx_task_template_1
+WHERE        (bx_task_id > 0)
+ORDER BY bx_task_template_1.load_seq
+
 
 ALTER TABLE dbo.BRS_Branch
 	DROP COLUMN bx_user_id
@@ -788,7 +787,7 @@ set
 go
 
 --
-
+-- 
 INSERT INTO nes.bx_role_branch
                          (Branch, role_key, unique_id)
 SELECT        BRS_Branch.Branch, nes.bx_role.role_key, 1 AS unique_id
