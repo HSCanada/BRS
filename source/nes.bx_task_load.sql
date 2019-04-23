@@ -44,16 +44,13 @@ SELECT
 		ELSE t.bx_title 
 	END											AS TITLE,
 
-	t.bx_description2 
-											AS [DESCRIPTION],
 
-/*(
 	CASE 
 		WHEN b.language_cd = 'FR' 
 		THEN t.bx_description_fr 
 		ELSE t.bx_description 
 	END											AS [DESCRIPTION],
-*/
+
 
 	CASE 
 		WHEN b.language_cd = 'FR' 
