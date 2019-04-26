@@ -39,7 +39,7 @@ SELECT
 	s.shipto									AS bx_shipto
 	,MIN(c.bx_group_id)							AS bx_group_id
 	,MIN(c.PracticeName) + ' - '
-	+CAST(s.[shipto] as varchar(7))	+ ' - <TBD>'	AS NAME
+	+CAST(s.[shipto] as varchar(7))	+ ' - UAT'	AS NAME
 	,RTRIM(MIN([AddressLine3])) 
 	+' | ' + RTRIM(MIN([AddressLine4]))	
 	+' | ' + MIN([City])			

@@ -45,6 +45,7 @@ SELECT
 	,b.Branch					AS BranchCode
 	,b.BranchName
 	,b.ZoneName
+	,tracker_ind
 
   FROM 
 	[comm].[salesperson_master] s

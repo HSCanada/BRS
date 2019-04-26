@@ -386,42 +386,6 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 
---a_CAN_Jan-17_RA.csv
--- [hfm].global_cube_proc  201701, 201701
-
---a_CAN_Feb-17_RA.csv
--- [hfm].global_cube_proc  201702, 201702
-
---a_CAN_Mar-17_RA.csv
--- [hfm].global_cube_proc  201703, 201703
-
---a_CAN_Apr-17_RA.csv
--- [hfm].global_cube_proc  201704, 201704
-
---a_CAN_May-17_RA.csv
--- [hfm].global_cube_proc  201705, 201705
-
---a_CAN_Jun-17_RA.csv
--- [hfm].global_cube_proc  201706, 201706
-
---a_CAN_Jul-17_RA.csv
--- [hfm].global_cube_proc  201707, 201707
-
---a_CAN_Aug-17_RA.csv
--- [hfm].global_cube_proc  201708, 201708
-
---a_CAN_Sep-17_RA.csv
--- [hfm].global_cube_proc  201709, 201709
-
---a_CAN_Oct-17_RA.csv
--- [hfm].global_cube_proc  201710, 201710
-
---a_CAN_Nov-17_RA.csv
--- [hfm].global_cube_proc  201711, 201711
-
---a_CAN_Dec-17_RA.csv
--- [hfm].global_cube_proc  201712, 201712
-
 --a_CAN_Jan-18_RA.csv
 -- [hfm].global_cube_proc  201801, 201801
 
@@ -443,6 +407,33 @@ GO
 --a_CAN_Jul-18_RA.csv
 -- [hfm].global_cube_proc  201807, 201807
 
+--a_CAN_Aug-18_RA.csv
+-- [hfm].global_cube_proc  201808, 201808
+
+--a_CAN_Sep-18_RA.csv
+-- [hfm].global_cube_proc  201809, 201809
+
+--a_CAN_Oct-18_RA.csv
+-- [hfm].global_cube_proc  201810, 201810
+
+--a_CAN_Nov-18_RA.csv
+-- [hfm].global_cube_proc  201811, 201811
+
+--a_CAN_Dec-18_RA.csv
+-- [hfm].global_cube_proc  201812, 201812
+
+--
+
+--a_CAN_Jan-19_RA.csv
+-- [hfm].global_cube_proc  201901, 201901
+
+--a_CAN_Feb-19_RA.csv
+-- [hfm].global_cube_proc  201902, 201902
+
+--a_CAN_Mar-19_RA.csv
+-- [hfm].global_cube_proc  201903, 201903
+
+
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
--- [hfm].global_cube_proc  201812, 201812
+

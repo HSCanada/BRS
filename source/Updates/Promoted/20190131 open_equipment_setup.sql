@@ -899,12 +899,12 @@ COMMIT
 
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'craig.faris'
+SET [SamAccountName] = 'Naghmeh.Hafezi'
 where  branch = 'ottwa' AND [role_key] = 2 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'JLi'
+SET [SamAccountName] = 'Naghmeh.Hafezi'
 where  branch = 'ottwa' AND [role_key] = 3 and [unique_id] = 1
 GO
 
@@ -924,7 +924,7 @@ where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'gary.winslow'
+SET [SamAccountName] = 'jli'
 where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
 GO
 
