@@ -41,6 +41,7 @@ SELECT
 	,[comm_plan_id]				AS CommPlanCode
 	,CAST([territory_start_dt] AS Date)	AS TerritoryStart
 	,[salesperson_key_id]		AS SalespersonID
+	,BranchCount
 	,[CostCenter]
 	,b.Branch					AS BranchCode
 	,b.BranchName

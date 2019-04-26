@@ -149,9 +149,7 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_Item] WHERE Item = item_id
 )
 GO
-
-
--- manually add RESTOCK         
+        
 
 -- ok
 print '14. check IMCLMJ'
@@ -406,7 +404,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201902')
+	(fiscal_yearmo_num = '201903')
 GO
 
 -- import to SSAS next
