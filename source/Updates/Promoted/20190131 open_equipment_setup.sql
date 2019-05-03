@@ -709,6 +709,7 @@ COMMIT
 go
 
 
+-- truncate table [nes].[bx_task_template]
 
 
 INSERT INTO [nes].[bx_task_template]
@@ -899,22 +900,22 @@ COMMIT
 
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'Naghmeh.Hafezi'
+SET [SamAccountName] = 'Chris.Golden'
 where  branch = 'ottwa' AND [role_key] = 2 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'Naghmeh.Hafezi'
+SET [SamAccountName] = 'Chris.Golden'
 where  branch = 'ottwa' AND [role_key] = 3 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'Naghmeh.Hafezi'
+SET [SamAccountName] = 'Jake.Banaszkiewicz'
 where  branch = 'ottwa' AND [role_key] = 4 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'TCrowley'
+SET [SamAccountName] = 'Jake.Banaszkiewicz'
 where  branch = 'ottwa' AND [role_key] = 5 and [unique_id] = 1
 GO
 
@@ -924,8 +925,13 @@ where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
 GO
 
 UPDATE [nes].[bx_role_branch]
-SET [SamAccountName] = 'jli'
-where  branch = 'ottwa' AND [role_key] = 6 and [unique_id] = 1
+SET [SamAccountName] = 'Naghmeh.Hafezi'
+where  branch = 'ottwa' AND [role_key] = 7 and [unique_id] = 1
+GO
+
+UPDATE [nes].[bx_role_branch]
+SET [SamAccountName] = 'tcrowley'
+where  branch = 'ottwa' AND [role_key] = 8 and [unique_id] = 1
 GO
 
 -- map to prod
