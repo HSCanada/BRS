@@ -35,10 +35,32 @@ INSERT INTO comm.[group]
 VALUES        ('ZZZZZZ', 'zzzExclude')
 GO
 
+-- addd ok -- inlucde 
+INSERT INTO comm.[group]
+                         (comm_group_cd, [comm_group_desc])
+VALUES        ('SCRCRD', 'Scorecard Include - other')
+GO
+
 
 UPDATE comm.[group]
 SET comm_group_scorecard_cd = 'ZZZZZZ'
 WHERE
 comm_group_cd NOT in ('DIGIMP', 'DIGMAT', 'FRESEQ', 'FRESND', 'ITMCAM', 'ITMCPU', 'ITMEQ0', 'ITMFO1', 'ITMFO2', 'ITMFO3', 'ITMFRT', 'ITMISC', 'ITMPAR', 'ITMSER', 'ITMSND', 'ITMSOF', 'ITMTEE', 'REBSND', 'REBTEE', 'SFFFIN', 'SPMFGE', 'SPMFGS', 'SPMFO1', 'SPMFO2', 'SPMFO3', 'SPMREB', 'SPMSND'  ) AND
 comm_group_scorecard_cd = ''
+
+UPDATE comm.[group]
+SET comm_group_scorecard_cd = 'SCRCRD'
+WHERE
+comm_group_scorecard_cd = ''
+
+
+GO
+
+SELECT [employee_num]
+      ,[tracker_ind]
+  FROM [comm].[salesperson_master] WHERE tracker_ind = 1
+
+
+-- run  source/Dimension.CommissionGroup.sql
+
 

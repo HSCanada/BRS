@@ -29,7 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	08 May 19	tmc		added scorecard rollup
 *******************************************************************************/
 
 SELECT 
@@ -38,6 +38,7 @@ SELECT
 	,[comm_group_cd]								AS CommGroupCode
 	,[comm_group_sm_cd]								AS SpecialMarketCode
 	,[comm_status_cd]								AS SpecialMarketStatusCode
+	,comm_group_scorecard_cd
 FROM 
 	[comm].[group]
 WHERE
