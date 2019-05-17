@@ -1,6 +1,8 @@
 -- goal to pre new comm backend for scorecord reporting
 
 
+-- IN PROD BEGIN ----->
+
 BEGIN TRANSACTION
 GO
 ALTER TABLE comm.[group] ADD
@@ -47,13 +49,12 @@ SET comm_group_scorecard_cd = 'ZZZZZZ'
 WHERE
 comm_group_cd NOT in ('DIGIMP', 'DIGMAT', 'FRESEQ', 'FRESND', 'ITMCAM', 'ITMCPU', 'ITMEQ0', 'ITMFO1', 'ITMFO2', 'ITMFO3', 'ITMFRT', 'ITMISC', 'ITMPAR', 'ITMSER', 'ITMSND', 'ITMSOF', 'ITMTEE', 'REBSND', 'REBTEE', 'SFFFIN', 'SPMFGE', 'SPMFGS', 'SPMFO1', 'SPMFO2', 'SPMFO3', 'SPMREB', 'SPMSND'  ) AND
 comm_group_scorecard_cd = ''
+GO
 
 UPDATE comm.[group]
 SET comm_group_scorecard_cd = 'SCRCRD'
 WHERE
 comm_group_scorecard_cd = ''
-
-
 GO
 
 SELECT [employee_num]
@@ -62,5 +63,7 @@ SELECT [employee_num]
 
 
 -- run  source/Dimension.CommissionGroup.sql
+
+-- IN PROD END ---<
 
 
