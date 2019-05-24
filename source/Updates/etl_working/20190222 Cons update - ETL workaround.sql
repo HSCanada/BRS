@@ -27,7 +27,7 @@ FROM
 	Redemptions..tbl_Main
 WHERE        
 --	RecID = 7889 AND
-	(CAST('2019-04-03' AS DATETIME) BETWEEN EffDate AND Expired) AND
+	(CAST('2019-05-17' AS DATETIME) BETWEEN EffDate AND Expired) AND
 	(1=1)
 GO
 
@@ -47,7 +47,7 @@ FROM
 	ON i.ItemNumber = ibr.Item
 
 WHERE 
-	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
+--	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
 	(1=1)
 
 GROUP BY 
