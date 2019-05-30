@@ -82,4 +82,61 @@ sp_who2
 
 
 
+-- fix entity here...
+
+  insert into  [hfm].[entity] 
+  (  [Entity]
+      ,[EntityDescr]
+      ,[EntityParent]
+      ,[LevelNum]
+      ,[ActiveInd]
+      ,[Note]
+	)
+  
+  SELECT  'HSCanadaBusSol' as [Entity]
+      ,[EntityDescr]
+      ,[EntityParent]
+      ,[LevelNum]
+      ,[ActiveInd]
+      ,[Note]
+  FROM [hfm].[entity]  where [Entity] in ('HSCBS')
+
+  update [hfm].[cost_center] 
+  set  [Entity] = 'HSCanadaBusSol'
+   where [Entity] in ('HSCBS')
+
+
+--
+
+
+  insert into  [hfm].[entity] 
+  (  [Entity]
+      ,[EntityDescr]
+      ,[EntityParent]
+      ,[LevelNum]
+      ,[ActiveInd]
+      ,[Note]
+	)
+  
+  SELECT  'DentrixCanJV' as [Entity]
+      ,[EntityDescr]
+      ,[EntityParent]
+      ,[LevelNum]
+      ,[ActiveInd]
+      ,[Note]
+  FROM [hfm].[entity]  where [Entity] in ('CanadaDentrx')
+
+  update [hfm].[cost_center] 
+  set  [Entity] = 'DentrixCanJV'
+   where [Entity] in ('CanadaDentrx')
+
+
+update      [hfm].[entity]
+set       [ActiveInd] = 0
+where [Entity] in ('HSCBS')
+go
+
+update      [hfm].[entity]
+set       [ActiveInd] = 0
+where [Entity] in ('CanadaDentrx')
 
