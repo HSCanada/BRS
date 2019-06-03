@@ -72,7 +72,9 @@ SELECT
 	t.effort_hours								AS bx_task_hours,
 
 	t.bx_parent_task_id							AS bx_task_id_parent_org,
-	t.bx_previous_task_id						AS bx_task_id_depends_on_org
+	t.bx_previous_task_id						AS bx_task_id_depends_on_org,
+	g.bx_newreno_qty,
+	g.bx_xray_qty
 
 
 FROM

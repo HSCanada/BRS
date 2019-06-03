@@ -39,7 +39,7 @@ SELECT
 	s.shipto									AS bx_shipto
 	,MIN(c.bx_group_id)							AS bx_group_id
 	,MIN(c.PracticeName) + ' - '
-	+CAST(s.[shipto] as varchar(7))	+ ' - UAT'	AS NAME
+	+CAST(s.[shipto] as varchar(7))	+ ' - UAT2'	AS NAME
 	,RTRIM(MIN([AddressLine3])) 
 	+' | ' + RTRIM(MIN([AddressLine4]))	
 	+' | ' + MIN([City])			
@@ -60,7 +60,8 @@ SELECT
 	,SUM(CASE WHEN mpc.bx_sales_category = 'HITECH' THEN net_sales_amount ELSE 0 END)	AS bx_hitech_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS bx_large_equip_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS bx_dentrix_sales
-	,SUM(CASE WHEN mpc.bx_sales_category = 'ITSL'	THEN net_sales_amount ELSE 0 END)	AS bx_design_sales
+	,SUM(CASE WHEN s.item = '5772918'	THEN order_qty ELSE 0 END)						AS bx_newreno_qty
+	,SUM(CASE WHEN s.item = '5846055'	THEN order_qty ELSE 0 END)						AS bx_xray_qty
 	,LOWER(MIN(c.MarketClass))					AS bx_market_class
 
 	,MIN(sales_date)							AS bx_sales_date

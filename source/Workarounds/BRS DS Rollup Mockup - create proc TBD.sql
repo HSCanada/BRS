@@ -679,30 +679,30 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201904 and 201904) 
+	(t.FiscalMonth between 201905 and 201905) 
 
 -- Fix FSC & Branch - DO IT!
 
 UPDATE   
-	BRS_Transaction
+BRS_Transaction
 SET              
-	TerritoryCd = h.HIST_TerritoryCd,
-	Branch = b.Branch
+TerritoryCd = h.HIST_TerritoryCd,
+Branch = b.Branch
 FROM         
-	BRS_Transaction t INNER JOIN
+BRS_Transaction t INNER JOIN
 	
-	BRS_CustomerFSC_History AS h 
-	ON t.FiscalMonth = h.FiscalMonth AND 
-		t.Shipto = h.Shipto AND 
-		t.TerritoryCd <> h.HIST_TerritoryCd 
+BRS_CustomerFSC_History AS h 
+ON t.FiscalMonth = h.FiscalMonth AND 
+	t.Shipto = h.Shipto AND 
+	t.TerritoryCd <> h.HIST_TerritoryCd 
 
-	INNER JOIN BRS_FSC_Rollup AS b 
-	ON h.HIST_TerritoryCd = b.TerritoryCd
+INNER JOIN BRS_FSC_Rollup AS b 
+ON h.HIST_TerritoryCd = b.TerritoryCd
 
 WHERE     
-	(t.Shipto > 0) AND 
-	(t.DocType <> 'AA') AND 
-	(t.FiscalMonth between 201904 and 201904) 
+(t.Shipto > 0) AND 
+(t.DocType <> 'AA') AND 
+(t.FiscalMonth between 201905 and 201905) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run

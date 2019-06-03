@@ -78,8 +78,6 @@ ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
 	
 GO
 
-sp_who2
-
 
 
 -- fix entity here...
@@ -140,3 +138,22 @@ update      [hfm].[entity]
 set       [ActiveInd] = 0
 where [Entity] in ('CanadaDentrx')
 
+
+-- >> set RDSO, 2 Jun 19
+
+
+INSERT INTO BRS_CustomerSpecialty
+                         (Specialty, SpecialtyNm, SegType, SegCd, SegName, NoteTxt, StatusCd, MarketClass, LastReviewDate, MarketClass_New, SegCd_New)
+SELECT        'RDSO' AS Expr2, 'regional DSO' AS Expr3, SegType, 'RDSO' AS Expr4, 'RDSO' as segname, NoteTxt, StatusCd, MarketClass, LastReviewDate, MarketClass_New, 
+                         'RDSO' AS Expr1
+FROM            BRS_CustomerSpecialty AS BRS_CustomerSpecialty_1
+WHERE        (Specialty = 'DSO')
+go
+
+
+UPDATE       BRS_CustomerFSC_History
+SET                HIST_Specialty = 'RDSO'
+WHERE        (HIST_SegCd = 'rdso') AND (HIST_MarketClass = 'MIDMKT') AND (1 = 1)
+go
+
+-- << added
