@@ -39,7 +39,7 @@ SELECT
 	s.shipto									AS bx_shipto
 	,MIN(c.bx_group_id)							AS bx_group_id
 	,MIN(c.PracticeName) + ' - '
-	+CAST(s.[shipto] as varchar(7))	+ ' - UAT2'	AS NAME
+	+CAST(s.[shipto] as varchar(7))	+ ' - EQP'	AS NAME
 	,RTRIM(MIN([AddressLine3])) 
 	+' | ' + RTRIM(MIN([AddressLine4]))	
 	+' | ' + MIN([City])			
@@ -114,12 +114,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
---
-
-SELECT 
--- TOP 10 
-* 
-FROM nes.bx_group_load
+-- SELECT TOP 10 * FROM nes.bx_group_load
 
 
 /*
