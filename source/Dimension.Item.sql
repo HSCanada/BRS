@@ -121,6 +121,8 @@ SELECT
 	,RTRIM(c.major_cd)					AS MajorCode
 	,RTRIM(cr.ClassGroup)				AS ClassGroup	
 	,i.size_factor
+	,RTRIM(sc_dash.SalesCategoryName)	AS SalesCategoryScorecard
+
 
 
 FROM            
@@ -146,6 +148,9 @@ FROM
 
 	INNER JOIN BRS_ItemSalesCategory AS sc2 
 	ON sc.SalesCategoryRollup = sc2.SalesCategory 
+
+	INNER JOIN BRS_ItemSalesCategory AS sc_dash 
+	ON sc.SalesCategoryScorecard = sc_dash.SalesCategory 
 
 	INNER JOIN BRS_ItemMPC AS mpc 
 	ON i.MajorProductClass = mpc.MajorProductClass 

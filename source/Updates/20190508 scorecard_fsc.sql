@@ -67,3 +67,31 @@ SELECT [employee_num]
 -- IN PROD END ---<
 
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemSalesCategory ADD
+	SalesCategoryScorecard varchar(6) NOT NULL CONSTRAINT DF_BRS_ItemSalesCategory_SalesCategoryScorecard DEFAULT ''
+GO
+ALTER TABLE dbo.BRS_ItemSalesCategory ADD CONSTRAINT
+	FK_BRS_ItemSalesCategory_BRS_ItemSalesCategory3 FOREIGN KEY
+	(
+	SalesCategoryScorecard
+	) REFERENCES dbo.BRS_ItemSalesCategory
+	(
+	SalesCategory
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_ItemSalesCategory SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+UPDATE dbo.BRS_ItemSalesCategory
+SET [SalesCategoryScorecard] = [SalesCategoryRollup]
+go
+
+UPDATE dbo.BRS_ItemSalesCategory
+SET [SalesCategoryScorecard] = [SalesCategory]
+where [SalesCategory] = 'HITECH'
+go
