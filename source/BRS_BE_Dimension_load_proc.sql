@@ -43,7 +43,8 @@ AS
 --  23 Oct 17	tmc		Added @bClearStage option to simplify rights
 --	03 Jan 18	tmc		sunset BRS_TS_Rollup
 --	05 Oct 18	tmc		Add Brand to supplier load for RI
-**    
+**	9 Jun 19	tmc		add subminorcode
+ 
 *******************************************************************************/
 
 BEGIN
@@ -435,38 +436,41 @@ BEGIN
 				CorporateMarketAdjustmentPct= ISNULL(s.CorporateMarketAdjustmentPct, 0), 
 				DivisionalMarketAdjustmentPct= ISNULL(s.DivisionalMarketAdjustmentPct, 0), 
 				CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0),
-				Brand = ISNULL(s.Brand, '')
+				Brand = ISNULL(s.Brand, ''),
+ 				[SubMinorProductCodec] = ISNULL(s.SMNPRCLID,'*')
+
              
 			FROM         
 				STAGE_BRS_ItemFull AS s 
 
-				INNER JOIN BRS_Item 
-				ON s.Item = BRS_Item.Item
+				INNER JOIN BRS_Item d
+				ON s.Item = d.Item
 
 			WHERE
 
-				BRS_Item.ItemDescription <> LEFT(ISNULL(s.ItemDescription, ''),40) OR 
-				BRS_Item.Supplier <> ISNULL(s.Supplier, '')  OR  
-				BRS_Item.Size <> ISNULL(s.Size, '')  OR 
-				BRS_Item.Strength <> LEFT(ISNULL(s.Strength, ''),12)  OR 
-				BRS_Item.ManufPartNumber <> Left(ISNULL(s.ManufPartNumber, ''),15) OR  
-				BRS_Item.FamilySetLeader <> ISNULL(s.FamilySetLeader, '') OR  
-				BRS_Item.ItemStatus <> ISNULL(s.ItemStatus, '') OR  
-				BRS_Item.Label <> ISNULL(s.Label, '') OR  
-				BRS_Item.StockingType <> ISNULL(s.StockingType, '') OR   
-				BRS_Item.GLCategory <> ISNULL(s.GLCategory, '') OR  
-				BRS_Item.TagableItemFlag <> ISNULL(s.TagableItemFlag, '') OR  
-				BRS_Item.ItemCreationDate <> ISNULL(s.ItemCreationDate, '1 Jan 1980') OR  
-				BRS_Item.SalesCategory <> ISNULL(s.SalesCategory, '') OR  
-				BRS_Item.MajorProductClass <> ISNULL(s.MajorProductClass, '') OR  
-				BRS_Item.SubMajorProdClass <> ISNULL(s.SubMajorProdClass, '') OR  
-				BRS_Item.MinorProductClass <> ISNULL(s.MinorProductClass, '') OR  
-				BRS_Item.CurrentFileCost <> ISNULL(s.CurrentFileCost, 0) OR  
-				BRS_Item.FreightAdjPct <> ISNULL(s.FreightAdjPct, 0) OR  
-				BRS_Item.CorporateMarketAdjustmentPct <> ISNULL(s.CorporateMarketAdjustmentPct, 0) OR  
-				BRS_Item.DivisionalMarketAdjustmentPct <> ISNULL(s.DivisionalMarketAdjustmentPct, 0) OR  
-				BRS_Item.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0) OR
-				BRS_Item.Brand <> ISNULL(s.Brand, '')
+				d.ItemDescription <> LEFT(ISNULL(s.ItemDescription, ''),40) OR 
+				d.Supplier <> ISNULL(s.Supplier, '')  OR  
+				d.Size <> ISNULL(s.Size, '')  OR 
+				d.Strength <> LEFT(ISNULL(s.Strength, ''),12)  OR 
+				d.ManufPartNumber <> Left(ISNULL(s.ManufPartNumber, ''),15) OR  
+				d.FamilySetLeader <> ISNULL(s.FamilySetLeader, '') OR  
+				d.ItemStatus <> ISNULL(s.ItemStatus, '') OR  
+				d.Label <> ISNULL(s.Label, '') OR  
+				d.StockingType <> ISNULL(s.StockingType, '') OR   
+				d.GLCategory <> ISNULL(s.GLCategory, '') OR  
+				d.TagableItemFlag <> ISNULL(s.TagableItemFlag, '') OR  
+				d.ItemCreationDate <> ISNULL(s.ItemCreationDate, '1 Jan 1980') OR  
+				d.SalesCategory <> ISNULL(s.SalesCategory, '') OR  
+				d.MajorProductClass <> ISNULL(s.MajorProductClass, '') OR  
+				d.SubMajorProdClass <> ISNULL(s.SubMajorProdClass, '') OR  
+				d.MinorProductClass <> ISNULL(s.MinorProductClass, '') OR  
+				d.CurrentFileCost <> ISNULL(s.CurrentFileCost, 0) OR  
+				d.FreightAdjPct <> ISNULL(s.FreightAdjPct, 0) OR  
+				d.CorporateMarketAdjustmentPct <> ISNULL(s.CorporateMarketAdjustmentPct, 0) OR  
+				d.DivisionalMarketAdjustmentPct <> ISNULL(s.DivisionalMarketAdjustmentPct, 0) OR  
+				d.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0) OR
+				d.Brand <> ISNULL(s.Brand, '') OR
+				d.[SubMinorProductCodec] <> ISNULL(s.SMNPRCLID,'*')
 
 			Set @nErrorCode = @@Error
 		End
@@ -502,7 +506,8 @@ BEGIN
 				CorporateMarketAdjustmentPct, 
 				DivisionalMarketAdjustmentPct,  
 				CurrentCorporatePrice,
-				Brand
+				Brand,
+				[SubMinorProductCodec]
 			)
 
 			SELECT 
@@ -528,7 +533,8 @@ BEGIN
 				ISNULL(s.CorporateMarketAdjustmentPct, 0) CorporateMarketAdjustmentPct, 
 				ISNULL(s.DivisionalMarketAdjustmentPct, 0) DivisionalMarketAdjustmentPct,  
 				ISNULL(s.CurrentCorporatePrice, 0) CurrentCorporatePrice,
-				ISNULL(Brand,'')
+				ISNULL(Brand,''),
+				ISNULL(s.SMNPRCLID,'*')
 			FROM         
 				STAGE_BRS_ItemFull AS s
 			WHERE	(NOT EXISTS

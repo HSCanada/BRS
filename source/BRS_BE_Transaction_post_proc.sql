@@ -236,13 +236,13 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '4. Set Alpha Omega based on BT=1765054 (ELITE)'
+		print '4. Set Alpha Omega based on BT=1765054 (MM / RDSO)'
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'ELITE', 
-		SegCd_New = 'NDSO'
+		MarketClass_New = 'MIDMKT', 
+		SegCd_New = 'RDSO'
 	WHERE        
 		(BillTo = 1765054) AND 
 		(MarketClass_New = '')

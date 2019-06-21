@@ -1,5 +1,5 @@
 --fuzzy match backend support tables
-
+/*
 CREATE SCHEMA [mdm] AUTHORIZATION [dbo]
 
 -- filter
@@ -423,10 +423,71 @@ GO
 COMMIT
 
 
--- testing
+--> 9 Jul 19
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.STAGE_BRS_ItemFull ADD
+	SMNPRCLID char(9) NULL
+GO
+ALTER TABLE dbo.STAGE_BRS_ItemFull SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE usd.BRS_Item ADD
+	SubMinorProductCodec char(9) NOT NULL CONSTRAINT DF_USD_BRS_Item_SubMinorProductCode DEFAULT ''
+GO
+ALTER TABLE usd.BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+GO
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE BRS_Item ADD
+	SubMinorProductCodec char(9) NOT NULL CONSTRAINT DF_BRS_Item_SubMinorProductCode DEFAULT ''
+GO
+ALTER TABLE BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+GO
+
+--< 9 Jul 19
+
+-- cleanup West item in east
+
+delete from mdm.item_match_standard
+where not exists (
+
+select * from STAGE_BRS_ItemFull s where mdm.item_match_standard.item_code_standard = s.item)
+
+
+delete from usd.BRS_Item 
+where not exists (
+
+select * from STAGE_BRS_ItemFull s where usd.BRS_Item.Item = s.item)
+
+
+
+delete from usd.BRS_ItemSupplier
+where not exists (
+
+select * from STAGE_BRS_ItemFull s where usd.BRS_ItemSupplier.supplier = s.Supplier)
+
+*/
+
+
+-- match review
+-- 13 Jun 19
 
 SELECT
+	
+--	top 10
+
 	m.item_code, 
 	m.item_code_ref, 
 	std.item_code_standard, 
@@ -440,15 +501,24 @@ SELECT
 				THEN 'S'
 				ELSE 'F'
 			END
-	END AS match_status,
+	END										AS match_status,
 	m.match_type, 
-	ROUND(m._Confidence,1) _Confidence,
+	ROUND(m._Confidence,1)					AS _Confidence,
 
-	ROUND(m._Similarity,1) _Similarity,
-	ROUND(m._Similarity_DescrStrength,1) _Similarity_DescrStrength,
-	ROUND(m._Similarity_ManufPartNumber,1) _Similarity_ManufPartNumber,
-	ROUND(m._Similarity_Size,1) _Similarity_Size,
-
+	ROUND(m._Similarity,1)					AS _Similarity,
+	ROUND(m._Similarity_DescrStrength,1)	AS _Similarity_DescrStrength,
+	ROUND(m._Similarity_ManufPartNumber,1)	AS _Similarity_ManufPartNumber,
+	ROUND(m._Similarity_Size,1)				AS _Similarity_Size,
+	
+	i.mdm_phase,
+	i.mdm_level_mpc,
+	i.mdm_level,
+	r.mdm_level								AS mdm_level_ref,
+	r.mdm_level - i.mdm_level				AS mdm_diff,
+	i.SubMinorProductCodec,
+	r.SubMinorProductCodec					AS SubMinorProductCodec_ref,
+	i.Est12MoSales,
+	r.Est12MoSales							AS Est12MoSales_ref,
 
 	m.description_strength, 
 	m.description_strength_ref, 
@@ -477,7 +547,16 @@ SELECT
 FROM            
 	mdm.item_match_review AS m 
 
-	INNER JOIN mdm.item_match_standard AS std 
+	LEFT JOIN mdm.item_match_standard AS std 
 	ON m.item_code = std.item_code
 
+	INNER JOIN mdm.item_source_review i
+	ON m.item_code =i.item_code
 
+	LEFT JOIN mdm.item_reference_review r
+	ON m.item_code_ref = r.item_code
+WHERE
+--	i.mdm_level < i.mdm_level_MPC AND
+	m.match_type <>'NO' AND 
+--	m.item_code = '1000989' AND
+	(1=1)

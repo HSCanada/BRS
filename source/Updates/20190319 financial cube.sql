@@ -157,3 +157,31 @@ WHERE        (HIST_SegCd = 'rdso') AND (HIST_MarketClass = 'MIDMKT') AND (1 = 1)
 go
 
 -- << added
+
+UPDATE       BRS_CustomerFSC_History
+SET                
+HIST_MarketClass ='', 
+HIST_SegCd ='', 
+HIST_MarketClass_New =HIST_MarketClass, 
+HIST_SegCd_New =HIST_SegCd
+--
+
+UPDATE       BRS_CustomerFSC_History
+SET                
+	HIST_Specialty = c.Specialty, 
+	HIST_MarketClass = c.MarketClass, 
+	HIST_SegCd = c.SegCd
+FROM            
+	BRS_CustomerFSC_History INNER JOIN
+	BRS_Customer AS c ON BRS_CustomerFSC_History.Shipto = c.ShipTo
+go
+
+UPDATE       BRS_ItemHistory
+SET                MinorProductClass = i.MinorProductClass
+FROM            BRS_ItemHistory h INNER JOIN
+                         BRS_Item AS i ON h.Item = i.Item
+WHERE
+h.MinorProductClass <> i.MinorProductClass
+GO
+
+

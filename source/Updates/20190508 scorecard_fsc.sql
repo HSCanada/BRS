@@ -95,3 +95,126 @@ UPDATE dbo.BRS_ItemSalesCategory
 SET [SalesCategoryScorecard] = [SalesCategory]
 where [SalesCategory] = 'HITECH'
 go
+
+
+-- IN PROD BEGIN (7 Jun 19) ----->
+
+CREATE SCHEMA [strat] AUTHORIZATION [dbo]
+go
+
+
+
+CREATE TABLE [strat].[tracker](
+	[ShipTo] [int] NOT NULL,
+	[FiscalMonth] [int] NOT NULL,
+	[strat_code] [char](3) NOT NULL,
+	[note] [nchar](50) NULL,
+ CONSTRAINT [PK_tracker] PRIMARY KEY CLUSTERED 
+(
+	[ShipTo] ASC,
+	[FiscalMonth] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+
+-- drop table [strat].[tracker_code]
+
+CREATE TABLE [strat].[tracker_code](
+	[strat_code] [char](3) NOT NULL,
+	[strat_description] [nchar](30) NULL,
+	[note] [nchar](50) NULL,
+ CONSTRAINT [PK_tracker_code] PRIMARY KEY CLUSTERED 
+(
+	[strat_code] ASC
+
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+INSERT INTO [strat].[tracker_code]
+(strat_code, strat_description)
+VALUES ('', 'unassigned')
+GO
+
+INSERT INTO [strat].[tracker_code]
+(strat_code, strat_description)
+VALUES ('PAT', 'practice analysis took'),
+('BDM', 'business discovery meeting')
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE strat.tracker ADD CONSTRAINT
+	FK_tracker_BRS_Customer FOREIGN KEY
+	(
+	ShipTo
+	) REFERENCES dbo.BRS_Customer
+	(
+	ShipTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE strat.tracker ADD CONSTRAINT
+	FK_tracker_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE strat.tracker ADD CONSTRAINT
+	FK_tracker_tracker_code FOREIGN KEY
+	(
+	strat_code
+	) REFERENCES strat.tracker_code
+	(
+	strat_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE strat.tracker SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE strat.tracker ADD
+	date_complete date NULL
+GO
+ALTER TABLE strat.tracker SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+-- fix PK
+BEGIN TRANSACTION
+GO
+ALTER TABLE strat.tracker
+	DROP CONSTRAINT PK_tracker
+GO
+ALTER TABLE strat.tracker ADD CONSTRAINT
+	PK_tracker_1 PRIMARY KEY CLUSTERED 
+	(
+	ShipTo,
+	FiscalMonth,
+	strat_code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE strat.tracker SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+-- IN PROD END ---<

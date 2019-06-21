@@ -30,7 +30,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	9 Jun 19	tmc		add subminorcode
 *******************************************************************************/
 
 BEGIN
@@ -109,15 +109,15 @@ BEGIN
 		End
 
 	-- Update dbo.BRS_ItemSupplier
-/*
+
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
 				Print 'Add new Supplier (ItemFull) ...'
 
-				INSERT INTO BRS_ItemSupplier
-									  (Supplier)
-				SELECT DISTINCT ISNULL(t.Supplier,'') AS dt
+				INSERT INTO usd.BRS_ItemSupplier
+									  (Supplier, supplier_nm, CountryGroup)
+				SELECT DISTINCT ISNULL(t.Supplier,'') AS dt, '', ''
 				FROM         STAGE_BRS_ItemFull AS t
 				WHERE     (NOT EXISTS
 										  (SELECT     *
@@ -131,9 +131,9 @@ BEGIN
 			if (@bDebug <> 0)
 				Print 'Add new Brand (ItemFull) ...'
 
-				INSERT INTO BRS_ItemSupplier
-									  (Supplier)
-				SELECT DISTINCT ISNULL(t.Brand,'') AS dt
+				INSERT INTO usd.BRS_ItemSupplier
+									  (Supplier, supplier_nm, CountryGroup)
+				SELECT DISTINCT ISNULL(t.Brand,'') AS dt, '', ''
 				FROM         STAGE_BRS_ItemFull AS t
 				WHERE     (NOT EXISTS
 										  (SELECT     *
@@ -141,7 +141,7 @@ BEGIN
 											WHERE       Supplier = ISNULL(t.Brand,'') ))
 			Set @nErrorCode = @@Error
 		End
-*/
+
 		If (@nErrorCode = 0) 
 		Begin
 
@@ -172,7 +172,9 @@ BEGIN
 				CorporateMarketAdjustmentPct= ISNULL(s.CorporateMarketAdjustmentPct, 0), 
 				DivisionalMarketAdjustmentPct= ISNULL(s.DivisionalMarketAdjustmentPct, 0), 
 				CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0),
-				Brand = ISNULL(s.Brand, '')
+				Brand = ISNULL(s.Brand, ''),
+				[SubMinorProductCodec] = ISNULL(s.SMNPRCLID,'*')
+
              
 			FROM         
 				STAGE_BRS_ItemFull AS s 
@@ -203,7 +205,8 @@ BEGIN
 				d.CorporateMarketAdjustmentPct <> ISNULL(s.CorporateMarketAdjustmentPct, 0) OR  
 				d.DivisionalMarketAdjustmentPct <> ISNULL(s.DivisionalMarketAdjustmentPct, 0) OR  
 				d.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0) OR
-				d.Brand <> ISNULL(s.Brand, '')
+				d.Brand <> ISNULL(s.Brand, '') OR
+				d.[SubMinorProductCodec] <> ISNULL(s.SMNPRCLID,'*')
 
 			Set @nErrorCode = @@Error
 		End
@@ -239,7 +242,8 @@ BEGIN
 				CorporateMarketAdjustmentPct, 
 				DivisionalMarketAdjustmentPct,  
 				CurrentCorporatePrice,
-				Brand
+				Brand,
+				[SubMinorProductCodec]
 			)
 
 			SELECT 
@@ -265,7 +269,8 @@ BEGIN
 				ISNULL(s.CorporateMarketAdjustmentPct, 0) CorporateMarketAdjustmentPct, 
 				ISNULL(s.DivisionalMarketAdjustmentPct, 0) DivisionalMarketAdjustmentPct,  
 				ISNULL(s.CurrentCorporatePrice, 0) CurrentCorporatePrice,
-				ISNULL(Brand,'')
+				ISNULL(Brand,''),
+				ISNULL(s.SMNPRCLID,'*')
 			FROM         
 				STAGE_BRS_ItemFull AS s
 			WHERE	(NOT EXISTS

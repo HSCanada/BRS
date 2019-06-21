@@ -404,7 +404,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201904')
+	(fiscal_yearmo_num = '201905')
 GO
 
 -- import to SSAS next
@@ -417,7 +417,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201902')
+	(fiscal_yearmo_num = '201905')
 GO
 
 print 'dest trans'
@@ -426,13 +426,13 @@ count (*) dest_count
 FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201902')
+	(FiscalMonth = '201905')
 GO
 
 DELETE FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201902')
+	(FiscalMonth = '201904')
 GO
 
 */
