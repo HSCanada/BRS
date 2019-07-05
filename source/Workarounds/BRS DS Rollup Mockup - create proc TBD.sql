@@ -622,7 +622,6 @@ SELECT
 FROM         
 	BRS_Item 
 	CROSS JOIN BRS_Config
-
 GO
 
 INSERT INTO BRS_CustomerFSC_History
@@ -651,7 +650,6 @@ SELECT
 FROM         
 	BRS_Customer c
 	CROSS JOIN BRS_Config g
-
 GO
 
 -- True up the FSC to match last day (updated Month filter)
@@ -679,7 +677,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201905 and 201905) 
+	(t.FiscalMonth between 201906 and 201906) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -702,7 +700,7 @@ ON h.HIST_TerritoryCd = b.TerritoryCd
 WHERE     
 (t.Shipto > 0) AND 
 (t.DocType <> 'AA') AND 
-(t.FiscalMonth between 201905 and 201905) 
+(t.FiscalMonth between 201906 and 201906) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
@@ -725,7 +723,7 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 201905 and 201905) 
+	(t.FiscalMonth between 201906 and 201906) 
 
 
 

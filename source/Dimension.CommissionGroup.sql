@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	08 May 19	tmc		added scorecard rollup
+** 04 Jul 19	tmc		added 3 rollups for FSC, ESS, CSS
 *******************************************************************************/
 
 SELECT 
@@ -39,6 +40,9 @@ SELECT
 	,[comm_group_sm_cd]								AS SpecialMarketCode
 	,[comm_status_cd]								AS SpecialMarketStatusCode
 	,comm_group_scorecard_cd
+	,comm_group_rollup1_cd
+	,comm_group_rollup2_cd
+	,comm_group_rollup3_cd
 FROM 
 	[comm].[group]
 WHERE

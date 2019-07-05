@@ -308,6 +308,29 @@ where
 	line_id <> [record_id]
 GO
 
+print '28. fix remove overlapping line'
+UPDATE       CommBE.dbo.comm_transaction
+SET                
+	line_id = [record_id],
+	[audit_id]=line_id 
+where 
+	fiscal_yearmo_num >= '201901' and
+	exists(
+		SELECT         
+			doc_id,
+			doc_type_cd,
+			line_id
+		FROM            
+			comm.transaction_F555115 t
+		WHERE 
+			CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
+			CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
+			CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
+	) and
+	line_id <> [record_id]
+GO
+
+
 /** STOP ***********************/
 
 ------------------------------------------------------------------------------------------------------
@@ -404,7 +427,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201905')
+	(fiscal_yearmo_num = '201906')
 GO
 
 -- import to SSAS next
@@ -417,7 +440,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201905')
+	(fiscal_yearmo_num = '201906')
 GO
 
 print 'dest trans'
@@ -426,13 +449,14 @@ count (*) dest_count
 FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201905')
+	(FiscalMonth = '201906')
 GO
 
+-- 2 min
 DELETE FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201904')
+	(FiscalMonth = '201906')
 GO
 
 */

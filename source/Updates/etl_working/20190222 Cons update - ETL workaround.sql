@@ -3,6 +3,8 @@
 
 
 -- START
+-- update current day so correct promos updated
+
 
 -- clear prod
 truncate table Redemptions_tbl_Main
@@ -28,7 +30,7 @@ FROM
 	Redemptions..tbl_Main
 WHERE        
 --	RecID = 7889 AND
-	(CAST('2019-06-04' AS DATETIME) BETWEEN EffDate AND Expired) AND
+	(CAST('2019-07-04' AS DATETIME) BETWEEN EffDate AND Expired) AND
 	(1=1)
 GO
 
