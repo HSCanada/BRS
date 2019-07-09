@@ -45,8 +45,8 @@ WHERE
 --	(t.SalesCategory = 'TEETH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 201801 and 201805) OR
-		(t.FiscalMonth BETWEEN 201901 and 201905)
+		(t.FiscalMonth BETWEEN 201801 and 201806) OR
+		(t.FiscalMonth BETWEEN 201901 and 201906)
 	) AND
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
