@@ -86,7 +86,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 
@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 print 'set Exclusives - Excl_key, 1s, 1 OF 3'
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 -- seq 0 of 2
@@ -161,7 +161,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201905 AND 201905
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
 
 print 'clear GpsKey, if needed'
@@ -186,7 +186,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201905 and 201905)
+	(BRS_Transaction.FiscalMonth between 201906 and 201906)
 GO
 
 -- 1 min
@@ -218,7 +218,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201905 and 201905)
+	(BRS_Transaction.FiscalMonth between 201906 and 201906)
 GO
 
 -- 30s
@@ -250,24 +250,23 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201905 and 201905)
+	(BRS_Transaction.FiscalMonth between 201906 and 201906)
 GO
 
-print 'test Excl_key - should be 0 null records'
-select count(*)
+print 'test GpsKey - should be 0 null records'
+SELECT COUNT(*)
 FROM
-	BRS_ItemHistory 
+	BRS_Transaction
 WHERE
-	Excl_key is null AND
-	FiscalMonth BETWEEN 201905 AND 201905
+	GpsKey is null AND
+	FiscalMonth BETWEEN 201906 AND 201906
 GO
-
 
 
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_May-19_RA.CSV
+-- a_CAN_Jun-19_RAr.CSV
 
 -- 3. select & run below
--- [hfm].global_cube_proc  201905, 201905
+-- [hfm].global_cube_proc  201906, 201906

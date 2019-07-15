@@ -39,6 +39,7 @@ AS
 --  27 Sep 18	tmc		update for business review requirements
 --  06 Feb 19	tmc		add ClassGroup for PCW project
 --	15 Feb 19	tmc		add size_factor
+--  12 Jul 19	tmc		add  PrivateLabelScopeInd for FSC scorecard corp %
 **    
 *******************************************************************************/
 
@@ -122,6 +123,7 @@ SELECT
 	,RTRIM(cr.ClassGroup)				AS ClassGroup	
 	,i.size_factor
 	,RTRIM(sc_dash.SalesCategoryName)	AS SalesCategoryScorecard
+	,mpc.PrivateLabelScopeInd
 
 
 

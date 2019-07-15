@@ -243,6 +243,49 @@ CREATE TABLE [mdm].[item_match_t1](
 ) ON [USERDATA]
 GO
 
+-- drop table [mdm].[item_match_t0]
+CREATE TABLE [mdm].[item_match_t0](
+	item_code [varchar](10) NOT NULL,
+	item_code_ref [varchar](10) NULL,
+
+	description_strength [varchar](55) NULL,
+	description_strength_ref [varchar](55) NULL,
+
+	size [varchar](8) NULL,
+	size_usd [varchar](8) NULL,
+
+	manuf_part_number [varchar](15) NULL,
+	manuf_part_number_ref [varchar](15) NULL,
+
+	mpc_code [varchar](3) NULL,
+	mpc_code_ref [varchar](3) NULL,
+
+	supplier [varchar](6) NULL,
+	supplier_ref [varchar](6) NULL,
+
+	supplier_global [nvarchar](30) NULL,
+	supplier_global_ref [nvarchar](30) NULL,
+
+	item_create_date [datetime] NULL,
+	item_create_date_ref [datetime] NULL,
+
+	current_file_cost [money] NULL,
+	current_file_cost_ref [money] NULL,
+
+	[_Similarity] [float] NULL,
+	[_Confidence] [float] NULL,
+
+	[_Similarity_DescrStrength] [float] NULL,
+	[_Similarity_ManufPartNumber] [float] NULL,
+	[_Similarity_Size] [float] NULL
+
+ CONSTRAINT [mdm_item_match_t0_c_pk] PRIMARY KEY CLUSTERED 
+(
+	item_code ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
 --
 
 -- drop table [mdm].[item_match_review]

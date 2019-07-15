@@ -29,7 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	11 JUl 19	tmc		add US item
 *******************************************************************************/
 
 -- active cust only
@@ -72,6 +72,8 @@ SELECT
 	,i.CurrentFileCost				AS current_file_cost
 	,i.CurrentCorporatePrice		AS current_price
 	,i.Est12MoSales
+	,i.item_usd
+	,i.item_usd_conversion_rt
 
 
 FROM

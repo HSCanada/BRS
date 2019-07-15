@@ -74,7 +74,7 @@
 		ON i.[MinorProductClass] = icat.[MinorProductClass]
 
 	WHERE
-		(t.FiscalMonth between 201701 AND 201905)  AND
+		(t.FiscalMonth between 201906 AND 201906)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(glru.ReportingClass <> 'NSA') AND
 
@@ -112,5 +112,6 @@
 --		(SUM(t.[NetSalesAmt]) <>0)
 
 
--- org (18164 rows affected)
+-- set format to Tab delim, text 
+
 

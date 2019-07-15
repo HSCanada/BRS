@@ -218,3 +218,15 @@ COMMIT
 --
 
 -- IN PROD END ---<
+
+-- BRP -> PAR logic here, 15 Jul 19
+
+ALTER TABLE strat.tracker ADD
+	ID int identity(1,1) NOT NULL
+GO
+
+
+update [strat].[tracker]
+set [strat_code] = 'PAR'
+where [strat_code] = 'BRP'
+
