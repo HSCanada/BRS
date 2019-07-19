@@ -33,12 +33,12 @@ WHERE [problem_code] IN ('PH', 'PLH')
 GO
 
 UPDATE [nes].[problem]
-SET problem_rollup = 'PSE'
-WHERE [problem_code] IN ('PSE')
+SET problem_rollup = 'PS'
+WHERE [problem_code] IN ('PS')
 go
 
 UPDATE [nes].[problem]
-SET problem_rollup = 'ZZZ'
-WHERE [problem_code] <> '' AND problem_rollup = ''
+SET problem_rollup = 'PSE'
+WHERE [problem_code] <> '' AND [problem_code] NOT IN ('PH', 'PLH', 'PS')
 
 

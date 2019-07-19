@@ -707,10 +707,28 @@ SELECT
 	DATEADD (day,FGUPMJ_date_updated_JDT%1000-1,
 		DATEADD(year,FGUPMJ_date_updated_JDT/1000,0 ) ) AS FGUPMJ_date_updated,
 	FGTDAY_time_of_day
+	
 FROM
-	Integration.F4073_free_goods_master_file_Staging
+	Integration.F4073_free_goods_master_file_Staging s
+WHERE 
+	EXISTS 
+	(
+		SELECT		
+			MAX(s2.ID) AS id_unique
+		FROM        
+			Integration.F4073_free_goods_master_file_Staging s2
+		GROUP BY	
+			FGAST__adjustment_name, 
+			FGATID_price_adjustment_key_id, 
+			FGLITM_item_number
+		HAVING 
+			s.[ID] = MAX(s2.ID)
+	) AND
+--	FGAST__adjustment_name = 'PRORDFG' AND FGATID_price_adjustment_key_id = 0 AND FGLITM_item_number = '5877802' AND 
+	1=1
 GO
 
+--The duplicate key value is (PRORDFG , 0, 5877802   )
 
 
 print 'add all [Pricing].[price_adjustment_detail_F4072], est 30s'
@@ -1223,8 +1241,13 @@ WHERE
 	-- terrible work-around for terrible pricing practices, 7 Dec 18
 	sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123') AND
 	
+	-- test
+--	pj.PJAN8__billto = 1527768 AND
+
 	(1 = 1)
 GO
+
+-- duplicate key in object 'Pricing.price_adjustment_enroll'. The duplicate key value is (1527768, C).
 
 print 'add Contract Map 2 of 3 -- [Pricing].[price_adjustment_enroll]'
 

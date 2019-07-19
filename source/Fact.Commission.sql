@@ -133,6 +133,8 @@ WHERE
 GO
 
 -- SELECT top 10 * FROM Fact.Commission 
+
+SELECT * FROM Fact.Commission where FiscalMonth = 201901 and LineNumber = 54377210
 /*
 SELECT 
 TOP 10 
