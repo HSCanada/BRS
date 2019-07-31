@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 ** 21 Mar 19	tmc		Add full territory codes for deferred rights & sales 
 ** 30 Mar 19	tmc		Add design sales for new office identify
+** 30 Jul 19	tmc		Add bx_cps_code to description (Dentrix)
 *******************************************************************************/
 
 SELECT
@@ -46,7 +47,8 @@ SELECT
 	+' | ' + MIN([Province])		
 	+' | ' + MIN([PhoneNo])
 	+' | ' + LOWER(RTRIM(MIN(ess.FSCName)))	
-	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))		AS DESCRIPTION
+	+' | ' + LOWER(RTRIM(MIN(fsc.FSCName)))		
+	+' | ' + LOWER(RTRIM(MIN(cps.FSCName)))		AS DESCRIPTION
 	,LOWER(MIN(br.BranchName))					AS KEYWORDS
 
 	,MIN(br.Branch)								AS bx_branch_code
@@ -59,7 +61,7 @@ SELECT
 	,SUM(CASE WHEN mpc.bx_sales_category = 'DIGIMP' THEN net_sales_amount ELSE 0 END)	AS bx_cadcam_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'HITECH' THEN net_sales_amount ELSE 0 END)	AS bx_hitech_sales
 	,SUM(CASE WHEN mpc.bx_sales_category = 'EQUIPM' THEN net_sales_amount ELSE 0 END)	AS bx_large_equip_sales
-	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRIX' THEN net_sales_amount ELSE 0 END)	AS bx_dentrix_sales
+	,SUM(CASE WHEN mpc.bx_sales_category = 'DENTRX' THEN net_sales_amount ELSE 0 END)	AS bx_dentrix_sales
 	,SUM(CASE WHEN s.item = '5772918'	THEN order_qty ELSE 0 END)						AS bx_newreno_qty
 	,SUM(CASE WHEN s.item = '5846055'	THEN order_qty ELSE 0 END)						AS bx_xray_qty
 	,LOWER(MIN(c.MarketClass))					AS bx_market_class
@@ -80,6 +82,9 @@ ON s.fsc_code = fsc.TerritoryCd
 
 INNER JOIN BRS_FSC_Rollup AS ess 
 ON s.ess_code = ess.TerritoryCd 
+
+INNER JOIN BRS_FSC_Rollup AS cps
+ON s.cps_code = cps.TerritoryCd 
 
 INNER JOIN BRS_Branch br
 ON fsc.Branch = br.Branch 

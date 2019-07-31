@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+** 31 Jul 19	tmc		Add secondary owner ability 
 *******************************************************************************/
 
 SELECT
@@ -69,12 +70,19 @@ SELECT
 	DATEADD(WEEKDAY, t.offset_end_date, 
 		g.bx_install_date)						AS END_DATE_PLAN,
 	e.bx_user_id								AS RESPONSIBLE_ID,
+	ISNULL(e2.bx_user_id,0)						AS RESPONSIBLE2_ID,
 	t.effort_hours								AS bx_task_hours,
 
 	t.bx_parent_task_id							AS bx_task_id_parent_org,
 	t.bx_previous_task_id						AS bx_task_id_depends_on_org,
 	g.bx_newreno_qty,
 	g.bx_xray_qty
+
+	,g.bx_branch_code
+	,g.bx_cadcam_sales 
+	,g.[bx_hitech_sales]
+	,g.[bx_large_equip_sales]
+	,g.[bx_dentrix_sales]
 
 
 FROM
@@ -96,7 +104,14 @@ FROM
 	INNER JOIN dbo.BRS_Employee AS e
 	ON br.SamAccountName = e.SamAccountName
 
+	-- add secondar owner as backup -- logic sorted downstream in script
+	LEFT JOIN nes.bx_role_branch br2
+	ON g.bx_branch_code = br2.Branch AND
+		t.role_key = br2.role_key AND
+		br2.unique_id = 2
 
+	LEFT JOIN dbo.BRS_Employee AS e2
+	ON br2.SamAccountName = e2.SamAccountName
 
 
 WHERE

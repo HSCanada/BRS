@@ -1195,6 +1195,7 @@ FROM
 	Integration.F4094_item_customer_keyid_master_file_Staging AS s
 GO
 
+truncate table Pricing.price_adjustment_enroll
 
 print 'add Class Contract Map 1 of 3 -- [Pricing].[price_adjustment_enroll]'
 
@@ -1239,12 +1240,11 @@ WHERE
 	(atn.ATSDGR_order_detail_group = '') AND 
 	(atn.ATLBT__level_break_type = 1) AND
 	-- terrible work-around for terrible pricing practices, 7 Dec 18
-	sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123') AND
-	
+	sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT') AND
 	-- test
---	pj.PJAN8__billto = 1527768 AND
-
+	pj.PJAN8__billto = 1820275 AND
 	(1 = 1)
+ORDER BY 1
 GO
 
 -- duplicate key in object 'Pricing.price_adjustment_enroll'. The duplicate key value is (1527768, C).
