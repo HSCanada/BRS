@@ -235,6 +235,37 @@ WHERE
 	)
 GO
 
+print '18. Update Salesperson'
+UPDATE comm.salesperson_master
+SET
+	salesperson_nm = s.salesperson_nm,
+	comm_plan_id = s.comm_plan_id,
+	creation_dt = s.creation_dt,
+	note_txt = s.note_txt,
+	master_salesperson_cd = s.master_salesperson_cd,
+	flag_ind = s.select_ind,
+	territory_start_dt = ISNULL(s.territory_start_dt,'1980-01-01'),
+	employee_num = s.employee_num
+
+FROM  
+	comm.salesperson_master d
+	INNER JOIN CommBE.dbo.comm_salesperson_master s
+	ON d.salesperson_key_id = s.salesperson_key_id AND
+		s.salesperson_key_id <> ''
+
+WHERE 
+	d.salesperson_nm <> s.salesperson_nm OR
+	d.comm_plan_id <> s.comm_plan_id OR
+	d.creation_dt <> s.creation_dt OR
+	d.note_txt <> s.note_txt OR
+	d.master_salesperson_cd  <> s.master_salesperson_cd OR
+	d.flag_ind <> s.select_ind OR
+	d.territory_start_dt <> ISNULL(s.territory_start_dt,'1980-01-01') OR
+	d.employee_num <> s.employee_num 
+
+GO
+
+
 --> STOP
 
 
