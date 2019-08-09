@@ -212,52 +212,123 @@ WHERE        (NOT EXISTS
                                WHERE        (CommBE.dbo.comm_transaction.price_method_cd = PriceMethod)))
 GO
 
-print '21. fix NA doc_id'
+-- Sales order fix routines
+
+print '21. Map missing comm doc_id to 0'
 UPDATE       CommBE.dbo.comm_transaction
-SET                doc_id = N'0'
-WHERE        (doc_id = 'NA')
+SET                doc_id = N'0', doc_type_cd = 'AA'
+WHERE        (doc_id = 'NA') or (doc_id is null)
 GO
 
-print '22. fix null SalesOrderNumber'
+
+print '21b. fix missing comm Adj doctype to AA'
+UPDATE       CommBE.dbo.comm_transaction
+SET                doc_type_cd = 'AA'
+WHERE        source_cd <> 'JDE' AND (doc_type_cd = '')
+GO
+
+
+-- 30s
+print '22. add missing DS actual SalesOrderNumber to ref list'
+INSERT INTO 
+	[dbo].[BRS_TransactionDW_Ext] 
+	([SalesOrderNumber], DocType)
+SELECT
+	distinct SalesOrderNumber,DocType
+FROM
+	BRS_Transaction t 
+where 
+	SalesOrderNumber IS NOT NULL AND
+	t.DocType <> 'AA' AND
+	NOT exists 
+	(
+		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber] AND t.DocType = ext.DocType
+	) 
+GO
+
+-- 30s
+print '23. add missing Comm actual SalesOrderNumber to ref list'
+INSERT INTO 
+	[dbo].[BRS_TransactionDW_Ext] 
+	([SalesOrderNumber], DocType)
+SELECT
+	distinct doc_id,doc_type_cd
+FROM
+	CommBE.dbo.comm_transaction t 
+where
+	(t.hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
+	doc_id IS NOT NULL AND
+	source_cd = 'JDE' AND
+	NOT exists 
+	(
+		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.doc_id = ext.[SalesOrderNumber] AND t.doc_type_cd = ext.DocType
+	) 
+GO
+
+--
+print '24. ensure that there is an adjust SO for every actaul SO'
+INSERT INTO 
+	[dbo].[BRS_TransactionDW_Ext] 
+	([SalesOrderNumber], DocType)
+SELECT
+	distinct SalesOrderNumber, 'AA' DocType
+FROM
+	[dbo].[BRS_TransactionDW_Ext]  t 
+where
+--	SALESORDERNUMBER = 12461107 AND
+	NOT exists 
+	(
+		select * from [dbo].[BRS_TransactionDW_Ext]  ext where t.SalesOrderNumber = ext.[SalesOrderNumber] AND 'AA' = ext.DocType
+	) 
+ORDER BY 1
+GO
+
+
+/*
+print '24. Fix DS adj SalesOrderNumber=0 where actual trans SO not exist'
 UPDATE       BRS_Transaction
-SET                SalesOrderNumber = 0
-WHERE        (DocType = 'aa')  AND (NOT EXISTS
+SET                SalesOrderNumber = 0, DocType = 'AA'
+WHERE	(DocType = 'AA')  AND (NOT EXISTS
                              (SELECT        * 
                                FROM            BRS_TransactionDW_Ext AS ext
                                WHERE        (BRS_Transaction.SalesOrderNumber = SalesOrderNumber)))
 GO
+*/
 
-print '23. fix null doc_id'
-UPDATE       CommBE.dbo.comm_transaction
-SET                doc_id = N'0'
-WHERE        (doc_id is null)
-GO
-
-
-
--- 30s
-print '24. add missing SalesOrderNumber'
-
-INSERT INTO [dbo].[BRS_TransactionDW_Ext] ([SalesOrderNumber],
-DocType)
-SELECT         distinct SalesOrderNumber,
-DocType
-FROM            BRS_Transaction t 
-where 
-	SalesOrderNumber IS NOT NULL AND  
+print 'test SO RI'
+SELECT
+	distinct fiscal_yearmo_num, source_cd, doc_id,doc_type_cd
+FROM
+	CommBE.dbo.comm_transaction t 
+where
+	(t.hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
+--	doc_id IS NOT NULL AND
+--	source_cd = 'JDE' AND
 	NOT exists 
 	(
-		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.[SalesOrderNumber]
+		select * from [dbo].[BRS_TransactionDW_Ext] ext where t.doc_id = ext.[SalesOrderNumber] AND t.doc_type_cd = ext.DocType
 	) 
 GO
 
-print '25. fix bad doc_id'
-UPDATE       CommBE.dbo.comm_transaction
-SET                doc_id = '0'
-WHERE        (source_cd <> 'JDE') AND (NOT EXISTS
-                             (SELECT        *
-                               FROM            BRS_TransactionDW_Ext
-                               WHERE        (ISNULL(CommBE.dbo.comm_transaction.doc_id,0) = SalesOrderNumber)))
+print '25. Fix Comm adj SO=0 where actual trans SO not exist'
+UPDATE
+	CommBE.dbo.comm_transaction
+SET
+	doc_id = '0', doc_type_cd = 'AA'
+WHERE
+	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
+	(source_cd <> 'JDE') AND 
+	(
+		NOT EXISTS
+		(
+			SELECT *
+			FROM   BRS_TransactionDW_Ext e
+			WHERE 
+			(
+				CommBE.dbo.comm_transaction.doc_id = e.SalesOrderNumber
+			)
+		)
+	)
 GO
 
 
@@ -308,127 +379,62 @@ where
 	line_id <> [record_id]
 GO
 
-print '28. fix remove overlapping line'
-UPDATE       CommBE.dbo.comm_transaction
-SET                
-	line_id = [record_id],
-	[audit_id]=line_id 
-where 
-	fiscal_yearmo_num >= '201901' and
-	exists(
-		SELECT         
-			doc_id,
-			doc_type_cd,
-			line_id
-		FROM            
-			comm.transaction_F555115 t
-		WHERE 
-			CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
-			CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
-			CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
-	) and
-	line_id <> [record_id]
-GO
 
 
 /** STOP ***********************/
+
+/*
+select distinct [FiscalMonth]	 from comm.transaction_F555115
+-- 
+-- truncate table comm.transaction_F555115
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	ID_legacy int NULL
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201712
+*/
 
 ------------------------------------------------------------------------------------------------------
 -- DATA - Migrate legacy
 ------------------------------------------------------------------------------------------------------
 
--- first set month below; 1m15s per month, 7m'
+-- first set month below; 30s per month
 print 'migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
-	FiscalMonth,
-	fsc_code,
-	source_cd,
-	WSDGL__gl_date,
-	transaction_amt,
-	WSLNID_line_number,
-	WSDOCO_salesorder_number,
-	WSVR01_reference,
-	WS$OSC_order_source_code,
-	WSLITM_item_number,
-	WSSOQS_quantity_shipped,
-	WSPROV_price_override_code,
-	WSDSC1_description,
-	fsc_salesperson_key_id,
-	fsc_comm_plan_id,
-	fsc_comm_amt,
-	WS$UNC_sales_order_cost_markup,
-	WSCYCL_cycle_count_category,
-	fsc_comm_group_cd,
-	fsc_comm_rt,
-	ess_salesperson_key_id,
-	gp_ext_amt,
-	WSDCTO_order_type,
-	ess_comm_plan_id,
-	ess_comm_group_cd,
-	ess_comm_rt,
-	ess_comm_amt,
-	WSSHAN_shipto,
-	WSSRP1_major_product_class,
-	WSSRP2_sub_major_product_class,
-	WSSRP3_minor_product_class,
-	WSSRP4_sub_minor_product_class,
-	WS$ESS_equipment_specialist_code,
-	WSCAG__cagess_code,
-	WSAN8__billto,
-	WSAC10_division_code,
-	WSASN__adjustment_schedule,
-	WSSRP6_manufacturer,
-	WS$PMC_promotion_code_price_method)
+	FiscalMonth,fsc_code,source_cd,WSDGL__gl_date,transaction_amt,WSLNID_line_number,WSDOCO_salesorder_number,WSVR01_reference,
+	WS$OSC_order_source_code,WSLITM_item_number,WSSOQS_quantity_shipped,WSPROV_price_override_code,WSDSC1_description,
+	fsc_salesperson_key_id,fsc_comm_plan_id,fsc_comm_amt,WS$UNC_sales_order_cost_markup,WSCYCL_cycle_count_category,
+	fsc_comm_group_cd,fsc_comm_rt,ess_salesperson_key_id,gp_ext_amt,WSDCTO_order_type,ess_comm_plan_id,ess_comm_group_cd,
+	ess_comm_rt,ess_comm_amt,WSSHAN_shipto,WSSRP1_major_product_class,WSSRP2_sub_major_product_class,WSSRP3_minor_product_class,
+	WSSRP4_sub_minor_product_class,WS$ESS_equipment_specialist_code,WSCAG__cagess_code,WSAN8__billto,WSAC10_division_code,
+	WSASN__adjustment_schedule,WSSRP6_manufacturer,WS$PMC_promotion_code_price_method,ID_legacy
+)
 
 SELECT        
 --	TOP (10) 
-	fiscal_yearmo_num,
-	LEFT(salesperson_cd,5),
-	LEFT(source_cd,3),
-	transaction_dt,
-	transaction_amt,
-	line_id,
-	doc_id,
-	ISNULL(reference_order_txt,''),
-	order_source_cd,
-	LEFT(item_id,10),
-	shipped_qty,
-	price_override_ind,
-	transaction_txt,
-	salesperson_key_id,
-	comm_plan_id,
-	comm_amt,
-	cost_unit_amt,
-	item_label_cd,
-	item_comm_group_cd,
-	item_comm_rt,
-	ess_salesperson_key_id,
-	gp_ext_amt,
-	doc_type_cd,
-	ess_comm_plan_id,
-	ess_comm_group_cd,
-	ess_comm_rt,
-	ess_comm_amt,
-	hsi_shipto_id,
-	IMCLMJ,
-	IMCLSJ,
-	IMCLMC,
-	IMCLSM,
-	LEFT(ess_salesperson_cd,5),
-	LEFT(pmts_salesperson_cd,5),
-	hsi_billto_id,
-	hsi_shipto_div_cd,
-	vpa_cd,
-	manufact_cd,
-	price_method_cd
-
+	fiscal_yearmo_num,LEFT(salesperson_cd,5),LEFT(source_cd,3),transaction_dt,transaction_amt,line_id,doc_id,
+	ISNULL(reference_order_txt,''),order_source_cd,LEFT(item_id,10),shipped_qty,price_override_ind,transaction_txt,
+	salesperson_key_id,comm_plan_id,comm_amt,cost_unit_amt,item_label_cd,item_comm_group_cd,item_comm_rt,ess_salesperson_key_id,
+	gp_ext_amt,doc_type_cd,ess_comm_plan_id,ess_comm_group_cd,ess_comm_rt,ess_comm_amt,hsi_shipto_id,IMCLMJ,IMCLSJ,IMCLMC,IMCLSM,
+	LEFT(ess_salesperson_cd,5),LEFT(pmts_salesperson_cd,5),hsi_billto_id,hsi_shipto_div_cd,vpa_cd,manufact_cd,price_method_cd,
+	record_id
 FROM            
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201906')
+	(fiscal_yearmo_num = '201907') AND
+	(1=1)
 GO
+
+-- check load
+Select distinct  FiscalMonth from comm.transaction_F555115
 
 -- import to SSAS next
 
@@ -440,8 +446,11 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201906')
+	(fiscal_yearmo_num = '201905')
 GO
+
+ALL 328332
+
 
 print 'dest trans'
 SELECT        
@@ -461,10 +470,7 @@ GO
 
 */
 
---201601 - 201711; 201712 NEW format
--- check load
-Select distinct  FiscalMonth from comm.transaction_F555115
-
+]
 
 /** STOP ***********************/
 
@@ -562,12 +568,6 @@ COUNT(*) AS Expr1
 FROM            comm.transaction_F555115
 GROUP BY WSDCTO_order_type,
 source_cd
-
-select distinct [FiscalMonth]	 from comm.transaction_F555115
--- 
-
-
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201712
 
 -- load new data source
 INSERT INTO comm.transaction_F555115

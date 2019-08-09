@@ -2533,6 +2533,8 @@ VALUES        (0,
 '',
 'Unassigned')
 
+-- truncate table comm.transaction_F555115
+
 INSERT INTO comm.transaction_F555115
                          (WSDOCO_salesorder_number,
 WSDCTO_order_type,
@@ -2540,7 +2542,7 @@ WSLNID_line_number,
 FiscalMonth,
 WSDGL__gl_date)
 VALUES        (0,
-'',
+'AA',
 0,
 0,
 CONVERT(DATETIME,
