@@ -74,7 +74,7 @@
 		ON i.[MinorProductClass] = icat.[MinorProductClass]
 
 	WHERE
-		(t.FiscalMonth between 201906 AND 201906)  AND
+		(t.FiscalMonth between 201907 AND 201907)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(glru.ReportingClass <> 'NSA') AND
 
