@@ -30,7 +30,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**  21 Aut 19	tmc		add auto [call_type_code] load 
 *******************************************************************************/
 BEGIN
 
@@ -142,6 +142,27 @@ BEGIN
 
 		Set @nErrorCode = @@Error
 	End
+
+
+	-- nes.call_type
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			Print 'Add new call_type...'
+
+		-- order status
+		INSERT INTO [nes].[call_type]
+		([call_type_code], [call_type_descr] )
+		SELECT 
+		distinct [call_type_code], ''
+		FROM Integration.open_order_prorepr s
+		where not exists (
+		select * from [nes].[call_type] c where s.[call_type_code] = c.[call_type_code]
+		)
+
+		Set @nErrorCode = @@Error
+	End
+
 
 	If (@nErrorCode = 0) 
 	Begin
