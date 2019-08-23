@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	14 Sep 17	tmc		Simplified model
+**	22 Aug 19	tmc		cleanup model for CSR discounting
 **    
 *******************************************************************************/
 
@@ -38,14 +39,19 @@ SELECT
 
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
+
+/*
 	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
+	,q.EnrollSource
+	,CASE WHEN q.QuotePriceKey IS NULL THEN 0 ELSE 1 END AS OnActiveQuoteInd
+*/
+
 	,pm.PriceMethodKey
 	,d.FiscalMonth									AS FiscalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
 	,t.LineNumber
 	,t.FreeGoodsInvoicedInd
-	,CASE WHEN q.QuotePriceKey IS NULL THEN 0 ELSE 1 END AS OnActiveQuoteInd
 	
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
@@ -58,6 +64,7 @@ SELECT
 	,(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)  AS DiscountAmt
 	,(t.ExtListPrice  + 0          -  NetSalesAmt)  AS DiscountLineAmt
 	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
+
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
 	,c.BillTo
@@ -67,7 +74,6 @@ SELECT
 	,[EnteredBy]
 	,[OrderTakenBy]
 	,pm.PriceMethod
-	,q.EnrollSource
 	
 
 FROM            
@@ -95,11 +101,14 @@ FROM
 			BRS_TransactionDW_Ext AS h INNER JOIN
 
 			BRS_TransactionDW AS d 
-			ON h.SalesOrderNumber = d.SalesOrderNumber
+			ON 
+				h.SalesOrderNumber = d.SalesOrderNumber AND
+				h.[DocType] = d.[DocType]
 		GROUP BY h.SalesOrderNumber
 	) AS hdr
 	ON t.SalesOrderNumber = hdr.SalesOrderNumber
 
+/*
 	-- match sales to QuotePrice line
 	LEFT JOIN
 	(
@@ -148,6 +157,7 @@ FROM
 --			remove this as per conversion with Marco (enroll dates are pushed forward)		
 --			(t.Date BETWEEN q.PJEFTJ_effective_date AND q.PJEXDJ_expired_date) AND
 			(t.PriceMethod = q.PriceMethod)
+*/
 
 WHERE        
 	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
@@ -177,7 +187,7 @@ HAVING        (COUNT(*) > 1)
 SELECT 
 TOP 10 
 * FROM Fact.Sale 
-WHERE FactKey = 25127039
+WHERE SalesOrderNumber = 11164737
 
 SELECT [BillTo]
       ,[PJASN__adjustment_schedule]

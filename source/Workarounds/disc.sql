@@ -48,6 +48,9 @@ WHERE
 		(t.FiscalMonth BETWEEN 201801 and 201807) OR
 		(t.FiscalMonth BETWEEN 201901 and 201907)
 	) AND
+	-- test with quote exclude
+--	(t.OrderSourceCode IN ('A', 'L')) AND 
+
 --	i.[Supplier] = 'DENTZA' AND
 	(1=1)
 

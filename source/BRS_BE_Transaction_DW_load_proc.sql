@@ -50,6 +50,7 @@ AS
 **	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
 **							Updating PO from BRS_BE_Transaction_load_proc fix
 --	05 Oct 18	tmc		fix alert logic to use text
+--	22 Aug 10	tmc		add new entered_by logic
 **    
 *******************************************************************************/
 BEGIN
@@ -237,6 +238,22 @@ BEGIN
 			WHERE 
 				([CAGREPCD] IS NOT NULL) AND
 				NOT EXISTS (SELECT * FROM [dbo].[BRS_FSC_Rollup] WHERE [CAGREPCD] = [TerritoryCd])
+
+			Set @nErrorCode = @@Error
+		End
+
+		-- entered_by
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new entered_by...'
+
+			INSERT INTO [Pricing].[entered_by] ([entered_by_code])
+			SELECT DISTINCT [ENBYNA]
+			FROM            STAGE_BRS_TransactionDW 
+			WHERE 
+				([ENBYNA] IS NOT NULL) AND
+				NOT EXISTS (SELECT * FROM [Pricing].[entered_by] WHERE [ENBYNA] = [entered_by_code])
 
 			Set @nErrorCode = @@Error
 		End

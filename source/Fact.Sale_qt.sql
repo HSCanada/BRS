@@ -30,6 +30,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
+--	22 Aug 19	tmc		Fixed join now that Salesorder+DocType is PK, add csr
+
 **    
 *******************************************************************************/
 
@@ -39,6 +41,7 @@ SELECT
 	,c.BillTo										AS BillTo
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
+	,csr.[entered_by_key]
 /*
 	-- quote link - phase 2
 	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
@@ -89,6 +92,9 @@ FROM
 	INNER JOIN BRS_PriceMethod AS pm 
 	ON t.PriceMethod = pm.PriceMethod 
 
+	INNER JOIN [Pricing].[entered_by] csr
+	ON t.EnteredBy = csr.[entered_by_code]
+
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
 	(
@@ -99,7 +105,8 @@ FROM
 			BRS_TransactionDW_Ext AS h INNER JOIN
 
 			BRS_TransactionDW AS d 
-			ON h.SalesOrderNumber = d.SalesOrderNumber
+			ON h.SalesOrderNumber = d.SalesOrderNumber AND
+				h.DocType = d.DocType
 		GROUP BY h.SalesOrderNumber
 	) AS hdr
 	ON t.SalesOrderNumber = hdr.SalesOrderNumber
@@ -158,8 +165,8 @@ FROM
 */
 
 WHERE        
-	-- no quotes on Astea
-	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
+-- no quotes on Astea, remove filter so that we can allign to discount merch reporting
+--	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
 
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
 	-- test
