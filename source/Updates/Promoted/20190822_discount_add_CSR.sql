@@ -18,6 +18,25 @@ GO
 ALTER TABLE [Pricing].[entered_by] ADD  CONSTRAINT [DF_entered_by_entered_by]  DEFAULT ('') FOR [entered_by]
 GO
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE Pricing.entered_by ADD
+	branch_code char(5) NOT NULL CONSTRAINT DF_entered_by_branch_code DEFAULT ''
+GO
+ALTER TABLE Pricing.entered_by ADD CONSTRAINT
+	FK_entered_by_BRS_Branch FOREIGN KEY
+	(
+	branch_code
+	) REFERENCES dbo.BRS_Branch
+	(
+	Branch
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE Pricing.entered_by SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 INSERT INTO [Pricing].[entered_by]
 ([entered_by_code], [entered_by])
@@ -51,6 +70,8 @@ GO
 ALTER TABLE dbo.BRS_TransactionDW SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
 
 
 
