@@ -30,7 +30,7 @@ FROM
 	Redemptions..tbl_Main
 WHERE        
 --	RecID = 7889 AND
-	(CAST('2019-08-06' AS DATETIME) BETWEEN EffDate AND Expired) AND
+	(CAST('2019-09-10' AS DATETIME) BETWEEN EffDate AND Expired) AND
 	(1=1)
 GO
 

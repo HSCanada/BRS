@@ -199,6 +199,39 @@ WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <>
 	not exists(select * from [dbo].[BRS_FSC_Rollup] where master_salesperson_cd = [TerritoryCd])
 GO
 
+print '17b. Add new Salesperson to HR'
+INSERT INTO [comm].[hr_employee]
+(
+	[employee_num]
+	,[CostCenter]
+	,[last_name]
+	,[first_name]
+	,[job_title]
+	,[location]
+	,[status_code]
+)
+SELECT        
+	employee_num
+	,''
+	,''
+	,''
+	,''
+	,''
+	,''
+
+FROM            CommBE.dbo.comm_salesperson_master 
+WHERE 
+	employee_num > 0 AND 
+	salesperson_key_id <> '' AND 
+	master_salesperson_cd <> '' AND
+	NOT EXISTS
+	(
+		SELECT * FROM [comm].[hr_employee]
+		WHERE [comm].[hr_employee].employee_num = CommBE.dbo.comm_salesperson_master.employee_num
+	)
+GO
+
+
 print '17. Add new Salesperson'
 INSERT INTO comm.salesperson_master
 (

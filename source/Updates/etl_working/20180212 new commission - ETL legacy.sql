@@ -2,7 +2,7 @@
 -- run manually, AFTER Dimension sync
 -- S:\BR\zDev\BRS\source\Updates\etl_working\20171230 new commission - ETL sync
 
--- 2 minutes
+-- 6 minutes
 /** START ***********************/
 
 
@@ -429,7 +429,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201907') AND
+	(fiscal_yearmo_num = '201908') AND
 	(1=1)
 GO
 
