@@ -34,6 +34,8 @@ AS
 
 SELECT
 	f.SalesOrderNumber
+	,f.sales_order_key
+
 	,pm.[PriceMethodDescr]						AS PriceMethod
 	,pm2.[PriceMethodDescr]						AS PriceMethodRollup
 	,os.OrderSourceCode + ' | ' 

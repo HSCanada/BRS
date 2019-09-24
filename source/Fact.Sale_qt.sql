@@ -50,6 +50,7 @@ SELECT
 */
 
 	,pm.PriceMethodKey
+	,promo.[promotion_key]							AS PromotionKey
 	,d.FiscalMonth									AS FiscalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
@@ -68,6 +69,7 @@ SELECT
 	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
+	,IDMin											AS sales_order_key
 	,[DocType]
 	,[OrderPromotionCode]
 	,[OrderSourceCode]
@@ -94,6 +96,10 @@ FROM
 
 	INNER JOIN [Pricing].[entered_by] csr
 	ON t.EnteredBy = csr.[entered_by_code]
+
+	LEFT JOIN [dbo].[BRS_Promotion] as promo
+	ON t.PromotionCode = promo.PromotionCode AND
+		t.PriceMethod = 'P'
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -180,6 +186,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM Fact.Sale_qt ORDER BY 1 
+-- SELECT count(*) FROM Fact.Sale_qt
+-- 8435767 = 8435767
 
 /*
 

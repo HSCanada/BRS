@@ -8,3 +8,10 @@ GO
 ALTER TABLE Pricing.entered_by SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
+-- add to prod, 23 Sep 19
+ALTER TABLE [dbo].[BRS_Promotion] ADD
+	[promotion_key] INT NOT NULL  Identity(1,1)
+	
+	
