@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	16 Sep 18	tmc		add fsc territory for branch split
+**  25 Sep 19	tmc		add cps & EPS salesperson and commission 
 **    
 *******************************************************************************/
 
@@ -41,6 +42,13 @@ SELECT
 	,fsc_grp.comm_group_key							AS FSC_CommGroupKey
 	,ess.salesperson_master_key						AS ESS_SalespersonKey
 	,ess_grp.comm_group_key							AS ESS_CommGroupKey
+
+	-- yes, 2 is a magic number -- too late to fix...
+	,ISNULL(cps.salesperson_master_key, 2)			AS CPS_SalespersonKey
+	,ISNULL(cps_grp.comm_group_key, 1)				AS CPS_CommGroupKey
+
+	,ISNULL(eps.salesperson_master_key, 2)			AS EPS_SalespersonKey
+	,ISNULL(eps_grp.comm_group_key, 1)				AS EPS_CommGroupKey
 
 
 	,t.[WSSHAN_shipto]								AS ShipTo
@@ -98,7 +106,20 @@ FROM
 
 	INNER JOIN [comm].[salesperson_master] as ess
 	ON ess.salesperson_key_id = t.[ess_salesperson_key_id]
+--
+	LEFT JOIN [comm].[salesperson_master] as cps
+	ON cps.salesperson_key_id = t.[cps_salesperson_key_id]
 
+	LEFT JOIN [comm].[salesperson_master] as eps
+	ON eps.salesperson_key_id = t.[eps_salesperson_key_id]
+
+	LEFT JOIN [comm].[group] as cps_grp
+	ON cps_grp.comm_group_cd = t.[cps_comm_group_cd]
+
+	LEFT JOIN [comm].[group] as eps_grp
+	ON eps_grp.comm_group_cd = t.[eps_comm_group_cd]
+
+--
 	INNER JOIN [comm].[group] as fsc_grp
 	ON fsc_grp.comm_group_cd = t.[fsc_comm_group_cd]
 
