@@ -528,46 +528,7 @@ WHERE TerritoryCd = 'PMT27'
 go
 
 
---
-SELECT
-	FactKey,
-	FiscalMonth,
 
-	FSC_SalespersonKey,
-	FSC_SalespersonCodeKey,
-	FSC_CommGroupKey,
-
-	ESS_SalespersonKey,
-	ESS_CommGroupKey,
-
-	CPS_SalespersonKey,
-	CPS_CommGroupKey,
-
-	EPS_SalespersonKey,
-	EPS_CommGroupKey,
-
-	ShipTo,
-	ItemKey,
-	SalesOrderNumber,
-	DocTypeKey,
-	LineNumber,
-	DateKey,
-	BillTo,
-	SourceKey,
-	FreeGoodsEstInd,
-	FreeGoodsRedeemedInd,
-	Quantity,
-	SalesAmt,
-	GPAmt,
-	FSC_CommAmt,
-	ESS_CommAmt,
-	FreeGoodsInvoicedInd
-
-FROM
-	Fact.Commission
---
-
-
--- TODO update comm & group in sapes based on map
+-- TODO update comm & group in sales based on map
 
 
