@@ -45,6 +45,7 @@ AS
 --  29 Nov 18	tmc		add new Exclusive public field for rename flexabiltity
 --	09 Jan 19	tmc		add temp test scafolding to find missing Sales order
 --  29 Mar 19	tmc		add specialty & Supplier to feed
+--	26 Sep 19	tmc		add global product xref
 *******************************************************************************/
 
 -- it would be a_CAN_Jan-18 
@@ -72,7 +73,8 @@ BEGIN
 
 		cc.[Entity]								AS ENTITY 
 		,[HFM_Account]							AS ACCOUNT
-		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
+		,RTRIM(LEFT(ih.[global_product_class],9))	AS PRODUCT
+--		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)		AS BRAND_EQUITY
 		,RTRIM(excl.Excl_Code_Public)			AS BRAND_LINE
 		,RTRIM(ch.HIST_MarketClass)				AS CUSTOMER
@@ -142,7 +144,8 @@ BEGIN
 		t.FiscalMonth
 		,cc.[Entity]
 		,hfm.[HFM_Account]
-		,ih.MinorProductClass
+		,ih.[global_product_class]
+--		,ih.MinorProductClass
 		-- new
 		,ih.Supplier
 		,excl.BrandEquityCategory
@@ -173,7 +176,8 @@ BEGIN
 
 		cc.[Entity]								AS Entity
 		,[HFM_Account]							AS Account
-		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
+		,RTRIM(LEFT(ih.[global_product_class],9))	AS PRODUCT
+--		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)		AS BrandEquity
 		,RTRIM(excl.Excl_Code_Public)			AS BrandLine
 		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
@@ -248,7 +252,8 @@ BEGIN
 		t.FiscalMonth
 		,cc.[Entity]
 		,hfm.[HFM_Account]
-		,ih.MinorProductClass
+		,ih.[global_product_class]
+--		,ih.MinorProductClass
 		-- new
 		,ih.Supplier
 		,excl.BrandEquityCategory
@@ -278,7 +283,8 @@ BEGIN
 
 		cc.[Entity]								AS Entity
 		,[HFM_Account]							AS Account
-		,RTRIM(LEFT(ih.MinorProductClass,9))	AS Product
+		,RTRIM(LEFT(ih.[global_product_class],9))	AS PRODUCT
+--		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)		AS BrandEquity
 		,RTRIM(excl.Excl_Code_Public)			AS BrandLine
 		,RTRIM(ch.HIST_MarketClass)				AS CustomerCategory
@@ -355,7 +361,8 @@ BEGIN
 		t.FiscalMonth
 		,cc.[Entity]
 		,hfm.[HFM_Account]
-		,ih.MinorProductClass
+		,ih.[global_product_class]
+--		,ih.MinorProductClass
 		-- new
 		,ih.Supplier
 		,excl.BrandEquityCategory
@@ -439,6 +446,15 @@ GO
 --a_CAN_May-19_RA.csv
 -- [hfm].global_cube_proc  201905, 201905
 
+--a_CAN_Jun-19_RA.csv
+-- [hfm].global_cube_proc  201906, 201906
+
+--a_CAN_Jul-19_RA.csv
+-- [hfm].global_cube_proc  201907, 201907
+
+--a_CAN_Aug-19_RA.csv
+-- [hfm].global_cube_proc  201908, 201908
+-- 
 
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 

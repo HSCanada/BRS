@@ -677,7 +677,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201908 and 201908) 
+	(t.FiscalMonth between 201909 and 201909) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -700,7 +700,7 @@ ON h.HIST_TerritoryCd = b.TerritoryCd
 WHERE     
 (t.Shipto > 0) AND 
 (t.DocType <> 'AA') AND 
-(t.FiscalMonth between 201908 and 201908) 
+(t.FiscalMonth between 201909 and 201909) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
