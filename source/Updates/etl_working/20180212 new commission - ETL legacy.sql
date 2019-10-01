@@ -429,7 +429,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201908') AND
+	(fiscal_yearmo_num = '201909') AND
 	(1=1)
 GO
 
@@ -446,10 +446,8 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201905')
+	(fiscal_yearmo_num = '201909')
 GO
-
-ALL 328332
 
 
 print 'dest trans'
@@ -458,14 +456,14 @@ count (*) dest_count
 FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201906')
+	(FiscalMonth = '201909')
 GO
 
 -- 2 min
 DELETE FROM            
 	comm.transaction_F555115
 WHERE        
-	(FiscalMonth = '201906')
+	(FiscalMonth = '201908')
 GO
 
 */
