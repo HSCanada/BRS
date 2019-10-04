@@ -433,6 +433,94 @@ WHERE
 	(1=1)
 GO
 
+-- EPS / CPS post process, tmc, 3 Oct 19
+
+-- CHANGE DATES!!  w/f Gary.  Yes, this is terrible.  automate!!
+
+----------------------
+-- update CPS item
+UPDATE       comm.transaction_F555115
+SET                cps_comm_group_cd = i.comm_group_cps_cd
+FROM            comm.transaction_F555115 INNER JOIN
+                         BRS_Item AS i ON comm.transaction_F555115.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_cps_cd <> '') AND 
+	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(1 = 1)
+
+GO
+
+-- update EPS item
+UPDATE       comm.transaction_F555115
+SET                eps_comm_group_cd = i.comm_group_eps_cd
+FROM            comm.transaction_F555115 INNER JOIN
+                         BRS_Item AS i ON comm.transaction_F555115.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_eps_cd <> '') AND 
+	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(1 = 1)
+GO
+
+
+-- CPS update plan & terr
+UPDATE
+	comm.transaction_F555115
+SET
+	cps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+	cps_comm_plan_id = m.comm_plan_id , 
+	cps_code = m.TerritoryCd
+FROM
+comm.transaction_F555115 
+
+INNER JOIN BRS_Customer AS c 
+ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+INNER JOIN BRS_FSC_Rollup AS f 
+ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+
+INNER JOIN comm.plan_region_map AS m 
+ON m.comm_plan_id = 'CPSGP' AND 
+	c.PostalCode LIKE m.postal_code_where_clause_like AND 
+	1 = 1 
+INNER JOIN BRS_FSC_Rollup AS sales_key 
+ON sales_key.TerritoryCd = m.TerritoryCd
+
+WHERE
+	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(1 = 1)
+
+-- EPS update plan & terr
+
+UPDATE
+	comm.transaction_F555115
+SET
+	eps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+	eps_comm_plan_id = m.comm_plan_id , 
+	eps_code = m.TerritoryCd
+FROM
+comm.transaction_F555115 
+
+INNER JOIN BRS_Customer AS c 
+ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+INNER JOIN BRS_FSC_Rollup AS f 
+ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+
+INNER JOIN comm.plan_region_map AS m 
+ON m.comm_plan_id = 'EPSGP' AND 
+	f.[Branch] = m.[branch_code_where_clause_like] AND 
+	1 = 1 
+INNER JOIN BRS_FSC_Rollup AS sales_key 
+ON sales_key.TerritoryCd = m.TerritoryCd
+
+WHERE
+	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(1 = 1)
+
+----------------------
+
 -- check load
 Select distinct  FiscalMonth from comm.transaction_F555115
 
