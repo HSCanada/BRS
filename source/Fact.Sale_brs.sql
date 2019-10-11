@@ -62,7 +62,6 @@ SELECT
 
 	
 	-- Substitute logic
-
 	,t.ShippedQty/NULLIF(i.Item_Competitive_Conversion_rt,0)						AS SubsQuantity
 	,(t.NetSalesAmt) * (isub.CurrentCorporatePrice / NULLIF(i.CurrentCorporatePrice,0)) AS SubsSalesAmt
 
@@ -70,7 +69,7 @@ SELECT
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
 	,c.BillTo
-	,[DocType]
+	,t.[DocType]
 	,[OrderPromotionCode]
 	,[OrderSourceCode]
 	,[EnteredBy]
@@ -104,26 +103,36 @@ FROM
 
 	INNER JOIN [dbo].[BRS_ItemSupplier] sup
 	ON i.Brand = sup.Supplier
-	 
+
+	INNER JOIN [dbo].[BRS_SalesDay] AS dday
+	ON t.[Date] = dday.SalesDate
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
 	(
 		SELECT
-			h.SalesOrderNumber, 
+			d.SalesOrderNumber, 
+			d.[DocType],
 			MIN(d.ID) AS IDMin
 		FROM
-			BRS_TransactionDW_Ext AS h INNER JOIN
+			BRS_TransactionDW AS d
 
-			BRS_TransactionDW AS d 
-			ON h.SalesOrderNumber = d.SalesOrderNumber
-		GROUP BY h.SalesOrderNumber
+			INNER JOIN [dbo].[BRS_SalesDay] AS dday2
+			ON d.[Date] = dday2.SalesDate
+
+		WHERE	
+			(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE dday2.CalMonth = dd.CalMonth)) AND
+			(1=1)
+		GROUP BY 
+			d.SalesOrderNumber,
+			d.[DocType]
 	) AS hdr
-	ON t.SalesOrderNumber = hdr.SalesOrderNumber
+	ON t.SalesOrderNumber = hdr.SalesOrderNumber AND
+		t.DocType = hdr.DocType
 
 
 WHERE        
-	(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE CAST(FORMAT(t.Date,'yyyyMM') AS INT) = dd.CalMonth)) AND
+	(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE dd.CalMonth = t.CalMonth)) AND
 	(1 = 1)
 
 GO
@@ -134,11 +143,17 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM Fact.Sale_brs
+-- SELECT * FROM Fact.Sale_brs
+
+-- 1 month test
+-- 1.03; 2 259 017 RAW
+-- 1.17; 2 259 017 new
+
+-- 25 month test
+-- 4.29; 8 399 287
 
 -- SELECT count (*) FROM Fact.Sale_brs
 
---9 094 783, 1m20s
---9 094 783, 1m25s
-
+-- fail afer 2 min
 
 -- select top 10 * from [Fact].[Sale_brs]
