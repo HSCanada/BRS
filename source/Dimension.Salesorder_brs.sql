@@ -29,11 +29,13 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	10 Oct 19	tmc		add sales_order_key as PK for tubular 1-many 
 **    
 *******************************************************************************/
 
 SELECT
 	f.SalesOrderNumber
+	,f.sales_order_key
 	,os.AdvancedPricingInd 
 	,os.OrderSourceCode + ' | ' 
 	+ RTRIM(os.OrderSourceCodeDescr)			AS OrderSource
@@ -69,7 +71,7 @@ FROM
 
 
 WHERE        
-	(f.FactKey = f.FactKeyFirst) AND
+	(f.FactKey = f.sales_order_key) AND
 --	f.FactKey = 0 AND
 	1=1
 

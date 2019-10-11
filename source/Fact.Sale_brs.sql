@@ -67,7 +67,7 @@ SELECT
 
 
 	-- Lookup fields for Salesorder dimension
-	,hdr.IDMin										AS FactKeyFirst
+	,hdr.IDMin										AS sales_order_key
 	,c.BillTo
 	,t.[DocType]
 	,[OrderPromotionCode]
