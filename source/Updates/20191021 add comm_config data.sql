@@ -19,6 +19,8 @@ comm_log_filepath_txt = 'S:\BR\CommBE\Publish\CommBE_log.txt'
 
 
 
+-- legacy
 -- SELECT current_fiscal_yearmo_num, output_path_txt, log_filepath_txt FROM comm_configure
 
+-- new
 SELECT PriorFiscalMonth AS current_fiscal_yearmo_num, comm_output_path_txt AS output_path_txt, comm_log_filepath_txt AS log_filepath_txt FROM dbo.BRS_Config
