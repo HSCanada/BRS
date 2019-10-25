@@ -51,15 +51,19 @@ SELECT
 FROM
 	BRS_Item AS i
 
+--	LEFT JOIN hfm.exclusive_product_rule AS r 
 	INNER JOIN hfm.exclusive_product_rule AS r 
 	ON i.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
 		i.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
 		i.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
 		i.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
 		1 = 1 
+
 	
+--	LEFT JOIN hfm.exclusive_product AS p 
 	INNER JOIN hfm.exclusive_product AS p 
 	ON r.Excl_Code_TargKey = p.Excl_Code  
+
 
 	INNER JOIN [dbo].[BRS_ItemCategory] cat
 	ON i.MinorProductClass = cat.MinorProductClass

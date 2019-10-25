@@ -12,7 +12,7 @@ INSERT INTO [hfm].[exclusive_product]
      VALUES
            ('ZIRLUX'
            ,'ZIRLUX'
-           ,'Owned'
+           ,'Exclusive'
            ,'Merchandise'
            ,'Barb Brown'
            ,'DW'
@@ -34,7 +34,7 @@ INSERT INTO [hfm].[exclusive_product_rule]
            ,[Note]
            ,[StatusCd])
      VALUES
-           ('ZIRLUX'
+           ('%'
            ,'%'
            ,'372-01-05%'
            ,'%'
@@ -46,7 +46,7 @@ INSERT INTO [hfm].[exclusive_product_rule]
            , 1
 		   ),
 
-           ('ZIRLUX'
+           ('%'
            ,'%'
            ,'372-02-10%'
            ,'%'
@@ -58,7 +58,7 @@ INSERT INTO [hfm].[exclusive_product_rule]
            , 1
 		   ),
 
-           ('ZIRLUX'
+           ('%'
            ,'%'
            ,'372-02-40%'
            ,'%'
@@ -70,7 +70,7 @@ INSERT INTO [hfm].[exclusive_product_rule]
            , 1
 		   ),
 
-           ('ZIRLUX'
+           ('%'
            ,'%'
            ,'372-03-10%'
            ,'%'
@@ -84,6 +84,45 @@ INSERT INTO [hfm].[exclusive_product_rule]
 
 GO
 
+
+-- Test item, exclusive 1 or 2.  seems OK
+
+SELECT 
+	[Item]      
+	,[ItemDescription]
+	,[MinorProductClass]
+	,[Supplier]
+
+FROM [dbo].[BRS_Item]
+where 
+	[MinorProductClass] like '372-01-05%' OR
+	[MinorProductClass] like '372-02-10%' OR
+	[MinorProductClass] like '372-02-40%' OR
+	[MinorProductClass] like '372-03-10%' 
+
+-- Test, ok, Zirlux NOT tracking
+
+SELECT TOP (1000) [Item_Number]
+      ,[Item_Description]
+      ,[Major_Product_Class]
+      ,[Major_Product_Class_Description]
+      ,[Sub_Minor_Prod_Class]
+      ,[Sub_Minor_Prod_Class_Description]
+      ,[Supplier]
+      ,[Supplier_Description]
+      ,[Item_Create_Date]
+      ,[Item_Status]
+      ,[Stocking_Type]
+FROM [eps].[Item] 
+where 
+	[Sub_Minor_Prod_Class] like '372-01-05%' OR
+	[Sub_Minor_Prod_Class] like '372-02-10%' OR
+	[Sub_Minor_Prod_Class] like '372-02-40%' OR
+	[Sub_Minor_Prod_Class] like '372-03-10%' 
+
+
+
+---
 
 -- test
 
@@ -102,15 +141,14 @@ from
 WHERE        
 	(r.StatusCd = 1) AND 
 	r.[Excl_Code_TargKey] = 'ZIRLUX' AND
-	FiscalMonth BETWEEN 201906 AND 201906 AND
---	h.Excl_key <>2 AND
+	h.Excl_key not in (1,2) AND
+	FiscalMonth BETWEEN 201801 AND 201910 AND
 	(1=1)
-
 GO
 
+-- test good = 14024
 
-
-print 'set ACE to Exclusives'
+print 'set Zirlux to Exclusives'
 UPDATE       
 	BRS_ItemHistory
 SET
@@ -127,55 +165,6 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	BRS_ItemHistory.Supplier = 'ACESUR' AND
-	FiscalMonth BETWEEN 201801 AND 201909
+	r.[Excl_Code_TargKey] = 'ZIRLUX' AND
+	FiscalMonth BETWEEN 201801 AND 201910
 GO
-
-
---
-
-/****** Script for SelectTopNRows command from SSMS  ******/
-SELECT TOP (1000) [Item_Number]
-      ,[Item_Description]
-      ,[Major_Product_Class]
-      ,[Major_Product_Class_Description]
-      ,[Sub_Minor_Prod_Class]
-      ,[Sub_Minor_Prod_Class_Description]
-      ,[Supplier]
-      ,[Supplier_Description]
-      ,[Item_Create_Date]
-      ,[Item_Status]
-      ,[Stocking_Type]
-FROM [eps].[Item] 
-where 
---	[Supplier] = 'MILESTONE' AND
---	[Supplier] = 'ZIRLUX' AND
-	[Sub_Minor_Prod_Class] like '372-01-05%' OR
-	[Sub_Minor_Prod_Class] like '372-02-10%' OR
-	[Sub_Minor_Prod_Class] like '372-02-40%' OR
-	[Sub_Minor_Prod_Class] like '372-03-10%' 
-
-
-SELECT TOP (1000) 
-
-[Item]      
-[ItemDescription]
-
-,[Item_Description]
-      ,[Major_Product_Class]
-      ,[Major_Product_Class_Description]
-      ,[Sub_Minor_Prod_Class]
-      ,[Sub_Minor_Prod_Class_Description]
-      ,[Supplier]
-      ,[Supplier_Description]
-      ,[Item_Create_Date]
-      ,[Item_Status]
-      ,[Stocking_Type]
-FROM [dbo].[BRS_Item]
-where 
---	[Supplier] = 'MILESTONE' AND
---	[Supplier] = 'ZIRLUX' AND
-	[Sub_Minor_Prod_Class] like '372-01-05%' OR
-	[Sub_Minor_Prod_Class] like '372-02-10%' OR
-	[Sub_Minor_Prod_Class] like '372-02-40%' OR
-	[Sub_Minor_Prod_Class] like '372-03-10%' 
