@@ -1,17 +1,18 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_salesperson_master_1.branch_cd)=GetCurrentBranch()) AND ((comm_ess_state"
-    "ment_detail.fsc_salesperson_key_id)<>\"internal\"))"
+Where ="(((BRS_FSC_Rollup.Branch)=GetCurrentBranch()) AND ((comm_ess_statement_detail.fs"
+    "c_salesperson_key_id)<>\"internal\"))"
 Begin InputTables
     Name ="comm_ess_statement_detail"
     Name ="comm_salesperson_master"
     Name ="comm_salesperson_master"
     Alias ="comm_salesperson_master_1"
+    Name ="BRS_FSC_Rollup"
 End
 Begin OutputColumns
     Expression ="comm_ess_statement_detail.fiscal_yearmo_num"
     Alias ="branch_cd"
-    Expression ="First(comm_salesperson_master_1.branch_cd)"
+    Expression ="First(BRS_FSC_Rollup.Branch)"
     Alias ="fiscal_begin_dt"
     Expression ="First(comm_ess_statement_detail.fiscal_begin_dt)"
     Alias ="fiscal_end_dt"
@@ -44,6 +45,10 @@ Begin Joins
     RightTable ="comm_salesperson_master_1"
     Expression ="comm_ess_statement_detail.fsc_salesperson_key_id = comm_salesperson_master_1.sal"
         "esperson_key_id"
+    Flag =1
+    LeftTable ="comm_salesperson_master_1"
+    RightTable ="BRS_FSC_Rollup"
+    Expression ="comm_salesperson_master_1.master_salesperson_cd = BRS_FSC_Rollup.TerritoryCd"
     Flag =1
 End
 Begin OrderBy
@@ -138,12 +143,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1560
-    Bottom =956
+    Right =1343
+    Bottom =797
     Left =-1
     Top =-1
-    Right =1544
-    Bottom =474
+    Right =1327
+    Bottom =556
     Left =0
     Top =0
     ColumnsShown =543
@@ -166,12 +171,21 @@ Begin
         Name =""
     End
     Begin
-        Left =548
-        Top =263
-        Right =891
-        Bottom =470
+        Left =533
+        Top =285
+        Right =876
+        Bottom =492
         Top =0
         Name ="comm_salesperson_master_1"
+        Name =""
+    End
+    Begin
+        Left =996
+        Top =226
+        Right =1140
+        Bottom =370
+        Top =0
+        Name ="BRS_FSC_Rollup"
         Name =""
     End
 End

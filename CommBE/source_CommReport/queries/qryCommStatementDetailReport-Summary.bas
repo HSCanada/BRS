@@ -58,14 +58,6 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="comm_statement_detail.source_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0

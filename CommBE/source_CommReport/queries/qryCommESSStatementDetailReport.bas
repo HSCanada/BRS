@@ -26,7 +26,6 @@ Begin OutputColumns
     Expression ="comm_ess_statement_detail.item_id"
     Expression ="comm_ess_statement_detail.transaction_txt"
     Expression ="comm_ess_statement_detail.item_comm_group_cd"
-    Expression ="comm_ess_statement_detail.comm_rt"
     Expression ="comm_ess_statement_detail.transaction_amt"
     Expression ="comm_ess_statement_detail.comm_amt"
     Expression ="comm_ess_statement_detail.gp_ext_amt"
@@ -120,10 +119,6 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="comm_ess_statement_detail.comm_rt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_ess_statement_detail.transaction_amt"
         dbLong "AggregateType" ="-1"
     End
@@ -139,10 +134,6 @@ Begin
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.gp_ext_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_ess_statement_detail.customer_comm_group_cd"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -162,12 +153,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1560
-    Bottom =971
+    Right =1343
+    Bottom =797
     Left =-1
     Top =-1
-    Right =1544
-    Bottom =310
+    Right =1327
+    Bottom =276
     Left =0
     Top =0
     ColumnsShown =539

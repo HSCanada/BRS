@@ -22,16 +22,14 @@ Begin OutputColumns
     Expression ="comm_ess_statement_detail.IMCLMJ"
     Expression ="comm_ess_statement_detail.item_label_cd"
     Expression ="comm_ess_statement_detail.manufact_cd"
-    Expression ="comm_ess_statement_detail.comm_rt"
     Expression ="comm_ess_statement_detail.comm_amt"
     Expression ="comm_ess_statement_detail.fsc_salesperson_key_id"
-    Expression ="comm_customer_master.SPM_StatusCd"
     Expression ="comm_ess_statement_detail.source_cd"
 End
 Begin Joins
     LeftTable ="comm_ess_statement_detail"
     RightTable ="comm_customer_master"
-    Expression ="comm_ess_statement_detail.hsi_shipto_id = comm_customer_master.hsi_shipto_id"
+    Expression ="comm_ess_statement_detail.hsi_shipto_id = comm_customer_master.ShipTo"
     Flag =2
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -54,10 +52,6 @@ Begin
         dbText "Name" ="comm_ess_statement_detail.customer_nm"
         dbInteger "ColumnWidth" ="2535"
         dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_ess_statement_detail.salesperson_key_id"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -142,17 +136,25 @@ Begin
         dbText "Name" ="comm_ess_statement_detail.source_cd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Expr1"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr2"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1520
+    Right =1343
     Bottom =797
     Left =-1
     Top =-1
-    Right =1504
-    Bottom =459
+    Right =1327
+    Bottom =425
     Left =0
     Top =0
     ColumnsShown =539
@@ -160,7 +162,7 @@ Begin
         Left =48
         Top =12
         Right =374
-        Bottom =280
+        Bottom =339
         Top =0
         Name ="comm_ess_statement_detail"
         Name =""

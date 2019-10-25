@@ -1,9 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="((([comm_ess_statement_detail].[comm_group_cd]) In (\"ITMFO1\",\"ITMFO2\",\"ITMF"
-    "O3\",\"ITMFRT\",\"ITMCNX\",\"ITMDET\",\"ITMBTI\",\"ITMISC\",\"ITMCPU\",\"ITMSOF\""
-    ",\"ITMMID\")) AND ((comm_ess_statement_detail.salesperson_key_id)=GetCurrentFSC("
-    ")))"
+Where ="(((comm_ess_statement_detail.item_comm_group_cd) In (\"ITMFO1\",\"ITMFO2\",\"ITM"
+    "FO3\",\"ITMFRT\",\"ITMCNX\",\"ITMDET\",\"ITMBTI\",\"ITMISC\",\"ITMCPU\",\"ITMSOF"
+    "\",\"ITMMID\")) AND ((comm_ess_statement_detail.salesperson_key_id)=GetCurrentFS"
+    "C()))"
 Begin InputTables
     Name ="comm_ess_statement_detail"
 End
@@ -41,20 +41,20 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1560
-    Bottom =956
+    Right =1343
+    Bottom =797
     Left =-1
     Top =-1
-    Right =1544
-    Bottom =168
+    Right =1327
+    Bottom =503
     Left =0
     Top =0
     ColumnsShown =543
     Begin
-        Left =456
-        Top =12
-        Right =600
-        Bottom =156
+        Left =178
+        Top =36
+        Right =603
+        Bottom =345
         Top =0
         Name ="comm_ess_statement_detail"
         Name =""

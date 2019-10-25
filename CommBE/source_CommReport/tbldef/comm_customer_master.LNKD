@@ -1,4 +1,4 @@
 ﻿comm_customer_master
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=CommBE
-dbo.comm_customer_master
-hsi_shipto_id
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=DEV_BRSales
+dbo.BRS_Customer
+ShipTo
