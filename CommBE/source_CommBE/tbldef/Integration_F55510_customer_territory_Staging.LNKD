@@ -1,4 +1,0 @@
-﻿Integration_F55510_customer_territory_Staging
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-Integration.F55510_customer_territory_Staging
-WRSHAN_shipto;+WR$TER_territory_code

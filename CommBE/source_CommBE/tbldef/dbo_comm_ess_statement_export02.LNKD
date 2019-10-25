@@ -1,0 +1,3 @@
+﻿dbo_comm_ess_statement_export02
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=CommBE
+dbo.comm_ess_statement_export02

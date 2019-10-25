@@ -1,0 +1,4 @@
+﻿eps_Item
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=BRSales
+eps.Item
+Item_Number

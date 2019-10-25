@@ -1,4 +1,4 @@
 ﻿BRS_FiscalMonth
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;
 dbo.BRS_FiscalMonth
 FiscalMonth

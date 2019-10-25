@@ -118,15 +118,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1563
-    Bottom =991
+    State =2
+    Left =-8
+    Top =-30
+    Right =1534
+    Bottom =865
     Left =-1
     Top =-1
-    Right =1531
-    Bottom =76
+    Right =1484
+    Bottom =42
     Left =0
     Top =0
     ColumnsShown =539

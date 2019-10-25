@@ -1,0 +1,4 @@
+﻿BRS_TransactionDW_Ext
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=BRSales
+dbo.BRS_TransactionDW_Ext
+SalesOrderNumber;+DocType

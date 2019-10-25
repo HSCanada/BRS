@@ -1,4 +1,0 @@
-﻿Integration_F555115_commission_sales_adjustment_Staging
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-Integration.F555115_commission_sales_adjustment_Staging
-WSDOCO_salesorder_number;+WSLNID_line_number

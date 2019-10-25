@@ -1,0 +1,4 @@
+﻿comm_transaction_stage
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.comm_transaction_stage
+record_id

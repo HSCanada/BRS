@@ -1,0 +1,4 @@
+﻿comm_salesperson_code_map
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.comm_salesperson_code_map
+salesperson_cd

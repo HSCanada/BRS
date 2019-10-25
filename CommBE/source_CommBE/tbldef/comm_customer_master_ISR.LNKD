@@ -1,0 +1,4 @@
+﻿comm_customer_master_ISR
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
+dbo.comm_customer_master_ISR
+fiscal_yearmo_num;+hsi_shipto_id

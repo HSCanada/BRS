@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction.source_cd)=\"import\"))"
+Where ="(((comm_transaction.source_cd)=\"IMPORT\"))"
 Begin InputTables
     Name ="comm_transaction"
     Name ="comm_configure"
@@ -51,7 +51,7 @@ Begin
     End
     Begin
         dbText "Name" ="comm_transaction.transaction_txt"
-        dbInteger "ColumnWidth" ="2640"
+        dbInteger "ColumnWidth" ="3165"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -80,12 +80,12 @@ Begin
     State =2
     Left =-8
     Top =-30
-    Right =1589
-    Bottom =984
+    Right =1534
+    Bottom =865
     Left =-1
     Top =-1
-    Right =1565
-    Bottom =617
+    Right =1408
+    Bottom =447
     Left =0
     Top =0
     ColumnsShown =539

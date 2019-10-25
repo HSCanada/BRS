@@ -1,4 +1,4 @@
 ﻿BRS_Item
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2010;DATABASE=BRSales
 dbo.BRS_Item
 Item

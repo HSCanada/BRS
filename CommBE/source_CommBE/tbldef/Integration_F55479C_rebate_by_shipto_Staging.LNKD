@@ -1,4 +1,0 @@
-﻿Integration_F55479C_rebate_by_shipto_Staging
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
-Integration.F55479C_rebate_by_shipto_Staging
-QMSHAN_shipto;+QMAN8__billto;+QMASN__adjustment_schedule;+QMEFTJ_effective_date

@@ -1,0 +1,4 @@
+﻿comm_salesperson_master_new
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=BRSales
+comm.salesperson_master
+salesperson_key_id
