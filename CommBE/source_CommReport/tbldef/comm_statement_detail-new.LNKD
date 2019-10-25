@@ -1,0 +1,4 @@
+﻿comm_statement_detail-new
+ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=BRSales
+comm.backend_detail_fsc
+record_id

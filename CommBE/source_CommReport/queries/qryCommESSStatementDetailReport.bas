@@ -1,35 +1,36 @@
 ﻿Operation =1
 Option =0
-Where ="((([comm_backend_detail_ess].salesperson_key_id)=GetCurrentFSC()))"
+Where ="(((comm_ess_statement_detail.salesperson_key_id)=GetCurrentFSC()))"
 Begin InputTables
-    Name ="comm_backend_detail_ess"
+    Name ="comm_ess_statement_detail"
 End
 Begin OutputColumns
-    Expression ="[comm_backend_detail_ess].record_id"
-    Expression ="[comm_backend_detail_ess].salesperson_key_id"
-    Expression ="[comm_backend_detail_ess].source_cd"
-    Expression ="[comm_backend_detail_ess].salesperson_nm"
-    Expression ="[comm_backend_detail_ess].salesperson_cd"
-    Expression ="[comm_backend_detail_ess].comm_plan_id"
-    Expression ="[comm_backend_detail_ess].comm_plan_nm"
-    Expression ="[comm_backend_detail_ess].fiscal_yearmo_num"
-    Expression ="[comm_backend_detail_ess].fiscal_begin_dt"
-    Expression ="[comm_backend_detail_ess].fiscal_end_dt"
-    Expression ="[comm_backend_detail_ess].comm_group_desc"
-    Expression ="[comm_backend_detail_ess].doc_key_id"
-    Expression ="[comm_backend_detail_ess].line_id"
-    Expression ="[comm_backend_detail_ess].doc_id"
-    Expression ="[comm_backend_detail_ess].order_id"
-    Expression ="[comm_backend_detail_ess].transaction_dt"
-    Expression ="[comm_backend_detail_ess].hsi_shipto_id"
-    Expression ="[comm_backend_detail_ess].customer_nm"
-    Expression ="[comm_backend_detail_ess].item_id"
-    Expression ="[comm_backend_detail_ess].transaction_txt"
-    Expression ="[comm_backend_detail_ess].item_comm_group_cd"
-    Expression ="[comm_backend_detail_ess].transaction_amt"
-    Expression ="[comm_backend_detail_ess].comm_amt"
-    Expression ="[comm_backend_detail_ess].gp_ext_amt"
-    Expression ="[comm_backend_detail_ess].manufact_cd"
+    Expression ="comm_ess_statement_detail.record_id"
+    Expression ="comm_ess_statement_detail.salesperson_key_id"
+    Expression ="comm_ess_statement_detail.source_cd"
+    Expression ="comm_ess_statement_detail.salesperson_nm"
+    Expression ="comm_ess_statement_detail.salesperson_cd"
+    Expression ="comm_ess_statement_detail.comm_plan_id"
+    Expression ="comm_ess_statement_detail.comm_plan_nm"
+    Expression ="comm_ess_statement_detail.fiscal_yearmo_num"
+    Expression ="comm_ess_statement_detail.fiscal_begin_dt"
+    Expression ="comm_ess_statement_detail.fiscal_end_dt"
+    Expression ="comm_ess_statement_detail.comm_group_desc"
+    Expression ="comm_ess_statement_detail.doc_key_id"
+    Expression ="comm_ess_statement_detail.line_id"
+    Expression ="comm_ess_statement_detail.doc_id"
+    Expression ="comm_ess_statement_detail.order_id"
+    Expression ="comm_ess_statement_detail.transaction_dt"
+    Expression ="comm_ess_statement_detail.hsi_shipto_id"
+    Expression ="comm_ess_statement_detail.customer_nm"
+    Expression ="comm_ess_statement_detail.item_id"
+    Expression ="comm_ess_statement_detail.transaction_txt"
+    Expression ="comm_ess_statement_detail.item_comm_group_cd"
+    Expression ="comm_ess_statement_detail.comm_rt"
+    Expression ="comm_ess_statement_detail.transaction_amt"
+    Expression ="comm_ess_statement_detail.comm_amt"
+    Expression ="comm_ess_statement_detail.gp_ext_amt"
+    Expression ="comm_ess_statement_detail.manufact_cd"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -42,17 +43,131 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbText "Description" ="x"
 Begin
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.record_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.salesperson_key_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.source_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.salesperson_nm"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.salesperson_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_plan_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_plan_nm"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fiscal_yearmo_num"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fiscal_begin_dt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fiscal_end_dt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.doc_key_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.line_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.doc_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.order_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.transaction_dt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.customer_nm"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1695"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.item_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.transaction_txt"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3270"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_rt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.transaction_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.hsi_shipto_id"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1665"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.gp_ext_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.customer_comm_group_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.item_comm_group_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.manufact_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_group_desc"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
     Right =1560
-    Bottom =956
+    Bottom =971
     Left =-1
     Top =-1
     Right =1544
-    Bottom =293
+    Bottom =310
     Left =0
     Top =0
     ColumnsShown =539

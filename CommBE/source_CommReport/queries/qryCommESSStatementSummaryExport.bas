@@ -1,68 +1,63 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_FSC_Rollup.branch)=GetCurrentBranch()) And (([comm_backend_detail_ess].fs"
-    "c_salesperson_key_id)<>\"internal\"))"
+Where ="(((comm_salesperson_master_1.branch_cd)=GetCurrentBranch()) AND ((comm_ess_state"
+    "ment_detail.fsc_salesperson_key_id)<>\"internal\"))"
 Begin InputTables
-    Name ="comm_backend_detail_ess"
+    Name ="comm_ess_statement_detail"
     Name ="comm_salesperson_master"
     Name ="comm_salesperson_master"
     Alias ="comm_salesperson_master_1"
-    Name ="BRS_FSC_Rollup"
 End
 Begin OutputColumns
-    Expression ="[comm_backend_detail_ess].fiscal_yearmo_num"
+    Expression ="comm_ess_statement_detail.fiscal_yearmo_num"
     Alias ="branch_cd"
-    Expression ="First(BRS_FSC_Rollup.Branch)"
+    Expression ="First(comm_salesperson_master_1.branch_cd)"
     Alias ="fiscal_begin_dt"
-    Expression ="First([comm_backend_detail_ess].fiscal_begin_dt)"
+    Expression ="First(comm_ess_statement_detail.fiscal_begin_dt)"
     Alias ="fiscal_end_dt"
-    Expression ="First([comm_backend_detail_ess].fiscal_end_dt)"
+    Expression ="First(comm_ess_statement_detail.fiscal_end_dt)"
     Alias ="ESS_nm"
     Expression ="First(comm_salesperson_master.salesperson_nm)"
     Alias ="customer_nm"
-    Expression ="First([comm_backend_detail_ess].customer_nm)"
+    Expression ="First(comm_ess_statement_detail.customer_nm)"
     Alias ="hsi_shipto_id"
-    Expression ="First([comm_backend_detail_ess].hsi_shipto_id)"
+    Expression ="First(comm_ess_statement_detail.hsi_shipto_id)"
     Alias ="transaction_dt"
-    Expression ="First([comm_backend_detail_ess].transaction_dt)"
-    Expression ="[comm_backend_detail_ess].doc_id"
+    Expression ="First(comm_ess_statement_detail.transaction_dt)"
+    Expression ="comm_ess_statement_detail.doc_id"
     Alias ="FSC_nm"
     Expression ="First(comm_salesperson_master_1.salesperson_nm)"
     Alias ="transaction_amt"
-    Expression ="Sum([comm_backend_detail_ess].transaction_amt)"
+    Expression ="Sum(comm_ess_statement_detail.transaction_amt)"
     Alias ="gp_ext_amt"
-    Expression ="Sum([comm_backend_detail_ess].gp_ext_amt)"
+    Expression ="Sum(comm_ess_statement_detail.gp_ext_amt)"
     Alias ="comm_amt"
-    Expression ="Sum([comm_backend_detail_ess].comm_amt)"
+    Expression ="Sum(comm_ess_statement_detail.comm_amt)"
 End
 Begin Joins
-    LeftTable ="comm_backend_detail_ess"
+    LeftTable ="comm_ess_statement_detail"
     RightTable ="comm_salesperson_master"
-    Expression ="[comm_backend_detail_ess].salesperson_key_id=comm_salesperson_master.salesperson"
-        "_key_id"
+    Expression ="comm_ess_statement_detail.salesperson_key_id = comm_salesperson_master.salespers"
+        "on_key_id"
     Flag =1
-    LeftTable ="comm_backend_detail_ess"
+    LeftTable ="comm_ess_statement_detail"
     RightTable ="comm_salesperson_master_1"
-    Expression ="[comm_backend_detail_ess].fsc_salesperson_key_id=comm_salesperson_master_1.sales"
-        "person_key_id"
-    Flag =1
-    LeftTable ="comm_salesperson_master_1"
-    RightTable ="BRS_FSC_Rollup"
-    Expression ="comm_salesperson_master_1.master_salesperson_cd = BRS_FSC_Rollup.TerritoryCd"
+    Expression ="comm_ess_statement_detail.fsc_salesperson_key_id = comm_salesperson_master_1.sal"
+        "esperson_key_id"
     Flag =1
 End
 Begin OrderBy
     Expression ="First(comm_salesperson_master.salesperson_nm)"
     Flag =0
-    Expression ="First([comm_backend_detail_ess].customer_nm)"
+    Expression ="First(comm_ess_statement_detail.customer_nm)"
     Flag =0
-    Expression ="First([comm_backend_detail_ess].transaction_dt)"
+    Expression ="First(comm_ess_statement_detail.transaction_dt)"
     Flag =0
 End
 Begin Groups
-    Expression ="[comm_backend_detail_ess].fiscal_yearmo_num"
+    Expression ="comm_ess_statement_detail.fiscal_yearmo_num"
     GroupLevel =0
-    Expression ="[comm_backend_detail_ess].doc_id"
+    Expression ="comm_ess_statement_detail.doc_id"
     GroupLevel =0
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -76,6 +71,14 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbText "Description" ="x"
 Begin
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fiscal_yearmo_num"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.doc_id"
+        dbLong "AggregateType" ="-1"
+    End
     Begin
         dbText "Name" ="FSC_nm"
         dbInteger "ColumnWidth" ="2670"
@@ -169,15 +172,6 @@ Begin
         Bottom =470
         Top =0
         Name ="comm_salesperson_master_1"
-        Name =""
-    End
-    Begin
-        Left =975
-        Top =256
-        Right =1119
-        Bottom =400
-        Top =0
-        Name ="BRS_FSC_Rollup"
         Name =""
     End
 End

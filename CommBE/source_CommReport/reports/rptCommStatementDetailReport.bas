@@ -16,7 +16,7 @@ Begin Report
     ItemSuffix =235
     DatasheetGridlinesColor =15062992
     RecSrcDt = Begin
-        0xda7f8ad0950ae540
+        0xa5905193ac3ae440
     End
     RecordSource ="qryCommStatementDetailReport"
     Caption ="CommStatementDetailReport"
@@ -223,8 +223,8 @@ Begin Report
                     FontSize =14
                     FontWeight =700
                     Name ="Text153"
-                    ControlSource ="=\"HSC FSC Sales & Commission Details - \" & Format([fiscal_begin_dt],\"Medium D"
-                        "ate\") & \" to \" & Format([fiscal_end_dt],\"Medium Date\")"
+                    ControlSource ="=\"HSC FSC Sales & Commission Details - \" & [fiscal_begin_dt] & \"-\" & [fiscal"
+                        "_end_dt]"
 
                     LayoutCachedWidth =10740
                     LayoutCachedHeight =480
@@ -583,13 +583,13 @@ Begin Report
             Begin
                 Begin TextBox
                     IMESentenceMode =3
-                    Left =2265
-                    Width =1095
+                    Left =2580
+                    Width =780
                     Height =270
                     Name ="doc_id"
                     ControlSource ="doc_id"
 
-                    LayoutCachedLeft =2265
+                    LayoutCachedLeft =2580
                     LayoutCachedWidth =3360
                     LayoutCachedHeight =270
                 End

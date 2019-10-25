@@ -1,8 +1,7 @@
 ﻿Operation =1
 Option =0
 Where ="(((comm_statement_detail.salesperson_key_id)=GetCurrentFSC()) AND ((comm_stateme"
-    "nt_detail.source_cd) In (\"JDE\",\"import\")) AND ((comm_statement_detail.item_c"
-    "omm_group_cd)<>\"SFFFIN\"))"
+    "nt_detail.item_comm_group_cd)=\"SFFFIN\"))"
 Begin InputTables
     Name ="comm_statement_detail"
 End
@@ -23,7 +22,6 @@ Begin OutputColumns
     Expression ="comm_statement_detail.doc_id"
     Expression ="comm_statement_detail.order_id"
     Expression ="comm_statement_detail.transaction_dt"
-    Expression ="comm_statement_detail.hsi_shipto_id"
     Expression ="comm_statement_detail.customer_nm"
     Expression ="comm_statement_detail.item_id"
     Expression ="comm_statement_detail.transaction_txt"
@@ -31,12 +29,8 @@ Begin OutputColumns
     Expression ="comm_statement_detail.item_comm_rt"
     Expression ="comm_statement_detail.transaction_amt"
     Expression ="comm_statement_detail.comm_amt"
+    Expression ="comm_statement_detail.hsi_shipto_id"
     Expression ="comm_statement_detail.gp_ext_amt"
-    Expression ="comm_statement_detail.manufact_cd"
-    Expression ="comm_statement_detail.order_source_cd"
-    Expression ="comm_statement_detail.item_label_cd"
-    Expression ="comm_statement_detail.IMCLMJ"
-    Expression ="comm_statement_detail.shipped_qty"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -60,6 +54,8 @@ Begin
     Begin
         dbText "Name" ="comm_statement_detail.salesperson_key_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3135"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_statement_detail.source_cd"
@@ -111,9 +107,9 @@ Begin
     End
     Begin
         dbText "Name" ="comm_statement_detail.transaction_dt"
-        dbLong "AggregateType" ="-1"
         dbInteger "ColumnWidth" ="2940"
         dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
     End
     Begin
         dbText "Name" ="comm_statement_detail.customer_nm"
@@ -140,31 +136,11 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_statement_detail.shipped_qty"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.item_label_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.IMCLMJ"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.order_source_cd"
+        dbText "Name" ="comm_statement_detail.comm_group_desc"
         dbLong "AggregateType" ="-1"
     End
     Begin
         dbText "Name" ="comm_statement_detail.item_comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.manufact_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_statement_detail.comm_group_desc"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -177,19 +153,19 @@ Begin
     Left =0
     Top =0
     Right =1560
-    Bottom =971
+    Bottom =956
     Left =-1
     Top =-1
-    Right =1094
-    Bottom =331
+    Right =1544
+    Bottom =321
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =38
         Top =6
-        Right =578
-        Bottom =387
+        Right =375
+        Bottom =302
         Top =0
         Name ="comm_statement_detail"
         Name =""

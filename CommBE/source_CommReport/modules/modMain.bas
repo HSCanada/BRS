@@ -23,24 +23,39 @@ Option Explicit
 ' ***************************************************************************
 ' **  Date:   Author:     Description:
 ' **  -----   ----------  --------------------------------------------
-' **  23 Dec 17     tmc     ported to new backend
 ' **
 ' ***************************************************************************
 
+' ***************************************************************************
+' ** User adjustable parameters
+' ***************************************************************************
+
+
+' Ensure that connection string below is the same ODBC source used to link tables
+'Development
+'Const gCONNECTIONSTRING As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLD3092\SQL2005;DATABASE=comm_dev"
+'Production
+Const gCONNECTIONSTRING As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLSQL1;DATABASE=CommBE"
+
+Const msApplicationName As String = "CommissionAdmin"
+Const msApplicationVersionNum As String = "1.00"
+Const mnODBCTimeout As Integer = 120
+
 
 ' ***************************************************************************
-' ** Globals
+' ** Params loaded from SQL backend
 ' ***************************************************************************
 
-' static via InitParams()
-Dim msEventFile As String
 Dim msConnectionString As String
-
-' dynamic
+Dim msOutputPath As String
+Dim msEventFile As String
 Dim msCurrentFiscalNum As String
 Dim msCurrentBranchCd As String
+
 Dim msCurrentReportID As String
 Dim msCurrentFSC As String
+
+Dim mbDebug As Boolean
 
 
 ' Invoice Batch record type
@@ -50,59 +65,50 @@ Type CommBatch
 End Type
 
 Public Function GetCurrentFSC() As String
-Debug.Print "GetCurrentFSC"
-
     GetCurrentFSC = IIf(msCurrentFSC <> "", msCurrentFSC, "*")
 'GetCurrentFSC = "TYLER.MCCLENDON "
-'GetCurrentFSC = "Kcroney"
+'GetCurrentFSC = "CDynes"
 'GetCurrentFSC = "KIM.OBLENIS"
-'GetCurrentFSC = "JGOULET"
+'GetCurrentFSC = "dmonette"
 'GetCurrentFSC = "RWong"
 'GetCurrentFSC = "RPoch"
+' Test
 'GetCurrentFSC = "mgrant"
 End Function
 
 Public Function GetCurrentBranch() As String
-Debug.Print "GetCurrentBranch"
     GetCurrentBranch = IIf(msCurrentBranchCd = "", "*", msCurrentBranchCd)
-    
+' Test
 'GetCurrentBranch = "TORNT"
 
 End Function
 
 Function GetCurrentFiscalPeriod() As String
-Debug.Print "GetCurrentFiscalPeriod"
     GetCurrentFiscalPeriod = msCurrentFiscalNum
 End Function
 
 Function GetReportID() As String
-Debug.Print "GetReportID"
     GetReportID = msCurrentReportID
 End Function
 
 Function GetOutputPath() As String
-Debug.Print "GetOutputPath"
-    GetOutputPath = config("PATH_PUBLISH")
+    GetOutputPath = msOutputPath
 End Function
 
 
 Public Function InitParams() As Boolean
-Debug.Print "InitParams"
 On Error GoTo eh:
 
     Dim bSuccess
     Dim Db As Database, qd As QueryDef, rs As Recordset
     Dim sLogMsg As String
     
-    ' Init vars
     bSuccess = False
-    msCurrentFSC = ""
-    msCurrentReportID = ""
     
-    config_init
-    
-    msConnectionString = config("CONNECTIONSTRING")
-    msEventFile = config("FILEPATH_LOG")
+    '
+    ' Determine connection string
+    '
+    msConnectionString = gCONNECTIONSTRING
 
     '
     ' Load params from SQL Backend
@@ -112,13 +118,22 @@ On Error GoTo eh:
   
     qd.connect = msConnectionString
     qd.ReturnsRecords = True
-'    qd.ODBCTimeout = mnODBCTimeout
+    qd.ODBCTimeout = mnODBCTimeout
     
-    qd.sql = "SELECT PriorFiscalMonth FROM BRS_Config"
+    qd.sql = "SELECT current_fiscal_yearmo_num, output_path_txt, log_filepath_txt FROM comm_configure"
+    Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenForwardOnly, dbSQLPassThrough)
     
     If Not (rs.EOF And rs.BOF) Then
-        msCurrentFiscalNum = rs("PriorFiscalMonth")
+        msEventFile = rs("log_filepath_txt")
+        msOutputPath = rs("output_path_txt")
+        msCurrentFiscalNum = rs("current_fiscal_yearmo_num")
+        
+       
+        ' Init vars
+        msCurrentFSC = ""
+        msCurrentReportID = ""
+        mbDebug = False
         
         bSuccess = True
     End If
@@ -148,11 +163,61 @@ eh:
     
 End Function
 
+Public Function UpdateSummary() As Boolean
+On Error GoTo eh:
+
+    Dim bSuccess
+    Dim Db As Database, qd As QueryDef, rs As Recordset
+    Dim sLogMsg As String
+    
+    bSuccess = False
+    
+    '
+    ' Determine connection string
+    '
+    msConnectionString = gCONNECTIONSTRING
+
+    '
+    ' Load params from SQL Backend
+    '
+    Set Db = CurrentDb
+    Set qd = Db.CreateQueryDef("")
+  
+    qd.connect = msConnectionString
+    qd.ReturnsRecords = False
+    qd.ODBCTimeout = mnODBCTimeout
+    
+    qd.sql = "EXECUTE comm_summary_update_proc 0"
+    Debug.Print qd.sql
+    qd.Execute
+    
+    
+    qd.Close
+    Db.Close
+
+    sLogMsg = Now() & ":  Execute UpdateSummary" & CurrentUser() & vbCrLf
+    LogEventToFile (sLogMsg)
+
+err_cleanup:
+    Set qd = Nothing
+    Set Db = Nothing
+    
+    UpdateSummary = bSuccess
+    
+      
+    Exit Function
+    
+eh:
+    Dim sError As String
+    sError = "Error " & Err.Number & ":  " & Err.Description
+    MsgBox sError, , "UpdateSummary()"
+    bSuccess = False
+    Resume err_cleanup
+    
+End Function
 
 
 Private Function LoadBatch(recBatch() As CommBatch) As Integer
-Debug.Print "LoadBatch"
-
 On Error GoTo eh:
     Dim nBatchSize As Integer
     Dim i As Integer
@@ -166,10 +231,10 @@ On Error GoTo eh:
     
     qd.connect = msConnectionString
     qd.ReturnsRecords = True
-'    qd.ODBCTimeout = mnODBCTimeout
+    qd.ODBCTimeout = mnODBCTimeout
     
     qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
-    qd.sql = qd.sql & " FROM comm.salesperson_master WHERE ([flag_ind] = 1) and comm_plan_id Like 'FSC%'ORDER BY salesperson_key_id"
+    qd.sql = qd.sql & " FROM comm_salesperson_master WHERE (select_ind = 1) and comm_plan_id Like 'FSC%'ORDER BY salesperson_key_id"
     Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenSnapshot, dbSQLPassThrough)
     
@@ -210,8 +275,6 @@ eh:
 End Function
 
 Private Function LoadESSBatch(recBatch() As CommBatch) As Integer
-Debug.Print "LoadESSBatch"
-
 On Error GoTo eh:
     Dim nBatchSize As Integer
     Dim i As Integer
@@ -224,14 +287,15 @@ On Error GoTo eh:
     Set qd = Db.CreateQueryDef("")
     
     qd.connect = msConnectionString
-    
     qd.ReturnsRecords = True
-'    qd.ODBCTimeout = mnODBCTimeout
+    qd.ODBCTimeout = mnODBCTimeout
     
     qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
-    qd.sql = qd.sql & " FROM comm.salesperson_master WHERE ([flag_ind] = 1) and ((comm_plan_id Like 'ESS%') or (comm_plan_id Like 'CCS%')) ORDER BY salesperson_key_id"
+    qd.sql = qd.sql & " FROM comm_salesperson_master WHERE (select_ind = 1) and ((comm_plan_id Like 'ESS%') or (comm_plan_id Like 'CCS%')) ORDER BY salesperson_key_id"
     
-  
+'    qd.SQL = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
+'    qd.SQL = qd.SQL & " FROM comm_salesperson_master WHERE (select_ind = 1) and comm_plan_id Like 'ESS%' ORDER BY salesperson_key_id"
+    
 
     Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenSnapshot, dbSQLPassThrough)
@@ -274,7 +338,6 @@ End Function
 
 
 Public Function ExportBatch() As Boolean
-Debug.Print "ExportBatch"
 
     Dim bSuccess As Boolean
     Dim nBatchSize As Integer, nGoodPrintCount As Integer
@@ -326,7 +389,6 @@ End Function
 
 
 Public Function ExportBatchESS() As Boolean
-Debug.Print "ExportBatchESS"
 
     Dim bSuccess As Boolean
     Dim nBatchSize As Integer, nGoodPrintCount As Integer
@@ -377,10 +439,107 @@ Debug.Print "ExportBatchESS"
 End Function
 
 
+Public Function ExportFSCAgingBatch() As Boolean
+
+    Dim bSuccess As Boolean
+    Dim nBatchSize As Integer, nGoodPrintCount As Integer
+    Dim i As Integer, sLogMsg As String
+    Dim recBatch() As CommBatch
+    
+    bSuccess = True
+    
+        
+    ' Load Batch
+    nBatchSize = LoadBatch(recBatch)
+
+    ' Process Batch
+    If nBatchSize > 0 Then
+   
+        sLogMsg = Now() & ":  Batch Begin. "
+        LogEventToFile (sLogMsg)
+        ' Print Invoice documents
+        For i = 1 To nBatchSize
+            sLogMsg = Now() & ":  #" & i & ", " & recBatch(i).sSalespersonKeyId & vbTab & " - " & recBatch(i).sReportId
+           
+                If ExportFSCAgingDocuments(recBatch(i).sSalespersonKeyId, recBatch(i).sReportId) Then
+                    nGoodPrintCount = nGoodPrintCount + 1
+                Else
+                    ' note that error occurred
+                    sLogMsg = sLogMsg & " EXPORT ERROR!!!"
+                End If
+            
+            LogEventToFile (sLogMsg)
+            
+        Next i
+        
+        ' Log end of batch
+        sLogMsg = Now() & ":  Batch End. "
+        If nGoodPrintCount = nBatchSize Then
+            sLogMsg = sLogMsg & "COMPLETE"
+        Else
+            sLogMsg = sLogMsg & "INCOMPLETE"
+            bSuccess = False
+        End If
+        sLogMsg = sLogMsg & vbCrLf
+        LogEventToFile (sLogMsg)
+    End If
+    
+    
+    ExportFSCAgingBatch = bSuccess
+    
+End Function
+
+Public Function ExportESSAgingBatch() As Boolean
+
+    Dim bSuccess As Boolean
+    Dim nBatchSize As Integer, nGoodPrintCount As Integer
+    Dim i As Integer, sLogMsg As String
+    Dim recBatch() As CommBatch
+    
+    bSuccess = True
+    
+        
+    ' Load Batch
+    nBatchSize = LoadESSBatch(recBatch)
+
+    ' Process Batch
+    If nBatchSize > 0 Then
+   
+        sLogMsg = Now() & ":  Batch Begin. "
+        LogEventToFile (sLogMsg)
+        ' Print Invoice documents
+        For i = 1 To nBatchSize
+            sLogMsg = Now() & ":  #" & i & ", " & recBatch(i).sSalespersonKeyId & vbTab & " - " & recBatch(i).sReportId
+           
+                If ExportESSAgingDocuments(recBatch(i).sSalespersonKeyId, recBatch(i).sReportId) Then
+                    nGoodPrintCount = nGoodPrintCount + 1
+                Else
+                    ' note that error occurred
+                    sLogMsg = sLogMsg & " EXPORT ERROR!!!"
+                End If
+            
+            LogEventToFile (sLogMsg)
+            
+        Next i
+        
+        ' Log end of batch
+        sLogMsg = Now() & ":  Batch End. "
+        If nGoodPrintCount = nBatchSize Then
+            sLogMsg = sLogMsg & "COMPLETE"
+        Else
+            sLogMsg = sLogMsg & "INCOMPLETE"
+            bSuccess = False
+        End If
+        sLogMsg = sLogMsg & vbCrLf
+        LogEventToFile (sLogMsg)
+    End If
+    
+    
+    ExportESSAgingBatch = bSuccess
+    
+End Function
 
 Private Function ExportDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
-Debug.Print "ExportDocuments"
-
     Dim bSuccess
     
     bSuccess = False
@@ -397,8 +556,6 @@ Debug.Print "ExportDocuments"
 End Function
 
 Private Function ExportDocumentsESS(sSalespersonKeyId As String, sReportId As String) As Boolean
-Debug.Print "ExportDocumentsESS"
-
     Dim bSuccess
     
     bSuccess = False
@@ -415,11 +572,36 @@ Debug.Print "ExportDocumentsESS"
     
 End Function
 
+Private Function ExportFSCAgingDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
+    Dim bSuccess
+    
+    bSuccess = False
+    ' rptCommFSCSummary
+    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommFSCAging", "CustomerAging")) Then
+        bSuccess = True
+    End If
+    
+                
+    ExportFSCAgingDocuments = bSuccess
+    
+End Function
+
+Private Function ExportESSAgingDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
+    Dim bSuccess
+    
+    bSuccess = False
+    ' rptCommFSCSummary
+    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSAging", "CustomerAging")) Then
+        bSuccess = True
+    End If
+    
+                
+    ExportESSAgingDocuments = bSuccess
+    
+End Function
 
 
 Private Function ExportReport(sSalespersonKeyId As String, sBranchCd As String, sReportId As String, sReportName As String, sReportExtension As String) As Boolean
-Debug.Print "ExportReport"
-
 On Error GoTo eh:
     Dim bSuccess As Boolean
     
@@ -430,12 +612,14 @@ On Error GoTo eh:
     msCurrentBranchCd = sBranchCd
        
 '   Changed to PDF format, 15 Feb 12, tmc
-    sOutputFilePath = GetOutputPath() & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".PDF"
+    sOutputFilePath = GetOutputPath() & "\" & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".PDF"
+'    sOutputFilePath = GetOutputPath() & "\" & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".SNP"
     
     Debug.Print sOutputFilePath
     
 '   Changed to PDF format, 15 Feb 12, tmc
     Call DoCmd.OutputTo(acOutputReport, sReportName, "PDF Format", sOutputFilePath)
+'    Call DoCmd.OutputTo(acOutputReport, sReportName, "Snapshot Format", sOutputFilePath)
     
 
 err_cleanup:
@@ -453,8 +637,6 @@ eh:
 End Function
 
 Private Function ExportReportPDF(sSalespersonKeyId As String, sBranchCd As String, sReportId As String, sReportName As String, sReportExtension As String) As Boolean
-Debug.Print "ExportReportPDF"
-
 On Error GoTo eh:
     Dim bSuccess As Boolean
     
@@ -464,7 +646,7 @@ On Error GoTo eh:
     msCurrentFSC = sSalespersonKeyId
     msCurrentBranchCd = sBranchCd
     
-    sOutputFilePath = GetOutputPath() & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".PDF"
+    sOutputFilePath = GetOutputPath() & "\" & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".PDF"
     
     Debug.Print sOutputFilePath
     
@@ -486,8 +668,6 @@ eh:
 End Function
 
 Private Function ExportExcel(sSalespersonKeyId As String, sReportId As String, sReportName As String, sReportExtension As String) As Boolean
-Debug.Print "ExportExcel"
-
 On Error GoTo eh:
     Dim bSuccess As Boolean
     
@@ -496,7 +676,7 @@ On Error GoTo eh:
     bSuccess = True
     msCurrentFSC = sSalespersonKeyId
     
-    sOutputFilePath = GetOutputPath() & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".XLSX"
+    sOutputFilePath = GetOutputPath() & "\" & Trim(GetCurrentFiscalPeriod()) & "_" & Trim(sReportId) & "_" & sReportExtension & ".XLSX"
     
     Debug.Print sOutputFilePath
     
@@ -526,8 +706,6 @@ End Function
 ' ** Event logging to file
 ' ***************************************************************************
 Private Sub LogEventToFile(sEventMsg As String)
-Debug.Print "LogEventToFile"
-
     On Error Resume Next
     
     Debug.Print sEventMsg
@@ -538,6 +716,8 @@ Debug.Print "LogEventToFile"
     Close #1
 
 End Sub
+
+
 
 
 Function SmartDiv(vDenom, vRemain) As Variant
@@ -558,12 +738,59 @@ Function SmartPercent(vNew, vOld) As Variant
 
 End Function
 
+Sub DoExportFSCAgingBatch()
+    InitParams
+    
+    ExportReport "", "NAZA", "NAZA", "rptCommFSCAging", "CustomerAging"
+    ExportReport "", "NAZM", "NAZM", "rptCommFSCAging", "CustomerAging"
+
+    ExportReport "", "NCZD", "NCZD", "rptCommFSCAging", "CustomerAging"
+    ExportReport "", "NCZE", "NCZE", "rptCommFSCAging", "CustomerAging"
+    ExportReport "", "NCZF", "NCZF", "rptCommFSCAging", "CustomerAging"
+    ExportReport "", "NCZH", "NCZH", "rptCommFSCAging", "CustomerAging"
+
+    ExportReport "", "NQZB", "NQZB", "rptCommFSCAging", "CustomerAging"
+    ExportReport "", "NQZC", "NQZC", "rptCommFSCAging", "CustomerAging"
+
+'    ExportReport "", "NWZK", "NWZK", "rptCommFSCAging", "CustomerAging"
+'    ExportReport "", "NWZO", "NWZO", "rptCommFSCAging", "CustomerAging"
+'    ExportReport "", "NDZK", "NDZK", "rptCommFSCAging", "CustomerAging"
+    
+    ExportFSCAgingBatch
+    MsgBox "Done!"
+    
+End Sub
+
+Sub DoExportESSAgingBatch()
+    InitParams
+    
+    ExportESSAgingBatch
+    MsgBox "Done!"
+    
+End Sub
+
+
+'   Export ESS reports
+Sub ExportESSCommBatch()
+    InitParams
+    UpdateSummary
+    
+    ExportBatchESS
+    
+    MsgBox "ESS Details exported!"
+    
+End Sub
 
 
 
+Sub test2()
+Dim recBatch() As CommBatch
+
+LoadESSBatch recBatch
+
+End Sub
 
 Sub ExportBatchESS_Summary()
-Debug.Print "ExportBatchESS_Summary"
 
     ExportReportPDF "", "CALGY", "BranchESS-Signoff", "rptCommESSStatementSummaryReport", "CALGY"
     ExportReportPDF "", "EDMON", "BranchESS-Signoff", "rptCommESSStatementSummaryReport", "EDMON"
@@ -582,13 +809,13 @@ Debug.Print "ExportBatchESS_Summary"
 End Sub
 
 
-'   Main - Export FSC reports
+'   Export FSC reports
 Public Function ExportFSCCommBatch()
-Debug.Print "ExportFSCCommBatch"
     InitParams
+    UpdateSummary
     
     ExportBatchESS
-''    ExportBatchESS_Summary
+    ExportBatchESS_Summary
 
 ''    MsgBox "ESS Details exported!"
     
@@ -596,3 +823,11 @@ Debug.Print "ExportFSCCommBatch"
     MsgBox "FSC Details exported!"
     
 End Function
+
+Sub Test()
+    InitParams
+    
+    ExportBatch
+    
+    MsgBox "Done!"
+End Sub

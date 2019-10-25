@@ -1,23 +1,23 @@
 ﻿Operation =1
 Option =0
-Where ="((([comm_backend_detail_fsc].salesperson_key_id)=GetCurrentFSC()))"
+Where ="(((comm_statement_detail.salesperson_key_id)=GetCurrentFSC()))"
 Begin InputTables
-    Name ="comm_backend_detail_fsc"
+    Name ="comm_statement_detail"
 End
 Begin OutputColumns
-    Expression ="[comm_backend_detail_fsc].salesperson_key_id"
-    Expression ="[comm_backend_detail_fsc].item_comm_group_cd"
+    Expression ="comm_statement_detail.salesperson_key_id"
+    Expression ="comm_statement_detail.item_comm_group_cd"
     Alias ="pre_total_transaction_amt"
-    Expression ="Sum([comm_backend_detail_fsc].transaction_amt)"
+    Expression ="Sum(comm_statement_detail.transaction_amt)"
     Alias ="pre_total_gp_ext_amt"
-    Expression ="Sum([comm_backend_detail_fsc].gp_ext_amt)"
+    Expression ="Sum(comm_statement_detail.gp_ext_amt)"
     Alias ="pre_total_comm_amt"
-    Expression ="Sum([comm_backend_detail_fsc].comm_amt)"
+    Expression ="Sum(comm_statement_detail.comm_amt)"
 End
 Begin Groups
-    Expression ="[comm_backend_detail_fsc].salesperson_key_id"
+    Expression ="comm_statement_detail.salesperson_key_id"
     GroupLevel =0
-    Expression ="[comm_backend_detail_fsc].item_comm_group_cd"
+    Expression ="comm_statement_detail.item_comm_group_cd"
     GroupLevel =0
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -30,6 +30,16 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
+    Begin
+        dbText "Name" ="comm_statement_detail.salesperson_key_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_statement_detail.item_comm_group_cd"
+        dbInteger "ColumnWidth" ="2625"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
     Begin
         dbText "Name" ="pre_total_transaction_amt"
         dbInteger "ColumnWidth" ="2880"
@@ -48,17 +58,25 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="comm_statement_detail.source_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_statement_detail.comm_group_cd"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1560
-    Bottom =956
+    Right =1110
+    Bottom =971
     Left =-1
     Top =-1
-    Right =1544
-    Bottom =301
+    Right =1094
+    Bottom =318
     Left =0
     Top =0
     ColumnsShown =543

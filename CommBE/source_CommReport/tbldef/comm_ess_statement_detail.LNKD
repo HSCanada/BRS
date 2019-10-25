@@ -1,4 +1,3 @@
-﻿comm_group
+﻿comm_ess_statement_detail
 ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
-dbo.comm_group
-comm_group_cd
+dbo.comm_ess_statement_detail

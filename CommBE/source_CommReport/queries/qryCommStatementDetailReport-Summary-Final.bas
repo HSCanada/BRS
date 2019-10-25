@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
 Begin InputTables
-    Name ="qsubCommStatementDetailReportSummary"
     Name ="qryCommStatementDetailReport-Summary"
+    Name ="qsubCommStatementDetailReportSummary"
 End
 Begin OutputColumns
     Alias ="salesperson_key_id"
@@ -67,24 +67,15 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1560
-    Bottom =956
+    Right =1520
+    Bottom =797
     Left =-1
     Top =-1
-    Right =1544
-    Bottom =229
+    Right =1504
+    Bottom =246
     Left =0
     Top =0
     ColumnsShown =539
-    Begin
-        Left =40
-        Top =23
-        Right =325
-        Bottom =213
-        Top =0
-        Name ="qsubCommStatementDetailReportSummary"
-        Name =""
-    End
     Begin
         Left =514
         Top =10
@@ -92,6 +83,15 @@ Begin
         Bottom =154
         Top =0
         Name ="qryCommStatementDetailReport-Summary"
+        Name =""
+    End
+    Begin
+        Left =40
+        Top =23
+        Right =325
+        Bottom =213
+        Top =0
+        Name ="qsubCommStatementDetailReportSummary"
         Name =""
     End
 End
