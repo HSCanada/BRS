@@ -1,13 +1,13 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_FSC_Rollup.Branch)=GetCurrentBranch()) AND ((comm_ess_statement_detail.fs"
-    "c_salesperson_key_id)<>\"internal\"))"
+Where ="(((comm_ess_statement_detail.fsc_salesperson_key_id)<>\"internal\"))"
 Begin InputTables
     Name ="comm_ess_statement_detail"
     Name ="comm_salesperson_master"
     Name ="comm_salesperson_master"
     Alias ="comm_salesperson_master_1"
     Name ="BRS_FSC_Rollup"
+    Name ="zzzShipto"
 End
 Begin OutputColumns
     Expression ="comm_ess_statement_detail.fiscal_yearmo_num"
@@ -34,6 +34,12 @@ Begin OutputColumns
     Expression ="Sum(comm_ess_statement_detail.gp_ext_amt)"
     Alias ="comm_amt"
     Expression ="Sum(comm_ess_statement_detail.comm_amt)"
+    Alias ="FirstOfitem_comm_group_cd"
+    Expression ="First(comm_ess_statement_detail.item_comm_group_cd)"
+    Alias ="FirstOfcomm_plan_id"
+    Expression ="First(comm_ess_statement_detail.comm_plan_id)"
+    Alias ="FirstOfNote"
+    Expression ="First(zzzShipto.Note)"
 End
 Begin Joins
     LeftTable ="comm_ess_statement_detail"
@@ -49,6 +55,10 @@ Begin Joins
     LeftTable ="comm_salesperson_master_1"
     RightTable ="BRS_FSC_Rollup"
     Expression ="comm_salesperson_master_1.master_salesperson_cd = BRS_FSC_Rollup.TerritoryCd"
+    Flag =1
+    LeftTable ="comm_ess_statement_detail"
+    RightTable ="zzzShipto"
+    Expression ="comm_ess_statement_detail.doc_id = zzzShipto.ST"
     Flag =1
 End
 Begin OrderBy
@@ -75,7 +85,8 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbText "Description" ="x"
-dbMemo "OrderBy" ="[qryCommESSStatementSummaryExport].[fiscal_yearmo_num]"
+dbMemo "OrderBy" ="[qryCommESSStatementSummaryExport-test].[FirstOfNote], [qryCommESSStatementSumma"
+    "ryExport-test].[FirstOfitem_comm_group_cd]"
 Begin
     Begin
         dbText "Name" ="comm_ess_statement_detail.fiscal_yearmo_num"
@@ -139,6 +150,32 @@ Begin
         dbText "Name" ="branch_cd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="FirstOfNote"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="zzzShipto.Note"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_plan_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FirstOfcomm_plan_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.item_comm_group_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FirstOfitem_comm_group_cd"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3120"
+        dbBoolean "ColumnHidden" ="0"
+    End
 End
 Begin
     State =0
@@ -149,7 +186,7 @@ Begin
     Left =-1
     Top =-1
     Right =1327
-    Bottom =539
+    Bottom =522
     Left =0
     Top =0
     ColumnsShown =543
@@ -187,6 +224,15 @@ Begin
         Bottom =370
         Top =0
         Name ="BRS_FSC_Rollup"
+        Name =""
+    End
+    Begin
+        Left =783
+        Top =39
+        Right =927
+        Bottom =183
+        Top =0
+        Name ="zzzShipto"
         Name =""
     End
 End

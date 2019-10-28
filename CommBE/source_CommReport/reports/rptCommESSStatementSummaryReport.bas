@@ -1,4 +1,4 @@
-﻿Version =20
+﻿Version =21
 VersionRequired =20
 Begin Report
     LayoutForPrint = NotDefault
@@ -342,17 +342,17 @@ Begin Report
                     LayoutCachedHeight =540
                 End
                 Begin Label
-                    Left =4860
+                    Left =4680
                     Top =60
-                    Width =840
+                    Width =960
                     Height =480
                     FontSize =10
                     ForeColor =0
                     Name ="Label171"
                     Caption ="Order#"
-                    LayoutCachedLeft =4860
+                    LayoutCachedLeft =4680
                     LayoutCachedTop =60
-                    LayoutCachedWidth =5700
+                    LayoutCachedWidth =5640
                     LayoutCachedHeight =540
                 End
                 Begin Label
@@ -372,7 +372,7 @@ Begin Report
                 Begin Label
                     Left =2940
                     Top =60
-                    Width =1860
+                    Width =1740
                     Height =480
                     FontSize =10
                     ForeColor =0
@@ -380,7 +380,7 @@ Begin Report
                     Caption ="FSC Name"
                     LayoutCachedLeft =2940
                     LayoutCachedTop =60
-                    LayoutCachedWidth =4800
+                    LayoutCachedWidth =4680
                     LayoutCachedHeight =540
                 End
                 Begin Label
@@ -551,12 +551,14 @@ Begin Report
                     LayoutCachedHeight =270
                 End
                 Begin TextBox
+                    TextFontCharSet =0
                     TextAlign =1
                     IMESentenceMode =3
                     Left =5820
                     Width =1200
                     Height =255
                     ColumnWidth =2940
+                    FontSize =8
                     TabIndex =4
                     Name ="transaction_dt"
                     ControlSource ="transaction_dt"
@@ -567,16 +569,18 @@ Begin Report
                     LayoutCachedHeight =255
                 End
                 Begin TextBox
+                    TextFontCharSet =0
                     IMESentenceMode =3
-                    Left =4980
-                    Width =780
+                    Left =4800
+                    Width =900
                     Height =270
+                    FontSize =8
                     TabIndex =5
                     Name ="doc_id"
                     ControlSource ="doc_id"
 
-                    LayoutCachedLeft =4980
-                    LayoutCachedWidth =5760
+                    LayoutCachedLeft =4800
+                    LayoutCachedWidth =5700
                     LayoutCachedHeight =270
                 End
                 Begin TextBox
@@ -598,7 +602,7 @@ Begin Report
                     TextFontCharSet =0
                     IMESentenceMode =3
                     Left =3060
-                    Width =1860
+                    Width =1740
                     Height =270
                     FontSize =8
                     TabIndex =7
@@ -606,7 +610,7 @@ Begin Report
                     ControlSource ="FSC_nm"
 
                     LayoutCachedLeft =3060
-                    LayoutCachedWidth =4920
+                    LayoutCachedWidth =4800
                     LayoutCachedHeight =270
                 End
                 Begin TextBox

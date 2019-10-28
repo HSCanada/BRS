@@ -83,3 +83,15 @@ WHERE
 ALTER TABLE dbo.BRS_CustomerVPA ADD
 	FreeGoodsEstInd bit NOT NULL CONSTRAINT DF_BRS_CustomerVPA_FreeGoodsEstInd DEFAULT 1
 GO
+
+ALTER TABLE [dbo].[BRS_ItemSupplier] ADD
+	FreeGoodsEstInd bit NOT NULL CONSTRAINT DF_BRS_ItemSupplierVPA_FreeGoodsEstInd DEFAULT 1
+GO
+
+
+-- Set supplier exceptions
+UPDATE [dbo].[BRS_ItemSupplier]
+	SET FreeGoodsEstInd = 0
+WHERE 
+	BRS_ItemSupplier.Supplier = 'PROCGA' 
+GO

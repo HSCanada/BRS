@@ -82,6 +82,7 @@ Public Function GetCurrentBranch() As String
     GetCurrentBranch = IIf(msCurrentBranchCd = "", "*", msCurrentBranchCd)
 ' Test
 'GetCurrentBranch = "TORNT"
+' GetCurrentBranch = "HALFX"
 
 End Function
 

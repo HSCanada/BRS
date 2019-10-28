@@ -71,6 +71,75 @@ WHERE NOT EXISTS
 )
 GO
 
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
+print '3b. rate - UPDATE'
+
+
+UPDATE       comm.plan_group_rate
+SET                
+comm_base_rt = s.comm_base_rt, 
+active_ind = s.active_ind, 
+note_txt = s.note_txt, 
+show_ind = s.show_ind
+
+FROM            comm.plan_group_rate INNER JOIN
+                         CommBE.dbo.comm_plan_group_rate AS s ON comm.plan_group_rate.comm_plan_id = s.comm_plan_id AND 
+                         comm.plan_group_rate.comm_group_cd = s.comm_group_cd
+WHERE        (comm.plan_group_rate.comm_base_rt <> s.comm_base_rt) OR
+                         (comm.plan_group_rate.active_ind <> s.active_ind) OR
+                         (comm.plan_group_rate.note_txt <> s.note_txt) OR
+                         (comm.plan_group_rate.show_ind <> s.show_ind)
+
+
+GO
+
+/*
+SELECT
+	d.[comm_plan_id]
+      ,d.[comm_group_cd]
+
+      ,d.[comm_base_rt] 
+      ,d.[active_ind]
+      ,d.[note_txt]
+      ,d.[show_ind]
+  FROM 
+  [comm].[plan_group_rate] d 
+
+  INNER JOIN  CommBE.dbo.comm_plan_group_rate s
+  ON d.[comm_plan_id] = s.[comm_plan_id] AND
+   d.[comm_group_cd] = s.[comm_group_cd]
+WHERE
+
+      d.[comm_base_rt] <> s.[comm_base_rt] OR
+      d.[active_ind] <> s.[active_ind] OR
+      d.[note_txt] <> s.[note_txt] OR
+      d.[show_ind] <> s.[show_ind] 
+
+*/
+
+
+	comm_group_cd,
+
+	comm_base_rt,
+	active_ind,
+	note_txt,
+	show_ind
+
+FROM           
+
+INNER JOIN comm_plan_id
+
+
+WHERE NOT EXISTS 
+(
+	Select * from comm.plan_group_rate 
+	where comm_plan_id = r.comm_plan_id and 
+		comm_group_cd = r.comm_group_cd
+)
+GO
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
+
+
 print '4. item - UPDATE'
 UPDATE       BRS_Item
 SET                [comm_group_cd] = c.comm_group_cd,
