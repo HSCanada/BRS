@@ -28,6 +28,7 @@ GO
 -- 03 Feb 16	tmc		Add Plan-specific group hiding
 -- 10 Feb 16	tmc	Removed legacy customer_comm_group_cd
 --	7 Dec 17	tmc	Convert to new backend
+--	28 Oct 19	tmc		Fix filter discrepancy with prod, comm_ess_statement_detail
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_ess]
@@ -98,11 +99,17 @@ FROM
 	INNER JOIN [dbo].[BRS_Customer] cust
 	ON t.[WSSHAN_shipto] = cust.ShipTo
 
+	INNER JOIN [comm].[plan_group_rate] AS pr 
+	ON (t.[ess_comm_plan_id] = pr.comm_plan_id) AND 
+	(t.ess_comm_group_cd = pr.comm_group_cd)
+
+
+
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
-	t.ess_salesperson_key_id <> '' And
-	g.show_ind = 1 AND
+	(pr.show_ind = 1) AND
+
 	1=1
 GO
 
@@ -113,3 +120,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM [comm].[backend_detail_ess] 
+
