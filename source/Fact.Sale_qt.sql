@@ -201,7 +201,17 @@ GO
 -- SELECT count(*) FROM Fact.Sale_qt
 -- 8671158 60s
 
+/*
 
+SELECT sum(SalesAmt) FROM Fact.Sale_qt 
+where 
+FiscalMonth between 201901 and 201909 AND
+SalesCategory = 'MERCH' and
+(1=1)
+
+QA 195588758.32
+
+*/
 /*
 
 -- Test Sales dups
