@@ -155,19 +155,7 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="zzzShipto.Note"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_ess_statement_detail.comm_plan_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="FirstOfcomm_plan_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_ess_statement_detail.item_comm_group_cd"
         dbLong "AggregateType" ="-1"
     End
     Begin

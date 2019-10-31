@@ -95,3 +95,25 @@ UPDATE [dbo].[BRS_ItemSupplier]
 WHERE 
 	BRS_ItemSupplier.Supplier = 'PROCGA' 
 GO
+
+
+UPDATE
+	BRS_CustomerVPA
+SET
+	FreeGoodsEstInd = 0
+WHERE        
+	EXISTS (
+		SELECT        *
+        FROM            Pricing.price_adjustment_schedule_F4070
+        WHERE        (SNAST__adjustment_name = 'NULLADJ') AND (BRS_CustomerVPA.VPA = SNASN__adjustment_schedule)
+	)
+
+
+SELECT [VPA], [FreeGoodsEstInd] FROM [dbo].[BRS_CustomerVPA]
+WHERE EXISTS (
+	SELECT  *
+     
+	  FROM [Pricing].[price_adjustment_schedule_F4070]
+	  WHERE[SNAST__adjustment_name] = 'NULLADJ' AND
+	[VPA] = [SNASN__adjustment_schedule]
+)

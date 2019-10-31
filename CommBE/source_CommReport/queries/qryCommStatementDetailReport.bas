@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
 Where ="(((comm_statement_detail.salesperson_key_id)=GetCurrentFSC()) AND ((comm_stateme"
-    "nt_detail.source_cd) In (\"JDE\",\"import\")) AND ((comm_statement_detail.item_c"
-    "omm_group_cd)<>\"SFFFIN\"))"
+    "nt_detail.source_cd) In (\"JDE\",\"imp\")) AND ((comm_statement_detail.item_comm"
+    "_group_cd)<>\"SFFFIN\"))"
 Begin InputTables
     Name ="comm_statement_detail"
 End
@@ -41,13 +41,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbText "Description" ="x"
+dbMemo "OrderBy" ="[qryCommStatementDetailReport].[source_cd]"
 Begin
     Begin
         dbText "Name" ="comm_statement_detail.record_id"
@@ -176,12 +177,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1343
-    Bottom =797
+    Right =1599
+    Bottom =861
     Left =-1
     Top =-1
-    Right =1327
-    Bottom =314
+    Right =1583
+    Bottom =297
     Left =0
     Top =0
     ColumnsShown =539

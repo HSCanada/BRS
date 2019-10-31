@@ -31,17 +31,22 @@ AS
 **	-----	----------	--------------------------------------------
 --	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
 --	22 Aug 19	tmc		Fixed join now that Salesorder+DocType is PK, add csr
+--	31 Oct 19	tmc		Add Historical Market Segment
 
 **    
 *******************************************************************************/
 
-SELECT        
+SELECT
+
+--    top 10      
+	  
 	t.ID											AS FactKey
 
 	,c.BillTo										AS BillTo
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
 	,csr.[entered_by_key]
+	,ISNULL( mc.[MarketClassKey], 1)				AS MarketClassKey
 /*
 	-- quote link - phase 2
 	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
@@ -90,7 +95,7 @@ FROM
 
 	INNER JOIN BRS_Customer AS c 
 	ON t.Shipto = c.ShipTo 
-
+	
 	INNER JOIN BRS_PriceMethod AS pm 
 	ON t.PriceMethod = pm.PriceMethod 
 
@@ -100,6 +105,13 @@ FROM
 	LEFT JOIN [dbo].[BRS_Promotion] as promo
 	ON t.PromotionCode = promo.PromotionCode AND
 		t.PriceMethod = 'P'
+
+	LEFT JOIN BRS_CustomerFSC_History AS h
+	ON h.ShipTo = t.Shipto   AND
+		h.FiscalMonth = d.FiscalMonth
+
+	LEFT JOIN [dbo].[BRS_CustomerMarketClass] mc
+	ON mc.MarketClass = h.HIST_MarketClass
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -187,7 +199,8 @@ GO
 
 -- SELECT top 10 * FROM Fact.Sale_qt ORDER BY 1 
 -- SELECT count(*) FROM Fact.Sale_qt
--- 8435767 = 8435767
+-- 8671158 60s
+
 
 /*
 
