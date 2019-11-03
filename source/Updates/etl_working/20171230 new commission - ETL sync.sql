@@ -115,8 +115,7 @@ WHERE
       d.[note_txt] <> s.[note_txt] OR
       d.[show_ind] <> s.[show_ind] 
 
-*/
-
+--
 
 	comm_group_cd,
 
@@ -136,7 +135,10 @@ WHERE NOT EXISTS
 	where comm_plan_id = r.comm_plan_id and 
 		comm_group_cd = r.comm_group_cd
 )
+*/
 GO
+
+
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
 
 
