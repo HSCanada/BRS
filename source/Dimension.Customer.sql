@@ -165,6 +165,7 @@ SELECT
 	,terr_ess.FSCName			AS ESTName
 	,priv.pma_ind
 	,coupa_start_date			AS CoupaStartDate
+	,v.FocusCd					AS SalesplanFocusCode
 
 
 FROM

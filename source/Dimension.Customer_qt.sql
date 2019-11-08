@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	8 Nov 19	tmc		Add VPA foucs code for MBO tracking
 **    
 *******************************************************************************/
 
@@ -56,6 +57,7 @@ SELECT
 	,RTRIM(ISNULL(padj.[PJUSER_user_id],''))					AS AdjUserId
 	,RTRIM(ISNULL(padj.[EnrollSource],''))						AS AdjEnrollSource
 	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
+	,V.FocusCd													as SalesplanFocusCode
 
 
 
