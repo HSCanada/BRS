@@ -397,7 +397,7 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201712
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201901
 */
 
 ------------------------------------------------------------------------------------------------------
@@ -429,7 +429,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201909') AND
+	(fiscal_yearmo_num = '201910') AND
 	(1=1)
 GO
 
@@ -438,31 +438,31 @@ GO
 -- CHANGE DATES!!  w/f Gary.  Yes, this is terrible.  automate!!
 
 ----------------------
--- update CPS item
+print 'update CPS item'
 UPDATE       comm.transaction_F555115
 SET                cps_comm_group_cd = i.comm_group_cps_cd
 FROM            comm.transaction_F555115 INNER JOIN
                          BRS_Item AS i ON comm.transaction_F555115.WSLITM_item_number = i.Item
 WHERE        
 	(i.comm_group_cps_cd <> '') AND 
-	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(comm.transaction_F555115.FiscalMonth between 201910 and 201910 ) AND
 	(1 = 1)
 
 GO
 
--- update EPS item
+print 'update EPS item'
 UPDATE       comm.transaction_F555115
 SET                eps_comm_group_cd = i.comm_group_eps_cd
 FROM            comm.transaction_F555115 INNER JOIN
                          BRS_Item AS i ON comm.transaction_F555115.WSLITM_item_number = i.Item
 WHERE        
 	(i.comm_group_eps_cd <> '') AND 
-	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(comm.transaction_F555115.FiscalMonth between 201910 and 201910 ) AND
 	(1 = 1)
 GO
 
 
--- CPS update plan & terr
+print 'CPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -487,10 +487,10 @@ ON sales_key.TerritoryCd = m.TerritoryCd
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(comm.transaction_F555115.FiscalMonth between 201910 and 201910 ) AND
 	(1 = 1)
 
--- EPS update plan & terr
+print 'EPS update plan & terr'
 
 UPDATE
 	comm.transaction_F555115
@@ -516,7 +516,7 @@ ON sales_key.TerritoryCd = m.TerritoryCd
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201909 and 201909 ) AND
+	(comm.transaction_F555115.FiscalMonth between 201910 and 201910 ) AND
 	(1 = 1)
 
 ----------------------
