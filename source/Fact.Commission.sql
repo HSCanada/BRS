@@ -155,13 +155,13 @@ GO
 
 -- SELECT top 10 * FROM Fact.Commission 
 
-SELECT * FROM Fact.Commission where FiscalMonth = 201901 and LineNumber = 54377210
+-- SELECT * FROM Fact.Commission where FiscalMonth = 201901 and LineNumber = 54377210
 /*
 SELECT 
 TOP 10 
 * 
 FROM Fact.Commission
-WHERE [FiscalMonth] = 201710 and source_cd <>'JDE'
+WHERE [FiscalMonth] = 201910 and source_cd ='JDE' and ESS_salespersonKey <> 2
 */
 
 -- SELECT count(*) FROM Fact.[Commission] 

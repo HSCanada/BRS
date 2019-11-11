@@ -3,6 +3,8 @@
 
 -- check adjustment RI
 
+/** START ***********************/
+
 -- [FiscalMonth]
 SELECT     * 
 FROM  [Integration].[F555115_commission_sales_adjustment_Staging] t
@@ -102,7 +104,7 @@ select distinct [FiscalMonth]	 from comm.transaction_F555115
 
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
 
--- load new data source from legacy source
+print 'load new data source from legacy source'
 INSERT INTO comm.transaction_F555115
 (
 	FiscalMonth,
@@ -130,16 +132,29 @@ INSERT INTO comm.transaction_F555115
 	WSCYCL_cycle_count_category,
 	WSCAG__cagess_code,
 	WS$L01_level_code_01,
+	WS$ESS_equipment_specialist_code,
 	WSSRP4_sub_minor_product_class,
 	WSAC10_division_code,
 
 	-- calculated fields
 	[source_cd],
 	[transaction_amt],
-	[gp_ext_amt]
+	[gp_ext_amt],
+
+	-- set defaults
+	[fsc_code],
+	[fsc_salesperson_key_id],
+	[ess_salesperson_key_id],
+	[cps_salesperson_key_id],
+	[eps_salesperson_key_id],
+
+	[fsc_comm_group_cd],
+	[ess_comm_group_cd],
+	[cps_comm_group_cd],
+	[eps_comm_group_cd]
 )
 SELECT
---	TOP (10) 
+--	TOP (10000) 
 	d.FiscalMonth,
 	t.WSDOCO_salesorder_number,
 	t.WSDCTO_order_type,
@@ -165,13 +180,25 @@ SELECT
 	t.WSCYCL_cycle_count_category,
 	t.WSCAG__cagess_code,
 	t.WS$L01_level_code_01,
+	t.WS$ESS_equipment_specialist_code,
 	t.WSSRP4_sub_minor_product_class,
 	t.WSAC10_division_code,
 
 	-- calculated fields
 	'JDE' AS source_cd,
 	t.WSAEXP_extended_price				AS [transaction_amt],
-	t.WS$UNC_sales_order_cost_markup	AS [gp_ext_amt]
+	t.WS$UNC_sales_order_cost_markup	AS [gp_ext_amt],
+
+	t.WS$L01_level_code_01				AS [fsc_code],
+	''									AS [fsc_salesperson_key_id],
+	''									AS [ess_salesperson_key_id],
+	''									AS [cps_salesperson_key_id],
+	''									AS [eps_salesperson_key_id],
+
+	''									AS [fsc_comm_group_cd],
+	''									AS [ess_comm_group_cd],
+	''									AS [cps_comm_group_cd],
+	''									AS [eps_comm_group_cd]
 
 FROM
 	Integration.F555115_commission_sales_extract_Staging AS t 
@@ -182,12 +209,158 @@ FROM
 
 WHERE 
 	(WSAC10_division_code NOT IN ('AZA','AZE')) 
-
+go
 ---
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
+/*
+SELECT        t.fsc_salesperson_key_id, s.salesperson_key_id, t.fsc_comm_plan_id, s.comm_plan_id, t.fsc_code, f.TerritoryCd, t.fsc_comm_group_cd, t.ess_salesperson_key_id, 
+                         t.cps_salesperson_key_id, t.eps_salesperson_key_id, t.ess_comm_group_cd, t.cps_comm_group_cd, t.eps_comm_group_cd
+FROM            comm.salesperson_master AS s INNER JOIN
+                         BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
+                         comm.transaction_F555115 AS t ON f.TerritoryCd = t.[fsc_code]
+WHERE        (t.FiscalMonth = 201910)
+go
+*/
 
--- load new data source
+print 'FSC update plan & terr'
+UPDATE       comm.transaction_F555115
+SET
+	fsc_salesperson_key_id = s.salesperson_key_id, 
+	fsc_comm_plan_id = s.comm_plan_id
+FROM            comm.salesperson_master AS s INNER JOIN
+                         BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
+                         comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+WHERE        (comm.transaction_F555115.FiscalMonth = 201910)
+go
+
+
+print 'ESS update plan & terr'
+UPDATE       comm.transaction_F555115
+SET
+	ess_salesperson_key_id = s.salesperson_key_id, 
+	ess_comm_plan_id = s.comm_plan_id
+FROM            comm.salesperson_master AS s INNER JOIN
+                         BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
+                         comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.WS$ESS_equipment_specialist_code
+WHERE        (comm.transaction_F555115.FiscalMonth = 201910)
+go
+
+
+print 'CPS update plan & terr'
+UPDATE
+	comm.transaction_F555115
+SET
+	cps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+	cps_comm_plan_id = m.comm_plan_id , 
+	cps_code = m.TerritoryCd
+FROM
+	comm.transaction_F555115 
+
+	INNER JOIN BRS_Customer AS c 
+	ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+	INNER JOIN BRS_FSC_Rollup AS f 
+	ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+
+	INNER JOIN comm.plan_region_map AS m 
+	ON m.comm_plan_id = 'CPSGP' AND 
+		c.PostalCode LIKE m.postal_code_where_clause_like AND 
+		1 = 1 
+	INNER JOIN BRS_FSC_Rollup AS sales_key 
+	ON sales_key.TerritoryCd = m.TerritoryCd
+
+WHERE
+	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+	(comm.transaction_F555115.FiscalMonth = 201910) AND
+	(1 = 1)
+go
+
+print 'EPS update plan & terr'
+UPDATE
+	comm.transaction_F555115
+SET
+	eps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+	eps_comm_plan_id = m.comm_plan_id , 
+	eps_code = m.TerritoryCd
+FROM
+	comm.transaction_F555115 
+
+	INNER JOIN BRS_Customer AS c 
+	ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+	INNER JOIN BRS_FSC_Rollup AS f 
+	ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+	INNER JOIN comm.plan_region_map AS m 
+	ON m.comm_plan_id = 'EPSGP' AND 
+		f.[Branch] = m.[branch_code_where_clause_like] AND 
+		1 = 1 
+	INNER JOIN BRS_FSC_Rollup AS sales_key 
+	ON sales_key.TerritoryCd = m.TerritoryCd
+
+WHERE
+	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+	(comm.transaction_F555115.FiscalMonth = 201910 ) AND
+	(1 = 1)
+go
+--
+
+print 'FSC update item'
+UPDATE       comm.transaction_F555115
+SET                fsc_comm_group_cd = i.comm_group_cd
+FROM            comm.transaction_F555115 t INNER JOIN
+                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_cd <> '') AND 
+	(t.FiscalMonth = 201910 ) AND
+	(t.fsc_comm_plan_id <> '') AND
+	(1 = 1)
+GO
+
+print 'ESS update item'
+UPDATE       comm.transaction_F555115
+SET                ess_comm_group_cd = i.comm_group_cd
+FROM            comm.transaction_F555115 t INNER JOIN
+                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_cd <> '') AND 
+	(t.FiscalMonth = 201910 ) AND
+	(t.ess_comm_plan_id <> '') AND
+	(1 = 1)
+GO
+
+
+print 'update CPS item'
+UPDATE       comm.transaction_F555115
+SET                cps_comm_group_cd = i.comm_group_cps_cd
+FROM            comm.transaction_F555115 t INNER JOIN
+                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_cps_cd <> '') AND 
+	(t.FiscalMonth = 201910 ) AND
+	(t.cps_comm_plan_id <> '') AND
+	(1 = 1)
+GO
+
+print 'update EPS item'
+UPDATE       comm.transaction_F555115
+SET                eps_comm_group_cd = i.comm_group_eps_cd
+FROM            comm.transaction_F555115 t INNER JOIN
+                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+WHERE        
+	(i.comm_group_eps_cd <> '') AND 
+	(t.FiscalMonth = 201910 ) AND
+	(t.eps_comm_plan_id <> '') AND
+	(1 = 1)
+GO
+
+/** STOP ***********************/
+
+-- set FSC info -- rough
+
+
+
+-- load new data source - TBD
 INSERT INTO comm.transaction_F555115
 (
 	FiscalMonth,

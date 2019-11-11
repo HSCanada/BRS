@@ -87,3 +87,15 @@ CREATE TABLE [Integration].[F555115_commission_sales_extract_Staging](
 ) ON [USERDATA]
 GO
 
+-- speed up fsc comm calc
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_14 ON comm.transaction_F555115
+	(
+	WS$L01_level_code_01
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
