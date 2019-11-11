@@ -98,7 +98,92 @@ source_cd
 
 select distinct [FiscalMonth]	 from comm.transaction_F555115
 -- 
+---
 
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
+
+-- load new data source from legacy source
+INSERT INTO comm.transaction_F555115
+(
+	FiscalMonth,
+	WSDOCO_salesorder_number,
+	WSDCTO_order_type,
+	WSLNID_line_number,
+	WS$OSC_order_source_code,
+	WSAN8__billto,
+	WSSHAN_shipto,
+	WSDGL__gl_date,
+	WSLITM_item_number,
+	WSDSC1_description,
+	WSSRP1_major_product_class,
+	WSSRP2_sub_major_product_class,
+	WSSRP3_minor_product_class,
+	WSSRP6_manufacturer,
+	WSSOQS_quantity_shipped,
+	WSAEXP_extended_price,
+	WSURAT_user_reserved_amount,
+	WS$UNC_sales_order_cost_markup,
+	WSVR01_reference,
+	WSPROV_price_override_code,
+	WSASN__adjustment_schedule,
+	WS$PMC_promotion_code_price_method,
+	WSCYCL_cycle_count_category,
+	WSCAG__cagess_code,
+	WS$L01_level_code_01,
+	WSSRP4_sub_minor_product_class,
+	WSAC10_division_code,
+
+	-- calculated fields
+	[source_cd],
+	[transaction_amt],
+	[gp_ext_amt]
+)
+SELECT
+--	TOP (10) 
+	d.FiscalMonth,
+	t.WSDOCO_salesorder_number,
+	t.WSDCTO_order_type,
+	ROUND(t.WSLNID_line_number * 1000,0) AS WSLNID_line_number,
+	t.WS$OSC_order_source_code,
+	t.WSAN8__billto,
+	t.WSSHAN_shipto,
+	t.WSDGL__gl_date,
+	t.WSLITM_item_number,
+	t.WSDSC1_description,
+	t.WSSRP1_major_product_class,
+	t.WSSRP2_sub_major_product_class,
+	t.WSSRP3_minor_product_class,
+	t.WSSRP6_manufacturer,
+	t.WSSOQS_quantity_shipped,
+	t.WSAEXP_extended_price,
+	t.WSURAT_user_reserved_amount,
+	t.WS$UNC_sales_order_cost_markup,
+	t.WSVR01_reference,
+	t.WSPROV_price_override_code,
+	t.WSASN__adjustment_schedule,
+	t.WS$PMC_promotion_code_price_method,
+	t.WSCYCL_cycle_count_category,
+	t.WSCAG__cagess_code,
+	t.WS$L01_level_code_01,
+	t.WSSRP4_sub_minor_product_class,
+	t.WSAC10_division_code,
+
+	-- calculated fields
+	'JDE' AS source_cd,
+	t.WSAEXP_extended_price				AS [transaction_amt],
+	t.WS$UNC_sales_order_cost_markup	AS [gp_ext_amt]
+
+FROM
+	Integration.F555115_commission_sales_extract_Staging AS t 
+
+	-- pre check date valid?
+	INNER JOIN BRS_SalesDay AS d 
+	ON t.WSDGL__gl_date = d.SalesDate
+
+WHERE 
+	(WSAC10_division_code NOT IN ('AZA','AZE')) 
+
+---
 
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
 
