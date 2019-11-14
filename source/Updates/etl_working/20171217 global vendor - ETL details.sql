@@ -86,7 +86,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201908 AND 201908
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 -- seq 0 of 2
@@ -161,7 +161,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 print 'clear GpsKey, if needed'
@@ -186,7 +186,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201909 and 201909)
+	(BRS_Transaction.FiscalMonth between 201910 and 201910)
 GO
 
 -- 1 min
@@ -218,7 +218,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201909 and 201909)
+	(BRS_Transaction.FiscalMonth between 201910 and 201910)
 GO
 
 -- 30s
@@ -250,7 +250,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201909 and 201909)
+	(BRS_Transaction.FiscalMonth between 201910 and 201910)
 GO
 
 print 'test GpsKey - should be > 0 records'
@@ -259,14 +259,14 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Sep-19_RAr.CSV
+-- a_CAN_Oct-19_RAr.CSV
 
 -- 3. select & run below
--- [hfm].global_cube_proc  201909, 201909
+-- [hfm].global_cube_proc  201910, 201910

@@ -102,7 +102,7 @@ select distinct [FiscalMonth]	 from comm.transaction_F555115
 -- 
 ---
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
 
 print 'load new data source from legacy source'
 INSERT INTO comm.transaction_F555115
