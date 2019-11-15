@@ -2,6 +2,7 @@
 -- run AFTER ETL stage
 
 -- TODO: NEW load test & FG load, 12 Feb 18
+-- 
 
 --> START
 
@@ -37,7 +38,7 @@ GO
 print '2. group - UPATE'
 UPDATE       [comm].[group]
 SET                
-	comm_status_cd =CASE WHEN [SPM_comm_group_cd] like 'SPM%' AND SPM_EQOptOut = 'Y' THEN 'SMEQU' ELSE CASE WHEN [SPM_comm_group_cd] like 'SPM%' THEN 'SMSND' ELSE '' END END,
+	comm_status_cd =CASE WHEN [SPM_comm_group_cd] like 'SPM%' AND SPM_EQOptOut = 'Y' THEN 'SPMEQU' ELSE CASE WHEN [SPM_comm_group_cd] like 'SPM%' THEN 'SPMSND' ELSE '' END END,
 	comm_group_sm_cd = SPM_comm_group_cd,
 	note_txt = c.[note_txt]
 FROM            CommBE.dbo.[comm_group] c INNER JOIN
@@ -48,8 +49,9 @@ print '3. rate - ADD'
 INSERT INTO comm.plan_group_rate
                          (
 	comm_plan_id,
-	comm_group_cd,
-	comm_base_rt,
+	item_comm_group_cd,
+	cust_comm_group_cd,
+	comm_rt,
 	active_ind,
 	creation_dt,
 	note_txt,
@@ -57,18 +59,26 @@ INSERT INTO comm.plan_group_rate
 )
 SELECT        comm_plan_id,
 	comm_group_cd,
+	cust_comm_group_cd,
 	comm_base_rt,
 	active_ind,
 	creation_dt,
 	note_txt,
 	show_ind
 FROM            CommBE.dbo.comm_plan_group_rate r
+
+cross join
+
+(SELECT  distinct [comm_status_cd] as cust_comm_group_cd FROM [dbo].[BRS_Customer]) s3
+
+
 WHERE NOT EXISTS 
 (
 	Select * from comm.plan_group_rate 
 	where comm_plan_id = r.comm_plan_id and 
 		comm_group_cd = r.comm_group_cd
 )
+
 GO
 
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
@@ -77,15 +87,15 @@ print '3b. rate - UPDATE'
 
 UPDATE       comm.plan_group_rate
 SET                
-comm_base_rt = s.comm_base_rt, 
+comm_rt = s.comm_base_rt, 
 active_ind = s.active_ind, 
 note_txt = s.note_txt, 
 show_ind = s.show_ind
 
 FROM            comm.plan_group_rate INNER JOIN
                          CommBE.dbo.comm_plan_group_rate AS s ON comm.plan_group_rate.comm_plan_id = s.comm_plan_id AND 
-                         comm.plan_group_rate.comm_group_cd = s.comm_group_cd
-WHERE        (comm.plan_group_rate.comm_base_rt <> s.comm_base_rt) OR
+                         comm.plan_group_rate.item_comm_group_cd = s.comm_group_cd
+WHERE        (comm.plan_group_rate.comm_rt <> s.comm_base_rt) OR
                          (comm.plan_group_rate.active_ind <> s.active_ind) OR
                          (comm.plan_group_rate.note_txt <> s.note_txt) OR
                          (comm.plan_group_rate.show_ind <> s.show_ind)
@@ -155,7 +165,7 @@ print '5. map customer'
 
 UPDATE       BRS_Customer
 SET                
-comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SMNEQ' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SMALL' ELSE '' END END,
+comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SPMSND' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SPMALL' ELSE '' END END,
 
 comm_note_txt = c.SPM_ReasonTxt
 FROM            CommBE.dbo.comm_customer_master c INNER JOIN

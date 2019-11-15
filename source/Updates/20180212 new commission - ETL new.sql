@@ -483,6 +483,64 @@ WHERE
 	(1 = 1)
 GO
 
+print 'FSC update comm - non-booking'
+UPDATE       comm.transaction_F555115
+SET
+	[fsc_comm_rt] = r.comm_rt,
+	[fsc_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+	[fsc_calc_key] = r.calc_key
+
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.fsc_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.fsc_comm_plan_id = r.comm_plan_id AND
+		t.fsc_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.fsc_comm_plan_id <> '') AND
+	(g.booking_rt = 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+
+print 'FSC update comm - booking'
+UPDATE       comm.transaction_F555115
+SET
+	[fsc_comm_rt] = r.comm_rt,
+	[fsc_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+	[fsc_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.fsc_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.fsc_comm_plan_id = r.comm_plan_id AND
+		t.fsc_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.fsc_comm_plan_id <> '') AND
+	(g.booking_rt <> 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
 -- ESS
 
 print 'ESS fix code'
@@ -498,8 +556,6 @@ WHERE
 	WS$ESS_equipment_specialist_code <> WSTKBY_order_taken_by AND
 	(1 = 1)
 GO
-
-
 
 print 'ESS update plan & terr'
 UPDATE       comm.transaction_F555115
@@ -520,6 +576,64 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(i.comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+print 'ESS update comm - non-booking'
+UPDATE       comm.transaction_F555115
+SET
+	[ess_comm_rt] = r.comm_rt,
+	[ess_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+	[ess_calc_key] = r.calc_key
+
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.ess_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.ess_comm_plan_id = r.comm_plan_id AND
+		t.ess_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.ess_comm_group_cd <> '') AND 
+	(t.ess_comm_plan_id <> '') AND
+	(g.booking_rt = 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+
+print 'ESS update comm - booking'
+UPDATE       comm.transaction_F555115
+SET
+	[ess_comm_rt] = r.comm_rt,
+	[ess_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+	[ess_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.ess_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.ess_comm_plan_id = r.comm_plan_id AND
+		t.ess_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.ess_comm_group_cd <> '') AND 
+	(t.ess_comm_plan_id <> '') AND
+	(g.booking_rt <> 0) AND
 	(t.FiscalMonth = 201812 ) AND
 	(1 = 1)
 GO
@@ -567,6 +681,64 @@ WHERE
 	(1 = 1)
 GO
 
+print 'CPS update comm - non-booking'
+UPDATE       comm.transaction_F555115
+SET
+	[cps_comm_rt] = r.comm_rt,
+	[cps_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+	[cps_calc_key] = r.calc_key
+
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.cps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.cps_comm_plan_id = r.comm_plan_id AND
+		t.cps_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.cps_comm_group_cd <> '') AND 
+	(t.cps_comm_plan_id <> '') AND
+	(g.booking_rt = 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+
+print 'CPS update comm - booking'
+UPDATE       comm.transaction_F555115
+SET
+	[cps_comm_rt] = r.comm_rt,
+	[cps_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+	[cps_calc_key] = r.calc_key
+
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.cps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.cps_comm_plan_id = r.comm_plan_id AND
+		t.cps_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.cps_comm_group_cd <> '') AND 
+	(t.cps_comm_plan_id <> '') AND
+	(g.booking_rt <> 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
 
 -- EPS
 
@@ -610,6 +782,64 @@ WHERE
 	(1 = 1)
 GO
 
+
+print 'EPS update comm - non-booking'
+UPDATE       comm.transaction_F555115
+SET
+	[eps_comm_rt] = r.comm_rt,
+	[eps_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+	[eps_calc_key] = r.calc_key
+
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.eps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.eps_comm_plan_id = r.comm_plan_id AND
+		t.eps_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.eps_comm_group_cd <> '') AND 
+	(t.eps_comm_plan_id <> '') AND
+	(g.booking_rt = 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+
+print 'CPS update comm - booking'
+UPDATE       comm.transaction_F555115
+SET
+	[cps_comm_rt] = r.comm_rt,
+	[cps_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+	[cps_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_Customer] c
+	ON t.WSSHAN_shipto = c.ShipTo
+
+	INNER JOIN [comm].[group] g
+	ON t.cps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.cps_comm_plan_id = r.comm_plan_id AND
+		t.cps_comm_group_cd = r.item_comm_group_cd AND
+		c.comm_status_cd = r.cust_comm_group_cd 
+WHERE        
+	(t.cps_comm_group_cd <> '') AND 
+	(t.cps_comm_plan_id <> '') AND
+	(g.booking_rt <> 0) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
 
 /** STOP ***********************/
 
