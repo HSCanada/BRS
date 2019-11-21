@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201909 AND 201909
+	FiscalMonth BETWEEN 201910 AND 201910
 GO
 
 print 'set Exclusives - Excl_key, 1s, 1 OF 3'

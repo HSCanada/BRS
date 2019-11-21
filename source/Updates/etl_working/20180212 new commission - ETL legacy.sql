@@ -380,7 +380,7 @@ GO
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201901
 
 ------------------------------------------------------------------------------------------------------
--- DATA - Migrate legacy
+-- DATA - Load LegacyPROD-to-New ( 1 of 3) OR...
 ------------------------------------------------------------------------------------------------------
 
 -- first set month below; 30s per month
@@ -409,6 +409,7 @@ FROM
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
 	(fiscal_yearmo_num = '201910') AND
+	source_cd in('IMPORT', 'PAYROLL') AND
 	(1=1)
 GO
 
