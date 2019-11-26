@@ -548,7 +548,7 @@ WHERE
 	-- only run once
 	(t.xfer_key is null) AND 
 	(r.SalesOrderNumber > 0) AND 
-	(t.FiscalMonth = 201910) AND
+	(t.FiscalMonth = 201812) AND
 	(1=1)
 
 
@@ -579,7 +579,7 @@ WHERE
 	-- only run once
 	(t.xfer_key is null) AND 
 	(r.SalesOrderNumber = 0) AND 
-	(t.FiscalMonth = 201910) AND
+	(t.FiscalMonth = 201812) AND
 	(1=1)
 
 /*
@@ -995,6 +995,10 @@ WHERE
 	(t.FiscalMonth = 201812 ) AND
 	(1 = 1)
 GO
+
+
+
+
 
 /** STOP ***********************/
 

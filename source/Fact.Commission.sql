@@ -31,33 +31,34 @@ AS
 **	-----	----------	--------------------------------------------
 **	16 Sep 18	tmc		add fsc territory for branch split
 **  25 Sep 19	tmc		add cps & EPS salesperson and commission 
+**	25 Nov 19	tmc		replace comm group with smart version (based on calc)
 **    
 *******************************************************************************/
 
 SELECT        
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
-	,fsc.salesperson_master_key						AS FSC_SalespersonKey
-	,fsc_code.[FscKey]								AS FSC_SalespersonCodeKey
-	,fsc_grp.comm_group_key							AS FSC_CommGroupKey
-	,ess.salesperson_master_key						AS ESS_SalespersonKey
-	,ess_grp.comm_group_key							AS ESS_CommGroupKey
 
-	-- yes, 2 is a magic number -- too late to fix...
+	-- Note, default FSC = 2 is a magic number -- too late to fix...
+
+	,ISNULL(fsc.salesperson_master_key, 2) 			AS FSC_SalespersonKey
+	,ISNULL(fsc_code.[FscKey], 2) 					AS FSC_SalespersonCodeKey
+	,ISNULL(fsc_grp_map.comm_group_key, 1) 			AS FSC_CommGroupKey
+
+	,ISNULL(ess.salesperson_master_key, 2)			AS ESS_SalespersonKey
+	,ISNULL(ess_grp_map.comm_group_key, 1)			AS ESS_CommGroupKey
+
 	,ISNULL(cps.salesperson_master_key, 2)			AS CPS_SalespersonKey
-	,ISNULL(cps_grp.comm_group_key, 1)				AS CPS_CommGroupKey
+	,ISNULL(cps_grp_map.comm_group_key, 1)			AS CPS_CommGroupKey
 
 	,ISNULL(eps.salesperson_master_key, 2)			AS EPS_SalespersonKey
-	,ISNULL(eps_grp.comm_group_key, 1)				AS EPS_CommGroupKey
-
+	,ISNULL(eps_grp_map.comm_group_key, 1)			AS EPS_CommGroupKey
 
 	,t.[WSSHAN_shipto]								AS ShipTo
 	,i.ItemKey										AS ItemKey
-
 	,t.[WSDOCO_salesorder_number]					AS SalesOrderNumber
 	,doct.DocTypeKey								AS DocTypeKey
 	,t.[WSLNID_line_number]							AS LineNumber
-
 	,CAST(t.[WSDGL__gl_date] AS date)				AS DateKey
 	,t.[WSAN8__billto]								AS BillTo
 	,src.source_key									AS SourceKey
@@ -70,8 +71,12 @@ SELECT
 	,(t.[WSSOQS_quantity_shipped])					AS Quantity
 	,(t.[transaction_amt])							AS SalesAmt
 	,(t.[gp_ext_amt])								AS GPAmt
-	,(t.[fsc_comm_amt])								AS FSC_CommAmt
-	,(t.[ess_comm_amt])								AS ESS_CommAmt
+
+	,ISNULL((t.[fsc_comm_amt]),0)					AS FSC_CommAmt
+	,ISNULL((t.[ess_comm_amt]),0)					AS ESS_CommAmt
+	,ISNULL((t.[cps_comm_amt]),0)					AS CPS_CommAmt
+	,ISNULL((t.[eps_comm_amt]),0)					AS EPS_CommAmt
+
 
 	,(t.source_cd)
 
@@ -101,33 +106,52 @@ FROM
 	INNER JOIN [dbo].[BRS_DocType] as doct
 	ON doct.DocType = t.[WSDCTO_order_type]
 
-	INNER JOIN [comm].[salesperson_master] as fsc
+	-- Dim Customer
+	LEFT JOIN [comm].[salesperson_master] as fsc
 	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
 
-	INNER JOIN [comm].[salesperson_master] as ess
+	LEFT JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
+	ON fsc_code.[TerritoryCd] = t.fsc_code
+
+	LEFT JOIN [comm].[salesperson_master] as ess
 	ON ess.salesperson_key_id = t.[ess_salesperson_key_id]
---
+
 	LEFT JOIN [comm].[salesperson_master] as cps
 	ON cps.salesperson_key_id = t.[cps_salesperson_key_id]
 
 	LEFT JOIN [comm].[salesperson_master] as eps
 	ON eps.salesperson_key_id = t.[eps_salesperson_key_id]
 
-	LEFT JOIN [comm].[group] as cps_grp
-	ON cps_grp.comm_group_cd = t.[cps_comm_group_cd]
+	-- Dim Item
 
-	LEFT JOIN [comm].[group] as eps_grp
-	ON eps_grp.comm_group_cd = t.[eps_comm_group_cd]
+	-- fsc	
+	LEFT JOIN [comm].[plan_group_rate] fc
+	ON t.fsc_calc_key = fc.calc_key
 
---
-	INNER JOIN [comm].[group] as fsc_grp
-	ON fsc_grp.comm_group_cd = t.[fsc_comm_group_cd]
+	LEFT JOIN [comm].[group] as fsc_grp_map
+	ON fsc_grp_map.comm_group_cd = fc.disp_comm_group_cd
 
-	INNER JOIN [comm].[group] as ess_grp
-	ON ess_grp.comm_group_cd = t.[ess_comm_group_cd]
+	-- ess
+	LEFT JOIN [comm].[plan_group_rate] ec
+	ON t.ess_calc_key = ec.calc_key
 
-	INNER JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
-	ON fsc_code.[TerritoryCd] = t.fsc_code
+	LEFT JOIN [comm].[group] as ess_grp_map
+	ON ess_grp_map.comm_group_cd = ec.disp_comm_group_cd
+
+	-- cps
+	LEFT JOIN [comm].[plan_group_rate] cc
+	ON t.cps_calc_key = cc.calc_key
+
+	LEFT JOIN [comm].[group] as cps_grp_map
+	ON cps_grp_map.comm_group_cd = cc.disp_comm_group_cd
+
+	-- eps
+	LEFT JOIN [comm].[plan_group_rate] pc
+	ON t.eps_calc_key = pc.calc_key
+
+	LEFT JOIN [comm].[group] as eps_grp_map
+	ON eps_grp_map.comm_group_cd = pc.disp_comm_group_cd
+
 
 	-- identify first sales order (for sales order dimension)
 	LEFT JOIN 
@@ -164,7 +188,50 @@ FROM Fact.Commission
 WHERE [FiscalMonth] = 201910 and source_cd ='JDE' and ESS_salespersonKey <> 2
 */
 
--- SELECT count(*) FROM Fact.[Commission] 
--- org 5 377 237, 10s
+-- SELECT count(*) FROM Fact.[Commission] where [FiscalMonth] = 201812
+-- ORG 208 627, 2s
+
 
 -- select distinct FSC_SalespersonCodeKey from Fact.Commission 
+
+SELECT
+	top 10
+
+	FactKey,
+	FiscalMonth,
+
+	FSC_SalespersonKey,
+	FSC_SalespersonCodeKey,
+	FSC_CommGroupKey,
+
+	ESS_SalespersonKey,
+	ESS_CommGroupKey,
+
+	CPS_SalespersonKey,
+	CPS_CommGroupKey,
+
+	EPS_SalespersonKey,
+	EPS_CommGroupKey,
+
+	ShipTo,
+	ItemKey,
+	SalesOrderNumber,
+	DocTypeKey,
+	LineNumber,
+	DateKey,
+	BillTo,
+	SourceKey,
+	FreeGoodsInvoicedInd,
+	FreeGoodsEstInd,
+	FreeGoodsRedeemedInd,
+
+	Quantity,
+	SalesAmt,
+	GPAmt,
+	FSC_CommAmt,
+	ESS_CommAmt,
+	EPS_CommAmt,
+	CPS_CommAmt
+
+FROM
+	Fact.Commission

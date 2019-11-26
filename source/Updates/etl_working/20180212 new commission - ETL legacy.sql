@@ -417,6 +417,139 @@ GO
 -- DATA - Migrate legacy - post (see NEW post)
 ------------------------------------------------------------------------------------------------------
 
+------------------------------------------------------------------------------------------------------
+-- DATA - set calc-key for prod sources
+------------------------------------------------------------------------------------------------------
+
+
+print 'FSC legacy - set key'
+UPDATE
+	comm.transaction_F555115
+SET
+	[fsc_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.fsc_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.fsc_comm_plan_id = r.comm_plan_id AND
+		t.fsc_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
+WHERE        
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.fsc_comm_plan_id <> '') AND
+	(t.[fsc_calc_key] IS NULL) AND
+--	(t.FiscalMonth between 201801 and 201812 ) AND
+--	(t.FiscalMonth between 201901 and 201912 ) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+
+-- ESS
+print 'ESS legacy - set key'
+UPDATE
+	comm.transaction_F555115
+SET
+	[ess_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.ess_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.ess_comm_plan_id = r.comm_plan_id AND
+		t.ess_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
+WHERE        
+	(t.ess_comm_group_cd <> '') AND 
+	(t.ess_comm_plan_id <> '') AND
+	(t.[ess_calc_key] IS NULL) AND
+--	(t.FiscalMonth between 201801 and 201812 ) AND
+--	(t.FiscalMonth between 201901 and 201912 ) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+-- CPS
+print 'CPS legacy - set key'
+UPDATE
+	comm.transaction_F555115
+SET
+	[fsc_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.cps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.cps_comm_plan_id = r.comm_plan_id AND
+		t.cps_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
+WHERE        
+	(t.cps_comm_group_cd <> '') AND 
+	(t.cps_comm_plan_id <> '') AND
+	(t.[cps_calc_key] IS NULL) AND
+--	(t.FiscalMonth between 201801 and 201812 ) AND
+--	(t.FiscalMonth between 201901 and 201912 ) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
+-- EPS
+print 'EPS legacy - set key'
+UPDATE
+	comm.transaction_F555115
+SET
+	[eps_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.eps_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.eps_comm_plan_id = r.comm_plan_id AND
+		t.eps_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
+WHERE        
+	(t.eps_comm_group_cd <> '') AND 
+	(t.eps_comm_plan_id <> '') AND
+	(t.[eps_calc_key] IS NULL) AND
+--	(t.FiscalMonth between 201801 and 201812 ) AND
+--	(t.FiscalMonth between 201901 and 201912 ) AND
+	(t.FiscalMonth = 201812 ) AND
+	(1 = 1)
+GO
+
 
 ----------------------
 

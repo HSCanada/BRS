@@ -172,7 +172,7 @@ ALTER TABLE [comm].[plan_group_rate] ADD  CONSTRAINT [DF_comm_plan_group_rate_sh
 GO
 
 
----
+--
 
 INSERT INTO   [comm].[plan_group_rate] (
 comm_plan_id, [item_comm_group_cd], [cust_comm_group_cd], [source_cd], [note_txt]
@@ -187,11 +187,11 @@ INSERT INTO   [comm].[plan_group_rate] (
 comm_plan_id, [item_comm_group_cd], [cust_comm_group_cd], [source_cd]
 )
 select *  from
-(SELECT  distinct [comm_plan_id] FROM [comm].[plan] where comm_plan_id <> '') s
+(SELECT  distinct [comm_plan_id] FROM [comm].[plan] ) s
 
 cross join
 
-(SELECT [comm_group_cd] as item_comm_group_cd FROM [comm].[group] where [source_cd] in ('JDE', 'IMP')) s2
+( SELECT [comm_group_cd] as item_comm_group_cd FROM [comm].[group] where [source_cd] in ('JDE', 'IMP', 'PAY') ) s2
 
 
 cross join
@@ -200,7 +200,7 @@ cross join
 
 cross join
 
-(SELECT [source_cd] FROM [comm].[source] where [source_cd] in ('JDE', 'IMP')) s4
+( SELECT [source_cd] FROM [comm].[source] where [source_cd] in ('JDE', 'IMP', 'PAY') ) s4
 
 GO
 
@@ -291,6 +291,70 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add RI for calc audit logic, tmc, 25 Nov 19
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX plan_group_rate_u_idx_01 ON comm.plan_group_rate
+	(
+	calc_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.plan_group_rate SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan_group_rate FOREIGN KEY
+	(
+	fsc_calc_key
+	) REFERENCES comm.plan_group_rate
+	(
+	calc_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan_group_rate1 FOREIGN KEY
+	(
+	ess_calc_key
+	) REFERENCES comm.plan_group_rate
+	(
+	calc_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan_group_rate2 FOREIGN KEY
+	(
+	cps_calc_key
+	) REFERENCES comm.plan_group_rate
+	(
+	calc_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan_group_rate3 FOREIGN KEY
+	(
+	eps_calc_key
+	) REFERENCES comm.plan_group_rate
+	(
+	calc_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+---
 
 -- Territory fixes to allign reporting to commissions
 
@@ -703,5 +767,143 @@ select s2.FiscalMonth, s1.* from
 
   (select [FiscalMonth] from [dbo].[BRS_FiscalMonth] where [FiscalMonth] between 201801 and 201912 and [FiscalMonth] <> 201910) s2
 
-  --
+  -- ensure Oct 2018 calc has full coverage
 
+
+-- set display - FSC
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%')
+
+-- set display - FSC - SM
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%')
+
+
+-- set display - ESS
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup2_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%')
+
+-- set display - CSS
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup3_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%')
+
+-- set display - ESP
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND
+	g.comm_group_cd like 'EPS%'
+
+-- set display - CPS
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND
+	g.comm_group_cd like 'CPS%'
+
+
+/****** Script for SelectTopNRows command from SSMS  ******/
+
+SELECT  
+	[FiscalMonth]
+    ,[source_cd]
+	,fsc_comm_group_cd
+	,count(*) as total
+     ,count([fsc_calc_key]) as fsc
+      ,count([ess_calc_key]) as ess
+      ,count([cps_calc_key]) as cps
+      ,count([eps_calc_key]) as eps
+FROM [comm].[transaction_F555115]
+where FiscalMonth = 201801 and
+[fsc_calc_key] IS NULL AND
+(1=1)
+group by FiscalMonth, source_cd, fsc_comm_group_cd
+order by 1,2,3
+
+
+-- detail
+SELECT  
+	* 
+FROM [comm].[transaction_F555115]
+where FiscalMonth = 201801 and
+[fsc_calc_key] IS NULL AND
+(1=1)
+order by fsc_code
+
+
+
+-- todo;  set SM map for ALL and Merch based on filters.  
+
+print 'rule set - init values to unassigned'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = ''
+FROM            comm.[group] 
+
+-- SM pass first, suspect that Dig will not work
+
+print 'rule set - FSC, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+
+-- ESS
+print 'rule set - ESS, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+
+-- CCS
+print 'rule set - CCS, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+
+-- CPS
+print 'rule set - CPS, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+
+-- EPS
+print 'rule set - EPS, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+
+
+/*
+SELECT        g.comm_group_cd, g.comm_group_rollup1_cd, r.comm_plan_id, g.comm_group_sm_cd, r.disp_comm_group_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate AS r ON g.comm_group_cd = r.item_comm_group_cd
+WHERE        (r.comm_plan_id like 'FSC%') AND
+g.comm_group_sm_cd like 'SPM%' AND
+--g.comm_group_sm_cd not like 'SPMF%' AND
+--g.comm_group_sm_cd like 'SPMF%' AND
+(1=1)
+order by 2, 4
+
+*/
