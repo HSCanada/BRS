@@ -377,7 +377,12 @@ GO
 
 /** STOP ***********************/
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201901
+/*
+
+print 'delete month'
+delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
+
+*/
 
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load LegacyPROD-to-New ( 1 of 3) OR...

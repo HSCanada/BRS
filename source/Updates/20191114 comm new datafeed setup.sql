@@ -855,44 +855,51 @@ FROM            comm.[group]
 
 -- SM pass first, suspect that Dig will not work
 
-print 'rule set - FSC, SM'
+print 'rule set - FSC, base'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%') AND (1 = 1)
+
+print 'rule set - FSC, SM'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_sm_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
 WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
 
 -- ESS
-print 'rule set - ESS, SM'
+print 'rule set - ESS'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_rollup1_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%') AND (1 = 1)
 
 -- CCS
-print 'rule set - CCS, SM'
+print 'rule set - CCS'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_rollup1_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%') AND (1 = 1)
 
 -- CPS
-print 'rule set - CPS, SM'
+print 'rule set - CPS'
 UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+SET                disp_comm_group_cd = g.comm_group_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND (comm.plan_group_rate.item_comm_group_cd like 'CPS%') AND (1 = 1)
 
 -- EPS
-print 'rule set - EPS, SM'
+print 'rule set - EPS'
 UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+SET                disp_comm_group_cd = g.comm_group_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND (comm.plan_group_rate.item_comm_group_cd like 'EPS%')  AND (1 = 1)
 
 
 /*

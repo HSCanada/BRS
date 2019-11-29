@@ -667,6 +667,9 @@ WHERE
 	(1 = 1)
 GO
 
+--select distinct [HIST_cust_comm_group_cd] from [BRS_CustomerFSC_History] where FiscalMonth = 201812
+
+
 
 print 'FSC update comm - booking - new'
 UPDATE       comm.transaction_F555115
