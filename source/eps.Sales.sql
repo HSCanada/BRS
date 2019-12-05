@@ -111,12 +111,10 @@ BEGIN
 
 	WHERE     
 		(d.FiscalWeek = @nWeek) AND
-		(t.SalesDivision = 'AAD') AND
--- test
---		CAST(d.SalesDate as date) between '2019-01-01' AND '2019-03-22' AND
---		(t.CalMonth Between 201801 and 201803) AND
---		(c.Eps_Code = 'EPQUE') AND
-
+		(t.SalesDivision = 'AAD') AND-- test
+--		CAST(d.SalesDate as date) between '2019-01-01' AND '2019-11-22' AND
+--		(t.CalMonth Between 201901 and 201912) AND
+--		(c.Eps_Code = 'EPWES') AND
 		(1=1)
 
 END
@@ -132,8 +130,7 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20191122.txt
-
+-- HSC_SALES_20191129.txt
 
 SET NOCOUNT OFF;
 GO

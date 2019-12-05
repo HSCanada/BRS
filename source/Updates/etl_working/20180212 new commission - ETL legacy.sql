@@ -413,8 +413,8 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num = '201910') AND
-	source_cd in('IMPORT', 'PAYROLL') AND
+	(fiscal_yearmo_num = '201911') AND
+--	source_cd in('IMPORT', 'PAYROLL') AND
 	(1=1)
 GO
 
@@ -451,10 +451,13 @@ FROM
 WHERE        
 	(t.fsc_comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
-	(t.[fsc_calc_key] IS NULL) AND
+
+--	(t.[fsc_calc_key] IS NULL) AND
+
 --	(t.FiscalMonth between 201801 and 201812 ) AND
 --	(t.FiscalMonth between 201901 and 201912 ) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201909 ) AND
+--	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
@@ -484,10 +487,9 @@ FROM
 WHERE        
 	(t.ess_comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
-	(t.[ess_calc_key] IS NULL) AND
---	(t.FiscalMonth between 201801 and 201812 ) AND
---	(t.FiscalMonth between 201901 and 201912 ) AND
-	(t.FiscalMonth = 201812 ) AND
+--	(t.[ess_calc_key] IS NULL) AND
+--	(t.FiscalMonth between 201801 and 201912 ) AND
+	(t.FiscalMonth = 201909 ) AND
 	(1 = 1)
 GO
 
@@ -496,7 +498,7 @@ print 'CPS legacy - set key'
 UPDATE
 	comm.transaction_F555115
 SET
-	[fsc_calc_key] = r.calc_key
+	[cps_calc_key] = r.calc_key
 
 FROM
 	comm.transaction_F555115 t
@@ -516,10 +518,10 @@ FROM
 WHERE        
 	(t.cps_comm_group_cd <> '') AND 
 	(t.cps_comm_plan_id <> '') AND
-	(t.[cps_calc_key] IS NULL) AND
+--	(t.[cps_calc_key] IS NULL) AND
 --	(t.FiscalMonth between 201801 and 201812 ) AND
---	(t.FiscalMonth between 201901 and 201912 ) AND
-	(t.FiscalMonth = 201812 ) AND
+--	(t.FiscalMonth between 201801 and 201912 ) AND
+	(t.FiscalMonth = 201909 ) AND
 	(1 = 1)
 GO
 
@@ -548,10 +550,10 @@ FROM
 WHERE        
 	(t.eps_comm_group_cd <> '') AND 
 	(t.eps_comm_plan_id <> '') AND
-	(t.[eps_calc_key] IS NULL) AND
+--	(t.[eps_calc_key] IS NULL) AND
 --	(t.FiscalMonth between 201801 and 201812 ) AND
---	(t.FiscalMonth between 201901 and 201912 ) AND
-	(t.FiscalMonth = 201812 ) AND
+--	(t.FiscalMonth between 201801 and 201912 ) AND
+	(t.FiscalMonth = 201909 ) AND
 	(1 = 1)
 GO
 

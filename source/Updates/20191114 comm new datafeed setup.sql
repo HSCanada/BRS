@@ -770,52 +770,6 @@ select s2.FiscalMonth, s1.* from
   -- ensure Oct 2018 calc has full coverage
 
 
--- set display - FSC
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%')
-
--- set display - FSC - SM
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%')
-
-
--- set display - ESS
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup2_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%')
-
--- set display - CSS
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup3_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%')
-
--- set display - ESP
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND
-	g.comm_group_cd like 'EPS%'
-
--- set display - CPS
-UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_cd
-FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND
-	g.comm_group_cd like 'CPS%'
-
-
 /****** Script for SelectTopNRows command from SSMS  ******/
 
 SELECT  
@@ -835,58 +789,77 @@ group by FiscalMonth, source_cd, fsc_comm_group_cd
 order by 1,2,3
 
 
--- detail
+-- test detail for missing calc
 SELECT  
 	* 
 FROM [comm].[transaction_F555115]
-where FiscalMonth = 201801 and
+where FiscalMonth = 201910 and
 [fsc_calc_key] IS NULL AND
 (1=1)
 order by fsc_code
 
 
-
--- todo;  set SM map for ALL and Merch based on filters.  
-
-print 'rule set - init values to unassigned'
+print '0. rule set - init values to unassigned'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = ''
 FROM            comm.[group] 
 
 -- SM pass first, suspect that Dig will not work
 
-print 'rule set - FSC, base'
+print '1. rule set - FSC, base'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_rollup1_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
 WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%') AND (1 = 1)
 
-print 'rule set - FSC, SM'
+-- todo;  set SM map for ALL and Merch based on filters.  
+
+print '2. rule set - FSC, SMALL'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_sm_cd
 FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
-WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'FSC%') AND (g.comm_group_sm_cd LIKE 'SPM%') AND (1 = 1)
+                         comm.plan_group_rate r ON g.comm_group_cd = r.item_comm_group_cd
+WHERE
+	(g.comm_group_sm_cd LIKE 'SPM%') AND 
+	(r.comm_plan_id LIKE 'FSC%') AND 
+	(r.cust_comm_group_cd = 'SPMALL') AND
+	(r.source_cd = 'JDE') AND
+	(1 = 1)
+
+print '3. rule set - FSC, SPMSND'
+UPDATE       comm.plan_group_rate
+SET                disp_comm_group_cd = g.comm_group_sm_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate r ON g.comm_group_cd = r.item_comm_group_cd
+WHERE
+	(g.comm_group_sm_cd LIKE 'SPM%') AND 
+	(g.comm_group_cd NOT like 'ITM%') AND
+	(g.comm_group_cd <> 'FRESEQ') AND
+	(r.comm_plan_id LIKE 'FSC%') AND 
+	(r.cust_comm_group_cd = 'SPMSND') AND
+	(r.source_cd = 'JDE') AND
+	(1 = 1)
+
 
 -- ESS
-print 'rule set - ESS'
+print '4. rule set - ESS'
 UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+SET                disp_comm_group_cd = g.comm_group_rollup2_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
 WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'ESS%') AND (1 = 1)
 
 -- CCS
-print 'rule set - CCS'
+print '5. rule set - CCS'
 UPDATE       comm.plan_group_rate
-SET                disp_comm_group_cd = g.comm_group_rollup1_cd
+SET                disp_comm_group_cd = g.comm_group_rollup3_cd
 FROM            comm.[group] AS g INNER JOIN
                          comm.plan_group_rate ON g.comm_group_cd = comm.plan_group_rate.item_comm_group_cd
 WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CCS%') AND (1 = 1)
 
 -- CPS
-print 'rule set - CPS'
+print '6. rule set - CPS'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_cd
 FROM            comm.[group] AS g INNER JOIN
@@ -894,7 +867,7 @@ FROM            comm.[group] AS g INNER JOIN
 WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'CPS%') AND (comm.plan_group_rate.item_comm_group_cd like 'CPS%') AND (1 = 1)
 
 -- EPS
-print 'rule set - EPS'
+print '7. rule set - EPS'
 UPDATE       comm.plan_group_rate
 SET                disp_comm_group_cd = g.comm_group_cd
 FROM            comm.[group] AS g INNER JOIN
@@ -903,14 +876,39 @@ WHERE        (comm.plan_group_rate.comm_plan_id LIKE 'EPS%') AND (comm.plan_grou
 
 
 /*
-SELECT        g.comm_group_cd, g.comm_group_rollup1_cd, r.comm_plan_id, g.comm_group_sm_cd, r.disp_comm_group_cd
+SELECT
+	g.comm_group_cd,
+	g.comm_group_sm_cd,
+	r.comm_plan_id,
+	r.cust_comm_group_cd,
+	r.disp_comm_group_cd
 FROM            comm.[group] AS g INNER JOIN
-                         comm.plan_group_rate AS r ON g.comm_group_cd = r.item_comm_group_cd
-WHERE        (r.comm_plan_id like 'FSC%') AND
-g.comm_group_sm_cd like 'SPM%' AND
---g.comm_group_sm_cd not like 'SPMF%' AND
---g.comm_group_sm_cd like 'SPMF%' AND
-(1=1)
-order by 2, 4
+                         comm.plan_group_rate r ON g.comm_group_cd = r.item_comm_group_cd
+WHERE
+	(r.comm_plan_id LIKE 'FSC%') AND 
+	(g.comm_group_sm_cd LIKE 'SPM%') AND 
+	(r.cust_comm_group_cd = 'SPMALL') AND
+	(r.source_cd = 'JDE') AND
+	(1 = 1)
+order by 3
+
+--
+SELECT
+	g.comm_group_cd,
+	g.comm_group_sm_cd,
+	r.comm_plan_id,
+	r.cust_comm_group_cd,
+	r.disp_comm_group_cd
+FROM            comm.[group] AS g INNER JOIN
+                         comm.plan_group_rate r ON g.comm_group_cd = r.item_comm_group_cd
+WHERE
+	(g.comm_group_sm_cd LIKE 'SPM%') AND 
+	(g.comm_group_cd NOT like 'ITM%') AND
+	(g.comm_group_cd <> 'FRESEQ') AND
+	(r.comm_plan_id LIKE 'FSC%') AND 
+	(r.cust_comm_group_cd = 'SPMSND') AND
+	(r.source_cd = 'JDE') AND
+	(1 = 1)
+order by 1
 
 */

@@ -34,6 +34,7 @@ AS
 **	13 Apr 18	tmc		removed inactive filter to allow growth measure DCC
 --	17 Jan 19	tmc		add Hygine accout to feed
 --	26 Mar 19	tmc		extend to Quebec Zone & add EPS
+--  29 Nov 19	tmc		Added BC
 **    
 *******************************************************************************/
 
@@ -84,7 +85,7 @@ WHERE
 	(c.ShipTo > 0) AND
 	(c.SalesDivision = 'AAD') AND 
 	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO', 'HYGEN')) AND
-	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT', 'MNTRL', 'QUEBC')) AND
+	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT', 'MNTRL', 'QUEBC', 'VACVR', 'VICTR')) AND
 	(1=1)
 GO
 
@@ -94,7 +95,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Customer WHERE Field_Level_3_Description = 'EPQUE'
+-- SELECT top 10 * FROM eps.Customer WHERE Eps_Code = 'EPWES'
 -- SELECT * FROM eps.Customer where Specialty_Discription = 'HYGEN'
 
 -- eps_customer.txt

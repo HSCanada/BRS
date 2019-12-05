@@ -8,7 +8,7 @@
 
 /** START ***********************/
 
-print 'check - [SalesDate]'
+print '1. check - [SalesDate]'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -18,7 +18,7 @@ WHERE not exists
 )
 GO
 
-print 'check - [WSDOCO_salesorder_number]'
+print '2. check - [WSDOCO_salesorder_number]'
 --INSERT INTO [dbo].[BRS_TransactionDW_Ext] (
 --SalesOrderNumber, DocType
 --)
@@ -28,10 +28,11 @@ WHERE not exists
 (
 	select * from [dbo].[BRS_TransactionDW_Ext] s
 	where t.WSDOCO_salesorder_number = s.SalesOrderNumber
-)
+) AND
+[WSAC10_division_code] <> 'AZA'
 GO
 
-print 'check - [WSSHAN_shipto] - current'
+print '3. check - [WSSHAN_shipto] - current'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -42,7 +43,7 @@ WHERE not exists
 GO
 
 
-print 'check - [WSSHAN_shipto] - history'
+print '4. check - [WSSHAN_shipto] - history'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 
@@ -59,6 +60,32 @@ WHERE not exists
 GO
 
 ---
+/*
+
+
+-- step 1: load history from prod for testing
+INSERT INTO BRS_CustomerFSC_History
+                         (Shipto, FiscalMonth, HIST_TerritoryCd, HIST_VPA, HIST_Specialty, HIST_MarketClass, HIST_SegCd, HIST_TsTerritoryCd, AlertCd, HIST_SalesDivision, 
+                         HIST_MarketClass_New, HIST_SegCd_New, HIST_MarketClass_Old, HIST_SegCd_Old)
+SELECT        Shipto, FiscalMonth, HIST_TerritoryCd, HIST_VPA, HIST_Specialty, HIST_MarketClass, HIST_SegCd, HIST_TsTerritoryCd, AlertCd, HIST_SalesDivision, 
+                         HIST_MarketClass_New, HIST_SegCd_New, HIST_MarketClass_Old, HIST_SegCd_Old
+FROM            BRSales..BRS_CustomerFSC_History AS BRS_CustomerFSC_History_1
+WHERE        (FiscalMonth = 201911)
+GO
+
+-- step 2: run comm synch to ensure customer comm code is current
+
+-- step 3: update cust comm (as it is not in prod history yet)
+
+UPDATE       BRS_CustomerFSC_History
+SET                [HIST_cust_comm_group_cd] = c.[comm_status_cd]
+FROM            BRS_CustomerFSC_History h INNER JOIN
+                         BRS_Customer AS c ON h.Shipto = c.ShipTo
+WHERE        (h.FiscalMonth = 201911)
+
+*/
+
+
 /*
 print 'fix - [WSSHAN_shipto] - history (reminder to manualy correct FSC code, which is blank'
 insert into [dbo].[BRS_CustomerFSC_History]
@@ -87,7 +114,7 @@ INNER JOIN
 */
 
 ---
-print 'check - [WSLITM_item_number]'
+print '5. check - [WSLITM_item_number]'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -98,7 +125,7 @@ WHERE not exists
 GO
 
 
-print 'check - [WS$ESS_equipment_specialist_code]'
+print '6. check - [WS$ESS_equipment_specialist_code]'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -109,7 +136,7 @@ WHERE not exists
 GO
 
 
-print 'check - [WSCAG__cagess_code]'
+print '7. check - [WSCAG__cagess_code]'
 SELECT     * 
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -118,10 +145,10 @@ WHERE not exists
 	where t.WSCAG__cagess_code = s.[TerritoryCd]
 )
 
-print 'check - [WSSIC__speciality]'
---INSERT INTO [dbo].[BRS_CustomerSpecialty] (
---Specialty
---)
+print '8. check - [WSSIC__speciality]'
+-- INSERT INTO [dbo].[BRS_CustomerSpecialty] (
+-- Specialty
+-- )
 SELECT  distinct (WSSIC__speciality)
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -130,10 +157,10 @@ WHERE not exists
 	where t.WSSIC__speciality = s.Specialty
 )
 
-print 'check - [WS$SPC_supplier_code]'
---INSERT INTO [dbo].[BRS_ItemSupplier] (
---Supplier
---)
+print '9. check - [WS$SPC_supplier_code]'
+-- INSERT INTO [dbo].[BRS_ItemSupplier] (
+-- Supplier
+-- )
 SELECT  distinct (WS$SPC_supplier_code)
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -142,6 +169,34 @@ WHERE not exists
 	where t.WS$SPC_supplier_code = s.Supplier
 )
 
+
+print '10. check - [WSLITM_item_number] - history'
+SELECT     * 
+FROM  [Integration].F555115_commission_sales_extract_Staging t
+
+	INNER JOIN BRS_SalesDay AS d 
+	ON t.WSDGL__gl_date = d.SalesDate
+
+WHERE not exists
+(
+	select * from [dbo].[BRS_ItemHistory] s
+	where 
+		t.WSLITM_item_number = s.[Item] AND
+		d.FiscalMonth = s.FiscalMonth 
+)
+GO
+
+---
+/*
+ 
+-- step 1: load history from prod for testing
+INSERT INTO [dbo].[BRS_ItemHistory]
+                         ([Item], [FiscalMonth] ,[Supplier] ,[MinorProductClass] ,[Label] ,[Brand] ,[Excl_key] ,[global_product_class])
+SELECT        [Item], [FiscalMonth] ,[Supplier] ,[MinorProductClass] ,[Label] ,[Brand] ,[Excl_key] ,[global_product_class]
+FROM            BRSales..BRS_ItemHistory AS h
+WHERE        (FiscalMonth = 201911)
+GO
+*/
 
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load LegacyPRE-to-New ( 2 of 3) OR...
@@ -257,13 +312,15 @@ WHERE
 --	(WSDOCO_salesorder_number = 11922085) AND
 	(1=1)
 go
----
+
+-- load legacy import and payroll?
+
 
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load NewPRE-to-New (3 of 3)
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201911 and source_cd = 'JDE'
 
 print 'load new data source'
 INSERT INTO comm.transaction_F555115
@@ -507,7 +564,7 @@ WHERE
 
 -- CHANGE DATES!!  Yes, this is terrible.  automate!!
 
-print 'ESS fix missed code from download'
+print '1. ESS fix missed code from download'
 UPDATE       comm.transaction_F555115
 SET                WS$ESS_equipment_specialist_code = WSTKBY_order_taken_by
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -518,11 +575,11 @@ WHERE
 		(t.WSTKBY_order_taken_by like 'CCS%') 
 	) AND
 	WS$ESS_equipment_specialist_code <> WSTKBY_order_taken_by AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
--- tranfer - directed (1 of 2)
+print '2. tranfer - directed (1 of 2)'
 
 UPDATE
 	comm.transaction_F555115
@@ -534,25 +591,22 @@ SET
 
 	fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
 	[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
-
-
 FROM
 	comm.transfer_rule AS r 
 
 	INNER JOIN comm.transaction_F555115 t 
 	ON r.FiscalMonth = t.FiscalMonth AND 
 		r.SalesOrderNumber = t.WSDOCO_salesorder_number
-
 WHERE        
 	(t.source_cd = 'JDE') AND 
 	-- only run once
 	(t.xfer_key is null) AND 
 	(r.SalesOrderNumber > 0) AND 
-	(t.FiscalMonth = 201812) AND
+	(t.FiscalMonth = 201910) AND
 	(1=1)
 
 
--- tranfer - rule-based (2 of 2)
+print '3. tranfer - rule-based (2 of 2)'
 
 UPDATE
 	comm.transaction_F555115
@@ -564,8 +618,6 @@ SET
 
 	fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
 	[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
-
-
 FROM
 	comm.transfer_rule AS r 
 
@@ -579,7 +631,7 @@ WHERE
 	-- only run once
 	(t.xfer_key is null) AND 
 	(r.SalesOrderNumber = 0) AND 
-	(t.FiscalMonth = 201812) AND
+	(t.FiscalMonth = 201910) AND
 	(1=1)
 
 /*
@@ -612,7 +664,7 @@ WHERE
 
 -- FSC
 
-print 'FSC update plan & terr'
+print '4. FSC update plan & terr'
 UPDATE       comm.transaction_F555115
 SET
 	fsc_salesperson_key_id = s.salesperson_key_id, 
@@ -621,10 +673,10 @@ FROM
             comm.salesperson_master AS s INNER JOIN
                          BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
                          comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
-WHERE        (comm.transaction_F555115.FiscalMonth = 201812)
+WHERE        (comm.transaction_F555115.FiscalMonth = 201910)
 go
 
-print 'FSC update item'
+print '5. FSC update item'
 UPDATE       comm.transaction_F555115
 SET                fsc_comm_group_cd = i.comm_group_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -632,11 +684,11 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(i.comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
-print 'FSC update comm - non-booking -new'
+print '6. FSC update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -663,7 +715,7 @@ WHERE
 	(t.fsc_comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
@@ -671,7 +723,7 @@ GO
 
 
 
-print 'FSC update comm - booking - new'
+print '7. FSC update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[fsc_comm_rt] = g.booking_rt,
@@ -697,14 +749,14 @@ WHERE
 	(t.fsc_comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 -- ESS
 
 
-print 'ESS update plan & terr'
+print '8. ESS update plan & terr'
 UPDATE       comm.transaction_F555115
 SET
 	ess_salesperson_key_id = s.salesperson_key_id, 
@@ -712,10 +764,10 @@ SET
 FROM            comm.salesperson_master AS s INNER JOIN
                          BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
                          comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.WS$ESS_equipment_specialist_code
-WHERE        (comm.transaction_F555115.FiscalMonth = 201812)
+WHERE        (comm.transaction_F555115.FiscalMonth = 201910)
 go
 
-print 'ESS update item'
+print '9. ESS update item'
 UPDATE       comm.transaction_F555115
 SET                ess_comm_group_cd = i.comm_group_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -723,11 +775,11 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(i.comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
-print 'ESS update comm - non-booking -new'
+print '10. ESS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -754,12 +806,12 @@ WHERE
 	(t.ess_comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 
-print 'ESS update comm - booking - new'
+print '11. ESS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[ess_comm_rt] = g.booking_rt,
@@ -785,13 +837,13 @@ WHERE
 	(t.ess_comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 -- CPS
 
-print 'CPS update plan & terr'
+print '12. CPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -816,11 +868,13 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth = 201812) AND
+	(comm.transaction_F555115.FiscalMonth = 201910) AND
+--	(comm.transaction_F555115.FiscalMonth between 201801 and 201812) AND
+--	(comm.transaction_F555115.FiscalMonth between 201801 and 201812) AND
 	(1 = 1)
 go
 
-print 'update CPS item'
+print '13. update CPS item'
 UPDATE       comm.transaction_F555115
 SET                cps_comm_group_cd = i.comm_group_cps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -828,11 +882,13 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(i.comm_group_cps_cd <> '') AND 
 	(t.cps_comm_plan_id <> '') AND
-	(t.FiscalMonth = 201812 ) AND
+--	(t.FiscalMonth between 201901 and 201912) AND
+	(t.FiscalMonth = 201910) AND
+--	(t.FiscalMonth = 201812 ) AND
 	(1 = 1)
 GO
 
-print 'CPS update comm - non-booking -new'
+print '14. CPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -859,12 +915,12 @@ WHERE
 	(t.cps_comm_group_cd <> '') AND 
 	(t.cps_comm_plan_id <> '') AND
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 
-print 'CPS update comm - booking - new'
+print '15. CPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[cps_comm_rt] = g.booking_rt,
@@ -890,13 +946,13 @@ WHERE
 	(t.cps_comm_group_cd <> '') AND 
 	(t.cps_comm_plan_id <> '') AND
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 -- EPS
 
-print 'EPS update plan & terr'
+print '16. EPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -920,11 +976,13 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth = 201812 ) AND
+--	(comm.transaction_F555115.FiscalMonth between 201901 and 201912) AND
+	(comm.transaction_F555115.FiscalMonth = 201910) AND
+--	(comm.transaction_F555115.FiscalMonth = 201812 ) AND
 	(1 = 1)
 go
 
-print 'update EPS item'
+print '17. update EPS item'
 UPDATE       comm.transaction_F555115
 SET                eps_comm_group_cd = i.comm_group_eps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -932,12 +990,14 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(i.comm_group_eps_cd <> '') AND 
 	(t.eps_comm_plan_id <> '') AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
+--	(t.FiscalMonth between 201901 and 201912 ) AND
+--	(t.FiscalMonth = 201812 ) AND
 	(1 = 1)
 GO
 
 
-print 'EPS update comm - non-booking -new'
+print '18. EPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -964,12 +1024,12 @@ WHERE
 	(t.eps_comm_group_cd <> '') AND 
 	(t.eps_comm_plan_id <> '') AND
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
 
-print 'EPS update comm - booking - new'
+print '19. EPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[eps_comm_rt] = g.booking_rt,
@@ -995,7 +1055,7 @@ WHERE
 	(t.eps_comm_group_cd <> '') AND 
 	(t.eps_comm_plan_id <> '') AND
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth = 201812 ) AND
+	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
