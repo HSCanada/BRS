@@ -81,6 +81,7 @@ WHERE NOT EXISTS
 
 GO
 
+/*
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
 print '3b. rate - UPDATE'
 
@@ -103,6 +104,7 @@ WHERE        (comm.plan_group_rate.comm_rt <> s.comm_base_rt) OR
 
 GO
 
+*/
 /*
 SELECT
 	d.[comm_plan_id]
