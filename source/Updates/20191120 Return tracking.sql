@@ -11,12 +11,26 @@ COMMIT
 -- load table to 
 -- drop table [dbo].[zzBRSCreditInfo]
 
+--
+
+CREATE TABLE [Integration].[BRSCreditInfo](
+	[JDEORNO] [int] NOT NULL,
+	[ORDOTYCD] [nvarchar](50) NOT NULL,
+	[LNNO] [float] NOT NULL,
+	[CRMNRECD] [nvarchar](50) NOT NULL,
+	[CRTYCD] [nvarchar](50) NOT NULL,
+	[WJXBFS1] [float] NOT NULL
+) ON [USERDATA]
+GO
+
+
+--
 -- truncate table [Integration].[BRSCreditInfo]
 
 INSERT INTO [Integration].[BRSCreditInfo]
 (JDEORNO, ORDOTYCD, LNNO, CRMNRECD, CRTYCD, WJXBFS1)
 SELECT        JDEORNO, ORDOTYCD, LNNO, CRMNRECD, CRTYCD, WJXBFS1
-FROM            zzBRSCreditInfo
+FROM            DEV_BRSales..zzBRSCreditInfo
 
 
 -- drop table [dbo].[BRS_Creditinfo]
@@ -52,7 +66,6 @@ GO
 COMMIT
 
 -- pop initial
-
 INSERT INTO [dbo].[BRS_Creditinfo]
            ([CreditMinorReasonCode]
            ,[CreditTypeCode]
