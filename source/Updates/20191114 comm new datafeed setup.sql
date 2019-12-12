@@ -725,7 +725,43 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
---
+-- XXX add missing ess_code, tmc, 20 Dec 19
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	ess_code char(5) NULL
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_BRS_FSC_Rollup10 FOREIGN KEY
+	(
+	eps_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- patch dups cps_code?
+select [FiscalMonth], [source_cd], WSCAG__cagess_code, cps_code from [comm].[transaction_F555115] where cps_code <>'' and WSCAG__cagess_code <> ''
+
+-- patch dups ess_code?
+select [FiscalMonth], [source_cd], WS$ESS_equipment_specialist_code, ess_code from [comm].[transaction_F555115] where WS$ESS_equipment_specialist_code <> ''
+
+UPDATE [comm].[transaction_F555115] SET ess_code = WS$ESS_equipment_specialist_code where WS$ESS_equipment_specialist_code <> ''
+
+-- patch dups fsc_code?
+select [FiscalMonth], [source_cd], WS$L01_level_code_01, fsc_code from [comm].[transaction_F555115] where fsc_code <> ''
 
 -- add rules from access.
 --<manual step>
