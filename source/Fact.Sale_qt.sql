@@ -32,6 +32,7 @@ AS
 --	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
 --	22 Aug 19	tmc		Fixed join now that Salesorder+DocType is PK, add csr
 --	31 Oct 19	tmc		Add Historical Market Segment
+--	12 Dec 19	tmc		add return codes lookup and original doctype
 
 **    
 *******************************************************************************/
@@ -47,6 +48,8 @@ SELECT
 	,i.ItemKey										AS ItemKey
 	,csr.[entered_by_key]
 	,ISNULL( mc.[MarketClassKey], 1)				AS MarketClassKey
+	,ISNULL(cred.[credit_key], 1)					AS CreditKey
+
 /*
 	-- quote link - phase 2
 	,ISNULL(q.QuotePriceKey,0)						AS QuotePriceKey
@@ -55,11 +58,16 @@ SELECT
 */
 
 	,pm.PriceMethodKey
-	,promo.[promotion_key]							AS PromotionKey
+	,ISNULL(promo.[promotion_key], 1)				AS PromotionKey
 	,d.FiscalMonth									AS FiscalMonth	
 	,CAST(t.Date AS date)							AS DateKey
+
 	,t.SalesOrderNumber
 	,t.LineNumber
+
+	,t.OriginalSalesOrderNumber
+	,t.OriginalOrderLineNumber
+
 	,t.FreeGoodsInvoicedInd
 	
 	,(t.ShippedQty)									AS Quantity
@@ -112,6 +120,11 @@ FROM
 
 	LEFT JOIN [dbo].[BRS_CustomerMarketClass] mc
 	ON mc.MarketClass = h.HIST_MarketClass
+
+	LEFT JOIN [dbo].[BRS_Creditinfo] cred
+	ON t.CreditMinorReasonCode = cred.CreditMinorReasonCode AND
+	t.CreditTypeCode = cred.CreditTypeCode
+
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -197,7 +210,10 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM Fact.Sale_qt ORDER BY 1 
+-- 2m21s prod
+-- 1m12s qa
+-- SELECT top 10 * FROM Fact.Sale_qt 
+
 -- SELECT count(*) FROM Fact.Sale_qt
 -- 8671158 60s
 
