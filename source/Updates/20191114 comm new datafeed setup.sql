@@ -46,7 +46,19 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- create idx to link prod to legacy for testing, tmc, 13 Dec 19
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_15 ON comm.transaction_F555115
+	(
+	ID_legacy
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+--
 -- customer history - check
 
 SELECT
