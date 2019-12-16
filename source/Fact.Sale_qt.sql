@@ -61,33 +61,35 @@ SELECT
 	,ISNULL(promo.[promotion_key], 1)				AS PromotionKey
 	,d.FiscalMonth									AS FiscalMonth	
 	,CAST(t.Date AS date)							AS DateKey
+	,CAST(ISNULL(torg.Date, '1980-01-01') as date)	AS ReturnOriginalDateKey
 
 	,t.SalesOrderNumber
 	,t.LineNumber
 
 	,t.OriginalSalesOrderNumber
 	,t.OriginalOrderLineNumber
+	,CASE WHEN t.OriginalSalesOrderNumber = t.SalesOrderNumber THEN 0 ELSE 1 END AS ReturnValidInd
 
 	,t.FreeGoodsInvoicedInd
 	
 	,(t.ShippedQty)									AS Quantity
 	,(t.NetSalesAmt)								AS SalesAmt
-	,(GPAmt + ISNULL(t.ExtChargebackAmt,0))			AS GPAmt
+	,(t.GPAmt + ISNULL(t.ExtChargebackAmt,0))		AS GPAmt
 	,(t.GPAtCommCostAmt)							AS GPAtCommCostAmt
 	,(t.ExtChargebackAmt)							AS ExtChargebackAmt
 
-	,(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)  AS ExtBaseAmt
-	,(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)  AS DiscountAmt
-	,(t.ExtListPrice  + 0          -  NetSalesAmt)  AS DiscountLineAmt
-	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
+	,(t.ExtListPrice  + t.ExtPrice -  t.NetSalesAmt)  AS ExtBaseAmt
+	,(t.ExtListPrice  + t.ExtPrice -2*t.NetSalesAmt)  AS DiscountAmt
+	,(t.ExtListPrice  + 0          -  t.NetSalesAmt)  AS DiscountLineAmt
+	,(0               + t.ExtPrice -  t.NetSalesAmt)  AS DiscountOrderAmt
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS FactKeyFirst
 	,IDMin											AS sales_order_key
-	,[DocType]
-	,[OrderPromotionCode]
-	,[OrderSourceCode]
-	,[EnteredBy]
-	,[OrderTakenBy]
+	,t.[DocType]
+	,t.[OrderPromotionCode]
+	,t.[OrderSourceCode]
+	,t.[EnteredBy]
+	,t.[OrderTakenBy]
 	,pm.PriceMethod
 	,i.SalesCategory
 	
@@ -124,6 +126,11 @@ FROM
 	LEFT JOIN [dbo].[BRS_Creditinfo] cred
 	ON t.CreditMinorReasonCode = cred.CreditMinorReasonCode AND
 	t.CreditTypeCode = cred.CreditTypeCode
+
+	LEFT JOIN BRS_TransactionDW AS torg
+	ON torg.SalesOrderNumber =  t.OriginalSalesOrderNumber AND
+		torg.DocType = t.OriginalOrderDocumentType AND
+		torg.LineNumber = t.OriginalOrderLineNumber
 
 
 	-- identify first sales order (for sales order dimension)
@@ -302,7 +309,7 @@ FROM
 */
 
 -- SELECT count(*) FROM Fact.Sale_qt
+-- 8 990 419, 15s
 
--- 7 890 459, 47s
--- new 1570012
+-- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 and doctype = 'CM' and ReturnValidInd =0
 

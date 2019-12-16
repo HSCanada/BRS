@@ -29,12 +29,33 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	15 Dec 19	tmc		add returns logic
 *******************************************************************************/
 
 SELECT
 	f.SalesOrderNumber
 	,f.sales_order_key
+
+	,f.ReturnValidInd
+	,datediff(MONTH,ReturnOriginalDateKey,DateKey) ReturnMonths
+	,CASE datediff(MONTH,ReturnOriginalDateKey,DateKey)
+	WHEN 0 Then ' 1mo'
+	WHEN 1 Then ' 1mo'
+	WHEN 2 Then ' 3mo'
+	WHEN 3 Then ' 3mo'
+	WHEN 4 Then ' 6mo'
+	WHEN 5 Then ' 6mo'
+	WHEN 6 Then ' 6mo'
+	WHEN 7 Then '12mo'
+	WHEN 8 Then '12mo'
+	WHEN 9 Then '12mo'
+	WHEN 10 Then '12mo'
+	WHEN 11 Then '12mo'
+	WHEN 12 Then '12mo'
+	else 'more'
+	END
+	 as ReturnRange
+	,OriginalSalesOrderNumber
 
 	,pm.[PriceMethodDescr]						AS PriceMethod
 	,pm2.[PriceMethodDescr]						AS PriceMethodRollup
@@ -84,3 +105,20 @@ GO
 
 
 -- SELECT top 10 * FROM Dimension.Salesorder_qt
+/*
+SELECT
+	SalesOrderNumber,
+	sales_order_key,
+	ReturnValidInd,
+	ReturnMonths,
+	OriginalSalesOrderNumber,
+	PriceMethod,
+	PriceMethodRollup,
+	OrderSource,
+	PromotionType,
+	Promotion,
+	PromotionConvention,
+	DocType
+FROM
+	Dimension.Salesorder_qt
+*/

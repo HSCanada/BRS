@@ -960,3 +960,43 @@ WHERE
 order by 1
 
 */
+
+---
+
+-- drop table [Integration].[F555115_commission_sales_adjustment_Staging]
+
+CREATE TABLE [Integration].[F555115_commission_sales_adjustment_Staging](
+	[FiscalMonth] [int] NOT NULL,
+	[WSLNID_line_number] [int]  NOT NULL,
+
+	[WSVR01_reference] [varchar](25) NOT NULL,
+	[WSDGL__gl_date] [datetime] NOT NULL,
+	[transaction_amt] [money] NOT NULL,
+	[gp_ext_amt] [money] NOT NULL,
+	[source_cd] [char](3) NOT NULL ,
+
+	[fsc_code] [char](5) NOT NULL Default (''),
+	[fsc_comm_group_cd] [char](6) NOT NULL Default (''),
+	[ess_code] [char](5) NOT NULL Default (''),
+	[ess_comm_group_cd] [char](6) NOT NULL Default (''),
+	[cps_code] [char](5) NOT NULL Default (''),
+	[cps_comm_group_cd] [char](6) NOT NULL Default (''),
+	[eps_code] [char](5) NOT NULL Default (''),
+	[eps_comm_group_cd] [char](6) NOT NULL Default (''),
+
+	[WSDOCO_salesorder_number] [int] NULL,
+	[WSSHAN_shipto] [int]  NULL,
+	[WS$NM1__name_1] [varchar](30)  NULL,
+	[WSLITM_item_number] [char](10) NULL,
+	[WSDSC1_description] [varchar](30) NULL,
+	[WSSRP6_manufacturer] [char](6) NULL
+
+	
+ CONSTRAINT [F555115_commission_sales_adjustment_Staging_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[WSLNID_line_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+

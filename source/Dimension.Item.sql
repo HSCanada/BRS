@@ -40,13 +40,14 @@ AS
 --  06 Feb 19	tmc		add ClassGroup for PCW project
 --	15 Feb 19	tmc		add size_factor
 --  12 Jul 19	tmc		add  PrivateLabelScopeInd for FSC scorecard corp %
+--	15 Dec 19	tmc		add size & strenge to descr and size ind for returns
 **    
 *******************************************************************************/
 
 SELECT         
 
 	i.ItemKey							AS ItemKey
-	,RTRIM(i.ItemDescription) + ' | ' + RTRIM(i.Item)	AS Item
+	,RTRIM(i.ItemDescription) + ' ' + RTRIM(i.strength) + ' ' + RTRIM(i.size) + ' | ' + RTRIM(i.Item)	AS Item
 
 	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
 	,RTRIM(sc2.SalesCategoryName)		AS SalesCategoryRollup
@@ -78,6 +79,7 @@ SELECT
 	,i.Item								AS ItemCode
 	,RTRIM(i.[Size])					AS Size
 	,RTRIM(i.[Strength])				AS Strength
+	,CASE WHEN i.[Strength] = '' then 0 else 1 end as StrengthInd
 	,RTRIM(i.ItemStatus)				AS ItemStatus
 	,RTRIM(i.[ManufPartNumber])			AS ManufPartNumber
 	,RTRIM(i.Brand)						AS BrandCode
@@ -203,7 +205,7 @@ set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
 WHERE SalesCategory <> ''
 */
 
--- SELECT top 10 * FROM Dimension.Item where SalesCategoryCode in ('MERCH')
--- SELECT top 10 BrandCode FROM Dimension.Item
+-- SELECT top 10 * FROM Dimension.Item where ManufPartNumber = '' 
+-- SELECT ManufPartNumber, count(*) FROM Dimension.Item group by (ManufPartNumber) order by 2 desc
 
 
