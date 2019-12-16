@@ -1,4 +1,3 @@
 ﻿comm_salesorder_ESS_map
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=CommBE
+ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
 dbo.comm_salesorder_ESS_map
-CalMonth;+SalesOrderNumber

@@ -1,4 +1,3 @@
 ﻿eps_Item
-ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=BRSales
+ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
 eps.Item
-Item_Number

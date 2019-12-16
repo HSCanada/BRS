@@ -1,4 +1,0 @@
-﻿comm_transaction_F555115
-ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=BRSales
-comm.transaction_F555115
-WSDOCO_salesorder_number;+WSDCTO_order_type;+WSLNID_line_number

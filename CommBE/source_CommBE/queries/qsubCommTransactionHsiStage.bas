@@ -133,15 +133,7 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="transaction_dt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_cd"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -154,10 +146,6 @@ Begin
     End
     Begin
         dbText "Name" ="doc_key_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="audit_id"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -183,19 +171,9 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="customer_id"
-        dbInteger "ColumnWidth" ="2190"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="salesperson_cd"
         dbInteger "ColumnWidth" ="1545"
         dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="location_id"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -207,15 +185,7 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="IMSUPL"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="file_cost_ext_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="org_cost_ext_amt"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -236,10 +206,6 @@ Begin
     End
     Begin
         dbText "Name" ="shipped_qty"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="price_unit_amt"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -275,10 +241,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="IMITEM"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="IMCLMJ"
         dbLong "AggregateType" ="-1"
     End
@@ -292,14 +254,6 @@ Begin
     End
     Begin
         dbText "Name" ="IMCLSM"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="item_org_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="org_gp_ext_amt"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -331,22 +285,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="file_cost_unit_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="land_cost_unit_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="avg_cost_unit_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_cost_unit_amt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="vpa_cd"
         dbLong "AggregateType" ="-1"
     End
@@ -372,10 +310,6 @@ Begin
     End
     Begin
         dbText "Name" ="customer_po_num"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_transaction_hsi_stage.division_cd"
         dbLong "AggregateType" ="-1"
     End
 End

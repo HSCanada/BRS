@@ -1,4 +1,0 @@
-﻿comm_sales_day
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=CommBE
-dbo.comm_sales_day
-SalesDate

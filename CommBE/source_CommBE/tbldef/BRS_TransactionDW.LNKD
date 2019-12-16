@@ -1,4 +1,0 @@
-﻿BRS_TransactionDW
-ODBC;DSN=BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=BRSales
-dbo.BRS_TransactionDW
-ID
