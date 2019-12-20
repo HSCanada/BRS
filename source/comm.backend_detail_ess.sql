@@ -24,11 +24,12 @@ GO
 **	01 Mar 10	tmc		Add cost audit information to details
 **  14 Jan 11	tmc		Bug fix where post adjustments are not being included in details
 **	23 Sep 13	tmc		Remove CUSINS,ITMARS,ITMTEE from Details 
---  30 Jan 16	tmc		Update for new comm codes
--- 03 Feb 16	tmc		Add Plan-specific group hiding
--- 10 Feb 16	tmc	Removed legacy customer_comm_group_cd
---	7 Dec 17	tmc	Convert to new backend
---	28 Oct 19	tmc		Fix filter discrepancy with prod, comm_ess_statement_detail
+**  30 Jan 16	tmc		Update for new comm codes
+**	03 Feb 16	tmc		Add Plan-specific group hiding
+**	10 Feb 16	tmc		Removed legacy customer_comm_group_cd
+**	7 Dec 17	tmc		Convert to new backend
+**	28 Oct 19	tmc		Fix filter discrepancy with prod, comm_ess_statement_detail
+**	19 Dec 19	tmc		Fix mapped rate & hist custinfo
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_ess]
@@ -59,7 +60,7 @@ SELECT
 	t.[WSDGL__gl_date]				AS transaction_dt, 
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
-	cust.PracticeName				AS customer_nm, 
+	t.WS$NM1__name_1				AS customer_nm, 
 	t.[ess_comm_group_cd]			AS item_comm_group_cd,
 
 	g.comm_group_desc,
@@ -79,7 +80,7 @@ SELECT
 	t.[WSSRP1_major_product_class]	AS IMCLMJ,
 
 	t.[WSVR01_reference]			AS customer_po_num,
-	cust.comm_status_cd				AS SPM_StatusCd
+	cust.HIST_cust_comm_group_cd	AS SPM_StatusCd
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -96,14 +97,12 @@ FROM
 	INNER JOIN [comm].[group] g
 	ON t.ess_comm_group_cd = g.comm_group_cd
 
-	INNER JOIN [dbo].[BRS_Customer] cust
-	ON t.[WSSHAN_shipto] = cust.ShipTo
-
 	INNER JOIN [comm].[plan_group_rate] AS pr 
-	ON (t.[ess_comm_plan_id] = pr.comm_plan_id) AND 
-	(t.ess_comm_group_cd = pr.comm_group_cd)
+	ON (t.fsc_calc_key = pr.calc_key)
 
-
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] as cust
+	ON cust.[Shipto] = t.[WSSHAN_shipto] AND
+		cust.[FiscalMonth] = t.FiscalMonth
 
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND

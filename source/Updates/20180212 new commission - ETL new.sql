@@ -186,6 +186,20 @@ WHERE not exists
 )
 GO
 
+print '11. Allign FSC Territory with Commission'
+
+UPDATE       BRS_CustomerFSC_History
+SET                HIST_TerritoryCd = s.fsc_min
+FROM            BRS_CustomerFSC_History INNER JOIN
+                             (SELECT        CAST(fiscal_yearmo_num AS int) AS FiscalMonth, hsi_shipto_id, MIN(salesperson_cd) AS fsc_min
+                               FROM            CommBE.dbo.comm_transaction
+                               WHERE        (source_cd = 'jde') AND (fiscal_yearmo_num BETWEEN '201801' AND '201912') AND (record_id NOT IN (54108565, 55191867, 55976312, 55976313, 
+                                                         57216489, 57216490, 57216491, 57815920)) AND (1 = 1)
+                               GROUP BY fiscal_yearmo_num, hsi_shipto_id) AS s ON BRS_CustomerFSC_History.FiscalMonth = s.FiscalMonth AND 
+                         BRS_CustomerFSC_History.Shipto = s.hsi_shipto_id AND BRS_CustomerFSC_History.HIST_TerritoryCd <> s.fsc_min AND 
+                         BRS_CustomerFSC_History.HIST_SalesDivision <> 'AZA' AND s.fsc_min <> '' AND 1 = 1
+GO
+
 ---
 /*
  

@@ -780,20 +780,35 @@ select [FiscalMonth], [source_cd], WS$L01_level_code_01, fsc_code from [comm].[t
 
 
 insert into [comm].[transfer_rule] (
-	[FiscalMonth]
-	,[SalesOrderNumber]
-	,[DocType]
-	,[fsc_code]
-	,[ess_code]
-	,[xfer_type]
-	,[new_fsc_code]
-	,[new_ess_code]
-	,[xfer_date]
-	,[ShipTo]
-	,[xfer_branch_ind]
-	,[comment]
+           [FiscalMonth]
+           ,[SalesOrderNumber]
+           ,[DocType]
+           ,[fsc_code]
+           ,[ess_code]
+           ,[xfer_type]
+           ,[new_fsc_code]
+           ,[new_ess_code]
+           ,[xfer_date]
+           ,[ShipTo]
+           ,[xfer_branch_ind]
+           ,[comment]
 )
+SELECT 
+           [FiscalMonth]
+           ,[SalesOrderNumber]
+           ,[DocType]
+           ,[fsc_code]
+           ,[ess_code]
+           ,[xfer_type]
+           ,[new_fsc_code]
+           ,[new_ess_code]
+           ,[xfer_date]
+           ,[ShipTo]
+           ,[xfer_branch_ind]
+           ,[comment]
+  FROM DEV_BRSales.[comm].[transfer_rule] where FiscalMonth > 0
 
+/*
 select s2.FiscalMonth, s1.* from 
 
 (SELECT 
@@ -816,7 +831,7 @@ select s2.FiscalMonth, s1.* from
   (select [FiscalMonth] from [dbo].[BRS_FiscalMonth] where [FiscalMonth] between 201801 and 201912 and [FiscalMonth] <> 201910) s2
 
   -- ensure Oct 2018 calc has full coverage
-
+*/
 
 /****** Script for SelectTopNRows command from SSMS  ******/
 

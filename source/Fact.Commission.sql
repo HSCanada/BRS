@@ -193,7 +193,7 @@ WHERE [FiscalMonth] = 201910 and source_cd ='JDE' and ESS_salespersonKey <> 2
 
 
 -- select distinct FSC_SalespersonCodeKey from Fact.Commission 
-
+/*
 SELECT
 	top 10
 
@@ -235,3 +235,4 @@ SELECT
 
 FROM
 	Fact.Commission
+*/
