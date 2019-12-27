@@ -36,7 +36,7 @@ AS
 --  30 Jan 16	tmc		Update for new comm codes
 --	24 Feb 16	tmc		Finalize Automation, remove legacy, and set Debug to default
 --	27 Dec 17	tmc		port to new backend
-
+--	20 Dec 19	tmc		finalize to new backend
 **    
 *******************************************************************************/
 
@@ -76,32 +76,31 @@ Else
 	Save Tran mytran
 
 
-
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
 		Print 'Get Current Fiscal Month'
 
 	Select 	
-		@sCurrentFiscalYearmoNum = current_fiscal_yearmo_num
+		@sCurrentFiscalYearmoNum = [PriorFiscalMonth]
 	From 
-		comm_configure
+		[dbo].[BRS_Config]
 
 	Set @nErrorCode = @@Error
 End
 
-	
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
 		Print 'Get BatchStatus'
 
 	Select 	
-		@nBatchStatus = status_cd
+		@nBatchStatus = [comm_status_cd]
 	From 
-		comm_batch_control
+		[dbo].[BRS_FiscalMonth]
 	Where
-		fiscal_yearmo_num = @sCurrentFiscalYearmoNum
+		[FiscalMonth] = @sCurrentFiscalYearmoNum
 	
 	Set @nErrorCode = @@Error
 End
@@ -124,151 +123,256 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Copy STAGE to PROD'
-
-		INSERT INTO comm_transaction
+			print 'load new data source'
+		
+		INSERT INTO comm.transaction_F555115
 		(
-			transaction_dt, 
-			salesperson_cd, 
-			source_cd, 
-			transaction_amt, 
-			doc_key_id, 
-			line_id, 
-			doc_id, 
-			order_id, 
-			reference_order_txt, 
-			order_source_cd, 
-			customer_nm, 
-			item_id, 
-			shipped_qty, 
-			price_override_ind, 
-			transaction_txt, 
-			audit_id, 
-			fiscal_yearmo_num,
-			comm_amt,
-			salesperson_key_id,
-			item_comm_group_cd,
-			status_cd,
+			FiscalMonth,
+			WSCO___company,
+			WSDOCO_salesorder_number,
+			WSDCTO_order_type,
+			WSLNTY_line_type,
+			WSLNID_line_number,
+			WS$OSC_order_source_code,
+			WSAN8__billto,
+			WSSHAN_shipto,
+			WSDGL__gl_date,
+			WSLITM_item_number,
+			WSDSC1_description,
+			WSDSC2_description_2,
+			WSSRP1_major_product_class,
+			WSSRP2_sub_major_product_class,
+			WSSRP3_minor_product_class,
+			WSSRP6_manufacturer,
+			WSUORG_quantity,
+			WSSOQS_quantity_shipped,
+			WSAEXP_extended_price,
+			WSURAT_user_reserved_amount,
+			WS$UNC_sales_order_cost_markup,
+			WSOORN_original_order_number,
+			WSOCTO_original_order_type,
+			WSOGNO_original_line_number,
+			WSTRDJ_order_date,
+			WSVR01_reference,
+			WSVR02_reference_2,
+			WSITM__item_number_short,
+			WSPROV_price_override_code,
+			WSASN__adjustment_schedule,
+			WSKCO__document_company,
+			WSDOC__document_number,
+			WSDCT__document_type,
+			WSPSN__pick_slip_number,
+			WSROUT_ship_method,
+			WSZON__zone_number,
+			WSFRTH_freight_handling_code,
+			WSFRAT_rate_code_freightmisc,
+			WSRATT_rate_type_freightmisc,
+			WSGLC__gl_offset,
+			WSSO08_price_adjustment_line_indicator,
+			WSENTB_entered_by,
+			WS$PMC_promotion_code_price_method,
+			WSTKBY_order_taken_by,
+			WSKTLN_kit_master_line_number,
+			WSCOMM_committed_hs,
+			WSEMCU_header_business_unit,
+			WS$SPC_supplier_code,
+			WS$VCD_vendor_code,
+			WS$CLC_classification_code,
+			WSCYCL_cycle_count_category,
+			WSORD__equipment_order,
+			WSORDT_order_type,
+			WSCAG__cagess_code,
+			WSEST__employment_status,
+			WS$TSS_tech_specialist_code,
+			WS$CCS_cadcam_specialist_code,
+			WS$NM1__name_1,
+			WS$NM3_researched_by,
+			WS$NM4_completed_by,
+			WS$NM5__name_5,
+			WS$L01_level_code_01,
+			WSSRP4_sub_minor_product_class,
+			WSCITM_customersupplier_item_number,
+			WSSIC__speciality,
+			WSAC04_practice_type,
+			WSAC10_division_code,
+			WS$O01_number_equipment_serial_01,
+			WS$O02_number_equipment_serial_02,
+			WS$O03_number_equipment_serial_03,
+			WS$O04_number_equipment_serial_04,
+			WS$O05_number_equipment_serial_05,
+			WS$O06_number_equipment_serial_06,
+			WSDL03_description_03,
+			WS$ODS_order_discount_amount,
+			[WS$ESS_equipment_specialist_code],
 
-			-- Added for ESS plan, 26 Feb 07, tmc
-			gp_ext_amt,
-			tax_gst_amt,
-			tax_pst_amt,
-			doc_type_cd,
-
-			hsi_shipto_id,
-
-			-- Added for ESS adjustments, 2 May 08
-			ess_salesperson_key_id,
-			ess_comm_group_cd
-
-			-- Added new fields, 4 Aug 09 tmc
-			,[cost_unit_amt]
-			,[item_label_cd]
-			,[cost_ext_amt]
-			,[IMCLMJ]
-			,[IMCLSJ]
-			,[IMCLMC]
-			,[IMCLSM]
-			,[file_cost_ext_amt]
-			,[ess_salesperson_cd]
-			,[pmts_salesperson_cd]
-			,[hsi_billto_id]
-			,[hsi_billto_nm]
-			,[hsi_billto_div_cd]
-			,[hsi_shipto_div_cd]
-			,[hsi_shipto_nm]
-			,[file_cost_unit_amt]
-			,[land_cost_unit_amt]
-			,[avg_cost_unit_amt]
-			,[comm_cost_unit_amt]
-			,[vpa_cd]
-			,[vpa_desc]
-			,[manufact_cd]
-			,[sales_category_cd]
-			,[privileges_cd]
-			,[price_method_cd]
-			,[customer_po_num]
-
+			-- calculated fields
+			[source_cd],
+			[transaction_amt],
+			[gp_ext_amt],
+			[fsc_code],
+			[FreeGoodsInvoicedInd],
+			[FreeGoodsEstInd]
 		)
-		SELECT     
-			transaction_dt, 
-			IsNull(salesperson_cd, '') as salesperson_cd, 
-			source_cd, 
-			transaction_amt, 
-			doc_key_id, 
-			line_id, 
-			doc_id, 
-			order_id, 
-			reference_order_txt, 
-			IsNull(order_source_cd, '') AS order_source_cd, 
-			customer_nm, 
-			IsNull(item_id,'') as item_id, 
-			shipped_qty, 
-			price_override_ind, 
-			Left(transaction_txt,40) as transaction_txt, 
-			isNull(audit_id, 0) as audit_id, 
-			fiscal_yearmo_num,
-			IsNull(comm_amt, 0) as comm_amt,
+		SELECT        
+--			TOP (10) 
+			d.FiscalMonth,
+			t.WSCO___company,
+			t.WSDOCO_salesorder_number,
+			t.WSDCTO_order_type,
+			t.WSLNTY_line_type,
+			ROUND(t.WSLNID_line_number * 1000,0) AS WSLNID_line_number,
+			t.WS$OSC_order_source_code,
+			t.WSAN8__billto,
+			t.WSSHAN_shipto,
+			t.WSDGL__gl_date,
+			t.WSLITM_item_number,
+			t.WSDSC1_description,
+			t.WSDSC2_description_2,
+			t.WSSRP1_major_product_class,
+			t.WSSRP2_sub_major_product_class,
+			t.WSSRP3_minor_product_class,
+			t.WSSRP6_manufacturer,
+			t.WSUORG_quantity,
+			t.WSSOQS_quantity_shipped,
+			t.WSAEXP_extended_price,
+			t.WSURAT_user_reserved_amount,
+			t.WS$UNC_sales_order_cost_markup,
+			t.WSOORN_original_order_number,
+			t.WSOCTO_original_order_type,
+			t.WSOGNO_original_line_number,
+			t.WSTRDJ_order_date,
+			t.WSVR01_reference,
+			t.WSVR02_reference_2,
+			t.WSITM__item_number_short,
+			t.WSPROV_price_override_code,
+			t.WSASN__adjustment_schedule,
+			t.WSKCO__document_company,
+			t.WSDOC__document_number,
+			t.WSDCT__document_type,
+			t.WSPSN__pick_slip_number,
+			t.WSROUT_ship_method,
+			t.WSZON__zone_number,
+			t.WSFRTH_freight_handling_code,
+			t.WSFRAT_rate_code_freightmisc,
+			t.WSRATT_rate_type_freightmisc,
+			t.WSGLC__gl_offset,
+			t.WSSO08_price_adjustment_line_indicator,
+			t.WSENTB_entered_by,
+			t.WS$PMC_promotion_code_price_method,
+			t.WSTKBY_order_taken_by,
+			t.WSKTLN_kit_master_line_number,
+			t.WSCOMM_committed_hs,
+			t.WSEMCU_header_business_unit,
+			t.WS$SPC_supplier_code,
+			t.WS$VCD_vendor_code,
+			t.WS$CLC_classification_code,
+			t.WSCYCL_cycle_count_category,
+			t.WSORD__equipment_order,
+			t.WSORDT_order_type,
+			t.WSCAG__cagess_code,
+			t.WSEST__employment_status,
+			t.WS$TSS_tech_specialist_code,
+			t.WS$CCS_cadcam_specialist_code,
+			t.WS$NM1__name_1,
+			t.WS$NM3_researched_by,
+			t.WS$NM4_completed_by,
+			t.WS$NM5__name_5,
+			t.WS$L01_level_code_01,
+			t.WSSRP4_sub_minor_product_class,
+			t.WSCITM_customersupplier_item_number,
+			t.WSSIC__speciality,
+			t.WSAC04_practice_type,
+			t.WSAC10_division_code,
+			t.WS$O01_number_equipment_serial_01,
+			t.WS$O02_number_equipment_serial_02,
+			t.WS$O03_number_equipment_serial_03,
+			t.WS$O04_number_equipment_serial_04,
+			t.WS$O05_number_equipment_serial_05,
+			t.WS$O06_number_equipment_serial_06,
+			t.WSDL03_description_03,
+			t.WS$ODS_order_discount_amount,
 
-			IsNull(salesperson_key_id, '') as salesperson_key_id,
-			IsNull(comm_group_cd, '') as item_comm_group_cd,
-			status_cd,
+			[WS$ESS_equipment_specialist_code],
+		--	t.WSTKBY_order_taken_by,
 
-			-- Added for ESS plan, 26 Feb 07, tmc
-			IsNull(gp_ext_amt, 0) as gp_ext_amt,
-			IsNull(tax_gst_amt, 0) as tax_gst_amt,
-			IsNull(tax_pst_amt, 0) as tax_pst_amt,
-			IsNull(doc_type_cd, '')as doc_type_cd,
+			-- calculated fields
+			'JDE' AS source_cd,
 
-			IsNull(hsi_shipto_id, 0) as hsi_shipto_id,
+			(t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount) 
+				AS [transaction_amt],
+			(
+				(t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount) 
+				- (t.WS$UNC_sales_order_cost_markup * t.WSSOQS_quantity_shipped)
+			)	AS [gp_ext_amt],
 
-			-- Added for ESS adjustments, 2 May 08 
-			IsNull(salesperson_ess_key_id, '') as salesperson_ess_key_id,
-			IsNull(ess_comm_group_cd, '') as ess_comm_group_cd
+			-- FSC Lookup (assumed monthly pull)
+			f.HIST_TerritoryCd AS [fsc_code],
 
-			-- Added new fields, 4 Aug 09 tmc
-			,IsNull([cost_unit_amt],0) AS cost_unit_amt
-			,IsNull([item_label_cd], '') as item_label_cd
-			,IsNull([cost_ext_amt], 0) as cost_ext_amt
-			,IsNull([IMCLMJ], '') as IMCLMJ
-			,IsNull([IMCLSJ], '') as IMCLSJ
-			,IsNull([IMCLMC], '') as IMCLMC
-			,IsNull([IMCLSM], '') as IMCLSM
-			,IsNull([file_cost_ext_amt], 0) as file_cost_ext_amt
-			,IsNull([ess_salesperson_cd], '') as ess_salesperson_cd
-			,IsNull([pmts_salesperson_cd], '') as pmts_salesperson_cd
-			,IsNull([hsi_billto_id], 0) as hsi_billto_id
-			,IsNull([hsi_billto_nm], '') as hsi_billto_nm
-			,IsNull([hsi_billto_div_cd], '') as hsi_billto_div_cd
-			,IsNull([hsi_shipto_div_cd], '') as hsi_shipto_div_cd
-			,IsNull([hsi_shipto_nm], '') as hsi_shipto_nm
-			,IsNull([file_cost_unit_amt], 0) as file_cost_unit_amt
-			,IsNull([land_cost_unit_amt], 0) as land_cost_unit_amt
-			,IsNull([avg_cost_unit_amt], 0) as avg_cost_unit_amt
-			,IsNull([comm_cost_unit_amt], 0) as comm_cost_unit_amt
-			,IsNull([vpa_cd], '') as vpa_cd
-			,IsNull([vpa_desc], '') as vpa_desc
-			,IsNull([manufact_cd], '') as manufact_cd
-			,IsNull([sales_category_cd], '') as sales_category_cd
-			,IsNull([privileges_cd], '') as privileges_cd
-			,IsNull([price_method_cd], '') as price_method_cd
-			,IsNull([customer_po_num], '') as customer_po_num
-		FROM         
-			comm_transaction_stage
-		WHERE     
+			-- Free Goods invoiced
+			CASE 
+				WHEN ([WSSOQS_quantity_shipped] <> 0) AND 
+					((t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount) = 0) 
+				THEN 1 
+				ELSE 0 
+			END AS [FreeGoodsInvoicedInd],
+
+			-- TBD
+			0 AS [FreeGoodsEstInd]
+
+
+
+		FROM
+			Integration.F555115_commission_sales_extract_Staging AS t 
+
+			INNER JOIN BRS_SalesDay AS d 
+			ON t.WSDGL__gl_date = d.SalesDate
+
+			-- FSC code
+			JOIN [dbo].[BRS_CustomerFSC_History] AS f
+			ON t.WSSHAN_shipto = f.Shipto AND
+				d.FiscalMonth = f.FiscalMonth
+
+		WHERE 
+			(WSAC10_division_code NOT IN ('AZA','AZE')) AND
+		--	(WSDOCO_salesorder_number = 11922085) AND
 			(1=1)
+		ORDER BY 
+			WSDOCO_salesorder_number,
+			WSLNID_line_number
 
 		Set @nErrorCode = @@Error
 	End
 
+--
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '1. ESS fix missed code from download'
+		
+		UPDATE       comm.transaction_F555115
+		SET                WS$ESS_equipment_specialist_code = WSTKBY_order_taken_by
+		FROM            comm.transaction_F555115 t INNER JOIN
+								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE     
+			(t.source_cd = 'JDE') AND (
+				(t.WSTKBY_order_taken_by like 'ESS%') OR
+				(t.WSTKBY_order_taken_by like 'CCS%') 
+			) AND
+			WS$ESS_equipment_specialist_code <> WSTKBY_order_taken_by AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
 
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
 			Print 'Clear STAGE'
 		
-		Delete FROM comm_transaction_stage
+		Delete FROM [Integration].[F555115_commission_sales_extract_Staging]
 
 		Set @nErrorCode = @@Error
 	End
@@ -283,11 +387,11 @@ Begin
 			Print 'Set BatchStatus to Processed'	
 
 		Update
-			comm_batch_control
+			[dbo].[BRS_FiscalMonth]
 		Set 
-			status_cd = 10
+			[comm_status_cd] = 10
 		Where 
-			fiscal_yearmo_num = @sCurrentFiscalYearmoNum
+			[FiscalMonth] = @sCurrentFiscalYearmoNum
 	
 		Set @nErrorCode = @@Error
 	End
@@ -305,8 +409,7 @@ Begin
 	Set @sMessage = @sMessage + ':  Return(' + Convert(varchar, @nErrorCode) + ')'
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-	RAISERROR (50060, 9, 1, @sMessage )
-
+	RAISERROR ('%s', 9, 1, @sMessage )
 	Rollback Tran mytran
 
 	return @nErrorCode
@@ -326,5 +429,12 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+--delete  from [comm].[transaction_F555115] where FiscalMonth = 201912 
+-- select count(*) from [comm].[transaction_F555115] where FiscalMonth = 201912 
 -- Debug
--- EXEC comm_transaction_load_proc
+-- EXEC	[comm].[transaction_load_proc] @bDebug = 1
+-- 70k, 3m+, dev
+-- 200k, 9m, dev
+-- EXEC	[comm].[transaction_load_proc] @bDebug = 0
+-- 200k, 2m41s
+

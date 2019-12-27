@@ -380,7 +380,7 @@ GO
 /*
 
 print 'delete month'
-delete  from [comm].[transaction_F555115] where FiscalMonth = 201910
+delete  from [comm].[transaction_F555115] where FiscalMonth = 201911
 
 */
 

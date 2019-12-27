@@ -41,7 +41,7 @@ SELECT
 	t.source_cd						AS source_cd,
 
 	m.salesperson_nm				AS salesperson_nm, 
-	t.WS$ESS_equipment_specialist_code	AS salesperson_cd, 
+	t.ess_code						AS salesperson_cd, 
 	t.ess_comm_plan_id				AS comm_plan_id,
 	p.comm_plan_nm, 
 
@@ -61,7 +61,7 @@ SELECT
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
 	t.WS$NM1__name_1				AS customer_nm, 
-	t.[ess_comm_group_cd]			AS item_comm_group_cd,
+	pr.disp_comm_group_cd			AS item_comm_group_cd,
 
 	g.comm_group_desc,
 
@@ -77,10 +77,11 @@ SELECT
 	t.[WSSRP6_manufacturer]			AS manufact_cd,
 	t.[WS$OSC_order_source_code]	AS order_source_cd,
 	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
-	t.[WSSRP1_major_product_class]	AS IMCLMJ,
+	t.[WSSRP1_major_product_class]	AS IMCLMJ
 
-	t.[WSVR01_reference]			AS customer_po_num,
-	cust.HIST_cust_comm_group_cd	AS SPM_StatusCd
+	,t.[WSVR01_reference]			AS customer_po_num
+	,cust.HIST_cust_comm_group_cd	AS SPM_StatusCd
+	,t.ID_legacy
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -94,11 +95,11 @@ FROM
 	INNER JOIN [dbo].[BRS_FiscalMonth]  c
 	ON t.[FiscalMonth] = c.[FiscalMonth]
 
-	INNER JOIN [comm].[group] g
-	ON t.ess_comm_group_cd = g.comm_group_cd
-
 	INNER JOIN [comm].[plan_group_rate] AS pr 
-	ON (t.fsc_calc_key = pr.calc_key)
+	ON (t.ess_calc_key = pr.calc_key)
+
+	INNER JOIN [comm].[group] g
+	ON g.comm_group_cd = pr.disp_comm_group_cd
 
 	INNER JOIN [dbo].[BRS_CustomerFSC_History] as cust
 	ON cust.[Shipto] = t.[WSSHAN_shipto] AND
@@ -108,7 +109,6 @@ WHERE
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
 	(pr.show_ind = 1) AND
-
 	1=1
 GO
 

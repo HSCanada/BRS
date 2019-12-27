@@ -32,6 +32,7 @@ GO
 -- 10 Feb 16	tmc	Removed legacy customer_comm_group_cd
 -- 29 Sep 16	tmc	Add PO number to help ID conventions
 --	7 Dec 17	tmc	Convert to new backend
+**	19 Dec 19	tmc		Fix mapped rate & hist custinfo
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -47,7 +48,7 @@ SELECT
 	t.fsc_comm_plan_id				AS comm_plan_id,
 	p.comm_plan_nm, 
 
-	t.WS$ESS_equipment_specialist_code	AS ess_salesperson_cd,
+	t.ess_code						AS ess_salesperson_cd,
 	t.ess_salesperson_key_id		AS ess_salesperson_key_id,
 
 	t.FiscalMonth					AS fiscal_yearmo_num, 
@@ -62,8 +63,8 @@ SELECT
 	t.[WSDGL__gl_date]				AS transaction_dt, 
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
-	cust.PracticeName				AS customer_nm, 
-	t.[fsc_comm_group_cd]			AS item_comm_group_cd,
+	t.WS$NM1__name_1				AS customer_nm, 
+	pr.disp_comm_group_cd			AS item_comm_group_cd,
 
 	g.comm_group_desc,
 
@@ -81,8 +82,10 @@ SELECT
 	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
 	t.[WSSRP1_major_product_class]	AS IMCLMJ,
 
-	t.[WSVR01_reference]			AS customer_po_num,
-	cust.comm_status_cd				AS SPM_StatusCd
+	t.[WSVR01_reference]			AS customer_po_num
+	,cust.HIST_cust_comm_group_cd	AS SPM_StatusCd
+	,t.ID_legacy
+
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -96,18 +99,20 @@ FROM
 	INNER JOIN [dbo].[BRS_FiscalMonth]  c
 	ON t.[FiscalMonth] = c.[FiscalMonth]
 
-	INNER JOIN [comm].[group] g
-	ON t.fsc_comm_group_cd = g.comm_group_cd
+	INNER JOIN [comm].[plan_group_rate] AS pr 
+	ON (t.fsc_calc_key = pr.calc_key)
 
-	INNER JOIN [dbo].[BRS_Customer] cust
-	ON t.[WSSHAN_shipto] = cust.ShipTo
+	INNER JOIN [comm].[group] g
+	ON g.comm_group_cd = pr.disp_comm_group_cd
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] as cust
+	ON cust.[Shipto] = t.[WSSHAN_shipto] AND
+		cust.[FiscalMonth] = t.FiscalMonth
 
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
-	t.fsc_salesperson_key_id <> '' And
-	g.show_ind = 1 AND
-
+	(pr.show_ind = 1) AND
 	1=1
 GO
 
@@ -116,4 +121,4 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM [comm].[backend_detail_fsc] where item_comm_group_cd IN ('DIGCIM', 'DIGCCC')
+-- SELECT top 10 * FROM [comm].[backend_detail_fsc] 

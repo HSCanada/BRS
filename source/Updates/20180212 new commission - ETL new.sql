@@ -593,6 +593,8 @@ WHERE
 	(1 = 1)
 GO
 
+---> Calc start here
+
 print '2. tranfer - directed (1 of 2)'
 
 UPDATE

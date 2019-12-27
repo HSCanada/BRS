@@ -634,7 +634,8 @@ INSERT INTO BRS_CustomerFSC_History
 	HIST_MarketClass,
 	HIST_SegCd,
 	HIST_TsTerritoryCd,
-	HIST_SalesDivision
+	HIST_SalesDivision,
+	[HIST_cust_comm_group_cd]
 )
 SELECT     
 	c.ShipTo, 
@@ -645,7 +646,8 @@ SELECT
 	c.MarketClass,
 	c.SegCd,
 	c.TsTerritoryCd,
-	c.SalesDivision
+	c.SalesDivision,
+	c.comm_status_cd
 
 FROM         
 	BRS_Customer c
@@ -677,7 +679,7 @@ where
 	(t.Shipto > 0) And
 	(DocType <> 'AA') And
 	(t.TerritoryCd <> h.HIST_TerritoryCd) AND
-	(t.FiscalMonth between 201911 and 201911) 
+	(t.FiscalMonth between 201912 and 201912) 
 
 -- Fix FSC & Branch - DO IT!
 
@@ -700,7 +702,7 @@ ON h.HIST_TerritoryCd = b.TerritoryCd
 WHERE     
 (t.Shipto > 0) AND 
 (t.DocType <> 'AA') AND 
-(t.FiscalMonth between 201911 and 201911) 
+(t.FiscalMonth between 201912 and 201912) 
 
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run

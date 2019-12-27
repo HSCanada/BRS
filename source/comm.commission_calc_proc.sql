@@ -36,6 +36,7 @@ AS
 --	29 Feb 16	tmc		fix small but so that batch 10 is valid
 --	22 Dec 17	tmc		port to new backend
 --	30 Dec 17	tmc		finalize new backend logic for FSC and ESS
+--  24 Dec 19	tmc		update comm with new backend
 **    
 *******************************************************************************/
 
@@ -109,7 +110,7 @@ End
 
 if (@bDebug <> 0)
 Begin
-	Print 'Check:  Month Loaded and NOT locked'
+	Print '1. Check:  Month Loaded and NOT locked'
 	Print @sCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
 End
@@ -117,394 +118,550 @@ End
 If (@nBatchStatus >= 10 and @nBatchStatus < 999)
 Begin
 
+--> BEGIN NEW
+
+-- Transfer
 	if (@bDebug <> 0)
-		Print 'Set:  FSC / ESS code override from BRS_TransactionDW_Ext'
+		Print '2. tranfer - directed (1 of 2)'
 
 	If (@nErrorCode = 0) 
 	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			xfer_key = r.[xfer_key], 
 
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[fsc_code]	= 
-				CASE 
-					WHEN ext.[FSC_code] <> '' 
-					THEN ext.[FSC_code] 
-					ELSE t.[fsc_code] 
-				END,
-			[WS$ESS_equipment_specialist_code]	= 
-				CASE 
-					WHEN ext.[ESS_code] <> '' 
-					THEN ext.[ESS_code] 
-					ELSE t.[WS$ESS_equipment_specialist_code] 
-				END
+			xfer_fsc_code_org = t.fsc_code, 
+			xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
 
-		FROM         
-			[comm].[transaction_F555115] t
+			fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
+			[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+		FROM
+			comm.transfer_rule AS r 
 
-			INNER JOIN [dbo].[BRS_TransactionDW_Ext] AS ext 
-			ON t.[WSDOCO_salesorder_number] = ext.[SalesOrderNumber]
-
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(ext.[fsc_code] <> '' OR ext.[ess_code] <> '') AND 
-			(1=1)
-
-
-		Set @nErrorCode = @@Error
-	End
-
-	if (@bDebug <> 0)
-		Print 'Set:  FSC SalespersonKey and Plan'
-
-	If (@nErrorCode = 0) 
-	Begin
-
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[fsc_salesperson_key_id]	= s.[comm_salesperson_key_id], 
-			[fsc_comm_plan_id]			= sm.[comm_plan_id]
-		FROM         
-			[comm].[transaction_F555115] t
-
-			INNER JOIN [dbo].[BRS_FSC_Rollup] AS s 
-			ON t.[fsc_code] = s.[TerritoryCd] AND
-				t.[fsc_code] <> ''
-
-			INNER JOIN [comm].[salesperson_master] AS sm
-			ON s.[comm_salesperson_key_id] = sm.[salesperson_key_id]
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND
-			( 
-				(ISNULL(t.[fsc_comm_plan_id], '') <> sm.[comm_plan_id]) OR 
-				(ISNULL(t.[fsc_salesperson_key_id], '') <> s.[comm_salesperson_key_id]) 
-			)
-
-		Set @nErrorCode = @@Error
-	End
-
---
-	if (@bDebug <> 0)
-		Print 'Set:  ESS SalespersonKey and Plan'
-
-	If (@nErrorCode = 0) 
-	Begin
-
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[ess_salesperson_key_id]	= s.[comm_salesperson_key_id], 
-			[ess_comm_plan_id]			= sm.[comm_plan_id]
-		FROM         
-			[comm].[transaction_F555115] t
-
-			INNER JOIN [dbo].[BRS_FSC_Rollup] AS s 
-			ON t.[WS$ESS_equipment_specialist_code] = s.[TerritoryCd] AND
-				t.[WS$ESS_equipment_specialist_code] <> ''
-
-			INNER JOIN [comm].[salesperson_master] AS sm
-			ON s.[comm_salesperson_key_id] = sm.[salesperson_key_id]
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND
-			( 
-				(ISNULL(t.[ess_comm_plan_id], '') <> sm.[comm_plan_id]) OR 
-				(ISNULL(t.[ess_salesperson_key_id], '') <> s.[comm_salesperson_key_id]) 
-			)
-
-		Set @nErrorCode = @@Error
-	End
-
---
-	if (@bDebug <> 0)
-		Print 'Set:  FSC ItemCommGroup Codes (with special market logic)'
-
-	If (@nErrorCode = 0) 
-	Begin
-
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			fsc_comm_group_cd =	
-				CASE 
-					WHEN 
-						( 
-							((c.[comm_status_cd] = 'SMALL') AND (ig.[comm_status_cd] like 'SM%')) OR  
-							((c.[comm_status_cd] = 'SMNEQ') AND (ig.[comm_status_cd] = 'SMSND'))
-						) 
-					THEN 
-						-- Use Special Market code
-						ig.comm_group_sm_cd 
-					ELSE 
-						-- Use Regular code
-						ig.comm_group_cd 
-				END
-	
-		FROM         
-
-			[comm].[transaction_F555115] t
-
-			INNER JOIN [dbo].[BRS_Customer] AS c 
-			ON t.[WSSHAN_shipto] = c.ShipTo AND
-				t.[WSSHAN_shipto] > 0
-
-			INNER JOIN [dbo].[BRS_Item] AS i 
-			ON t.[WSLITM_item_number] = i.item AND
-				t.[WSLITM_item_number] > ''
-
-			INNER JOIN [comm].[group] AS ig 
-			ON i.comm_group_cd = ig.comm_group_cd
-
-		WHERE     
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND
-			(t.fsc_comm_plan_id IS NOT NULL) AND 
+			INNER JOIN comm.transaction_F555115 t 
+			ON r.FiscalMonth = t.FiscalMonth AND 
+				r.SalesOrderNumber = t.WSDOCO_salesorder_number
+		WHERE        
+			(t.source_cd = 'JDE') AND 
+			-- only run once
+			(t.xfer_key is null) AND 
+			(r.SalesOrderNumber > 0) AND 
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
 
---
 	if (@bDebug <> 0)
-		Print 'Set:  ESS ItemCommGroup Codes'
+		print '3. tranfer - rule-based (2 of 2)'
 
 	If (@nErrorCode = 0) 
 	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			xfer_key = r.[xfer_key], 
 
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			ess_comm_group_cd =	i.comm_group_cd 
-	
-		FROM         
-			[comm].[transaction_F555115] t
+			xfer_fsc_code_org = t.fsc_code, 
+			xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
 
-			INNER JOIN [dbo].[BRS_Item] AS i 
-			ON t.[WSLITM_item_number] = i.item AND
-				t.[WSLITM_item_number] > ''
+			fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
+			[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+		FROM
+			comm.transfer_rule AS r 
 
-		WHERE     
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND
-			(t.ess_comm_plan_id IS NOT NULL) AND 
+			INNER JOIN comm.transaction_F555115 t 
+			ON r.FiscalMonth = t.FiscalMonth AND 
+				(t.fsc_code like (CASE WHEN r.[fsc_code] = '' THEN '%' ELSE r.[fsc_code] END)) AND
+				(t.[WS$ESS_equipment_specialist_code] like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
+				(1=1)
+		WHERE        
+			(t.source_cd = 'JDE') AND 
+			-- only run once
+			(t.xfer_key is null) AND 
+			(r.SalesOrderNumber = 0) AND 
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
 
---
--- Fix Parts, 4 Feb 15, tmc
+-- FSC
 	if (@bDebug <> 0)
-		Print 'Override:  FSC ItemCommGroup for Parts on EQ Orders'
+		print '4. FSC update plan & terr'
 
 	If (@nErrorCode = 0) 
 	Begin
-
-		Update
-			[comm].[transaction_F555115]
-		Set 
-			-- override Parts on EQ orders.  Pelton is Focus 1 and the rest Focus 3., 04 Feb 15, tmc.
-			[fsc_comm_group_cd] =	CASE 
-										WHEN t.[WSSRP6_manufacturer] IN ('PELTON' ) 
-										Then 'ITMFO1' 
-										Else 'ITMFO3' 
-									End
-		From 
-			[comm].[transaction_F555115] s,
-			(
-			SELECT     
-				tt.[ID], 
-				tt.[fsc_comm_group_cd], 
-				tt.[WSSRP6_manufacturer]
-
-			FROM         
-				[comm].[transaction_F555115] tt 
-			Where
-				(tt.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-				(tt.source_cd IN ('JDE')) AND 
-				(tt.[fsc_comm_plan_id] IS NOT NULL) AND 
-
-				tt.[WS$OSC_order_source_code] IN ('A','L') And		-- Astea  EQ and Service
-				tt.[WS$ESS_equipment_specialist_code] <>'' And		-- Exclude Service (No ESS code)
-				tt.[fsc_comm_group_cd] = 'ITMPAR' And				-- ONLY effect Parts 
-				1=1
-			) t
-		Where 
-			(s.[FiscalMonth] = @sCurrentFiscalYearmoNum ) AND
-			(s.[ID] = t.[ID]) AND
-			(1=1)
-
+		UPDATE       comm.transaction_F555115
+		SET
+			fsc_salesperson_key_id = s.salesperson_key_id, 
+			fsc_comm_plan_id = s.comm_plan_id
+		FROM
+					comm.salesperson_master AS s INNER JOIN
+								 BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
+								 comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+		WHERE        (comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
 
 		Set @nErrorCode = @@Error
 	End
 
---
 	if (@bDebug <> 0)
-		Print 'Override:  ESS ItemCommGroup for Parts on EQ Orders'
+		print '5. FSC update item'
 
 	If (@nErrorCode = 0) 
 	Begin
-
-		Update
-			[comm].[transaction_F555115]
-		Set 
-			-- override Parts on EQ orders.  Pelton is Focus 1 and the rest Focus 3., 04 Feb 15, tmc.
-			[ess_comm_group_cd] =	CASE 
-										WHEN t.[WSSRP6_manufacturer] IN ('PELTON' ) 
-										Then 'ITMFO1' 
-										Else 'ITMFO3' 
-									End
-		From 
-			[comm].[transaction_F555115] s,
-			(
-			SELECT     
-				tt.[ID], 
-				tt.[fsc_comm_group_cd], 
-				tt.[WSSRP6_manufacturer]
-
-			FROM         
-				[comm].[transaction_F555115] tt 
-			Where
-				(tt.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-				(tt.source_cd IN ('JDE')) AND 
-				(tt.[ess_comm_plan_id] IS NOT NULL) AND 
-
-				tt.[WS$OSC_order_source_code] IN ('A','L') And		-- Astea  EQ and Service
-				tt.[WS$ESS_equipment_specialist_code] <>'' And		-- Exclude Service (No ESS code)
-				tt.[ess_comm_group_cd] = 'ITMPAR' And				-- ONLY effect Parts 
-				1=1
-			) t
-		Where 
-			(s.[FiscalMonth] = @sCurrentFiscalYearmoNum ) AND
-			(s.[ID] = t.[ID]) AND
-			(1=1)
-
-
-		Set @nErrorCode = @@Error
-	End
-
---
-
-	-- Add Booking rate, 24 Feb 16
-	if (@bDebug <> 0)
-		Print 'Override:  FSC Booking Rate GP'
-
-	If (@nErrorCode = 0) 
-	Begin
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[gp_ext_org_amt] = gp_ext_amt,
-			gp_ext_amt = t.transaction_amt * (g.booking_rt / 100.0)
-		FROM         
-			[comm].[transaction_F555115] as t
-			
-			INNER JOIN [comm].[group] AS g 
-			ON t.[fsc_comm_group_cd] = g.[comm_group_cd]
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND 
-			(t.[fsc_comm_plan_id] IS NOT NULL) AND 
-
-			(g.[booking_rt] > 0)  AND 
-			-- only run once so as not to clobber orginal GP
-			(t.[gp_ext_org_amt] IS NULL)
-	End
-
---
-	if (@bDebug <> 0)
-		Print 'Override:  ESS Booking Rate GP'
-
-	If (@nErrorCode = 0) 
-	Begin
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[gp_ext_org_amt] = gp_ext_amt,
-			gp_ext_amt = t.transaction_amt * (g.booking_rt / 100.0)
-		FROM         
-			[comm].[transaction_F555115] as t
-			
-			INNER JOIN [comm].[group] AS g 
-			ON t.[ess_comm_group_cd] = g.[comm_group_cd]
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND 
-			(t.[ess_comm_plan_id] IS NOT NULL) AND 
-
-			(g.[booking_rt] > 0)  AND 
-			-- only run once so as not to clobber orginal GP
-			(t.[gp_ext_org_amt] IS NULL)
-	End
-
---		
-	if (@bDebug <> 0)
-		Print 'Set:  FSC ItemCommGroup Rates'
-
-
-	If (@nErrorCode = 0) 
-	Begin
-
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[fsc_comm_rt] = r.comm_base_rt,
-			[fsc_comm_amt] = t.gp_ext_amt * (r.comm_base_rt / 100.0) 
-
-		FROM         
-			[comm].[transaction_F555115] t INNER JOIN
-
-			[comm].[plan_group_rate] AS r 
-			ON t.[fsc_comm_plan_id] = r.comm_plan_id AND 
-				t.[fsc_comm_group_cd] = r.comm_group_cd
-
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND 
-			(t.[fsc_comm_plan_id] IS NOT NULL) AND 
+		UPDATE       comm.transaction_F555115
+		SET                fsc_comm_group_cd = i.comm_group_cd
+		FROM            comm.transaction_F555115 t INNER JOIN
+								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(i.comm_group_cd <> '') AND 
+			(t.fsc_comm_plan_id <> '') AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
---
 	if (@bDebug <> 0)
-		Print 'Set:  ESS ItemCommGroup Rates'
-
+		print '6. FSC update comm - non-booking -new'
 
 	If (@nErrorCode = 0) 
 	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[fsc_comm_rt] = r.comm_rt,
+			[fsc_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[fsc_calc_key] = r.calc_key
 
-		UPDATE    
-			[comm].[transaction_F555115]
-		SET              
-			[ess_comm_rt] = r.comm_base_rt,
-			[ess_comm_amt] = t.gp_ext_amt * (r.comm_base_rt / 100.0) 
+		FROM
+			comm.transaction_F555115 t
 
-		FROM         
-			[comm].[transaction_F555115] t INNER JOIN
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
 
-			[comm].[plan_group_rate] AS r 
-			ON t.[ess_comm_plan_id] = r.comm_plan_id AND 
-				t.[ess_comm_group_cd] = r.comm_group_cd
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
 
-		WHERE     
-			(t.[FiscalMonth] = @sCurrentFiscalYearmoNum) AND 
-			(t.source_cd IN ('JDE', 'IMP')) AND 
-			(t.[ess_comm_plan_id] IS NOT NULL) AND 
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.fsc_comm_plan_id <> '') AND
+			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
---
+
+	if (@bDebug <> 0)
+		print '7. FSC update comm - booking - new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET
+			[fsc_comm_rt] = g.booking_rt,
+			[fsc_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[fsc_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.fsc_comm_plan_id <> '') AND
+			(g.booking_rt <> 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+-- ESS
+	if (@bDebug <> 0)
+		print '8. ESS update plan & terr'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET
+			ess_salesperson_key_id = s.salesperson_key_id, 
+			ess_comm_plan_id = s.comm_plan_id
+		FROM            comm.salesperson_master AS s INNER JOIN
+								 BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
+								 comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.WS$ESS_equipment_specialist_code
+		WHERE        (comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '9. ESS update item'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET                ess_comm_group_cd = i.comm_group_cd
+		FROM            comm.transaction_F555115 t INNER JOIN
+								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(i.comm_group_cd <> '') AND 
+			(t.ess_comm_plan_id <> '') AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '10. ESS update comm - non-booking -new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[ess_comm_rt] = r.comm_rt,
+			[ess_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[ess_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.ess_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.ess_comm_plan_id = r.comm_plan_id AND
+				t.ess_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.ess_comm_group_cd <> '') AND 
+			(t.ess_comm_plan_id <> '') AND
+			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '11. ESS update comm - booking - new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET
+			[ess_comm_rt] = g.booking_rt,
+			[ess_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[ess_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.ess_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.ess_comm_plan_id = r.comm_plan_id AND
+				t.ess_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.ess_comm_group_cd <> '') AND 
+			(t.ess_comm_plan_id <> '') AND
+			(g.booking_rt <> 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+-- CPS
+	if (@bDebug <> 0)
+		print '12. CPS update plan & terr'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			cps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+			cps_comm_plan_id = m.comm_plan_id , 
+			cps_code = m.TerritoryCd
+		FROM
+			comm.transaction_F555115 
+
+			INNER JOIN BRS_Customer AS c 
+			ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+			INNER JOIN BRS_FSC_Rollup AS f 
+			ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+
+			INNER JOIN comm.plan_region_map AS m 
+			ON m.comm_plan_id = 'CPSGP' AND 
+				c.PostalCode LIKE m.postal_code_where_clause_like AND 
+				1 = 1 
+			INNER JOIN BRS_FSC_Rollup AS sales_key 
+			ON sales_key.TerritoryCd = m.TerritoryCd
+
+		WHERE
+			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	if (@bDebug <> 0)
+		print '13. update CPS item'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET                cps_comm_group_cd = i.comm_group_cps_cd
+		FROM            comm.transaction_F555115 t INNER JOIN
+								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(i.comm_group_cps_cd <> '') AND 
+			(t.cps_comm_plan_id <> '') AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '14. CPS update comm - non-booking -new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[cps_comm_rt] = r.comm_rt,
+			[cps_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[cps_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.cps_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.cps_comm_plan_id = r.comm_plan_id AND
+				t.cps_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.cps_comm_group_cd <> '') AND 
+			(t.cps_comm_plan_id <> '') AND
+			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '15. CPS update comm - booking - new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET
+			[cps_comm_rt] = g.booking_rt,
+			[cps_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[cps_calc_key] = r.calc_key
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.cps_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.cps_comm_plan_id = r.comm_plan_id AND
+				t.ess_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.cps_comm_group_cd <> '') AND 
+			(t.cps_comm_plan_id <> '') AND
+			(g.booking_rt <> 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+-- EPS
+	if (@bDebug <> 0)
+		print '16. EPS update plan & terr'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			eps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
+			eps_comm_plan_id = m.comm_plan_id , 
+			eps_code = m.TerritoryCd
+		FROM
+			comm.transaction_F555115 
+
+			INNER JOIN BRS_Customer AS c 
+			ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+
+			INNER JOIN BRS_FSC_Rollup AS f 
+			ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
+			INNER JOIN comm.plan_region_map AS m 
+			ON m.comm_plan_id = 'EPSGP' AND 
+				f.[Branch] = m.[branch_code_where_clause_like] AND 
+				1 = 1 
+			INNER JOIN BRS_FSC_Rollup AS sales_key 
+			ON sales_key.TerritoryCd = m.TerritoryCd
+
+		WHERE
+			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
+			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '17. update EPS item'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET                eps_comm_group_cd = i.comm_group_eps_cd
+		FROM            comm.transaction_F555115 t INNER JOIN
+								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(i.comm_group_eps_cd <> '') AND 
+			(t.eps_comm_plan_id <> '') AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '18. EPS update comm - non-booking -new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[eps_comm_rt] = r.comm_rt,
+			[eps_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[eps_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.eps_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.eps_comm_plan_id = r.comm_plan_id AND
+				t.eps_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.eps_comm_group_cd <> '') AND 
+			(t.eps_comm_plan_id <> '') AND
+			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	if (@bDebug <> 0)
+		print '19. EPS update comm - booking - new'
+
+	If (@nErrorCode = 0) 
+	Begin
+		UPDATE       comm.transaction_F555115
+		SET
+			[eps_comm_rt] = g.booking_rt,
+			[eps_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[eps_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.eps_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.eps_comm_plan_id = r.comm_plan_id AND
+				t.eps_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.eps_comm_group_cd <> '') AND 
+			(t.eps_comm_plan_id <> '') AND
+			(g.booking_rt <> 0) AND
+			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--< END NEW
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
@@ -557,116 +714,9 @@ Return @nErrorCode
 GO
 
 
-/*
--- SM Opt-out full fcode
-		SELECT     
-			t.fiscal_yearmo_num, 
-			t.source_cd,         
-			t.salesperson_cd,
-			t.salesperson_key_id, 
-			t.comm_plan_id,
-			t.hsi_shipto_id,
+-- Debug
+-- EXEC	[comm].[commission_calc_proc] @bDebug = 1
+--  7m306s @ dev
 
-			c.SPM_StatusCd AS CustSMStatus,
-			c.SPM_EQOptOut AS CustEQOpt,
-
-			g.SPM_EQOptOut AS GroupSPM_EQOptOut,
-			g.comm_group_cd,
-			g.SPM_comm_group_cd AS GroupSPM_comm_group_cd,
-			t.item_comm_group_cd AS item_comm_group_cd_CURR,
-
-			CASE 
-				WHEN 
-					( (c.SPM_StatusCd = 'Y') And ( (c.SPM_EQOptOut <> 'Y') OR  ( (c.SPM_EQOptOut = 'Y') AND (g.SPM_EQOptOut<>'Y') ))) 
-				THEN 
-					-- Use Special Market code
-					g.SPM_comm_group_cd 
-				ELSE 
-					-- Use Regular code
-					g.comm_group_cd 
-			END AS item_comm_group_cd_NEW
-
-		FROM         
-			comm_transaction t
-
-			INNER JOIN comm_plan p
-			ON t.comm_plan_id = p.comm_plan_id
-
-			INNER JOIN comm_customer_master c
-			ON t.hsi_shipto_id = c.hsi_shipto_id
-
-			INNER JOIN comm_item_master i
-			ON t.item_id = i.item_id
-
-				INNER JOIN comm_group g
-				ON i.comm_group_cd = g.comm_group_cd
-
-		WHERE     
-			(t.fiscal_yearmo_num = '201601') AND 
-			(t.source_cd = 'JDE') AND
-			(t.comm_plan_id LIKE 'FSC%') AND 
-
-		--	(c.SPM_StatusCd = 'Y' ) AND
-		--	(c.SPM_EQOptOut = 'Y' ) AND
-		--	(g.SPM_EQOptOut <> 'Y' ) AND
-
-			(1=1)
-*/
-
-
-/*
--- reset
-UPDATE       comm.transaction_F555115
-SET
-fsc_salesperson_key_id = NULL,
-fsc_comm_plan_id =NULL,
-fsc_comm_group_cd =NULL,
-fsc_comm_rt =NULL,
-ess_salesperson_key_id =NULL,
-fsc_comm_amt =0,
-ess_comm_plan_id =NULL,
-ess_comm_group_cd =NULL,
-ess_comm_rt =NULL,
-ess_comm_amt =0,
-cps_salesperson_key_id =NULL,
-cps_comm_plan_id =NULL,
-cps_comm_group_cd =NULL,
-cps_comm_rt =NULL,
-cps_comm_amt =0
-WHERE 
-FiscalMonth = 201711
-*/
-
--- est1m21s
--- Debug (1min)
--- Exec comm.commission_calc_proc
-
--- Prod
--- Exec comm.commission_calc_proc 0
-
-/*
--- test o/r
--- so 10836230, fsc WZ1G4, ess = ESS76
-SELECT        WSDOCO_salesorder_number, FiscalMonth, fsc_code, WS$ESS_equipment_specialist_code
-FROM            comm.transaction_F555115
-WHERE        (WSDOCO_salesorder_number = '10836230')
-*/
-
-/*
-SELECT 
-TOP 10
-t.[fsc_comm_plan_id], t.[fsc_comm_group_cd], [fsc_comm_rt], [fsc_comm_amt] 
-
-FROM         
-	[comm].[transaction_F555115] t 
-	
-	INNER JOIN [comm].[plan_group_rate] AS r 
-	ON t.[fsc_comm_plan_id] = r.comm_plan_id AND 
-		t.[fsc_comm_group_cd] = r.comm_group_cd
-
-WHERE     
-	(t.[FiscalMonth] = 201711) AND 
-	(t.source_cd IN ('JDE', 'IMP')) AND 
-	(t.[fsc_comm_plan_id] IS NOT NULL) AND 
-	(1 = 1)
-*/
+-- EXEC	[comm].[commission_calc_proc] @bDebug = 0
+-- 
