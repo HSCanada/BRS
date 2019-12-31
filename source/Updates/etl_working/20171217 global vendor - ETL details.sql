@@ -76,7 +76,7 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 --> STOP
 
 
--- GPS update 1 & 2
+-- GPS update 1 & 2 -- wait for ME complete
 
 ---
 

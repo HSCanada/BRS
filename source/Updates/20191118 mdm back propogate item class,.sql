@@ -1,5 +1,7 @@
 --mdm back propogate item class, tmc, 18 Nov 19
 
+-- Do this with Special Markets restate
+
 UPDATE       BRS_ItemHistory
 SET                global_product_class = BRS_ItemCategory.global_product_class
 FROM
