@@ -707,7 +707,7 @@ WHERE
 
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
 
-
+-- 1 of 2
 -- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
 -- Fixed to capture Adj Accounts
 SELECT DISTINCT    
@@ -727,7 +727,25 @@ where
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
 	(t.FiscalMonth between 201912 and 201912) 
 
+-- 2 of 2
 
+-- DS adj fix, tmc 7 Jan 20
+print '24. ensure that there is an adjust SO for every actaul SO'
+INSERT INTO 
+	[dbo].[BRS_TransactionDW_Ext] 
+	([SalesOrderNumber], DocType)
+SELECT
+	distinct SalesOrderNumber, 'AA' DocType
+FROM
+	[dbo].[BRS_TransactionDW_Ext]  t 
+where
+--	SALESORDERNUMBER = 12461107 AND
+	NOT exists 
+	(
+		select * from [dbo].[BRS_TransactionDW_Ext]  ext where t.SalesOrderNumber = ext.[SalesOrderNumber] AND 'AA' = ext.DocType
+	) 
+ORDER BY 1
+GO
 
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published

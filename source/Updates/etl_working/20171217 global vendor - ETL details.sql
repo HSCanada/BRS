@@ -8,7 +8,7 @@
 
 --> START to STOP *** Manually ****
 
-print 'add new [dbo].[BRS_BusinessUnit]'
+print '1. add new [dbo].[BRS_BusinessUnit]'
 INSERT INTO [dbo].[BRS_BusinessUnit]
 (BusinessUnit)
 SELECT        Distinct GMMCU__business_unit 
@@ -19,7 +19,7 @@ WHERE NOT EXISTS
 	WHERE s.GMMCU__business_unit = b.BusinessUnit
 )
 
-print 'add new [dbo].[BRS_Object]'
+print '2. add new [dbo].[BRS_Object]'
 INSERT INTO [dbo].[BRS_Object]
 ([GLAcctNumberObj])
 SELECT        Distinct GMOBJ__object_account 
@@ -30,7 +30,7 @@ WHERE NOT EXISTS
 	WHERE s.GMOBJ__object_account = o.[GLAcctNumberObj]
 )
 
-print 'add new hfm.account_master_F0901'
+print '3. add new hfm.account_master_F0901'
 INSERT INTO hfm.account_master_F0901
                          (GMCO___company, GMAID__account_id, GMMCU__business_unit, GMOBJ__object_account, GMSUB__subsidiary, GMANS__free_form_3rd_acct_no, 
                          GMDL01_description, GMLDA__account_level_of_detail, GMBPC__budget_pattern_code, GMPEC__posting_edit, GMUSER_user_id, GMPID__program_id, 
@@ -48,7 +48,7 @@ WHERE NOT EXISTS
 		s.[GMSUB__subsidiary] = d.[GMSUB__subsidiary]
 )
 
-print 'update bu map - hfm.account_master_F0901'
+print '4. update bu map - hfm.account_master_F0901'
 UPDATE       
 	hfm.account_master_F0901
 SET                
@@ -64,7 +64,7 @@ WHERE
 	ISNULL(HFM_CostCenter,'') <> b.CostCenter
 
 
-print 'update Obj map - hfm.account_master_F0901'
+print '5. update Obj map - hfm.account_master_F0901'
 UPDATE       hfm.account_master_F0901
 SET                HFM_Account = [HFM_Account_TargetKey]
 FROM            hfm.account_master_F0901 INNER JOIN
@@ -80,17 +80,17 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 
 ---
 
-print 'test Excl_key - should be 0 null records'
+print '6. test Excl_key - should be 0 null records'
 select count(*)
 FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
 
-print 'reset Excl_key (only needed for re-run, working, clear all...)'
+print '7. reset Excl_key (only needed for re-run, working, clear all...)'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -98,10 +98,10 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
-print 'set Exclusives - Excl_key, 1s, 1 OF 3'
+print '8. set Exclusives - Excl_key, 1s, 1 OF 3'
 UPDATE       
 	BRS_ItemHistory
 SET
@@ -118,11 +118,11 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
 
-print 'set private - Excl_key, 2 OF 3'
+print '9. set private - Excl_key, 2 OF 3'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -137,11 +137,11 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
 
-print 'set Branded - Excl_key, 3 of 3'
+print '10. set Branded - Excl_key, 3 of 3'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -150,21 +150,21 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
 -- seq 0 of 2
 
-print 'test GpsKey init - should be 0 records to start, clear if not (below)'
+print '11. test GpsKey init - should be 0 records to start, clear if not (below)'
 SELECT COUNT(*)
 FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
 
-print 'clear GpsKey, if needed'
+print '12. clear GpsKey, if needed'
 UPDATE
 	BRS_Transaction
 SET
@@ -186,11 +186,11 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 201911 and 201911)
+	(BRS_Transaction.FiscalMonth between 201912 and 201912)
 GO
 
 -- 1 min
-print 'set GpsKey 1 of 2'
+print '13. set GpsKey 1 of 2'
 UPDATE
 	BRS_Transaction
 SET
@@ -218,11 +218,11 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 201911 and 201911)
+	(BRS_Transaction.FiscalMonth between 201912 and 201912)
 GO
 
 -- 30s
-print 'set GpsKey 2 of 2'
+print '14. set GpsKey 2 of 2'
 UPDATE
 	BRS_Transaction
 SET
@@ -250,23 +250,36 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 201911 and 201911)
+	(BRS_Transaction.FiscalMonth between 201912 and 201912)
 GO
 
-print 'test GpsKey - should be > 0 records'
+print '15. test GpsKey - should be > 0 records'
 SELECT COUNT(*)
 FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 201911 AND 201911
+	FiscalMonth BETWEEN 201912 AND 201912
 GO
+
+-- update BRS_ItemCategory!global for new codes first
+
+print '16. test GpsKey - should be > 0 records'
+UPDATE       BRS_ItemHistory
+	SET global_product_class = BRS_ItemCategory.global_product_class
+FROM
+	BRS_ItemHistory  INNER JOIN
+    BRS_ItemCategory  ON BRS_ItemHistory.MinorProductClass = BRS_ItemCategory.MinorProductClass
+WHERE
+	(BRS_ItemHistory.Item > '') AND 
+	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
+	FiscalMonth BETWEEN 201912 AND 201912
 
 
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Nov-19_RA.CSV
+-- a_CAN_Dec-19_RA.CSV
 
 -- 3. select & run below
--- [hfm].global_cube_proc  201911, 201911
+-- [hfm].global_cube_proc  201912, 201912
