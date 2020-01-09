@@ -35,6 +35,7 @@ WHERE comm_group_cd <>'' AND
 	NOT EXISTS (SELECT * FROM comm.[group] WHERE comm_group_cd = CommBE.dbo.comm_group.comm_group_cd)
 GO
 
+/*
 print '2. group - UPATE'
 UPDATE       [comm].[group]
 SET                
@@ -44,7 +45,9 @@ SET
 FROM            CommBE.dbo.[comm_group] c INNER JOIN
                          [comm].[group] ON c.[comm_group_cd] = [comm].[group].[comm_group_cd]
 GO
+*/
 
+/*
 print '3. rate - ADD'
 INSERT INTO comm.plan_group_rate
                          (
@@ -80,6 +83,7 @@ WHERE NOT EXISTS
 )
 
 GO
+*/
 
 /*
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
@@ -147,12 +151,11 @@ WHERE NOT EXISTS
 	where comm_plan_id = r.comm_plan_id and 
 		comm_group_cd = r.comm_group_cd
 )
-*/
+
 GO
 
-
 -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! fix rate update
-
+*/
 
 print '4. item - UPDATE'
 UPDATE       BRS_Item
@@ -164,7 +167,6 @@ FROM            CommBE.dbo.comm_item_master AS c INNER JOIN
 GO
 
 print '5. map customer'
-
 UPDATE       BRS_Customer
 SET                
 comm_status_cd =CASE WHEN (SPM_StatusCd+SPM_EQOptOut) = 'YY' THEN 'SPMSND' ELSE CASE WHEN SPM_StatusCd = 'Y' THEN 'SPMALL' ELSE '' END END,
@@ -241,6 +243,8 @@ WHERE
 	1=1
 GO
 */
+/*
+-- truncate table [Integration].[F5554_territory_name_Staging]--
 
 print '12. update names here...'
 UPDATE       BRS_FSC_Rollup
@@ -272,6 +276,7 @@ FROM            CommBE.dbo.comm_salesperson_code_map AS c INNER JOIN
 WHERE EXISTS (SELECT * FROM comm.salesperson_master WHERE [salesperson_key_id] = c.salesperson_key_id)
 
 GO
+*/
 
 print '16. add new salemaster code (should always be 0 adds)'
 INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd],[Branch])

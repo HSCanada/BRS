@@ -61,8 +61,6 @@ GO
 
 ---
 /*
-
-
 -- step 1: load history from prod for testing
 INSERT INTO BRS_CustomerFSC_History
                          (Shipto, FiscalMonth, HIST_TerritoryCd, HIST_VPA, HIST_Specialty, HIST_MarketClass, HIST_SegCd, HIST_TsTerritoryCd, AlertCd, HIST_SalesDivision, 
@@ -84,7 +82,6 @@ FROM            BRS_CustomerFSC_History h INNER JOIN
 WHERE        (h.FiscalMonth = 201911)
 
 */
-
 
 /*
 print 'fix - [WSSHAN_shipto] - history (reminder to manualy correct FSC code, which is blank'
@@ -146,9 +143,13 @@ WHERE not exists
 )
 
 print '8. check - [WSSIC__speciality]'
--- INSERT INTO [dbo].[BRS_CustomerSpecialty] (
--- Specialty
--- )
+
+ /*
+ INSERT INTO [dbo].[BRS_CustomerSpecialty] (
+ Specialty
+ )
+ */
+
 SELECT  distinct (WSSIC__speciality)
 FROM  [Integration].F555115_commission_sales_extract_Staging t
 WHERE not exists
@@ -186,8 +187,8 @@ WHERE not exists
 )
 GO
 
+/*
 print '11. Allign FSC Territory with Commission'
-
 UPDATE       BRS_CustomerFSC_History
 SET                HIST_TerritoryCd = s.fsc_min
 FROM            BRS_CustomerFSC_History INNER JOIN
@@ -199,7 +200,7 @@ FROM            BRS_CustomerFSC_History INNER JOIN
                          BRS_CustomerFSC_History.Shipto = s.hsi_shipto_id AND BRS_CustomerFSC_History.HIST_TerritoryCd <> s.fsc_min AND 
                          BRS_CustomerFSC_History.HIST_SalesDivision <> 'AZA' AND s.fsc_min <> '' AND 1 = 1
 GO
-
+*/
 ---
 /*
  
@@ -215,6 +216,8 @@ GO
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load LegacyPRE-to-New ( 2 of 3) OR...
 ------------------------------------------------------------------------------------------------------
+
+--truncate table [comm].[transaction_F555115]
 
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
 
@@ -268,7 +271,7 @@ INSERT INTO comm.transaction_F555115
 	[eps_comm_group_cd]
 )
 SELECT
---	TOP (10000) 
+	TOP (10000) 
 	d.FiscalMonth,
 	t.WSDOCO_salesorder_number,
 	t.WSDCTO_order_type,
@@ -333,7 +336,7 @@ go
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load NewPRE-to-New (3 of 3)
 ------------------------------------------------------------------------------------------------------
-
+-- truncate table [comm].[transaction_F555115]
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 201911 and source_cd = 'JDE'
 
 print 'load new data source'
@@ -437,7 +440,7 @@ INSERT INTO comm.transaction_F555115
 
 )
 SELECT        
---	TOP (10) 
+	TOP (10) 
 	d.FiscalMonth,
 	t.WSCO___company,
 	t.WSDOCO_salesorder_number,

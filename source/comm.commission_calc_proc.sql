@@ -37,6 +37,7 @@ AS
 --	22 Dec 17	tmc		port to new backend
 --	30 Dec 17	tmc		finalize new backend logic for FSC and ESS
 --  24 Dec 19	tmc		update comm with new backend
+--	09 Jan 20	tmc		fix ess_code
 **    
 *******************************************************************************/
 
@@ -132,20 +133,22 @@ Begin
 			xfer_key = r.[xfer_key], 
 
 			xfer_fsc_code_org = t.fsc_code, 
-			xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
+			xfer_ess_code_org = t.ess_code,
 
 			fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
-			[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+			ess_code = CASE WHEN r.[new_ess_code] = '' THEN t.ess_code ELSE r.[new_ess_code] END
 		FROM
 			comm.transfer_rule AS r 
 
 			INNER JOIN comm.transaction_F555115 t 
 			ON r.FiscalMonth = t.FiscalMonth AND 
 				r.SalesOrderNumber = t.WSDOCO_salesorder_number
-		WHERE        
+		WHERE
+			-- only transfer transactions, not adjustments
 			(t.source_cd = 'JDE') AND 
 			-- only run once
-			(t.xfer_key is null) AND 
+			(t.xfer_key is null) AND
+			-- non general rule?
 			(r.SalesOrderNumber > 0) AND 
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1=1)
@@ -164,22 +167,24 @@ Begin
 			xfer_key = r.[xfer_key], 
 
 			xfer_fsc_code_org = t.fsc_code, 
-			xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
+			xfer_ess_code_org = t.ess_code,
 
 			fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
-			[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+			ess_code = CASE WHEN r.[new_ess_code] = '' THEN t.ess_code ELSE r.[new_ess_code] END
 		FROM
 			comm.transfer_rule AS r 
 
 			INNER JOIN comm.transaction_F555115 t 
 			ON r.FiscalMonth = t.FiscalMonth AND 
 				(t.fsc_code like (CASE WHEN r.[fsc_code] = '' THEN '%' ELSE r.[fsc_code] END)) AND
-				(t.[WS$ESS_equipment_specialist_code] like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
+				(t.ess_code like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
 				(1=1)
-		WHERE        
+		WHERE
+			-- only transfer transactions, not adjustments     
 			(t.source_cd = 'JDE') AND 
 			-- only run once
-			(t.xfer_key is null) AND 
+			(t.xfer_key is null) AND
+			-- general rule?
 			(r.SalesOrderNumber = 0) AND 
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1=1)
@@ -193,15 +198,21 @@ Begin
 
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
+		UPDATE
+			comm.transaction_F555115
 		SET
 			fsc_salesperson_key_id = s.salesperson_key_id, 
 			fsc_comm_plan_id = s.comm_plan_id
 		FROM
-					comm.salesperson_master AS s INNER JOIN
-								 BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
-								 comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
-		WHERE        (comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
+			comm.salesperson_master AS s 
+			INNER JOIN BRS_FSC_Rollup AS f 
+			ON s.salesperson_key_id = f.comm_salesperson_key_id 
+			
+			INNER JOIN comm.transaction_F555115 
+			ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+		WHERE
+			(comm.transaction_F555115.fsc_code <>'') AND
+			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
 
 		Set @nErrorCode = @@Error
 	End
@@ -216,8 +227,8 @@ Begin
 		FROM            comm.transaction_F555115 t INNER JOIN
 								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
 		WHERE        
+			(t.fsc_code <> '') AND
 			(i.comm_group_cd <> '') AND 
-			(t.fsc_comm_plan_id <> '') AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -252,8 +263,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.fsc_code <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
-			(t.fsc_comm_plan_id <> '') AND
 			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -289,8 +300,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.fsc_code <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
-			(t.fsc_comm_plan_id <> '') AND
 			(g.booking_rt <> 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -304,14 +315,21 @@ Begin
 
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
+		UPDATE
+			comm.transaction_F555115
 		SET
 			ess_salesperson_key_id = s.salesperson_key_id, 
 			ess_comm_plan_id = s.comm_plan_id
-		FROM            comm.salesperson_master AS s INNER JOIN
-								 BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
-								 comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.WS$ESS_equipment_specialist_code
-		WHERE        (comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
+		FROM
+			comm.salesperson_master AS s 
+			INNER JOIN BRS_FSC_Rollup AS f 
+			ON s.salesperson_key_id = f.comm_salesperson_key_id
+
+			INNER JOIN comm.transaction_F555115 
+			ON f.TerritoryCd = comm.transaction_F555115.ess_code
+		WHERE
+			(comm.transaction_F555115.ess_code <> '' ) AND
+			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
 
 		Set @nErrorCode = @@Error
 	End
@@ -326,8 +344,8 @@ Begin
 		FROM            comm.transaction_F555115 t INNER JOIN
 								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
 		WHERE        
+			(t.ess_code <> '') AND
 			(i.comm_group_cd <> '') AND 
-			(t.ess_comm_plan_id <> '') AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -362,8 +380,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.ess_code <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
-			(t.ess_comm_plan_id <> '') AND
 			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -398,8 +416,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.ess_code <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
-			(t.ess_comm_plan_id <> '') AND
 			(g.booking_rt <> 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -436,6 +454,7 @@ Begin
 			ON sales_key.TerritoryCd = m.TerritoryCd
 
 		WHERE
+			-- must be valid customer, as postal code driven
 			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
 			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1 = 1)
@@ -454,8 +473,8 @@ Begin
 		FROM            comm.transaction_F555115 t INNER JOIN
 								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
 		WHERE        
+			(t.cps_code <> '') AND
 			(i.comm_group_cps_cd <> '') AND 
-			(t.cps_comm_plan_id <> '') AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
@@ -490,8 +509,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.cps_code <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
-			(t.cps_comm_plan_id <> '') AND
 			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -525,8 +544,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.cps_code <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
-			(t.cps_comm_plan_id <> '') AND
 			(g.booking_rt <> 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -579,8 +598,8 @@ Begin
 		FROM            comm.transaction_F555115 t INNER JOIN
 								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
 		WHERE        
+			(t.eps_code <> '') AND
 			(i.comm_group_eps_cd <> '') AND 
-			(t.eps_comm_plan_id <> '') AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -615,8 +634,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.eps_code <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
-			(t.eps_comm_plan_id <> '') AND
 			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -651,8 +670,8 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
+			(t.eps_code <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
-			(t.eps_comm_plan_id <> '') AND
 			(g.booking_rt <> 0) AND
 			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
 			(1 = 1)
