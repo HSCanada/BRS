@@ -35,6 +35,7 @@ AS
 --	17 Jan 19	tmc		add Hygine accout to feed
 --	26 Mar 19	tmc		extend to Quebec Zone & add EPS
 --  29 Nov 19	tmc		Added BC
+--	13 Jan 20	tmc		Added Tortonto rule
 **    
 *******************************************************************************/
 
@@ -67,7 +68,18 @@ SELECT
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
 	'.'						AS Field_Level_3_Description,
-	RTRIM(b.EPS_code)		AS Eps_Code
+--	RTRIM(b.EPS_code)		AS Eps_Code
+
+	CASE 
+		WHEN 
+			f.[TerritoryCd] in ('CZ107', 'CZ1AD', 'CZ1B8', 'CZ1SD', 'CZ1UU', 'CZ2BG', 'CZ2NM')
+		THEN 
+			'EPONT'
+		ELSE
+			RTRIM(b.EPS_code)
+	END						AS Eps_Code
+
+	
 
 FROM
 	BRS_Customer AS c
@@ -95,7 +107,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Customer WHERE Eps_Code = 'EPWES'
+-- SELECT top 10 * FROM eps.Customer WHERE Eps_Code = 'EPONT'
 -- SELECT * FROM eps.Customer where Specialty_Discription = 'HYGEN'
 
 -- eps_customer.txt

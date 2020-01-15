@@ -219,7 +219,7 @@ GO
 
 --truncate table [comm].[transaction_F555115]
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 201812
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 201912
 
 print 'load new data source from legacy source'
 INSERT INTO comm.transaction_F555115
@@ -1078,6 +1078,37 @@ WHERE
 	(1 = 1)
 GO
 
+--
+
+-- RI pref indexes
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_03 ON Integration.F555115_commission_sales_extract_Staging
+	(
+	WSLITM_item_number
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.F555115_commission_sales_extract_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_04 ON Integration.F555115_commission_sales_extract_Staging
+	(
+	WS$ESS_equipment_specialist_code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_05 ON Integration.F555115_commission_sales_extract_Staging
+	(
+	WSCAG__cagess_code
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.F555115_commission_sales_extract_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 
 
 
@@ -1247,4 +1278,43 @@ FROM            Integration.transaction_transfer AS t INNER JOIN
                          BRS_TransactionDW_Ext ON t.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber
 
 
+
+--> to prod, 13 Jan 
+
+INSERT INTO [dbo].[BRS_FSC_Rollup]
+           ([TerritoryCd]
+           ,[FSCName]
+           ,[Branch]
+           ,[FSCStatusCode]
+           ,[group_type]
+		   )
+     VALUES
+           ('EPTOR'
+           ,'Colin'
+           ,''
+           ,'E'
+           ,'DEPS'
+           )
+
+GO
+
+update
+[comm].[plan_region_map]
+set [TerritoryCd] = 'EPTOR'
+where [branch_code_where_clause_like] = 'TORNT'
+go
+
+UPDATE
+[dbo].[BRS_Branch]
+SET [EPS_code] = 'EPTOR'
+WHERE [Branch] ='TORNT'
+go
+
+--<
+
+TRUNCATE TABLE [Integration].[F555115_commission_sales_extract_Staging]
+
+select top 10 * from [Integration].[F555115_commission_sales_extract_Staging]
+
+delete from  [comm].[transaction_F555115] where FiscalMonth = 201912
 

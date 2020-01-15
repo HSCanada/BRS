@@ -1,4 +1,0 @@
-﻿itegration_comm_free_goods_redeem
-ODBC;DSN=COMM_PROD;Description=COMM_PROD;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=CommBE
-dbo.itegration_comm_free_goods_redeem
-ID

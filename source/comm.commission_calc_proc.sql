@@ -715,7 +715,7 @@ Begin
 	Set @sMessage = @sMessage + ':  Return(' + Convert(varchar, @nErrorCode) + ')'
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-	RAISERROR (50060, 9, 1, @sMessage )
+	RAISERROR ('%s', 9, 1, @sMessage )
 
 	Rollback Tran mytran
 

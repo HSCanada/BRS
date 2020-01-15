@@ -1,4 +1,4 @@
-﻿comm_salesperson_master
+﻿comm_hr_employee
 ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
-comm.salesperson_master
-salesperson_key_id
+comm.hr_employee
+employee_num
