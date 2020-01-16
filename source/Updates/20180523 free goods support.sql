@@ -1,3 +1,31 @@
+--- Order comments, redux, tmc, 16 Jan 20
+
+/*
+
+File Name       Description                        
+F5503      Canned Message File Parameters          
+F4201      Sales Order Header File                 
+
+From Field  File ID  Relation   To Field   File ID  
+Q3DCTO        F01       EQ     SHDCTO        F02    
+Q3DOCO        F01       EQ     SHDOCO        F02    
+Q3KCOO        F01       EQ     SHKCOO        F02    
+
+  Seq                                   W P Col Sup Edt Prt Num   Output   
+No.       Description            Size L W Sp  Hdg Cde Dec Scl    Field   
+   10 Order Number . . . . . .      8 N A *DF  N   Z   0   0  Q3DOCO     
+   20 Order Type . . . . . . .      2 N A *DF  N              Q3DCTO     
+   30 Line Number. . . . . . .      6 N A *DF  N   4   3   0  Q3LNID     
+   40 Sequence Number. . . . .      6 N A *DF  N       2   0  Q3$SNB     
+   50 Program Parameter . . . .   601 N A *DF  N              Q3$PMQ     
+   60 Address Number . . . . .      8 N A *DF  N   Z   0   0  SHAN8      
+   70 Ship To. . . . . . . . .      8 N A *DF  N   Z   0   0  SHSHAN     
+   80 Order Date . . . . . . .      8 N A *DF  N   W   0   0  SHTRDJ     
+   90 Actual Ship. . . . . . .      8 N A *DF  N   W   0   0  SHADDJ     
+                                                                          
+*/
+
+
 --------------------------------------------------------------------------------
 -- DROP TABLE Integration.F5503_canned_message_file_parameters_Staging
 --------------------------------------------------------------------------------
@@ -140,11 +168,10 @@ order by 1 desc
 
 
 --------------------------------------------------------------------------------
--- DROP TABLE Integration.ARCPDTA71_F5501_<instert_friendly_name_here>
+-- DROP TABLE Integration.ARCPDTA71_F5501_order_header_extension_file
 --------------------------------------------------------------------------------
 
 SELECT 
-
     Top 5 
     "QCDOCO" AS QCDOCO_salesorder_number, "QCDCTO" AS QCDCTO_order_type, "QCKCOO" AS QCKCOO_order_number_document_company, "QC$XRN" AS QC$XRN_cross_reference_number, "QC$AC1" AS QC$AC1_address_code_future_1, "QC$OSC" AS QC$OSC_order_source_code, "QC$FA" AS QC$FA__total_amount_freight, "QC$ASC" AS QC$ASC_apply_small_order_charges, "QC$AHC" AS QC$AHC_apply_hazardous_charges, "QC$FMC" AS QC$FMC_form_222c, "QC$FM1" AS QC$FM1_form_222c_date_1, "QC$FM2" AS QC$FM2_form_222c_date_2, "QCNAME" AS QCNAME_name, "QCTRDJ" AS QCTRDJ_order_date, "QCCRTM" AS QCCRTM_creation_time, "QCENTB" AS QCENTB_entered_by, "QC$DEA" AS QC$DEA_dea_number, "QC$DEX" AS QC$DEX_dea_expiration_date, "QC$D01" AS QC$D01_dea_schedule_01, "QC$D02" AS QC$D02_dea_schedule_02, "QC$D03" AS QC$D03_dea_schedule_03, "QC$D04" AS QC$D04_dea_schedule_04, "QC$D05" AS QC$D05_dea_schedule_05, "QC$D06" AS QC$D06_dea_schedule_06, "QC$D07" AS QC$D07_dea_schedule_07, "QC$D08" AS QC$D08_dea_schedule_08, "QC$D09" AS QC$D09_dea_schedule_09, "QC$D10" AS QC$D10_dea_schedule_10, "QC$OR" AS QC$OR__total_amount_ordered, "QC$BK" AS QC$BK__total_amount_backordered, "QC$HL" AS QC$HL__total_amount_on_hold, "QC$PK" AS QC$PK__total_amount_on_pick_ticket, "QC$AS" AS QC$AS__total_amount_shipped, "QC$AB" AS QC$AB__total_amount_posted, "QC$CA" AS QC$CA__total_amount_canceled, "QC$MSC" AS QC$MSC_total_amount_miscellaneous, "QC$NTC" AS QC$NTC_net_cost_chargebacks, "QCSIC" AS QCSIC__speciality, "QC$BCW" AS QC$BCW_by_pass_call_back_wait_period, "QC$PFI" AS QC$PFI_proforma_invoice_request, "QC$PLN" AS QC$PLN_prof_lic, "QC$LEX" AS QC$LEX_license_expiration_date, "QC$DPC" AS QC$DPC_document_print_code, "QC$LWS" AS QC$LWS_status_code_low, "QC$HGS" AS QC$HGS_status_code_high, "QC$DC" AS QC$DC__distribution_center, "QC$DCO" AS QC$DCO_order_consolidation_warehouse, "QC$ACS" AS QC$ACS_accept_cross_shipments, "QC$A02" AS QC$A02_freight_charge_level, "QC$A03" AS QC$A03_carrier_override_code, "QC$OCU" AS QC$OCU_original_customer_number, "QC$OCS" AS QC$OCS_original_customer_sub_number, "QC$SPM" AS QC$SPM_secondary_promotion_code, "QC$PRM" AS QC$PRM_promotion_code, "QC$ODP" AS QC$ODP_order_discount_pct, "QC$IDT" AS QC$IDT_invoice_discount_amount_taken, "QC$DTD" AS QC$DTD_discount_taken_to_date, "QC$SDA" AS QC$SDA_sales_plan_discount_amount, "QC$SDP" AS QC$SDP_sales_plan_discount_pct, "QC$PDI" AS QC$PDI_promotion_dollar_incentive, "QCAC01" AS QCAC01_customer_profession, "QC$CVA" AS QC$CVA_convention_discount_amount, "QCAC02" AS QCAC02_customer_sub_profession, "QCAC03" AS QCAC03_type_of_paying_customer, "QCAC04" AS QCAC04_practice_type, "QCAC05" AS QCAC05_ap_check_routing_code, "QCAC06" AS QCAC06_category_code_address_06, "QCAC07" AS QCAC07_category_code_address_07, "QCAC08" AS QCAC08_market_segment, "QCAC09" AS QCAC09_equipment_software_code, "QCAC10" AS QCAC10_division_code, "QCAC11" AS QCAC11_freight_category, "QCAC12" AS QCAC12_regency_frequency_monetery, "QCAC13" AS QCAC13_foreign_domestic_code, "QCAC14" AS QCAC14_foreign_country_code, "QCAC15" AS QCAC15_customer_location_code, "QCAC24" AS QCAC24_category_code_24, "QCAC25" AS QCAC25_category_code_25, "QCAC26" AS QCAC26_unsolicited_faxes, "QCAC27" AS QCAC27_area, "QCAC28" AS QCAC28_integration_group, "QCAC29" AS QCAC29_category_code_29, "QCAC30" AS QCAC30_category_code_30, "QCAC16" AS QCAC16_paperwork_logo, "QCAC17" AS QCAC17_category_code_17, "QCAC18" AS QCAC18_category_code_18, "QCAC19" AS QCAC19_category_code_19, "QCAC20" AS QCAC20_category_code_20, "QCAC21" AS QCAC21_category_code_21, "QCAC22" AS QCAC22_category_code_22, "QCAC23" AS QCAC23_category_code_23, "QCUSER" AS QCUSER_user_id, "QCPID" AS QCPID__program_id, "QCJOBN" AS QCJOBN_work_station_id, "QCUPMJ" AS QCUPMJ_date_updated, "QCTDAY" AS QCTDAY_time_of_day 
 
@@ -208,4 +235,6 @@ FROM            Integration.F5503_canned_message_file_parameters_Staging
 -- 8s, 739916
 
 	HASHBYTES('SHA1', "Q3$PMQ") AS chksum
+
+
 
