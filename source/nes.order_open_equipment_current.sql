@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**  27 Jan 20	tmc		added GP & date param based on config
 *******************************************************************************/
 
 SELECT
@@ -62,8 +63,9 @@ SELECT
 
 	,t.[fact_id]
 	
-
 	,CAST(t.[SalesDate] as date)	AS sales_date
+
+	,[extended_cost_amount]
 
 FROM 
 	open_order_opordrpt t
@@ -71,8 +73,8 @@ FROM
 
 
 WHERE
-	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.open_order_opordrpt) 
-
+	[SalesDate] = (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config])
+--	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.open_order_opordrpt) 
 GO
 
 SET ANSI_NULLS OFF
@@ -80,6 +82,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
---SELECT count(*) FROM nes.order_open_prorepr_current
---SELECT TOP 10 * FROM nes.order_open_prorepr_current
+-- SELECT TOP 10 * FROM nes.order_open_equipment_current
+
+-- SELECT count(*) FROM nes.order_open_equipment_current
+
+
 
