@@ -464,6 +464,14 @@ GO
 -- [hfm].global_cube_proc  201910, 201910
 -- 
 
+--a_CAN_Nov-19_RA.csv
+-- [hfm].global_cube_proc  201911, 201911
+-- 
+
+--a_CAN_Dec-19_RA.csv
+-- [hfm].global_cube_proc  201912, 201912
+-- 
+
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
 

@@ -112,9 +112,12 @@ BEGIN
 	WHERE     
 		(d.FiscalWeek = @nWeek) AND
 		(t.SalesDivision = 'AAD') AND-- test
---		CAST(d.SalesDate as date) between '2019-01-01' AND '2019-11-22' AND
---		(t.CalMonth Between 201901 and 201912) AND
---		(c.Eps_Code = 'EPWES') AND
+
+--		CAST(d.SalesDate as date) <= '2020-01-24' AND
+--		(t.CalMonth Between 201701 and 202001) AND
+--		(c.Eps_Code in ('EPONT', 'EPTOR', 'EPWES') ) AND
+
+
 		(1=1)
 
 END
@@ -130,7 +133,10 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20200124.txt
+-- HSC_SALES_2020031.txt
+
+-- HSC_SALES_20200124-EPONT-EPTOR-EPWES-history.txt
+
 
 SET NOCOUNT OFF;
 GO
