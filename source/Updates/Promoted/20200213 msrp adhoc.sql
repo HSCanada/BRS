@@ -1,7 +1,7 @@
 
 SELECT 
 
-    Top 50
+--    Top 50
 
 	"ADAST" AS ADAST__adjustment_name,
 	"ADITM" AS ADITM__item_number_short,

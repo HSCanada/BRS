@@ -25,13 +25,14 @@ No.       Description            Size L W Sp  Hdg Cde Dec Scl    Field
                                                                           
 */
 
+TRUNCATE TABLE Integration.F5503_canned_message_file_parameters_Staging
 
 --------------------------------------------------------------------------------
 -- DROP TABLE Integration.F5503_canned_message_file_parameters_Staging
 --------------------------------------------------------------------------------
 
 SELECT 
---    Top 5
+    Top 5
     "Q3KCOO" AS Q3KCOO_order_number_document_company,
 	"Q3DCTO" AS Q3DCTO_order_type,
 	"Q3DOCO" AS Q3DOCO_salesorder_number,
@@ -44,7 +45,7 @@ SELECT
 	"QCTRDJ" AS QCTRDJ_order_date,
 	HASHBYTES('SHA1', "Q3$PMQ") AS chksum
 
-INTO Integration.F5503_canned_message_file_parameters_Staging
+--INTO Integration.F5503_canned_message_file_parameters_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -70,7 +71,8 @@ FROM
 		Q3DOCO = QCDOCO AND
 
 		Q3KCOO = ''02000'' AND
-		(QCTRDJ between 109000 AND 119365) AND
+		(QCTRDJ >= 120000) AND
+--		(QCTRDJ between 119000 AND 119365) AND
 --		QCTRDJ >= 120001 AND
 		1=1
 
@@ -84,8 +86,6 @@ ADD id int identity(1,1)
 
 ALTER TABLE Integration.F5503_canned_message_file_parameters_Staging 
 ADD chksum binary(32)
-
-
 
 
 --------------------------------------------------------------------------------
