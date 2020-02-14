@@ -181,6 +181,7 @@ UPDATE       BRS_Branch
 SET                ZoneName = [zone_cd]
 FROM            CommBE.dbo.comm_branch c INNER JOIN
                          BRS_Branch ON c.branch_cd = BRS_Branch.Branch
+where ZoneName <> [zone_cd]
 GO
 
 /*
@@ -194,6 +195,7 @@ FROM            BRS_Item INNER JOIN
                          DEV_BRSales.dbo.BRS_Item s ON BRS_Item.Item = s.Item
 */
 
+-- does FSC terr work?  6 Feb 20
 print '8. FSC - ADD'
 INSERT INTO [dbo].[BRS_FSC_Rollup]
 ([TerritoryCd], [group_type], Branch)
