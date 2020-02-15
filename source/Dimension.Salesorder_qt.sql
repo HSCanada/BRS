@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	15 Dec 19	tmc		add returns logic
+**	14 Feb 20	tmc		added factkey for linking
 *******************************************************************************/
 
 SELECT
@@ -69,7 +70,7 @@ SELECT
 
 	,f.EnteredBy
 	,f.OrderTakenBy
-
+	,f.FactKeyFirst
 FROM
 	Fact.Sale_qt AS f 
 

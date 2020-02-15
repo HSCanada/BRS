@@ -1447,6 +1447,80 @@ Else
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '17. update wcs item'
+
+		UPDATE
+			Pricing.item_wcs_unique_fields_file_F5656
+		SET
+			QVAITM__3rd_item_number =s.QVAITM__3rd_item_number,
+			QV$AVC_availability_code =s.QV$AVC_availability_code,
+			QV$RQT_restricted_qty =s.QV$RQT_restricted_qty ,
+			QV$CCD_case_code =s.QV$CCD_case_code ,
+			QV$CCQ_case_qty =s.QV$CCQ_case_qty ,
+			QV$ITH_item_height =s.QV$ITH_item_height ,
+
+			QV$ITW_item_width =s.QV$ITW_item_width ,
+			QV$ITL_item_length =s.QV$ITL_item_length ,
+			QV$CLC_classification_code =s.QV$CLC_classification_code ,
+			QV$PRI_pricing_info =s.QV$PRI_pricing_info ,
+			QV$MMC_mix_match_code =s.QV$MMC_mix_match_code ,
+			QV$VCD_vendor_code =s.QV$VCD_vendor_code ,
+			QV$LCT_location_type =s.QV$LCT_location_type ,
+			QV$PPL_print_on_pickticket =s.QV$PPL_print_on_pickticket ,
+
+			QV$BKD_backorder_date_JDT =s.QV$BKD_backorder_date_JDT ,
+			QV$ABD_abbr_descr =s.QV$ABD_abbr_descr ,
+			QV$ASR_abbreviated_strength =s.QV$ASR_abbreviated_strength ,
+			QVUSER_user_id =s.QVUSER_user_id ,
+			QVPID__program_id =s.QVPID__program_id ,
+			QVJOBN_work_station_id =s.QVJOBN_work_station_id ,
+			QVUPMJ_date_updated =s.QVUPMJ_date_updated ,
+			QVTDAY_time_of_day =s.QVTDAY_time_of_day ,
+
+			QV$IDC_importdomestic = s.QV$IDC_importdomestic
+
+		FROM
+			Pricing.item_wcs_unique_fields_file_F5656 d
+			INNER JOIN Integration.F5656_wcs_unique_fields_file_Staging AS s 
+			ON d.QVITM__item_number_short = s.QVITM__item_number_short AND
+--				CHECKSUM(s.*) <> CHECKSUM(d.*) AND
+				(1=1)
+	
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '18. add wcs item'
+
+		INSERT INTO Pricing.item_wcs_unique_fields_file_F5656
+								 (QVITM__item_number_short, QVLITM_item_number, QVAITM__3rd_item_number, QV$AVC_availability_code, QV$RQT_restricted_qty, QV$CCD_case_code, QV$CCQ_case_qty, QV$ITH_item_height, QV$ITW_item_width, 
+								 QV$ITL_item_length, QV$IDC_importdomestic, QV$CLC_classification_code, QV$PRI_pricing_info, QV$MMC_mix_match_code, QV$VCD_vendor_code, QV$LCT_location_type, QV$PPL_print_on_pickticket, 
+								 QV$BKD_backorder_date_JDT, QV$ABD_abbr_descr, QV$ASR_abbreviated_strength, QVUSER_user_id, QVPID__program_id, QVJOBN_work_station_id, QVUPMJ_date_updated, QVTDAY_time_of_day)
+		SELECT        QVITM__item_number_short, QVLITM_item_number, QVAITM__3rd_item_number, QV$AVC_availability_code, QV$RQT_restricted_qty, QV$CCD_case_code, QV$CCQ_case_qty, QV$ITH_item_height, QV$ITW_item_width, 
+								 QV$ITL_item_length, QV$IDC_importdomestic, QV$CLC_classification_code, QV$PRI_pricing_info, QV$MMC_mix_match_code, QV$VCD_vendor_code, QV$LCT_location_type, QV$PPL_print_on_pickticket, 
+								 QV$BKD_backorder_date_JDT, QV$ABD_abbr_descr, QV$ASR_abbreviated_strength, QVUSER_user_id, QVPID__program_id, QVJOBN_work_station_id, QVUPMJ_date_updated, QVTDAY_time_of_day
+		FROM            Integration.F5656_wcs_unique_fields_file_Staging AS d
+		WHERE
+			NOT EXISTS
+			(
+				Select *
+				FROM 
+					[Pricing].item_wcs_unique_fields_file_F5656 AS s
+				WHERE
+					s.QVITM__item_number_short = d.QVITM__item_number_short AND
+					(1=1)
+			)
+
+
+		Set @nErrorCode = @@Error
+	End
+
 
 --
 
@@ -1524,6 +1598,6 @@ GO
 */
 
 
-EXECUTE [Pricing].[etl_post_proc] @bDebug=1
-GO
+--EXECUTE [Pricing].[etl_post_proc] @bDebug=1
+--EXECUTE [Pricing].[etl_post_proc] @bDebug=0
 

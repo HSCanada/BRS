@@ -25,7 +25,7 @@ No.       Description            Size L W Sp  Hdg Cde Dec Scl    Field
                                                                           
 */
 
-TRUNCATE TABLE Integration.F5503_canned_message_file_parameters_Staging
+--TRUNCATE TABLE Integration.F5503_canned_message_file_parameters_Staging
 
 --------------------------------------------------------------------------------
 -- DROP TABLE Integration.F5503_canned_message_file_parameters_Staging
@@ -80,13 +80,25 @@ FROM
         QCTRDJ
 ')
 
+--
 
-ALTER TABLE Integration.F5503_canned_message_file_parameters_Staging 
-ADD id int identity(1,1)
+CREATE TABLE [Integration].[F5503_canned_message_file_parameters_Staging](
+	[Q3KCOO_order_number_document_company] [char](5) NOT NULL,
+	[Q3DCTO_order_type] [char](2) NOT NULL,
+	[Q3DOCO_salesorder_number] [numeric](8, 0) NOT NULL,
+	[Q3LNID_line_number] [numeric](15, 3) NOT NULL,
+	[Q3$APC_application_code] [char](1) NOT NULL,
+	[Q3$PMQ_program_parameter] [char](601) NOT NULL,
+	[Q3LNGP_language] [char](2) NOT NULL,
+	[Q3INMG_print_message] [char](10) NOT NULL,
+	[Q3$SNB_sequence_number] [numeric](15, 2) NOT NULL,
+	[QCTRDJ_order_date] [date] NOT NULL,
+	[chksum] [varbinary](8000) NULL,
+	[id] [int] IDENTITY(1,1) NOT NULL
+) ON [USERDATA]
+GO
 
-ALTER TABLE Integration.F5503_canned_message_file_parameters_Staging 
-ADD chksum binary(32)
-
+--
 
 --------------------------------------------------------------------------------
 -- DROP TABLE Integration.F5527_price_adjustment_history_Staging
@@ -142,3 +154,82 @@ FROM
 
 ALTER TABLE Integration.F5527_price_adjustment_history_Staging
 ADD id int identity(1,1)
+
+
+---
+
+--------------------------------------------------------------------------------
+-- DROP TABLE Integration.F5503_canned_message_file_parameters_Staging
+--------------------------------------------------------------------------------
+
+SELECT 
+    "Q3KCOO" AS Q3KCOO_order_number_document_company,
+	"Q3DCTO" AS Q3DCTO_order_type,
+	"Q3DOCO" AS Q3DOCO_salesorder_number,
+	"Q3LNID" AS Q3LNID_line_number,
+	"Q3$APC" AS Q3$APC_application_code,
+	"Q3$PMQ" AS Q3$PMQ_program_parameter,
+	"Q3LNGP" AS Q3LNGP_language,
+	"Q3INMG" AS Q3INMG_print_message,
+	"Q3$SNB" AS Q3$SNB_sequence_number,
+	"QCTRDJ" AS QCTRDJ_order_date,
+	HASHBYTES('SHA1', "Q3$PMQ") AS chksum
+FROM 
+    OPENQUERY (ESYS_PROD, '
+	SELECT
+		Q3KCOO,
+		Q3DCTO,
+		Q3DOCO,
+		CAST((Q3LNID)/1000.0 AS DEC(15,3)) AS Q3LNID,
+		Q3$APC,
+		Q3$PMQ,
+		Q3LNGP,
+		Q3INMG,
+		CAST((Q3$SNB)/100.0 AS DEC(15,2)) AS Q3$SNB,
+		DATE(DIGITS(DEC(QCTRDJ+ 1900000,7,0))) AS QCTRDJ
+
+	FROM
+		ARCPDTA71.F5503 n, ARCPDTA71.F5501 h
+    WHERE
+		Q3KCOO = QCKCOO AND
+		Q3DCTO = QCDCTO AND
+		Q3DOCO = QCDOCO AND
+
+		Q3KCOO = ''02000'' AND
+		(QCTRDJ >= 120000)
+    ORDER BY
+        QCTRDJ
+')
+
+
+--
+
+SELECT
+	distinct (ord.[Q3DOCO_salesorder_number])	AS [SalesOrderNumber]
+	,ord.[Q3DCTO_order_type]					AS [DocType]
+	,ord.QCTRDJ_order_date						AS OrderDate
+	, STUFF(
+		(
+		SELECT 
+			' ' + RTRIM([Q3$PMQ_program_parameter]) AS [text()]
+--			'|' + RTRIM([Q3$SNB_sequence_number]) AS [text()]
+		FROM 
+			[Integration].[F5503_canned_message_file_parameters_Staging] note_line
+		WHERE
+			ord.[Q3DOCO_salesorder_number] = note_line.[Q3DOCO_salesorder_number] AND
+			ord.[Q3INMG_print_message] = note_line.[Q3INMG_print_message]
+		Order by 
+			[Q3$SNB_sequence_number] ASC
+		FOR XML PATH('') 
+		), 1, 1, '' 
+	) AS OrderMessage_Internal
+           
+FROM
+	[Integration].[F5503_canned_message_file_parameters_Staging] ord
+where
+--	[Q3DCTO_order_type] = 'CM' AND
+--	[Q3INMG_print_message] = 'BOEMSG046 ' AND
+	[Q3INMG_print_message] = '9999' AND
+--	[Q3DOCO_salesorder_number] = 1179255
+	(1=1)
+--order by 2 desc

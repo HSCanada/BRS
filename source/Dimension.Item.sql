@@ -126,6 +126,7 @@ SELECT
 	,i.size_factor
 	,RTRIM(sc_dash.SalesCategoryName)	AS SalesCategoryScorecard
 	,mpc.PrivateLabelScopeInd
+	,RTRIM(ISNULL(wcs.QV$CLC_classification_code,''))	AS ClassificationCode
 
 
 
@@ -170,6 +171,9 @@ FROM
 
 	LEFT JOIN BRS_ItemSupplier AS sbrand 
 	ON i.brand = sbrand.Supplier 
+
+	LEFT JOIN [Pricing].[item_wcs_unique_fields_file_F5656] wcs
+	ON i.Item =wcs.QVLITM_item_number
 
 WHERE
 -- test case
