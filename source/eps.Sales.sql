@@ -133,7 +133,7 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_2020031.txt
+-- HSC_SALES_20200214.txt
 
 -- HSC_SALES_20200124-EPONT-EPTOR-EPWES-history.txt
 

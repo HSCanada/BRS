@@ -233,3 +233,52 @@ where
 --	[Q3DOCO_salesorder_number] = 1179255
 	(1=1)
 --order by 2 desc
+
+---
+
+-- drop table [pricing].[order_header_note_F5503]
+
+CREATE TABLE [pricing].[order_header_note_F5503](
+	[Q3DOCO_salesorder_number] [int] NOT NULL,
+	[Q3INMG_print_message] [char](10) NOT NULL,
+	[Q3$SNB_sequence_number] [numeric](15, 2) NOT NULL,
+	[Q3LNID_line_number] [numeric](15, 3) NOT NULL,
+	[Q3DCTO_order_type] [char](2) NOT NULL,
+
+	[Q3KCOO_order_number_document_company] [char](5) NOT NULL,
+	[Q3$APC_application_code] [char](1) NOT NULL,
+	[Q3$PMQ_program_parameter] [char](601) NOT NULL,
+	[Q3LNGP_language] [char](2) NOT NULL,
+	[QCTRDJ_order_date] [date] NOT NULL,
+	[chksum] [varbinary](8000) NULL,
+	[id] [int] IDENTITY(1,1) NOT NULL
+) ON [USERDATA]
+GO
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE Pricing.order_header_note_F5503 ADD CONSTRAINT
+	order_header_note_F5503_c_pk PRIMARY KEY CLUSTERED 
+	(
+	Q3DOCO_salesorder_number,
+	Q3INMG_print_message,
+	Q3$SNB_sequence_number,
+	Q3LNID_line_number
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE Pricing.order_header_note_F5503 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- pop
+
+
+INSERT INTO Pricing.order_header_note_F5503
+                         (Q3KCOO_order_number_document_company, Q3DCTO_order_type, Q3DOCO_salesorder_number, Q3LNID_line_number, Q3$APC_application_code, Q3$PMQ_program_parameter, Q3LNGP_language, Q3INMG_print_message, 
+                         Q3$SNB_sequence_number, QCTRDJ_order_date, chksum)
+SELECT        Q3KCOO_order_number_document_company, Q3DCTO_order_type, Q3DOCO_salesorder_number, Q3LNID_line_number, Q3$APC_application_code, Q3$PMQ_program_parameter, Q3LNGP_language, Q3INMG_print_message, 
+                         Q3$SNB_sequence_number, QCTRDJ_order_date, chksum
+FROM            Integration.F5503_canned_message_file_parameters_Staging

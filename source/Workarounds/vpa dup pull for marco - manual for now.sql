@@ -6,7 +6,9 @@ UNION
 
 SELECT        ADAN8__billto, ADAST__adjustment_name
 FROM            Integration.F4072_price_adjustment_detail_Staging
-WHERE	ADAN8__billto > 0
+WHERE	ADAN8__billto > 0 AND
+	ADAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF') AND
+	(1=1)
 GROUP BY ADAST__adjustment_name, ADAN8__billto
 
 /* 
