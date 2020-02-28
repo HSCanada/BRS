@@ -80,7 +80,7 @@ FROM
         QCTRDJ
 ')
 
---
+-- drop TABLE [Integration].[F5503_canned_message_file_parameters_Staging]
 
 CREATE TABLE [Integration].[F5503_canned_message_file_parameters_Staging](
 	[Q3KCOO_order_number_document_company] [char](5) NOT NULL,
@@ -236,7 +236,8 @@ where
 
 ---
 
--- drop table [pricing].[order_header_note_F5503]
+-- truncate table [pricing].[order_header_note_F5503]
+
 
 CREATE TABLE [pricing].[order_header_note_F5503](
 	[Q3DOCO_salesorder_number] [int] NOT NULL,
@@ -273,6 +274,17 @@ ALTER TABLE Pricing.order_header_note_F5503 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX order_header_note_F5503_idx_01 ON Pricing.order_header_note_F5503
+	(
+	QCTRDJ_order_date
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Pricing.order_header_note_F5503 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 -- pop
 
 
@@ -282,3 +294,5 @@ INSERT INTO Pricing.order_header_note_F5503
 SELECT        Q3KCOO_order_number_document_company, Q3DCTO_order_type, Q3DOCO_salesorder_number, Q3LNID_line_number, Q3$APC_application_code, Q3$PMQ_program_parameter, Q3LNGP_language, Q3INMG_print_message, 
                          Q3$SNB_sequence_number, QCTRDJ_order_date, chksum
 FROM            Integration.F5503_canned_message_file_parameters_Staging
+
+

@@ -42,6 +42,7 @@ AS
 --	15 Nov 18	tmc		add Credit Limit
 --  07 Dec 18	tmc		add Business Review items
 --	16 Jan 18	tmc		add coupa start date for SM project
+--	27 Feb 20	tmc		add additional flags for Private Label analysis
 **    
 *******************************************************************************/
 
@@ -167,6 +168,16 @@ SELECT
 	,coupa_start_date			AS CoupaStartDate
 	,v.FocusCd					AS SalesplanFocusCode
 
+	,CASE 
+		WHEN s.PrivateLabelScopeInd = 1 AND 
+			mclass.PrivateLabelScopeInd = 1 AND 
+			c.SalesDivision = 'AAD'
+		THEN
+			'Include_Cust'
+		ELSE
+			'Exclude_Cust'
+	END							AS PrivateLabelScope_Cust
+
 
 FROM
 	BRS_Customer AS c 
@@ -270,6 +281,8 @@ HAVING        (COUNT(*) > 1)
 */
 
 -- Select count(*) from [Dimension].[Customer] where IsrLoginId <>''
+-- ORG 66688
+-- NEW 66688
 
 -- Select top 10 * from [Dimension].[Customer] where IsrTerritoryCd = 'DTSNT'
 

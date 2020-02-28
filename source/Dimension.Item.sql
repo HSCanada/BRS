@@ -41,6 +41,7 @@ AS
 --	15 Feb 19	tmc		add size_factor
 --  12 Jul 19	tmc		add  PrivateLabelScopeInd for FSC scorecard corp %
 --	15 Dec 19	tmc		add size & strenge to descr and size ind for returns
+--	27 Feb 20	tmc		add additional flags for Private Label analysis
 **    
 *******************************************************************************/
 
@@ -128,6 +129,14 @@ SELECT
 	,mpc.PrivateLabelScopeInd
 	,RTRIM(ISNULL(wcs.QV$CLC_classification_code,''))	AS ClassificationCode
 
+	,CASE 
+		WHEN mpc.PrivateLabelScopeInd = 1 
+		THEN
+			'Include_Item'
+		ELSE
+			'Exclude_Item'
+	END									AS PrivateLabelScope_Item
+
 
 
 FROM            
@@ -210,6 +219,8 @@ WHERE SalesCategory <> ''
 */
 
 -- SELECT top 10 * FROM Dimension.Item where ManufPartNumber = '' 
--- SELECT ManufPartNumber, count(*) FROM Dimension.Item group by (ManufPartNumber) order by 2 desc
+-- SELECT count(*) FROM Dimension.Item 
+-- ORG 228467
+-- NEW228467
 
 

@@ -36,6 +36,7 @@ AS
 --	26 Mar 19	tmc		extend to Quebec Zone & add EPS
 --  29 Nov 19	tmc		Added BC
 --	13 Jan 20	tmc		Added Tortonto rule
+--	27 Feb 20	tmc		moved filter business logic to flags
 **    
 *******************************************************************************/
 
@@ -54,7 +55,7 @@ SELECT
 	RTRIM(c.AccountType)	AS Status,
 	'S'						AS Bill_Type, 
 	RTRIM(f.[FSCName])		AS Field_Level_4_Description,
-	RTRIM(Specialty)		AS Specialty_Discription, 
+	RTRIM(c.Specialty)		AS Specialty_Discription, 
 	t.[FSCName]				AS Inside_Sales_Name,
 	SalesDivision			AS Sales_Division, 
 	BillTo					AS Bill_To, 
@@ -63,7 +64,7 @@ SELECT
 	BillTo					AS Jde_Bill_To, 
 	'0'						AS Credit_Limit,
 	'0'						AS Priv_Point,
-	RTRIM(SegCd)			AS Special_Market_Segment,
+	RTRIM(c.SegCd)			AS Special_Market_Segment,
 	'.'						AS Special_Market_Segment_Description,
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
@@ -84,6 +85,9 @@ SELECT
 FROM
 	BRS_Customer AS c
 
+	INNER JOIN [dbo].[BRS_CustomerSpecialty] AS s
+	ON c.Specialty = s.Specialty
+
 	INNER JOIN BRS_FSC_Rollup AS f 
 	ON c.TerritoryCd = f.TerritoryCd 
 
@@ -96,8 +100,8 @@ FROM
 WHERE
 	(c.ShipTo > 0) AND
 	(c.SalesDivision = 'AAD') AND 
-	(c.Specialty IN('ENDOD', 'ORMS', 'ORTHO', 'PEDO', 'PERIO', 'PROS', 'GENP', 'DSO', 'HYGEN')) AND
-	(f.Branch IN ('LONDN', 'OTTWA', 'TORNT', 'MNTRL', 'QUEBC', 'VACVR', 'VICTR')) AND
+	(s.PrivateLabelScopeInd = 1) AND
+	(b.PrivateLabelScopeInd = 1) AND
 	(1=1)
 GO
 
@@ -115,4 +119,7 @@ GO
 /*
 SET NOCOUNT ON;
 SELECT * FROM eps.Customer 
+
+ORG (27126 rows affected)
+NEW (27126 rows affected)
 */

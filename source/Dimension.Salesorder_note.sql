@@ -35,7 +35,7 @@ AS
 SELECT
 	distinct (ord.[Q3DOCO_salesorder_number])	AS [SalesOrderNumber]
 	,ord.[Q3DCTO_order_type]					AS [DocType]
-	,ord.QCTRDJ_order_date						AS OrderDate
+	,convert(date, ord.QCTRDJ_order_date, 103)		AS OrderDate
 	,(
 		SELECT 
 			RTRIM(      LTRIM(SUBSTRING([Q3$PMQ_program_parameter],    1+1, 60))) + 
@@ -72,6 +72,6 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 1000 * FROM Dimension.Salesorder_note where   SalesOrderNumber= 12997658
+-- SELECT top 1000 * FROM Dimension.Salesorder_note order by OrderDate asc where   SalesOrderNumber= 12997658
 
 --  where [Q3DOCO_salesorder_number] = 1181905 or 1178540

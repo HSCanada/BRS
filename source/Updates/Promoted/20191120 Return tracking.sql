@@ -30,7 +30,7 @@ GO
 INSERT INTO [Integration].[BRSCreditInfo]
 (JDEORNO, ORDOTYCD, LNNO, CRMNRECD, CRTYCD, WJXBFS1)
 SELECT        JDEORNO, ORDOTYCD, LNNO, CRMNRECD, CRTYCD, WJXBFS1
-FROM            DEV_BRSales..zzBRSCreditInfo
+FROM            zzBRSCreditInfo
 
 
 -- drop table [dbo].[BRS_Creditinfo]
