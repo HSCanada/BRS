@@ -113,10 +113,8 @@ BEGIN
 		(d.FiscalWeek = @nWeek) AND
 		(t.SalesDivision = 'AAD') AND-- test
 
---		CAST(d.SalesDate as date) <= '2020-01-24' AND
---		(t.CalMonth Between 201701 and 202001) AND
---		(c.Eps_Code in ('EPONT', 'EPTOR', 'EPWES') ) AND
-
+--		CAST(d.SalesDate as date) <= '2020-02-28' AND
+--		(t.CalMonth Between 202001 and 202002) AND
 
 		(1=1)
 
@@ -133,7 +131,8 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20200221.txt
+-- HSC_SALES_20200228.txt
+-- HSC_SALES_20200228_ytd.txt
 
 SET NOCOUNT OFF;
 GO

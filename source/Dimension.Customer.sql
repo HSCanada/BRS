@@ -266,7 +266,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.Customer 
+-- SELECT top 10 * FROM Dimension.Customer where SalesplanFocusCode <> ''
 -- where  billto = 2613256 order by 1
 
 -- integrity check

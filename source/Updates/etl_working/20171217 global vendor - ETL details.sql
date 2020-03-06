@@ -279,7 +279,7 @@ WHERE
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Jan-20_RA.CSV
+-- a_CAN_Jan-20_RA.csv
 
 -- 3. select & run below
 -- [hfm].global_cube_proc  202001, 202001

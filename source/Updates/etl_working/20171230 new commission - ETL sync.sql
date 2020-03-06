@@ -92,6 +92,19 @@ WHERE employee_num > 0 AND salesperson_key_id <> '' AND master_salesperson_cd <>
 	not exists(select * from [dbo].[BRS_FSC_Rollup] where master_salesperson_cd = [TerritoryCd])
 GO
 
+print '16b. update salemaster code'
+UPDATE
+	BRS_FSC_Rollup
+SET
+	comm_salesperson_key_id = s.salesperson_key_id
+FROM
+	CommBE.dbo.comm_salesperson_code_map AS s 
+	INNER JOIN BRS_FSC_Rollup d 
+	ON s.salesperson_cd = d.TerritoryCd AND 
+	s.salesperson_key_id <> ISNULL(d.comm_salesperson_key_id,'') AND
+	s.salesperson_key_id <> 'internal'
+
+
 print '17b. Add new Salesperson to HR'
 INSERT INTO [comm].[hr_employee]
 (
