@@ -10,7 +10,7 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: nes.order_open_equipment_current_py
-**	Desc:  copy from current
+**	Desc:  *** this is Terrible.  Fix hardcode logic, 9 Mar 20 ***
 **		
 **
 **              
@@ -72,7 +72,7 @@ FROM
 
 
 WHERE
-	[SalesDate] = '12/28/2018'
+	[SalesDate] = '03/01/2019'
 --	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.open_order_opordrpt) 
 GO
 
