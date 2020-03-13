@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	15 Dec 19	tmc		add returns logic
 **	14 Feb 20	tmc		added factkey for linking
+**	12 Mar 20	tmc		added price method rollup code for filter
 *******************************************************************************/
 
 SELECT
@@ -60,6 +61,8 @@ SELECT
 
 	,pm.[PriceMethodDescr]						AS PriceMethod
 	,pm2.[PriceMethodDescr]						AS PriceMethodRollup
+	,pm.PriceMethod								AS PriceMethodCode
+	,pm2.PriceMethod							AS PriceMethodRollupCode
 	,os.OrderSourceCode + ' | ' 
 	+ os.OrderSourceCodeDescr					AS OrderSource
 	,pr.PromotionType							
@@ -93,7 +96,6 @@ FROM
 	ON pr.PromotionTrackingCode = p2.PromotionCode AND
 		pr.PromotionTrackingCode <>''
 
-
 WHERE        
 	(f.FactKey = f.FactKeyFirst)
 
@@ -104,22 +106,4 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-
 -- SELECT top 10 * FROM Dimension.Salesorder_qt
-/*
-SELECT
-	SalesOrderNumber,
-	sales_order_key,
-	ReturnValidInd,
-	ReturnMonths,
-	OriginalSalesOrderNumber,
-	PriceMethod,
-	PriceMethodRollup,
-	OrderSource,
-	PromotionType,
-	Promotion,
-	PromotionConvention,
-	DocType
-FROM
-	Dimension.Salesorder_qt
-*/

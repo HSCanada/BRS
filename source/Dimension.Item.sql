@@ -42,6 +42,7 @@ AS
 --  12 Jul 19	tmc		add  PrivateLabelScopeInd for FSC scorecard corp %
 --	15 Dec 19	tmc		add size & strenge to descr and size ind for returns
 --	27 Feb 20	tmc		add additional flags for Private Label analysis
+--	03 Mar 20	tmc		add current FileCost & base
 **    
 *******************************************************************************/
 
@@ -136,6 +137,8 @@ SELECT
 		ELSE
 			'Exclude_Item'
 	END									AS PrivateLabelScope_Item
+	,i.CurrentFileCost
+	,i.[CurrentCorporatePrice]
 
 
 
