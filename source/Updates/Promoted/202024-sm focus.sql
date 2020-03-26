@@ -1,0 +1,6 @@
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Customer ADD
+	sm_focus_code nchar(5) NOT NULL DEFAULT '' 
+GO
+COMMIT

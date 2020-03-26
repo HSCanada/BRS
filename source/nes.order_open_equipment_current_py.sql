@@ -72,7 +72,7 @@ FROM
 
 
 WHERE
-	[SalesDate] = '03/01/2019'
+	[SalesDate] = '03/22/2019'
 --	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.open_order_opordrpt) 
 GO
 
@@ -81,7 +81,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT TOP 10 * FROM nes.order_open_equipment_current
+-- SELECT TOP 10 * FROM nes.order_open_equipment_current_py
 
 -- SELECT count(*) FROM nes.order_open_equipment_current
 

@@ -43,6 +43,7 @@ AS
 --  07 Dec 18	tmc		add Business Review items
 --	16 Jan 18	tmc		add coupa start date for SM project
 --	27 Feb 20	tmc		add additional flags for Private Label analysis
+--	24 Mar 20	tmc		add sm focus flag
 **    
 *******************************************************************************/
 
@@ -177,6 +178,7 @@ SELECT
 		ELSE
 			'Exclude_Cust'
 	END							AS PrivateLabelScope_Cust
+	,c.sm_focus_code			AS SmFocusCode
 
 
 FROM
