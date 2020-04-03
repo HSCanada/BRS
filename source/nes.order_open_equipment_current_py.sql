@@ -29,11 +29,12 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	31 Mar 20	tmc		setup dynamic date filter
 *******************************************************************************/
 
 SELECT
-
-	[ets_num]
+	d.FiscalMonth
+	,[ets_num]
 	,[line_number]
 
 	,RTRIM(t.[d1_branch])				AS branch_eq
@@ -67,13 +68,18 @@ SELECT
 	,[extended_cost_amount]
 
 FROM 
-	open_order_opordrpt t
+	nes.open_order_opordrpt t
 
+	CROSS JOIN [dbo].[BRS_Config] as config
 
+	INNER JOIN [dbo].[BRS_SalesDay] d
+	ON t.SalesDate = d.SalesDate
 
 WHERE
-	[SalesDate] = '03/22/2019'
---	[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.open_order_opordrpt) 
+	t.SalesDate = config.[PY_SalesDateLastWeekly] AND
+--	[SalesDate] = (SELECT [PY_SalesDateLastWeekly] FROM [dbo].[BRS_Config])
+	(1=1)
+
 GO
 
 SET ANSI_NULLS OFF
@@ -82,8 +88,8 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT TOP 10 * FROM nes.order_open_equipment_current_py
+-- SELECT * FROM nes.order_open_equipment_current_py
 
--- SELECT count(*) FROM nes.order_open_equipment_current
 
 
 

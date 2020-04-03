@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	27 Mar 20	tmc		fix update bug where doctype changes (unexpected)
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -133,7 +134,8 @@ Begin
 							s.[Q3INMG_print_message] = d.[Q3INMG_print_message] AND
 							s.[Q3$SNB_sequence_number] =d.[Q3$SNB_sequence_number] AND
 							s.[Q3LNID_line_number] = d.[Q3LNID_line_number] AND
-							s.[Q3DCTO_order_type] = d.[Q3DCTO_order_type] 
+							-- s.[Q3DCTO_order_type] = d.[Q3DCTO_order_type] AND
+							(1=1)
 					)
 
 	Set @nErrorCode = @@Error
@@ -183,3 +185,20 @@ GO
 --EXECUTE pricing.order_note_post_proc @bDebug=1
 --EXECUTE pricing.order_note_post_proc @bDebug=0
 
+/*
+select * from Integration.F5503_canned_message_file_parameters_Staging 
+where 
+[Q3DOCO_salesorder_number] = 1179270 AND
+[Q3INMG_print_message] = 9898 AND
+[Q3$SNB_sequence_number] = 0.01 AND
+[Q3LNID_line_number] = -999.999 AND
+(1=1)
+
+select * from Pricing.order_header_note_F5503
+where 
+[Q3DOCO_salesorder_number] = 1179270 AND
+[Q3INMG_print_message] = 9898 AND
+[Q3$SNB_sequence_number] = 0.01 AND
+[Q3LNID_line_number] = -999.999 AND
+(1=1)
+*/
