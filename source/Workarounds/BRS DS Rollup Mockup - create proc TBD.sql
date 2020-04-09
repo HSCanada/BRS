@@ -81,8 +81,6 @@ DECLARE c CURSOR
 			FiscalMonth BETWEEN @nFiscalFrom AND @nFiscalTo
 		ORDER BY 
 			FiscalMonth
-
-
 UPDATE    
 	BRS_FiscalMonth
 SET              
