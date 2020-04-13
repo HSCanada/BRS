@@ -32,6 +32,7 @@ AS
 ** 21 Mar 19	tmc		Add full territory codes for deferred rights & sales 
 ** 30 Mar 19	tmc		Add design sales for new office identify
 ** 30 Jul 19	tmc		Add bx_cps_code to description (Dentrix)
+** 13 Apr 20	tmc		Add xray except logic 
 *******************************************************************************/
 
 SELECT
@@ -108,30 +109,15 @@ WHERE
 GROUP BY 
 	s.shipto
 HAVING 
-	SUM(s.net_sales_amount) >= (SELECT [bx_order_thresh] FROM [dbo].[BRS_Config])
-
-
-GO
-
-
-SET ANSI_NULLS OFF
-GO
-SET QUOTED_IDENTIFIER OFF
+	(
+		-- minimum spend thresh
+		SUM(s.net_sales_amount) >= (SELECT [bx_order_thresh] FROM [dbo].[BRS_Config]) OR
+		-- except if xray added, 13 Apr 20
+		SUM(CASE WHEN s.item = '5846055' THEN order_qty ELSE 0 END) <> 0 OR
+		(1<>1)
+	) AND
+	(1=1)
 GO
 
 -- SELECT TOP 10 * FROM nes.bx_group_load
 
-
-/*
-SELECT   ProductNumber, Category =  
-      CASE ProductLine  
-         WHEN 'R' THEN 'Road'  
-         WHEN 'M' THEN 'Mountain'  
-         WHEN 'T' THEN 'Touring'  
-         WHEN 'S' THEN 'Other sale items'  
-         ELSE 'Not for sale'  
-      END,  
-   Name  
-FROM Production.Product  
-
-*/
