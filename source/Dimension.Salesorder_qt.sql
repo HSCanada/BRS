@@ -32,6 +32,7 @@ AS
 **	15 Dec 19	tmc		add returns logic
 **	14 Feb 20	tmc		added factkey for linking
 **	12 Mar 20	tmc		added price method rollup code for filter
+**	14 Apr 20	tmc		fixed negative Return logic and improved buckets
 *******************************************************************************/
 
 SELECT
@@ -39,22 +40,23 @@ SELECT
 	,f.sales_order_key
 
 	,f.ReturnValidInd
-	,datediff(MONTH,ReturnOriginalDateKey,DateKey) ReturnMonths
-	,CASE datediff(MONTH,ReturnOriginalDateKey,DateKey)
-	WHEN 0 Then ' 1mo'
-	WHEN 1 Then ' 1mo'
-	WHEN 2 Then ' 3mo'
-	WHEN 3 Then ' 3mo'
-	WHEN 4 Then ' 6mo'
-	WHEN 5 Then ' 6mo'
-	WHEN 6 Then ' 6mo'
-	WHEN 7 Then '12mo'
-	WHEN 8 Then '12mo'
-	WHEN 9 Then '12mo'
-	WHEN 10 Then '12mo'
-	WHEN 11 Then '12mo'
-	WHEN 12 Then '12mo'
-	else 'more'
+	-- ugly case to correct for bad data where return date is earlier than original invoice.
+	,CASE WHEN ReturnOriginalDateKey > DateKey THEN 0 ELSE datediff(MONTH,ReturnOriginalDateKey,DateKey) END ReturnMonths
+	,CASE CASE WHEN ReturnOriginalDateKey > DateKey THEN 0 ELSE datediff(MONTH,ReturnOriginalDateKey,DateKey) END
+ 	WHEN 0 Then ' 0-1mo'
+	WHEN 1 Then ' 0-1mo'
+	WHEN 2 Then ' 1-3mo'
+	WHEN 3 Then ' 1-3mo'
+	WHEN 4 Then ' 3-6mo'
+	WHEN 5 Then ' 3-6mo'
+	WHEN 6 Then ' 3-6mo'
+	WHEN 7 Then ' 6-12mo'
+	WHEN 8 Then ' 6-12mo'
+	WHEN 9 Then ' 6-12mo'
+	WHEN 10 Then ' 6-12mo'
+	WHEN 11 Then ' 6-12mo'
+	WHEN 12 Then ' 6-12mo'
+	else '12+mo'
 	END
 	 as ReturnRange
 	,OriginalSalesOrderNumber
@@ -106,4 +108,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM Dimension.Salesorder_qt
+-- SELECT top 10 * FROM Dimension.Salesorder_qt where SalesOrderNumber = 11016807 
+-- SELECT top 10 * FROM Dimension.Salesorder_qt where ReturnMonths = 8
+
+
+
+--ReturnMonths < 0 and DocType like 'CM%'
