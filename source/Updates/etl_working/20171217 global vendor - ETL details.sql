@@ -164,6 +164,7 @@ WHERE
 	FiscalMonth BETWEEN 202003 AND 202003
 GO
 
+--6 min
 print '12. clear GpsKey, if needed'
 UPDATE
 	BRS_Transaction
