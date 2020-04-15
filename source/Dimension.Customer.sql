@@ -44,6 +44,7 @@ AS
 --	16 Jan 18	tmc		add coupa start date for SM project
 --	27 Feb 20	tmc		add additional flags for Private Label analysis
 --	24 Mar 20	tmc		add sm focus flag
+--	15 Apr 20	tmc		fix spend range bug using category to specify
 **    
 *******************************************************************************/
 
@@ -255,6 +256,7 @@ FROM
 
 WHERE 
  	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
+	(spend.Spend_Category = 'S') AND
 --	test
 --	c.Billto = 1527764 AND
 	(1=1)
@@ -267,26 +269,19 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+print 'integrity checks (s/b 0):'
 
--- SELECT top 10 * FROM Dimension.Customer where SalesplanFocusCode <> ''
--- where  billto = 2613256 order by 1
+print '1. missing customer?'
+SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
 
--- integrity check
--- SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
+print '2. dup check?'
+SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
 
--- dup check
+
 /*
 SELECT        BillTo, COUNT(*) AS Expr1
 FROM            Pricing.price_adjustment_enroll
 GROUP BY BillTo
 HAVING        (COUNT(*) > 1)
 */
-
--- Select count(*) from [Dimension].[Customer] where IsrLoginId <>''
--- ORG 66688
--- NEW 66688
-
--- Select top 10 * from [Dimension].[Customer] where IsrTerritoryCd = 'DTSNT'
-
--- Select top 10 * from [Dimension].[Customer] where ReviewTrackingInd = 1
 
