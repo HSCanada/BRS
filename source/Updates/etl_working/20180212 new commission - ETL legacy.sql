@@ -121,6 +121,29 @@ WHERE NOT EXISTS (
 	SELECT * FROM [dbo].[BRS_DocType] WHERE doc_type_cd = [DocType]
 )
 
+print '10b. add new plan_group_rate'
+--- *** TREVOR TO DO update / test [comm].[plan_group_rate], 16 Apr 20
+-- ensure that new groups, etc are in the rules -- cross join check...
+INSERT INTO   [comm].[plan_group_rate] (
+comm_plan_id, [item_comm_group_cd], [cust_comm_group_cd], [source_cd]
+)
+select *  from
+(SELECT  distinct [comm_plan_id] FROM [comm].[plan] ) s
+cross join
+( SELECT [comm_group_cd] as item_comm_group_cd FROM [comm].[group] where [source_cd] in ('JDE', 'IMP', 'PAY') ) s2
+cross join
+(SELECT  distinct [comm_status_cd] as cust_comm_group_cd FROM [dbo].[BRS_Customer]) s3
+cross join
+( SELECT [source_cd] FROM [comm].[source] where [source_cd] in ('JDE', 'IMP', 'PAY') ) s4
+where NOT exists (Select * from [comm].[plan_group_rate] d where
+d.comm_plan_id = s.comm_plan_id AND
+d.[item_comm_group_cd] = s2.[item_comm_group_cd] AND
+d.[cust_comm_group_cd] = s3.[cust_comm_group_cd] AND
+d.[source_cd] = s4.[source_cd]
+)
+GO
+
+
 --ok
 print '11. check hsi_shipto_id'
 SELECT 
@@ -482,7 +505,7 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
@@ -514,7 +537,7 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.fsc_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
@@ -545,7 +568,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
@@ -577,7 +600,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.ess_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
@@ -612,7 +635,7 @@ FROM
 WHERE
 	-- must be valid customer, as postal code driven
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 202002 and 202003) AND
+	(comm.transaction_F555115.FiscalMonth between 201901 and 202003) AND
 	(1 = 1)
 GO
 
@@ -624,7 +647,7 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.cps_code <> '') AND
 	(i.comm_group_cps_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003) AND
+	(t.FiscalMonth between 201901 and 202003) AND
 	(1 = 1)
 GO
 
@@ -655,7 +678,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 	(1 = 1)
 GO
 
@@ -684,7 +707,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 	(1 = 1)
 GO
 
@@ -712,7 +735,7 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 202002 and 202003) AND
+	(comm.transaction_F555115.FiscalMonth between 201901 and 202003) AND
 	(1 = 1)
 GO
 
@@ -724,7 +747,7 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.eps_code <> '') AND
 	(i.comm_group_eps_cd <> '') AND 
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 	(1 = 1)
 GO
 
@@ -755,7 +778,7 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 	(1 = 1)
 GO
 
@@ -785,7 +808,7 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 202002 and 202003 ) AND
+	(t.FiscalMonth between 201901 and 202003 ) AND
 	(1 = 1)
 GO
 
