@@ -45,6 +45,9 @@ AS
 --	27 Feb 20	tmc		add additional flags for Private Label analysis
 --	24 Mar 20	tmc		add sm focus flag
 --	15 Apr 20	tmc		fix spend range bug using category to specify
+--	20 Apr 20	tmc		remove spend logic -- buggy, replace with DAX
+--	22 Apr 20	tmc		set unassigned group to "other" for better rollups
+--						fix segment name, based on seg not specialty rollup
 **    
 *******************************************************************************/
 
@@ -56,7 +59,7 @@ SELECT
 	,CASE 
 		WHEN c.CustGrpWrk	<> '' 
 		THEN RTRIM(c.CustGrpWrk)
-		ELSE 'BT_' + RTRIM(CAST(c.Billto as char))
+		ELSE 'Other' 
 	END													AS CustomerGroup
 	,RTRIM(v.VPA) + ' | ' + RTRIM(VPADesc)  			AS SalesPlan
 	,RTRIM(v.VPA)  										AS SalesPlanCode
@@ -81,17 +84,18 @@ SELECT
 	,RTRIM(ISNULL(padj.[PJUSER_user_id],''))					AS AdjUserId
 	,RTRIM(ISNULL(padj.[EnrollSource],''))						AS AdjEnrollSource
 	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
-	
+
+/*	
 	,RTRIM(spend.Spend_Category)						AS Abc_SpendCustomer
 	,cgrp.PotentialSpendAmt								AS Spend_PotentialAmt
 	,RTRIM(spend.Spend_Display)							AS Spend_Display
 	,spend.Spend_Rank
 	,spend.Spend_Discount_Rate
-
+*/
 	,RTRIM(div.SalesDivisionDesc)						AS SalesDivision
 	,RTRIM(mcroll.MarketClassDesc)						AS MarketClassRollup
 	,RTRIM(mclass.MarketClassDesc)						AS MarketClass
-	,RTRIM(s.SegName)									AS Segment
+	,RTRIM(seg.SegName)	+ ' | ' + RTRIM(seg.SegCd)		AS Segment
 	,s.SpecialtyNm + ' | ' + RTRIM(s.Specialty)			AS Specialty
 	,iif(c.AccountType='D',
 		'Closed',
@@ -188,6 +192,9 @@ FROM
 	INNER JOIN BRS_CustomerSpecialty AS s 
 	ON c.Specialty = s.Specialty 
 
+	INNER JOIN [dbo].[BRS_CustomerSegment] AS seg
+	ON c.[SegCd] = seg.[SegCd]
+
 	INNER JOIN BRS_SalesDivision AS div 
 	ON c.SalesDivision = div.SalesDivision 
 
@@ -251,12 +258,12 @@ FROM
 	)  padj
 	ON c.BillTo = padj.BillTo
 
-	CROSS JOIN BRS_Customer_Spend_Category AS spend
+--	CROSS JOIN BRS_Customer_Spend_Category AS spend
 
 
 WHERE 
- 	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
-	(spend.Spend_Category = 'S') AND
+-- 	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
+--	(spend.Spend_Category = 'S') AND
 --	test
 --	c.Billto = 1527764 AND
 	(1=1)
@@ -277,11 +284,8 @@ SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer wh
 print '2. dup check?'
 SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
 
+-- test details
+-- SELECT  top 10      * FROM            Dimension.Customer where [CustomerGroup] = 'BT_3187697'
 
-/*
-SELECT        BillTo, COUNT(*) AS Expr1
-FROM            Pricing.price_adjustment_enroll
-GROUP BY BillTo
-HAVING        (COUNT(*) > 1)
-*/
+
 

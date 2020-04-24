@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	8 Nov 19	tmc		Add VPA foucs code for MBO tracking
+**	20 Apr 20	tmc		Add VPA quote type for quote margin tracking
 **    
 *******************************************************************************/
 
@@ -58,7 +59,7 @@ SELECT
 	,RTRIM(ISNULL(padj.[EnrollSource],''))						AS AdjEnrollSource
 	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
 	,V.FocusCd													as SalesplanFocusCode
-
+	,v.VPATypeCd												AS SalesplanType
 
 
 FROM
