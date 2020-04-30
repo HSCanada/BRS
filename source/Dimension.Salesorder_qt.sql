@@ -33,6 +33,8 @@ AS
 **	14 Feb 20	tmc		added factkey for linking
 **	12 Mar 20	tmc		added price method rollup code for filter
 **	14 Apr 20	tmc		fixed negative Return logic and improved buckets
+**	30 Apr 20	tmc		remove (move) price method line-level dimension
+**						(price method at line level, not order)
 *******************************************************************************/
 
 SELECT
@@ -61,10 +63,13 @@ SELECT
 	 as ReturnRange
 	,OriginalSalesOrderNumber
 
+/*
 	,pm.[PriceMethodDescr]						AS PriceMethod
 	,pm2.[PriceMethodDescr]						AS PriceMethodRollup
 	,pm.PriceMethod								AS PriceMethodCode
 	,pm2.PriceMethod							AS PriceMethodRollupCode
+*/
+
 	,os.OrderSourceCode + ' | ' 
 	+ os.OrderSourceCodeDescr					AS OrderSource
 	,pr.PromotionType							
@@ -87,12 +92,13 @@ FROM
 
 	INNER JOIN BRS_OrderSource AS os 
 	ON f.OrderSourceCode = os.OrderSourceCode
-
+/*
 	INNER JOIN [BRS_PriceMethod] AS pm
 	ON f.[PriceMethod] = pm.[PriceMethod]
 
 	INNER JOIN [BRS_PriceMethod] AS pm2
 	ON pm.[PriceMethodRollup] = pm2.[PriceMethod]
+*/
 
 	LEFT JOIN BRS_Promotion p2 
 	ON pr.PromotionTrackingCode = p2.PromotionCode AND
