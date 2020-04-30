@@ -401,7 +401,7 @@ GO
 
 /*
 print 'delete month'
-delete  from [comm].[transaction_F555115] where FiscalMonth between 202002 and 202003
+delete  from [comm].[transaction_F555115] where FiscalMonth between 202003 and 202004
 
 */
 
@@ -457,7 +457,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202002' and '202003') AND
+	(fiscal_yearmo_num between  '202003' and '202004') AND
 --	(fiscal_yearmo_num = '201910') AND
 	-- test
 --	(salesperson_cd <> '') AND
@@ -477,7 +477,7 @@ GO
 print 'Mark month as loaded'
 Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
-where [FiscalMonth] between 202002 and 202003
+where [FiscalMonth] between 202003 and 202004
 go
 
 
@@ -505,7 +505,7 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
@@ -537,7 +537,7 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.fsc_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
@@ -568,7 +568,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
@@ -600,7 +600,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.ess_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
@@ -635,7 +635,7 @@ FROM
 WHERE
 	-- must be valid customer, as postal code driven
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201901 and 202003) AND
+	(comm.transaction_F555115.FiscalMonth between 202003 and 202004) AND
 	(1 = 1)
 GO
 
@@ -647,7 +647,7 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.cps_code <> '') AND
 	(i.comm_group_cps_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003) AND
+	(t.FiscalMonth between 202003 and 202004) AND
 	(1 = 1)
 GO
 
@@ -678,7 +678,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -707,7 +707,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -735,7 +735,7 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201901 and 202003) AND
+	(comm.transaction_F555115.FiscalMonth between 202003 and 202004) AND
 	(1 = 1)
 GO
 
@@ -747,7 +747,7 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.eps_code <> '') AND
 	(i.comm_group_eps_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -778,7 +778,7 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -808,7 +808,7 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 201901 and 202003 ) AND
+	(t.FiscalMonth between 202003 and 202004 ) AND
 	(1 = 1)
 GO
 

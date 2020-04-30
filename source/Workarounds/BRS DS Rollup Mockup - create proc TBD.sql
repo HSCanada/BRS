@@ -723,7 +723,9 @@ where
 --	6 May 16	tmc		Fixed missing FSC for adjustments
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
-	(t.FiscalMonth between 202003 and 202003) 
+	(t.FiscalMonth between 202004 and 202004) 
+
+-- see adhocDB 't sm day1' to fix.  TODO, add logic to script
 
 -- 2 of 2
 
