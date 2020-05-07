@@ -36,7 +36,7 @@ GO
 
 /* For security reasons the login is created disabled and with a random password. */
 /****** Object:  Login [sisense_user]    Script Date: 08-Sep-18 12:32:51 PM ******/
-CREATE LOGIN [sisense_user] WITH PASSWORD=N'PNEmp8n6oSkEbEyZYohGmDi3/qXAS2nlkbEGyEIbXAg=', DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=OFF, CHECK_POLICY=ON
+CREATE LOGIN [sisense_user] WITH PASSWORD=N'XXXX', DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=OFF, CHECK_POLICY=ON
 GO
 
 ALTER LOGIN [sisense_user] DISABLE
