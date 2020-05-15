@@ -395,9 +395,145 @@ where
 	line_id <> [record_id]
 GO
 
+-- patch import missing post adj plan, move to update
+print '28. fix FSC post'
+UPDATE
+	comm.transaction_F555115
+SET
+	fsc_comm_plan_id = s.fsc_comm_plan_id
+FROM
+	comm.transaction_F555115 
+	INNER JOIN
+	(
+		SELECT DISTINCT 
+			FiscalMonth, fsc_salesperson_key_id, fsc_comm_plan_id
+        FROM            
+			comm.transaction_F555115 AS t
+        WHERE        
+			(FiscalMonth >= 201901) AND 
+			(source_cd = 'JDE') AND 
+			(fsc_salesperson_key_id <> '') AND 
+			(fsc_comm_plan_id <> '') AND 
+			(1 = 1)
+	) AS s 
+	ON comm.transaction_F555115.FiscalMonth = s.FiscalMonth AND 
+		comm.transaction_F555115.fsc_salesperson_key_id = s.fsc_salesperson_key_id
+WHERE
+	(comm.transaction_F555115.FiscalMonth >= 201901) AND 
+	(comm.transaction_F555115.source_cd = 'IMP') AND 
+	(comm.transaction_F555115.fsc_salesperson_key_id <> '') AND 
+	(comm.transaction_F555115.fsc_comm_plan_id = '') AND 
+	(1 = 1)
 
+print '29. test FSC post - fix manually'
+SELECT        
+--	TOP (1000) 
+	distinct
+	FiscalMonth,
+	fsc_salesperson_key_id,
+	fsc_comm_plan_id
+
+FROM
+	comm.transaction_F555115 AS t
+WHERE
+	(FiscalMonth >= 201901) AND 
+	(source_cd = 'IMP') AND 
+	-- fsc or ess
+	(fsc_salesperson_key_id <> '') AND 
+	(fsc_comm_plan_id = '') AND
+	(1=1)
+
+print '30. fix ESS post'
+UPDATE
+	comm.transaction_F555115
+SET
+	ess_comm_plan_id = s.ess_comm_plan_id
+FROM
+	comm.transaction_F555115 
+	INNER JOIN
+	(
+		SELECT DISTINCT 
+			FiscalMonth, ess_salesperson_key_id, ess_comm_plan_id
+        FROM            
+			comm.transaction_F555115 AS t
+        WHERE        
+			(FiscalMonth >= 201901) AND 
+			(source_cd = 'JDE') AND 
+			(ess_salesperson_key_id <> '') AND 
+			(ess_comm_plan_id <> '') AND 
+			(1 = 1)
+	) AS s 
+	ON comm.transaction_F555115.FiscalMonth = s.FiscalMonth AND 
+		comm.transaction_F555115.ess_salesperson_key_id = s.ess_salesperson_key_id
+WHERE
+	(comm.transaction_F555115.FiscalMonth >= 201901) AND 
+	(comm.transaction_F555115.source_cd = 'IMP') AND 
+	(comm.transaction_F555115.ess_salesperson_key_id <> '') AND 
+	(comm.transaction_F555115.ess_comm_plan_id = '') AND 
+	(1 = 1)
+
+print '31. test ESS post - fix manually'
+SELECT        
+--	TOP (1000) 
+	distinct
+	FiscalMonth,
+	ess_salesperson_key_id,
+	ess_comm_plan_id
+
+FROM
+	comm.transaction_F555115 AS t
+WHERE
+	(FiscalMonth >= 201901) AND 
+	(source_cd = 'IMP') AND 
+	-- fsc or ess
+	(ess_salesperson_key_id <> '') AND 
+	(ess_comm_plan_id = '') AND
+	(1=1)
 
 /** STOP ***********************/
+
+/*
+-- ORG post fix logic
+SELECT        
+	d.ID,
+	d.FiscalMonth,
+	d.fsc_salesperson_key_id,
+	d.fsc_comm_plan_id,
+	s.fsc_comm_plan_id
+FROM
+	comm.transaction_F555115 AS d
+	INNER JOIN 
+	(
+		SELECT        
+			distinct
+			FiscalMonth,
+			fsc_salesperson_key_id,
+			fsc_comm_plan_id
+
+		FROM
+			comm.transaction_F555115 AS t
+		WHERE
+			(FiscalMonth = 202001) AND 
+			(source_cd = 'JDE') AND 
+			-- fsc or ess
+			(fsc_salesperson_key_id <> '') AND 
+			(fsc_comm_plan_id <> '') AND
+			(1=1)
+	) s
+	ON d.FiscalMonth = s.FiscalMonth AND
+		d.fsc_salesperson_key_id = s.fsc_salesperson_key_id
+
+WHERE
+	(d.FiscalMonth = 202001) AND 
+	(d.source_cd = 'IMP') AND 
+	-- fsc or ess
+	(d.fsc_salesperson_key_id <> '') AND 
+	(d.fsc_comm_plan_id = '') AND
+	(1=1)
+ORDER by 2
+*/
+
+
 
 /*
 print 'delete month'
@@ -433,7 +569,7 @@ GO
 -- truncate table comm.transaction_F555115
 
 -- first set month below; 30s per month
-print 'migrate legacy data AFTER Post adjustment'
+print '100. migrate legacy data AFTER Post adjustment'
 INSERT INTO comm.transaction_F555115
 (
 	FiscalMonth,fsc_code,source_cd,WSDGL__gl_date,transaction_amt,WSLNID_line_number,WSDOCO_salesorder_number,WSVR01_reference,
@@ -474,14 +610,15 @@ GO
 ------------------------------------------------------------------------------------------------------
 -- DATA - set calc-key for prod sources
 ------------------------------------------------------------------------------------------------------
-print 'Mark month as loaded'
+print '101. Mark month as loaded'
 Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
 where [FiscalMonth] between 202003 and 202004
 go
 
-
-print 'FSC legacy - key Set'
+-- START
+print 'BEGIN New Calc'
+print '102. FSC legacy - key Set'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -505,12 +642,12 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
-print 'FSC legacy - key Test'
+print '103. FSC legacy - key Test'
 Select 
 	t.fsc_comm_plan_id,
 	t.fsc_comm_group_cd,
@@ -518,7 +655,9 @@ Select
 	t.[source_cd],
 	t.fsc_code,
 	t.fsc_comm_group_cd, 
-	r.[disp_comm_group_cd]
+	r.[disp_comm_group_cd],
+	t.ID_legacy,
+	t.fsc_calc_key
 FROM
 	comm.transaction_F555115 t
 
@@ -529,6 +668,7 @@ FROM
 	INNER JOIN [comm].[group] g
 	ON t.fsc_comm_group_cd = g.comm_group_cd
 
+---	LEFT JOIN [comm].[plan_group_rate] AS r 
 	INNER JOIN [comm].[plan_group_rate] AS r 
 	ON t.fsc_comm_plan_id = r.comm_plan_id AND
 		t.fsc_comm_group_cd = r.item_comm_group_cd AND
@@ -537,14 +677,20 @@ FROM
 WHERE        
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 202001 and 202001 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.fsc_comm_group_cd <> r.[disp_comm_group_cd] AND
+
+	-- test
+--	t.source_cd ='IMP' AND
+--	t.ID_legacy = 58656802 AND
+--	t.ID = 6494245 AND
 	(1 = 1)
 GO
+-- key 263 is bad
 
 -- ESS
-print 'ESS legacy - key Set'
+print '104. ESS legacy - key Set'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -568,12 +714,12 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
-print 'ESS legacy - key Test'
+print '105. ESS legacy - key Test'
 Select 
 	t.ess_comm_plan_id,
 	t.ess_comm_group_cd,
@@ -600,7 +746,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 --	(t.FiscalMonth = 201910 ) AND
 	t.ess_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
@@ -609,7 +755,7 @@ GO
 -- END
 
 -- CPS
-print '12. CPS update plan & terr'
+print '106. CPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -635,11 +781,11 @@ FROM
 WHERE
 	-- must be valid customer, as postal code driven
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 202003 and 202004) AND
+	(comm.transaction_F555115.FiscalMonth between 201901 and 202004) AND
 	(1 = 1)
 GO
 
-print '13. update CPS item'
+print '107. update CPS item'
 UPDATE       comm.transaction_F555115
 SET                cps_comm_group_cd = i.comm_group_cps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -647,11 +793,11 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.cps_code <> '') AND
 	(i.comm_group_cps_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004) AND
+	(t.FiscalMonth between 201901 and 202004) AND
 	(1 = 1)
 GO
 
-print '14. CPS update comm - non-booking -new'
+print '108. CPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -678,11 +824,11 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
 
-print '15. CPS update comm - booking - new'
+print '109. CPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[cps_comm_rt] = g.booking_rt,
@@ -707,11 +853,11 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
 
-print '16. EPS update plan & terr'
+print '110. EPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -735,11 +881,11 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 202003 and 202004) AND
+	(comm.transaction_F555115.FiscalMonth between 201901 and 202004) AND
 	(1 = 1)
 GO
 
-print '17. update EPS item'
+print '111. update EPS item'
 UPDATE       comm.transaction_F555115
 SET                eps_comm_group_cd = i.comm_group_eps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -747,11 +893,11 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.eps_code <> '') AND
 	(i.comm_group_eps_cd <> '') AND 
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
 
-print '18. EPS update comm - non-booking -new'
+print '112. EPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -778,11 +924,11 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
 
-print '19. EPS update comm - booking - new'
+print '113. EPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[eps_comm_rt] = g.booking_rt,
@@ -808,8 +954,9 @@ WHERE
 	(t.eps_code <> '') AND
 	(t.eps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 202003 and 202004 ) AND
+	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
 
---< END NEW
+print 'END New Calc'
+--END

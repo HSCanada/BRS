@@ -32,6 +32,7 @@ AS
 **	16 Sep 18	tmc		add fsc territory for branch split
 **  25 Sep 19	tmc		add cps & EPS salesperson and commission 
 **	25 Nov 19	tmc		replace comm group with smart version (based on calc)
+**	13 May 20	tmc		clarified calc_key->display_comm_group
 **    
 *******************************************************************************/
 
@@ -40,19 +41,21 @@ SELECT
 	,t.FiscalMonth									AS FiscalMonth	
 
 	-- Note, default FSC = 2 is a magic number -- too late to fix...
+	--		also, the item calc groups are being remapped to 
+	--			the commission group.  ERD @ gdocs
 
 	,ISNULL(fsc.salesperson_master_key, 2) 			AS FSC_SalespersonKey
 	,ISNULL(fsc_code.[FscKey], 2) 					AS FSC_SalespersonCodeKey
-	,ISNULL(fsc_grp_map.comm_group_key, 1) 			AS FSC_CommGroupKey
+	,ISNULL(comm_group_fsc.comm_group_key, 1) 		AS FSC_CommGroupKey
 
 	,ISNULL(ess.salesperson_master_key, 2)			AS ESS_SalespersonKey
-	,ISNULL(ess_grp_map.comm_group_key, 1)			AS ESS_CommGroupKey
+	,ISNULL(comm_group_ess.comm_group_key, 1)		AS ESS_CommGroupKey
 
 	,ISNULL(cps.salesperson_master_key, 2)			AS CPS_SalespersonKey
-	,ISNULL(cps_grp_map.comm_group_key, 1)			AS CPS_CommGroupKey
+	,ISNULL(comm_group_cps.comm_group_key, 1)		AS CPS_CommGroupKey
 
 	,ISNULL(eps.salesperson_master_key, 2)			AS EPS_SalespersonKey
-	,ISNULL(eps_grp_map.comm_group_key, 1)			AS EPS_CommGroupKey
+	,ISNULL(comm_group_eps.comm_group_key, 1)		AS EPS_CommGroupKey
 
 	,t.[WSSHAN_shipto]								AS ShipTo
 	,i.ItemKey										AS ItemKey
@@ -125,32 +128,32 @@ FROM
 	-- Dim Item
 
 	-- fsc	
-	LEFT JOIN [comm].[plan_group_rate] fc
-	ON t.fsc_calc_key = fc.calc_key
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_fsc
+	ON t.fsc_calc_key = plan_group_rate_fsc.calc_key
 
-	LEFT JOIN [comm].[group] as fsc_grp_map
-	ON fsc_grp_map.comm_group_cd = fc.disp_comm_group_cd
+	LEFT JOIN [comm].[group] as comm_group_fsc
+	ON comm_group_fsc.comm_group_cd = plan_group_rate_fsc.disp_comm_group_cd
 
 	-- ess
-	LEFT JOIN [comm].[plan_group_rate] ec
-	ON t.ess_calc_key = ec.calc_key
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_ess
+	ON t.ess_calc_key = plan_group_rate_ess.calc_key
 
-	LEFT JOIN [comm].[group] as ess_grp_map
-	ON ess_grp_map.comm_group_cd = ec.disp_comm_group_cd
+	LEFT JOIN [comm].[group] as comm_group_ess
+	ON comm_group_ess.comm_group_cd = plan_group_rate_ess.disp_comm_group_cd
 
 	-- cps
-	LEFT JOIN [comm].[plan_group_rate] cc
-	ON t.cps_calc_key = cc.calc_key
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_cps
+	ON t.cps_calc_key = plan_group_rate_cps.calc_key
 
-	LEFT JOIN [comm].[group] as cps_grp_map
-	ON cps_grp_map.comm_group_cd = cc.disp_comm_group_cd
+	LEFT JOIN [comm].[group] as comm_group_cps
+	ON comm_group_cps.comm_group_cd = plan_group_rate_cps.disp_comm_group_cd
 
 	-- eps
-	LEFT JOIN [comm].[plan_group_rate] pc
-	ON t.eps_calc_key = pc.calc_key
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_eps
+	ON t.eps_calc_key = plan_group_rate_eps.calc_key
 
-	LEFT JOIN [comm].[group] as eps_grp_map
-	ON eps_grp_map.comm_group_cd = pc.disp_comm_group_cd
+	LEFT JOIN [comm].[group] as comm_group_eps
+	ON comm_group_eps.comm_group_cd = plan_group_rate_eps.disp_comm_group_cd
 
 
 	-- identify first sales order (for sales order dimension)
@@ -180,20 +183,10 @@ GO
 -- SELECT top 10 * FROM Fact.Commission 
 
 -- SELECT * FROM Fact.Commission where FiscalMonth = 201812
+
 /*
-SELECT 
-TOP 10 
-* 
-FROM Fact.Commission
-WHERE [FiscalMonth] = 201910 and source_cd ='JDE' and ESS_salespersonKey <> 2
-*/
+-- comm model
 
--- SELECT count(*) FROM Fact.[Commission] where [FiscalMonth] = 201812
--- ORG 208 627, 2s
-
-
--- select distinct FSC_SalespersonCodeKey from Fact.Commission 
-/*
 SELECT
 	top 10
 
@@ -235,4 +228,5 @@ SELECT
 
 FROM
 	Fact.Commission
+
 */
