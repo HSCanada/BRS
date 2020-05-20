@@ -29,7 +29,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	20 May 20	tmc		Centralize Compudent Handpiece expection here.  
+**						If more, add logic to table hfm.eps_code_rule
 *******************************************************************************/
 
 -- item
@@ -71,6 +72,7 @@ WHERE
 	(r.StatusCd = 1) AND 
 	(p.[eps_track_ind] = 1) AND
 	(i.SalesCategory <> 'PARTS') AND
+	(i.Item not In ('1074153','1076903','1070511')) AND
 	(1=1)
 
 GO
@@ -81,7 +83,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Item where Supplier = 'REVEAL'
+-- SELECT top 10 * FROM eps.Item where Item_Number In ('1074153','1076903','1070511')
 /*
 -- dup test
 SELECT [Item_Number], COUNT (*) 
