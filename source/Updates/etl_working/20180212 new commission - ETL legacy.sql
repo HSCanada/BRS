@@ -631,17 +631,9 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202003' and '202004') AND
---	(fiscal_yearmo_num = '201910') AND
-	-- test
---	(salesperson_cd <> '') AND
---	(ess_salesperson_cd <> '') AND
---	(salesperson_cd like 'C%') AND
---	(ess_salesperson_cd like 'PMT%') AND
---	source_cd in('JDE') AND
---	source_cd in('IMPORT') AND
---	source_cd in('PAYROLL') AND
---	source_cd NOT in('IMPORT', 'PAYROLL') AND
+	(fiscal_yearmo_num between  '202004' and '202004') AND
+	-- load only adj?
+	source_cd NOT in('JDE') AND
 	(1=1)
 GO
 
@@ -793,6 +785,8 @@ GO
 -- END
 
 -- CPS
+-- add a reset / clear here?
+
 print '106. CPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
@@ -951,7 +945,6 @@ WHERE
 	(t.FiscalMonth between 201901 and 202004 ) AND
 	(1 = 1)
 GO
-
 
 print '112. EPS update comm - non-booking -new'
 UPDATE
