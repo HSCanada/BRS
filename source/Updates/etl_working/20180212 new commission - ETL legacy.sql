@@ -806,18 +806,16 @@ FROM
 	INNER JOIN BRS_Customer AS c 
 	ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
 
-	INNER JOIN BRS_FSC_Rollup AS f 
-	ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
-
 	INNER JOIN comm.plan_region_map AS m 
 	ON m.comm_plan_id = 'CPSGP' AND 
 		c.PostalCode LIKE m.postal_code_where_clause_like AND 
 		1 = 1 
+
 	INNER JOIN BRS_FSC_Rollup AS sales_key 
 	ON sales_key.TerritoryCd = m.TerritoryCd
 
 WHERE
-	-- must be valid customer, as postal code driven
+	-- must be valid customer, as postal code driven based on Current address
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
 	(comm.transaction_F555115.FiscalMonth between 201901 and 202004) AND
 	(1 = 1)
@@ -895,6 +893,7 @@ WHERE
 	(1 = 1)
 GO
 
+-- EPS
 print '110. EPS update plan & terr'
 UPDATE
 	comm.transaction_F555115

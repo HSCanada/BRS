@@ -69,8 +69,6 @@ SELECT
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
 	'.'						AS Field_Level_3_Description,
---	RTRIM(b.EPS_code)		AS Eps_Code
-
 	CASE 
 		WHEN 
 			f.[TerritoryCd] in ('CZ107', 'CZ1AD', 'CZ1B8', 'CZ1SD', 'CZ1UU', 'CZ2BG', 'CZ2NM')
