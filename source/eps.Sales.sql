@@ -131,7 +131,7 @@ GO
 /*
 
 -- ^ delim
--- HSC_SALES_20200515.txt
+-- HSC_SALES_20200522.txt
 
 
 SET NOCOUNT OFF;

@@ -811,7 +811,7 @@ FROM
 WHERE
 	-- must be valid customer, as postal code driven based on Current address
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201901 and 202004) AND
+	(comm.transaction_F555115.FiscalMonth between 202004 and 202004) AND
 	(1 = 1)
 GO
 
@@ -823,7 +823,7 @@ FROM            comm.transaction_F555115 t INNER JOIN
 WHERE        
 	(t.cps_code <> '') AND
 	(i.comm_group_cps_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202004) AND
+	(t.FiscalMonth between 202004 and 202004) AND
 	(1 = 1)
 GO
 
@@ -854,7 +854,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -883,7 +883,7 @@ WHERE
 	(t.cps_code <> '') AND
 	(t.cps_comm_group_cd <> '') AND 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -909,7 +909,7 @@ FROM
 
 WHERE
 	(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-	(comm.transaction_F555115.FiscalMonth between 201901 and 202004) AND
+	(comm.transaction_F555115.FiscalMonth between 202004 and 202004) AND
 	(1 = 1)
 GO
 
@@ -926,7 +926,7 @@ WHERE
 	-- eps item different?
 	(i.comm_group_eps_cd <> ISNULL(t.eps_comm_group_cd, '')) AND
 
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 
 	-- test
 --	t.WSLITM_item_number In ('1074153','1076903','1070511') AND
@@ -942,7 +942,7 @@ FROM
 	comm.transaction_F555115 t
 WHERE        
 	[eps_calc_key] is not null AND
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -978,7 +978,7 @@ WHERE
 --	t.WSLITM_item_number In ('1074153','1076903','1070511') AND
 
 	(g.booking_rt = 0) AND
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 	(1 = 1)
 GO
 
@@ -1013,7 +1013,7 @@ WHERE
 	(t.eps_comm_group_cd <> '') AND 
 
 	(g.booking_rt <> 0) AND
-	(t.FiscalMonth between 201901 and 202004 ) AND
+	(t.FiscalMonth between 202004 and 202004 ) AND
 	(1 = 1)
 GO
 

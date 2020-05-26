@@ -137,6 +137,7 @@ WHERE not exists
 GO
 
 /*
+-- may need to run on FSC recon
 print '11. Allign FSC Territory with Commission'
 UPDATE       BRS_CustomerFSC_History
 SET                HIST_TerritoryCd = s.fsc_min
@@ -153,7 +154,7 @@ GO
 ---
 
 ------------------------------------------------------------------------------------------------------
--- DATA - Load NewPRE-to-New (3 of 3)
+-- DATA - Load New-to-New (3 of 3)
 ------------------------------------------------------------------------------------------------------
 -- truncate table [comm].[transaction_F555115]
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 202004 and source_cd = 'JDE'
@@ -237,7 +238,10 @@ INSERT INTO comm.transaction_F555115
 	WS$O06_number_equipment_serial_06,
 	WSDL03_description_03,
 	WS$ODS_order_discount_amount,
+
+	-- make a copy of the ESS official to working ess_code (see SOURCE below)
 	[WS$ESS_equipment_specialist_code],
+	ess_code,
 
 	-- calculated fields
 	[source_cd],
@@ -292,7 +296,7 @@ SELECT
 	t.WSPROV_price_override_code,
 	t.WSASN__adjustment_schedule,
 	t.WSKCO__document_company,
-	t.WSDOC__document_number,
+	t.WSDOCO_salesorder_number,
 	t.WSDCT__document_type,
 	t.WSPSN__pick_slip_number,
 	t.WSROUT_ship_method,
@@ -337,8 +341,10 @@ SELECT
 	t.WSDL03_description_03,
 	t.WS$ODS_order_discount_amount,
 
-	[WS$ESS_equipment_specialist_code],
---	t.WSTKBY_order_taken_by,
+	-- make a copy of the ESS official to working ess_code - SOURCE
+	[WS$ESS_equipment_specialist_code] ,
+	[WS$ESS_equipment_specialist_code] as WS$ESS_equipment_specialist_code2,
+
 
 	-- calculated fields
 	'JDE' AS source_cd,
@@ -390,13 +396,42 @@ WHERE
 	(1=1)
 GO
 
+------------------------------------------------------------------------------------------------------
+-- DATA - Load NEW - post
+------------------------------------------------------------------------------------------------------
+--- LOAD Adjustments and Payroll from Prod now, work-around
+
+/*
+1. WS$ESS_equipment_specialist_code (offical ESS code) - Do not touch
+2. order_taken_by (backup, used for JDE Credit/Rebil fix) - Do not touch!
+3. ess_code (fixed, final ESS/CCS code) - fix this, new
+
+Set 3 = 1 (ETL)
+Fix 3 where 2 <> 3 (Patch)
+*/
+-- patch DOCO vs DOC issue, one-time
+/*
+SELECT        TOP (10) WSDOCO_salesorder_number, WSDOC__document_number, WSDCTO_order_type
+FROM            comm.transaction_F555115
+WHERE 
+WSDOCO_salesorder_number <> WSDOC__document_number AND
+FiscalMonth = 202004
+
+--
+UPDATE      comm.transaction_F555115
+SET                WSDOC__document_number = WSDOCO_salesorder_number
+WHERE        (WSDOCO_salesorder_number <> WSDOC__document_number) AND (FiscalMonth = 202004)
+--
+*/
+
 -- EPS / CPS post process, tmc, 3 Oct 19
 
 -- CHANGE DATES!!  Yes, this is terrible.  automate!!
 
+-- this is run for New2New only (manually fixed on Prod2New)
 print '1. ESS fix missed code from download'
 UPDATE       comm.transaction_F555115
-SET                WS$ESS_equipment_specialist_code = WSTKBY_order_taken_by
+SET                ess_code = WSTKBY_order_taken_by
 FROM            comm.transaction_F555115 t INNER JOIN
                          BRS_Item AS i ON t.WSLITM_item_number = i.Item
 WHERE     
@@ -404,12 +439,12 @@ WHERE
 		(t.WSTKBY_order_taken_by like 'ESS%') OR
 		(t.WSTKBY_order_taken_by like 'CCS%') 
 	) AND
-	WS$ESS_equipment_specialist_code <> WSTKBY_order_taken_by AND
+	ISNULL(ess_code,'') <> WSTKBY_order_taken_by AND
 	(t.FiscalMonth = 202004 ) AND
 	(1 = 1)
 GO
 
--- Fix CPS GP booking so not 100% GP?
+-- Fix CPS GP booking so not 100% GP, us processing options or in script?
 
 ---> Calc start here
 
@@ -420,10 +455,10 @@ SET
 	xfer_key = r.[xfer_key], 
 
 	xfer_fsc_code_org = t.fsc_code, 
-	xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
+	xfer_ess_code_org = t.ess_code,
 
 	fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
-	[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+	ess_code = CASE WHEN r.[new_ess_code] = '' THEN t.ess_code ELSE r.[new_ess_code] END
 FROM
 	comm.transfer_rule AS r 
 
@@ -439,6 +474,7 @@ WHERE
 	(1=1)
 GO
 
+-- fix ESS_equipment_specialist_code
 print '3. tranfer - rule-based (2 of 2)'
 UPDATE
 	comm.transaction_F555115
@@ -446,17 +482,17 @@ SET
 	xfer_key = r.[xfer_key], 
 
 	xfer_fsc_code_org = t.fsc_code, 
-	xfer_ess_code_org = t.WS$ESS_equipment_specialist_code,
+	xfer_ess_code_org = t.ess_code,
 
 	fsc_code = CASE WHEN r.[new_fsc_code] = '' THEN t.fsc_code ELSE r.[new_fsc_code] END, 
-	[WS$ESS_equipment_specialist_code] = CASE WHEN r.[new_ess_code] = '' THEN t.WS$ESS_equipment_specialist_code ELSE r.[new_ess_code] END
+	ess_code = CASE WHEN r.[new_ess_code] = '' THEN t.ess_code ELSE r.[new_ess_code] END
 FROM
 	comm.transfer_rule AS r 
 
 	INNER JOIN comm.transaction_F555115 t 
 	ON r.FiscalMonth = t.FiscalMonth AND 
 		(t.fsc_code like (CASE WHEN r.[fsc_code] = '' THEN '%' ELSE r.[fsc_code] END)) AND
-		(t.[WS$ESS_equipment_specialist_code] like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
+		(t.ess_code like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
 		(1=1)
 WHERE        
 	(t.source_cd = 'JDE') AND 
@@ -495,29 +531,88 @@ WHERE
 
 -- FSC
 print '4. FSC update plan & terr'
-UPDATE       comm.transaction_F555115
+UPDATE
+	comm.transaction_F555115
 SET
 	fsc_salesperson_key_id = s.salesperson_key_id, 
 	fsc_comm_plan_id = s.comm_plan_id
 FROM
-            comm.salesperson_master AS s INNER JOIN
-                         BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
-                         comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
-WHERE        (comm.transaction_F555115.FiscalMonth = 202004)
+	comm.salesperson_master AS s 
+
+	INNER JOIN BRS_FSC_Rollup AS f 
+	ON s.salesperson_key_id = f.comm_salesperson_key_id 
+	
+	INNER JOIN comm.transaction_F555115 ON 
+	f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+
+WHERE
+	(comm.transaction_F555115.FiscalMonth = 202004)
 GO
 
--- use item history for stability?
-print '5. FSC update item'
-UPDATE       comm.transaction_F555115
-SET                fsc_comm_group_cd = i.comm_group_cd
-FROM            comm.transaction_F555115 t INNER JOIN
-                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+-- use item history for repeatability?
+print '5a. FSC update item commgroup - JDE'
+UPDATE
+	comm.transaction_F555115
+SET
+	fsc_comm_group_cd = i.comm_group_cd
+FROM
+	comm.transaction_F555115 t
+	INNER JOIN BRS_Item AS i 
+	ON t.WSLITM_item_number = i.Item
 WHERE        
-	(i.comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
+	(t.source_cd = 'JDE') AND
+	(i.comm_group_cd <> '') AND
+
 	(t.FiscalMonth = 202004 ) AND
 	(1 = 1)
 GO
+
+print '5b. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
+UPDATE
+	comm.transaction_F555115
+SET
+	fsc_comm_group_cd = CASE 
+							WHEN t.WSSRP6_manufacturer = 'PELTON' 
+							THEN 'ITMFO1'
+							ELSE 'ITMFO3'
+						END
+FROM
+	comm.transaction_F555115 t 
+WHERE        
+	(t.fsc_comm_plan_id <> '') AND
+	(t.source_cd = 'JDE') AND
+	(t.WS$OSC_order_source_code IN ('A', 'L')) AND		-- Astea  EQ and Service
+	(t.ess_code <> '') AND								-- Exclude Tech billing (No ESS code)
+	(t.fsc_comm_group_cd = 'ITMPAR') AND				-- ONLY effect Parts 
+
+	(t.FiscalMonth = 202004 ) AND
+	(1 = 1)
+GO
+
+print '5c. FSC update commgroup - IMP'
+UPDATE
+	comm.transaction_F555115
+SET
+	fsc_comm_group_cd = i.comm_group_cd
+-- SELECT t.* 
+FROM
+	comm.transaction_F555115 t
+	INNER JOIN BRS_Item AS i 
+	ON t.WSLITM_item_number = i.Item
+WHERE        
+	(t.fsc_comm_plan_id <> '') AND
+	(t.source_cd = 'IMP') AND
+	(i.comm_group_cd <> '') AND
+
+	-- If Source IMP, and the CommCode is supplied, do not override.
+	(t.WSLITM_item_number <> '') AND
+	(ISNULL(t.fsc_comm_group_cd,'') = '') AND
+
+	(t.FiscalMonth = 202004 ) AND
+	(1 = 1)
+GO
+
 
 print '6. FSC update comm - non-booking -new'
 UPDATE
@@ -543,15 +638,16 @@ FROM
 		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 		t.[source_cd] = r.[source_cd]
 WHERE        
-	(t.fsc_comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.source_cd <> 'PAY') AND
 	(g.booking_rt = 0) AND
 	(t.FiscalMonth = 202004 ) AND
 	(1 = 1)
 GO
 
 --select distinct [HIST_cust_comm_group_cd] from [BRS_CustomerFSC_History] where FiscalMonth = 201812
-
+-- XXX CPS booking fix here?
 print '7. FSC update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
@@ -575,39 +671,147 @@ FROM
 		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 		t.[source_cd] = r.[source_cd]
 WHERE        
-	(t.fsc_comm_group_cd <> '') AND 
 	(t.fsc_comm_plan_id <> '') AND
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.source_cd <> 'PAY') AND
 	(g.booking_rt <> 0) AND
 	(t.FiscalMonth = 202004 ) AND
 	(1 = 1)
 GO
 
--- ESS
-print '8. ESS update plan & terr'
-UPDATE       comm.transaction_F555115
+print '7b. FSC update comm - pay'
+UPDATE
+	comm.transaction_F555115
 SET
-	ess_salesperson_key_id = s.salesperson_key_id, 
-	ess_comm_plan_id = s.comm_plan_id
-FROM            comm.salesperson_master AS s INNER JOIN
-                         BRS_FSC_Rollup AS f ON s.salesperson_key_id = f.comm_salesperson_key_id INNER JOIN
-                         comm.transaction_F555115 ON f.TerritoryCd = comm.transaction_F555115.WS$ESS_equipment_specialist_code
-WHERE        (comm.transaction_F555115.FiscalMonth = 202004)
-go
+	[fsc_calc_key] = r.calc_key
 
--- update from history for stability
-print '9. ESS update item'
-UPDATE       comm.transaction_F555115
-SET                ess_comm_group_cd = i.comm_group_cd
-FROM            comm.transaction_F555115 t INNER JOIN
-                         BRS_Item AS i ON t.WSLITM_item_number = i.Item
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.fsc_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.fsc_comm_plan_id = r.comm_plan_id AND
+		t.fsc_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
 WHERE        
-	(i.comm_group_cd <> '') AND 
-	(t.ess_comm_plan_id <> '') AND
+	(t.fsc_comm_plan_id <> '') AND
+	(t.fsc_comm_group_cd <> '') AND 
+	(t.source_cd = 'PAY') AND
 	(t.FiscalMonth = 202004 ) AND
 	(1 = 1)
 GO
 
-print '10. ESS update comm - non-booking -new'
+-- ESS & CCS
+print '8. ESS/CCS update plan & terr'
+UPDATE
+	comm.transaction_F555115
+SET
+	ess_salesperson_key_id = s.salesperson_key_id, 
+	ess_comm_plan_id = s.comm_plan_id
+FROM
+	comm.salesperson_master AS s 
+
+	INNER JOIN BRS_FSC_Rollup AS f ON 
+	s.salesperson_key_id = f.comm_salesperson_key_id 
+
+	INNER JOIN comm.transaction_F555115 
+	ON f.TerritoryCd = comm.transaction_F555115.ess_code
+WHERE
+	(comm.transaction_F555115.FiscalMonth = 202004) AND
+-- test
+--	WSDOC__document_number In (13136178,13142137) AND
+	(1=1)
+GO
+
+/*
+-- test ESS/CCS map
+SELECT 
+	ess_salesperson_key_id,
+	ess_comm_plan_id
+FROM
+comm.transaction_F555115
+WHERE
+	(comm.transaction_F555115.FiscalMonth = 202004) AND
+	-- test
+	WSDOC__document_number In (13136178,13142137) AND
+	(1=1)
+GO
+*/
+
+-- update from history for stability
+print '9a. ESS/CCS update commgroup - JDE'
+UPDATE
+	comm.transaction_F555115
+SET
+	ess_comm_group_cd = i.comm_group_cd
+FROM
+	comm.transaction_F555115 t 
+	INNER JOIN BRS_Item AS i 
+	ON t.WSLITM_item_number = i.Item
+WHERE        
+	(t.ess_comm_plan_id <> '') AND
+	(t.source_cd = 'JDE') AND
+	(i.comm_group_cd <> '') AND 
+
+	(t.FiscalMonth = 202004 ) AND
+-- test
+--	WSDOC__document_number In (13136178,13142137) AND
+	(1 = 1)
+GO
+
+print '9b. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
+UPDATE
+	comm.transaction_F555115
+SET
+	ess_comm_group_cd = CASE 
+							WHEN t.WSSRP6_manufacturer = 'PELTON' 
+							THEN 'ITMFO1'
+							ELSE 'ITMFO3'
+						END
+FROM
+	comm.transaction_F555115 t 
+WHERE        
+	(t.ess_comm_plan_id <> '') AND
+	(t.source_cd = 'JDE') AND
+	(t.WS$OSC_order_source_code IN ('A', 'L')) AND		-- Astea  EQ and Service
+	(t.ess_code <> '') AND								-- Exclude Tech billing (No ESS code)
+	(t.ess_comm_group_cd = 'ITMPAR') AND				-- ONLY effect Parts 
+
+	(t.FiscalMonth = 202004 ) AND
+	(1 = 1)
+GO
+
+print '9c. ESS/CCS update commgroup - IMP'
+UPDATE
+	comm.transaction_F555115
+SET
+	ess_comm_group_cd = i.comm_group_cd
+-- SELECT t.* 
+FROM
+	comm.transaction_F555115 t
+	INNER JOIN BRS_Item AS i 
+	ON t.WSLITM_item_number = i.Item
+WHERE        
+	(t.ess_comm_plan_id <> '') AND
+	(t.source_cd = 'IMP') AND
+	(i.comm_group_cd <> '') AND
+
+	-- If Source IMP, and the CommCode is supplied, do not override.
+	(t.WSLITM_item_number <> '') AND
+	(ISNULL(t.ess_comm_group_cd,'') = '') AND
+
+	(t.FiscalMonth = 202004 ) AND
+	(1 = 1)
+GO
+
+print '10. ESS/CCS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -631,14 +835,17 @@ FROM
 		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 		t.[source_cd] = r.[source_cd]
 WHERE        
-	(t.ess_comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
+	(t.ess_comm_group_cd <> '') AND 
+	(t.source_cd <> 'PAY') AND
 	(g.booking_rt = 0) AND
 	(t.FiscalMonth = 202004 ) AND
+-- test
+--	WSDOC__document_number In (13136178,13142137) AND
 	(1 = 1)
 GO
 
-print '11. ESS update comm - booking - new'
+print '11. ESS/CSS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[ess_comm_rt] = g.booking_rt,
@@ -661,10 +868,44 @@ FROM
 		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 		t.[source_cd] = r.[source_cd]
 WHERE        
-	(t.ess_comm_group_cd <> '') AND 
 	(t.ess_comm_plan_id <> '') AND
+	(t.ess_comm_group_cd <> '') AND 
+	(t.source_cd <> 'PAY') AND
 	(g.booking_rt <> 0) AND
 	(t.FiscalMonth = 202004 ) AND
+-- test
+--	WSDOC__document_number In (13136178,13142137) AND
+	(1 = 1)
+GO
+
+print '11b. ESS/CSS update comm - pay'
+UPDATE
+	comm.transaction_F555115
+SET
+	[ess_calc_key] = r.calc_key
+
+FROM
+	comm.transaction_F555115 t
+
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+	ON t.WSSHAN_shipto = c.ShipTo AND
+		t.FiscalMonth = c.FiscalMonth
+
+	INNER JOIN [comm].[group] g
+	ON t.ess_comm_group_cd = g.comm_group_cd
+
+	INNER JOIN [comm].[plan_group_rate] AS r 
+	ON t.ess_comm_plan_id = r.comm_plan_id AND
+		t.ess_comm_group_cd = r.item_comm_group_cd AND
+		c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+		t.[source_cd] = r.[source_cd]
+WHERE        
+	(t.ess_comm_plan_id <> '') AND
+	(t.ess_comm_group_cd <> '') AND 
+	(t.source_cd = 'PAY') AND
+	(t.FiscalMonth = 202004 ) AND
+-- test
+--	WSDOC__document_number In (13136178,13142137) AND
 	(1 = 1)
 GO
 
@@ -680,197 +921,5 @@ print '111. update EPS item'
 print '112. EPS update comm - non-booking -new'
 print '113. EPS update comm - booking - new'
 
---
-
--- RI pref indexes, break out to new script
-BEGIN TRANSACTION
-GO
-CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_03 ON Integration.F555115_commission_sales_extract_Staging
-	(
-	WSLITM_item_number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
-ALTER TABLE Integration.F555115_commission_sales_extract_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-
-BEGIN TRANSACTION
-GO
-CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_04 ON Integration.F555115_commission_sales_extract_Staging
-	(
-	WS$ESS_equipment_specialist_code
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
-CREATE NONCLUSTERED INDEX F555115_commission_sales_extract_Staging_idx_05 ON Integration.F555115_commission_sales_extract_Staging
-	(
-	WSCAG__cagess_code
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
-ALTER TABLE Integration.F555115_commission_sales_extract_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-
-
-
 /** STOP ***********************/
-
-
--- clean from here to end
-
---- NEW / TBD / here be dragons..., 14 Nov 19
-
--- add adj check / load logic
--- test doc, line match
-
-/*
--- Item
-UPDATE       BRS_Item
-SET                comm_group_cd = s.comm_group_cd, comm_note_txt = s.comm_note_txt
-FROM            BRS_Item INNER JOIN
-                         Integration.Item s ON BRS_Item.Item = s.Item
-*/
-
-
--- DW - success
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-WHERE
-	[FiscalMonth] = 201712 AND
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_TransactionDW] t
-		WHERE 
-			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-			s.[WSDCTO_order_type] = t.DocType AND
-			s.[WSLNID_line_number] = t.LineNumber
-	)
-
--- DW - test ess fields
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSTKBY_order_taken_by]
-	,t.OrderTakenBy
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-	INNER JOIN [dbo].[BRS_TransactionDW] t
-	ON 
-		s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-		s.[WSDCTO_order_type] = t.DocType AND
-		s.[WSLNID_line_number] = t.LineNumber
-
-WHERE
-	[FiscalMonth] = 201712 and
---	t.OrderTakenBy like 'CCS%' AND
-	[WS$ESS_equipment_specialist_code] <> t.OrderTakenBy
-
-
---DS - failed
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WSDGL__gl_date]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-WHERE
-	[FiscalMonth] = 201711 AND
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_Transaction] t
-		WHERE 
-			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-			s.[WSDCTO_order_type] = t.DocType AND
-			s.[WSLNID_line_number] = t.LineNumber
-	)
-
-GO
- 
-
--- DW - test ess fields
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSTKBY_order_taken_by]
-	,t.OrderTakenBy
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-	INNER JOIN [dbo].[BRS_TransactionDW] t
-	ON 
-		s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-		s.[WSDCTO_order_type] = t.DocType AND
-		s.[WSLNID_line_number] = t.LineNumber
-
-WHERE
-	[FiscalMonth] = 201711 and
---	t.OrderTakenBy like 'CCS%' AND
-	[WS$ESS_equipment_specialist_code] <> t.OrderTakenBy
-
-
---DS - failed
-SELECT 
-	[FiscalMonth]
-	,[WSDOCO_salesorder_number]
-	,[WSDCTO_order_type]
-	,[WSLNID_line_number]
-	,[WSDGL__gl_date]
-	,[WS$ESS_equipment_specialist_code]
-	,[WSCAG__cagess_code]
-FROM 
-	[comm].[transaction_F555115] s
-WHERE
-	[FiscalMonth] = 201711 AND
-	NOT EXISTS
-	(
-		SELECT * FROM [dbo].[BRS_Transaction] t
-		WHERE 
-			s.[WSDOCO_salesorder_number] = t.SalesOrderNumber AND
-			s.[WSDCTO_order_type] = t.DocType AND
-			s.[WSLNID_line_number] = t.LineNumber
-	)
-
-
-GO
-
-
--- set transfer.  Needed?
-UPDATE
-	BRS_TransactionDW_Ext
-SET
-	FSC_code = CASE WHEN t.FSC_code<>'' THEN t.FSC_code ELSE BRS_TransactionDW_Ext.FSC_code END,
-	ESS_code = CASE WHEN t.ESS_code<>'' THEN t.ESS_code ELSE BRS_TransactionDW_Ext.ESS_code END,
-	CPS_code = CASE WHEN t.CPS_code<>'' THEN t.CPS_code ELSE BRS_TransactionDW_Ext.CPS_code END,
-	TsTerritoryCd = CASE WHEN t.TsTerritoryCd<>'' THEN t.TsTerritoryCd ELSE BRS_TransactionDW_Ext.TsTerritoryCd END,
-	TSS_code = CASE WHEN t.TSS_code<>'' THEN t.TSS_code ELSE BRS_TransactionDW_Ext.TSS_code END,
-	CCS_code = CASE WHEN t.CCS_code<>'' THEN t.CCS_code ELSE BRS_TransactionDW_Ext.CCS_code END,
-	comm_note= t.comm_note
-FROM
-	Integration.transaction_transfer AS t 
-	INNER JOIN BRS_TransactionDW_Ext ON 
-	t.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber
-
-SELECT        BRS_TransactionDW_Ext.SalesOrderNumber, BRS_TransactionDW_Ext.TsTerritoryCd, BRS_TransactionDW_Ext.ESS_code, BRS_TransactionDW_Ext.CCS_code, 
-                         BRS_TransactionDW_Ext.CPS_code, BRS_TransactionDW_Ext.TSS_code, BRS_TransactionDW_Ext.FSC_code, BRS_TransactionDW_Ext.comm_note
-FROM            Integration.transaction_transfer AS t INNER JOIN
-                         BRS_TransactionDW_Ext ON t.SalesOrderNumber = BRS_TransactionDW_Ext.SalesOrderNumber
-
-
 
