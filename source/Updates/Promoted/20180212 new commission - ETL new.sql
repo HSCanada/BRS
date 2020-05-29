@@ -29,7 +29,7 @@ WHERE not exists
 	select * from [dbo].[BRS_TransactionDW_Ext] s
 	where t.WSDOCO_salesorder_number = s.SalesOrderNumber
 ) AND
-[WSAC10_division_code] <> 'AZA'
+[WSAC10_division_code] NOT IN ('AZA','AZE')
 GO
 
 print '3. check - [WSSHAN_shipto] - current'
@@ -135,43 +135,6 @@ WHERE not exists
 		d.FiscalMonth = s.FiscalMonth 
 )
 GO
-
-/*
--- use this to fix FSC territory Prod vs NEW until go live
-print '11. Allign FSC Territory with Commission'
-UPDATE
-	BRS_CustomerFSC_History
-SET
-	HIST_TerritoryCd = s.fsc_min
---select * 
-FROM
-	BRS_CustomerFSC_History 
-	INNER JOIN 
-	(
-		SELECT
-			CAST(fiscal_yearmo_num AS int) AS FiscalMonth, 
-			hsi_shipto_id, 
-			MIN(salesperson_cd) AS fsc_min
-		FROM
-			CommBE.dbo.comm_transaction
-		WHERE
-			(source_cd = 'JDE') AND 
-			(fiscal_yearmo_num BETWEEN '202001' AND '202004') AND 
---			(record_id NOT IN (54108565, 55191867, 55976312, 55976313, 57216489, 57216490, 57216491, 57815920)) AND 
-			(1 = 1)
-		GROUP BY 
-		fiscal_yearmo_num, 
-		hsi_shipto_id
-	) AS s 
-	ON BRS_CustomerFSC_History.FiscalMonth = s.FiscalMonth AND 
-		BRS_CustomerFSC_History.Shipto = s.hsi_shipto_id AND 
-		BRS_CustomerFSC_History.HIST_SalesDivision not IN('AZA', 'AZE') AND 
-		BRS_CustomerFSC_History.HIST_TerritoryCd <> s.fsc_min AND 
-		s.fsc_min NOT IN ('', '**') AND 
-		(1 = 1)
-GO
-*/
----
 
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load New-to-New (3 of 3)
@@ -437,6 +400,7 @@ FROM
 
 WHERE 
 	(t.source_cd = 'JDE') AND
+	(t.[gp_ext_org_amt] is null) AND -- only run once
 	(g.booking_rt > 0)  AND 
 	(t.[FiscalMonth] = 202004 ) AND
 	(1=1)
@@ -517,9 +481,9 @@ GO
 
 -- Fix CPS GP booking so not 100% GP, us processing options or in script?
 
----> Calc start here
+---> Calc start here  COPY TO new proc
 
-print '2. tranfer - directed (1 of 2)'
+print '1. tranfer - directed (1 of 2)'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -538,15 +502,13 @@ FROM
 		r.SalesOrderNumber = t.WSDOCO_salesorder_number
 WHERE        
 	(t.source_cd = 'JDE') AND 
-	-- only run once
-	(t.xfer_key is null) AND 
+	(t.xfer_key is null) AND -- only run once 
 	(r.SalesOrderNumber > 0) AND 
 	(t.FiscalMonth = 202004) AND
 	(1=1)
 GO
 
--- fix ESS_equipment_specialist_code
-print '3. tranfer - rule-based (2 of 2)'
+print '2. tranfer - rule-based (2 of 2)'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -601,7 +563,7 @@ WHERE
 */
 
 -- FSC
-print '4. FSC update plan & terr'
+print '3. FSC update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -621,7 +583,7 @@ WHERE
 GO
 
 -- OK to use Item comm live.  Business rule NOT update mid-month, 27 May 20
-print '5a. FSC update item commgroup - JDE'
+print '4. FSC update item commgroup - JDE'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -639,7 +601,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '5b. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
+print '5. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -661,7 +623,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '5c. FSC update commgroup - IMP'
+print '6. FSC update commgroup - IMP'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -685,7 +647,7 @@ WHERE
 GO
 
 
-print '6. FSC update comm - non-booking -new'
+print '7. FSC update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -754,7 +716,7 @@ WHERE
 GO
 */
 
-print '7b. FSC update comm - pay'
+print '8. FSC update comm - pay'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -784,7 +746,7 @@ WHERE
 GO
 
 -- ESS & CCS
-print '8. ESS/CCS update plan & terr'
+print '9. ESS/CCS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -820,8 +782,8 @@ WHERE
 GO
 */
 
+print '10. ESS/CCS update commgroup - JDE'
 -- update from history for stability?
-print '9a. ESS/CCS update commgroup - JDE'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -841,7 +803,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '9b. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
+print '11. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -863,7 +825,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '9c. ESS/CCS update commgroup - IMP'
+print '12. ESS/CCS update commgroup - IMP'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -886,7 +848,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '10. ESS/CCS update comm - non-booking -new'
+print '13. ESS/CCS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -955,7 +917,7 @@ WHERE
 GO
 */
 
-print '11b. ESS/CSS update comm - pay'
+print '14. ESS/CSS update comm - pay'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -986,7 +948,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '106. CPS update plan & terr'
+print '15. CPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -1014,7 +976,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '107. update CPS item'
+print '16. update CPS item'
 UPDATE       comm.transaction_F555115
 SET                cps_comm_group_cd = i.comm_group_cps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -1026,7 +988,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '108. CPS update comm - non-booking -new'
+print '17. CPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -1057,7 +1019,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '109. CPS update comm - booking - new'
+print '18. CPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[cps_comm_rt] = g.booking_rt,
@@ -1087,7 +1049,7 @@ WHERE
 GO
 
 -- EPS
-print '110. EPS update plan & terr'
+print '19. EPS update plan & terr'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -1113,7 +1075,7 @@ WHERE
 GO
 
 -- ensure eps comm synch run CBE07b_Item_eps_fix
-print '111. update EPS item'
+print '20. update EPS item'
 UPDATE       comm.transaction_F555115
 SET                eps_comm_group_cd = i.comm_group_eps_cd
 FROM            comm.transaction_F555115 t INNER JOIN
@@ -1132,7 +1094,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '111b. EPS update comm - cleanup calc'
+print '21. EPS update comm - cleanup calc'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -1145,7 +1107,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '112. EPS update comm - non-booking -new'
+print '22. EPS update comm - non-booking -new'
 UPDATE
 	comm.transaction_F555115
 SET
@@ -1181,7 +1143,7 @@ WHERE
 	(1 = 1)
 GO
 
-print '113. EPS update comm - booking - new'
+print '23. EPS update comm - booking - new'
 UPDATE       comm.transaction_F555115
 SET
 	[eps_comm_rt] = g.booking_rt,

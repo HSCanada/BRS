@@ -5,12 +5,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [comm].[transaction_load_proc] 
-	@bDebug as smallint = 1
+	@bDebug as smallint = 1,
+	@bClearStage as smallint = 0
 AS
 /******************************************************************************
 **	File:	
 **	Name: comm_transaction_load_proc
-**	Desc: copy commission tranaction from stage to prod
+**	Desc: copy commission tranaction from stage to prod (port from legacy)
 **
 **              
 **	Return values:  @@Error
@@ -23,30 +24,23 @@ AS
 **	@bDebug
 **
 **	Auth: tmc
-**	Date: 11 Nov 10
+**	Date: 28 May 20
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-** 	4 Aug 09	tmc		Added new fields, 
-** 	1 Dec 09	tmc		Added Commit reminder
-** 	28 Oct 10	tmc		Added item null map to ''
-**	16 Nov 10	tmc		Fixed bug where load only worked first time
---  30 Jan 16	tmc		Update for new comm codes
---	24 Feb 16	tmc		Finalize Automation, remove legacy, and set Debug to default
---	27 Dec 17	tmc		port to new backend
---	20 Dec 19	tmc		finalize to new backend
 **    
 *******************************************************************************/
 
-Declare @nErrorCode int, @nTranCount int
+Declare @nErrorCode int, @nTranCount int, @nRowCount int
 Declare @sMessage varchar(255)
 
 Set @nErrorCode = @@Error
 Set @nTranCount = @@Trancount
+Set @nRowCount	= @@ROWCOUNT
 
-Declare @sCurrentFiscalYearmoNum char(6)
+Declare @nCurrentFiscalYearmoNum int
 Declare @nBatchStatus int
 
 SET NOCOUNT ON;
@@ -66,7 +60,7 @@ End
 -- Init routines.  
 ------------------------------------------------------------------------------------------------------------
 
-Set @sCurrentFiscalYearmoNum = ''
+Set @nCurrentFiscalYearmoNum = -1
 Set @nBatchStatus = -1
 
 -- Start transaction
@@ -75,21 +69,20 @@ if (@nTranCount = 0)
 Else
 	Save Tran mytran
 
-
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
 		Print 'Get Current Fiscal Month'
 
 	Select 	
-		@sCurrentFiscalYearmoNum = [PriorFiscalMonth]
+		@nCurrentFiscalYearmoNum = [PriorFiscalMonth]
 	From 
 		[dbo].[BRS_Config]
 
 	Set @nErrorCode = @@Error
 End
 
-
+	
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -100,7 +93,7 @@ Begin
 	From 
 		[dbo].[BRS_FiscalMonth]
 	Where
-		[FiscalMonth] = @sCurrentFiscalYearmoNum
+		[FiscalMonth] = @nCurrentFiscalYearmoNum
 	
 	Set @nErrorCode = @@Error
 End
@@ -112,7 +105,7 @@ End
 if (@bDebug <> 0)
 Begin
 	Print 'Confirm BatchStatus NOT locked'
-	Print @sCurrentFiscalYearmoNum
+	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
 End
 
@@ -120,11 +113,203 @@ End
 If (@nBatchStatus <>999)
 Begin
 
+------------------------------------------------------------------------------------------------------
+-- DATA - Load NEW - pre.  Fail if missing RI data
+------------------------------------------------------------------------------------------------------
+
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print 'load new data source'
-		
+			print '1. check - [SalesDate]'
+
+		SELECT    @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_SalesDay] s
+			WHERE t.WSDGL__gl_date = s.SalesDate
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 1
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '2. check - [WSDOCO_salesorder_number]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_TransactionDW_Ext] s
+			WHERE t.WSDOCO_salesorder_number = s.SalesOrderNumber
+		) AND
+		[WSAC10_division_code] NOT IN ('AZA','AZE')
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 2
+
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '3. check - [WSSHAN_shipto] - current'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_Customer] s
+			WHERE t.WSSHAN_shipto = s.ShipTo
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 3
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '4. check - [WSSHAN_shipto] - history'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+
+			INNER JOIN BRS_SalesDay AS d 
+			ON t.WSDGL__gl_date = d.SalesDate
+
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_CustomerFSC_History] s
+			WHERE 
+				t.WSSHAN_shipto = s.ShipTo AND
+				d.FiscalMonth = s.FiscalMonth 
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 4
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '5. check - [WSLITM_item_number]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_Item] s
+			WHERE t.WSLITM_item_number = s.Item
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 5
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '6. check - [WS$ESS_equipment_specialist_code]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_FSC_Rollup] s
+			WHERE t.WS$ESS_equipment_specialist_code = s.[TerritoryCd]
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 6
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '7. check - [WSCAG__cagess_code]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_FSC_Rollup] s
+			WHERE t.WSCAG__cagess_code = s.[TerritoryCd]
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 7
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '8. check - [WSSIC__speciality]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_CustomerSpecialty] s
+			WHERE t.WSSIC__speciality = s.Specialty
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 8
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '9. check - [WS$SPC_supplier_code]'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_ItemSupplier] s
+			WHERE t.WS$SPC_supplier_code = s.Supplier
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 9
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '10. check - [WSLITM_item_number] - history'
+
+		SELECT @nRowCount = COUNT(*)
+		FROM  [Integration].F555115_commission_sales_extract_Staging t
+
+			INNER JOIN BRS_SalesDay AS d 
+			ON t.WSDGL__gl_date = d.SalesDate
+
+		WHERE NOT EXISTS
+		(
+			SELECT * FROM [dbo].[BRS_ItemHistory] s
+			WHERE 
+				t.WSLITM_item_number = s.[Item] AND
+				d.FiscalMonth = s.FiscalMonth 
+		)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 10
+	End
+
+-----------------------------
+-- DATA - Load New-to-New
+------------------------------------------------------------------------------------------------------
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '11. load new data source'
+
 		INSERT INTO comm.transaction_F555115
 		(
 			FiscalMonth,
@@ -203,7 +388,10 @@ Begin
 			WS$O06_number_equipment_serial_06,
 			WSDL03_description_03,
 			WS$ODS_order_discount_amount,
+
+			-- make a copy of the ESS official to working ess_code (see SOURCE below)
 			[WS$ESS_equipment_specialist_code],
+			ess_code,
 
 			-- calculated fields
 			[source_cd],
@@ -211,10 +399,21 @@ Begin
 			[gp_ext_amt],
 			[fsc_code],
 			[FreeGoodsInvoicedInd],
-			[FreeGoodsEstInd]
+			[FreeGoodsEstInd],
+
+			[fsc_salesperson_key_id],
+			[ess_salesperson_key_id],
+			[cps_salesperson_key_id],
+			[eps_salesperson_key_id],
+
+			[fsc_comm_group_cd],
+			[ess_comm_group_cd],
+			[cps_comm_group_cd],
+			[eps_comm_group_cd]
 		)
 		SELECT        
---			TOP (10) 
+		--	TOP (10) 
+
 			d.FiscalMonth,
 			t.WSCO___company,
 			t.WSDOCO_salesorder_number,
@@ -247,7 +446,7 @@ Begin
 			t.WSPROV_price_override_code,
 			t.WSASN__adjustment_schedule,
 			t.WSKCO__document_company,
-			t.WSDOC__document_number,
+			t.WSDOCO_salesorder_number,
 			t.WSDCT__document_type,
 			t.WSPSN__pick_slip_number,
 			t.WSROUT_ship_method,
@@ -292,8 +491,10 @@ Begin
 			t.WSDL03_description_03,
 			t.WS$ODS_order_discount_amount,
 
-			[WS$ESS_equipment_specialist_code],
-		--	t.WSTKBY_order_taken_by,
+			-- make a copy of the ESS official to working ess_code - SOURCE
+			[WS$ESS_equipment_specialist_code] ,
+			[WS$ESS_equipment_specialist_code] as WS$ESS_equipment_specialist_code2,
+
 
 			-- calculated fields
 			'JDE' AS source_cd,
@@ -317,10 +518,18 @@ Begin
 			END AS [FreeGoodsInvoicedInd],
 
 			-- TBD
-			0 AS [FreeGoodsEstInd]
+			0 AS [FreeGoodsEstInd],
 
+			-- calculated fields2
+			''									AS [fsc_salesperson_key_id],
+			''									AS [ess_salesperson_key_id],
+			''									AS [cps_salesperson_key_id],
+			''									AS [eps_salesperson_key_id],
 
-
+			''									AS [fsc_comm_group_cd],
+			''									AS [ess_comm_group_cd],
+			''									AS [cps_comm_group_cd],
+			''									AS [eps_comm_group_cd]
 		FROM
 			Integration.F555115_commission_sales_extract_Staging AS t 
 
@@ -331,48 +540,82 @@ Begin
 			JOIN [dbo].[BRS_CustomerFSC_History] AS f
 			ON t.WSSHAN_shipto = f.Shipto AND
 				d.FiscalMonth = f.FiscalMonth
-
 		WHERE 
 			(WSAC10_division_code NOT IN ('AZA','AZE')) AND
-		--	(WSDOCO_salesorder_number = 11922085) AND
 			(1=1)
-		ORDER BY 
-			WSDOCO_salesorder_number,
-			WSLNID_line_number
 
 		Set @nErrorCode = @@Error
 	End
 
---
+------------------------------------------------------------------------------------------------------
+-- DATA - Load NEW - post data cleanup 
+------------------------------------------------------------------------------------------------------
+
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '1. ESS fix missed code from download'
-		
-		UPDATE       comm.transaction_F555115
-		SET                WS$ESS_equipment_specialist_code = WSTKBY_order_taken_by
-		FROM            comm.transaction_F555115 t INNER JOIN
-								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+			print '12. fix missed ESS / CCS code from download'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			ess_code = WSTKBY_order_taken_by
+		FROM
+			comm.transaction_F555115 t 
+
+			INNER JOIN BRS_Item AS i 
+			ON t.WSLITM_item_number = i.Item
 		WHERE     
 			(t.source_cd = 'JDE') AND (
 				(t.WSTKBY_order_taken_by like 'ESS%') OR
 				(t.WSTKBY_order_taken_by like 'CCS%') 
 			) AND
-			WS$ESS_equipment_specialist_code <> WSTKBY_order_taken_by AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			ISNULL(ess_code,'') <> WSTKBY_order_taken_by AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
---
-
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Clear STAGE'
-		
-		Delete FROM [Integration].[F555115_commission_sales_extract_Staging]
+			Print '13. Booking GP Correction'
+
+		UPDATE    
+			comm.transaction_F555115
+		SET              
+			[gp_ext_amt] = [transaction_amt] * (g.booking_rt / 100.0),
+			[gp_ext_org_amt] = [gp_ext_amt]
+			-- SELECT 	[FiscalMonth], t.[WSLITM_item_number], i.comm_group_cd, t.WSSOQS_quantity_shipped, t.transaction_amt, [gp_ext_amt], [gp_ext_org_amt], g.booking_rt, t.[transaction_amt] * (g.booking_rt / 100.0) as new_gp
+		FROM         
+			comm.transaction_F555115 as t
+
+			INNER JOIN [dbo].[BRS_Item] as i
+			ON i.[Item] = t.[WSLITM_item_number]
+
+			INNER JOIN [comm].[group] AS g 
+			ON i.comm_group_cd = g.comm_group_cd
+
+		WHERE 
+			(t.source_cd = 'JDE') AND
+			(t.[gp_ext_org_amt] IS NULL) AND -- only run once
+			(g.booking_rt > 0)  AND 
+			(t.[FiscalMonth] = @nCurrentFiscalYearmoNum ) AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+	End
+
+------------------------------------------------------------------------------------------------------
+-- DATA - Load Success Cleanup - clear stage to avoid double loading
+------------------------------------------------------------------------------------------------------
+
+	If (@nErrorCode = 0 AND @bClearStage = 1) 
+	Begin
+		if (@bDebug <> 0)
+			Print '14. Clear STAGE'
+		Delete FROM Integration.F555115_commission_sales_extract_Staging
 
 		Set @nErrorCode = @@Error
 	End
@@ -391,7 +634,7 @@ Begin
 		Set 
 			[comm_status_cd] = 10
 		Where 
-			[FiscalMonth] = @sCurrentFiscalYearmoNum
+			[FiscalMonth] = @nCurrentFiscalYearmoNum
 	
 		Set @nErrorCode = @@Error
 	End
@@ -399,7 +642,8 @@ Begin
 End
 
 
-if (@bDebug <> 0)
+-- force error in debug
+if (@bDebug <> 0 AND @nErrorCode = 0)
 	Set @nErrorCode = 512
 
 -- Call error message on Error
@@ -410,6 +654,7 @@ Begin
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
 	RAISERROR ('%s', 9, 1, @sMessage )
+
 	Rollback Tran mytran
 
 	return @nErrorCode
@@ -424,17 +669,10 @@ End
 Return @nErrorCode
 GO
 
-SET ANSI_NULLS OFF
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
+-- delete from comm.transaction_F555115 where FiscalMonth = 202004
 
---delete  from [comm].[transaction_F555115] where FiscalMonth = 201912 
--- select count(*) from [comm].[transaction_F555115] where FiscalMonth = 201912 
 -- Debug
--- EXEC	[comm].[transaction_load_proc] @bDebug = 1
--- 70k, 3m+, dev
--- 200k, 9m, dev
--- EXEC	[comm].[transaction_load_proc] @bDebug = 0
--- 200k, 2m41s
+-- EXEC comm.transaction_load_proc @bDebug=1
 
+-- Prod
+-- EXEC comm.transaction_load_proc @bDebug=0

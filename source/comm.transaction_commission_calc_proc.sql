@@ -2,14 +2,14 @@ set ANSI_NULLS ON
 set QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE comm.commission_calc_proc 
+ALTER PROCEDURE [comm].[transaction_commission_calc_proc] 
 	@bDebug as smallint = 1
 AS
 
 /******************************************************************************
 **	File: 
 **	Name: comm_transaction_commission_calc_proc
-**	Desc: Calculate commission tranaction details
+**	Desc: Calculate commission tranaction details (port from legacy)
 **
 **              
 **	Return values:  @@Error
@@ -22,22 +22,12 @@ AS
 **	@bDebug
 **
 **	Auth: tmc
-**	Date: 19 July 06
+**	Date: 28 May 20
 *******************************************************************************
 **	Change History
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	15 May 07	tmc		Updated logic for new 2007 FSC plan
-**  08 May 13   tmc		Add GP$ to calculation
-**	04 Feb 15	tmc		Add Parts to EQ correction
---	29 Jan 16	tmc 	Update for 2016 Plan
---	24 Feb 16	tmc		Finalize Automation (SM EQ optout, Booking), remove legacy, and set Debug to default
---	29 Feb 16	tmc		fix small but so that batch 10 is valid
---	22 Dec 17	tmc		port to new backend
---	30 Dec 17	tmc		finalize new backend logic for FSC and ESS
---  24 Dec 19	tmc		update comm with new backend
---	09 Jan 20	tmc		fix ess_code
 **    
 *******************************************************************************/
 
@@ -47,7 +37,7 @@ Declare @sMessage varchar(255)
 Set @nErrorCode = @@Error
 Set @nTranCount = @@Trancount
 
-Declare @sCurrentFiscalYearmoNum int
+Declare @nCurrentFiscalYearmoNum int
 Declare @nBatchStatus int
 
 SET NOCOUNT ON;
@@ -67,7 +57,7 @@ End
 -- Init routines.  
 ------------------------------------------------------------------------------------------------------------
 
-Set @sCurrentFiscalYearmoNum = 0
+Set @nCurrentFiscalYearmoNum = -1
 Set @nBatchStatus = -1
 
 -- Start transaction
@@ -76,34 +66,34 @@ if (@nTranCount = 0)
 Else
 	Save Tran mytran
 
-if (@bDebug <> 0)
-	Print 'Get Current Fiscal Month'
-
 If (@nErrorCode = 0) 
 Begin
+	if (@bDebug <> 0)
+		Print 'Get Current Fiscal Month'
+
 	Select 	
-		@sCurrentFiscalYearmoNum = [PriorFiscalMonth]
+		@nCurrentFiscalYearmoNum = [PriorFiscalMonth]
 	From 
 		[dbo].[BRS_Config]
 
 	Set @nErrorCode = @@Error
 End
 
-if (@bDebug <> 0)
-	Print 'Get BatchStatus'
 	
 If (@nErrorCode = 0) 
 Begin
+	if (@bDebug <> 0)
+		Print 'Get BatchStatus'
+
 	Select 	
 		@nBatchStatus = [comm_status_cd]
 	From 
 		[dbo].[BRS_FiscalMonth]
 	Where
-		[FiscalMonth] = @sCurrentFiscalYearmoNum
+		[FiscalMonth] = @nCurrentFiscalYearmoNum
 	
 	Set @nErrorCode = @@Error
 End
-
 
 ------------------------------------------------------------------------------------------------------------
 -- Update routines.  
@@ -111,22 +101,32 @@ End
 
 if (@bDebug <> 0)
 Begin
-	Print '1. Check:  Month Loaded and NOT locked'
-	Print @sCurrentFiscalYearmoNum
+	Print 'Confirm BatchStatus NOT locked'
+	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
 End
+
+
+--	29 Feb 16	tmc		fix small but so that batch 10 is valid
+if (@bDebug <> 0)
+Begin
+	Print 'Confirm BatchStatus NOT locked'
+	Print @nCurrentFiscalYearmoNum
+	Print Convert(varchar, @nBatchStatus)
+End
+
 
 If (@nBatchStatus >= 10 and @nBatchStatus < 999)
 Begin
 
---> BEGIN NEW
-
--- Transfer
-	if (@bDebug <> 0)
-		Print '2. tranfer - directed (1 of 2)'
-
+------------------------------------------------------------------------------------------------------
+-- CALC - Transfer
+------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '1. tranfer - directed (1 of 2)'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -143,24 +143,21 @@ Begin
 			INNER JOIN comm.transaction_F555115 t 
 			ON r.FiscalMonth = t.FiscalMonth AND 
 				r.SalesOrderNumber = t.WSDOCO_salesorder_number
-		WHERE
-			-- only transfer transactions, not adjustments
+		WHERE        
 			(t.source_cd = 'JDE') AND 
-			-- only run once
-			(t.xfer_key is null) AND
-			-- non general rule?
-			(r.SalesOrderNumber > 0) AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(t.xfer_key is null) AND		-- only run once 
+			(r.SalesOrderNumber > 0) AND	-- non rule-based 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '3. tranfer - rule-based (2 of 2)'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '2. tranfer - rule-based (2 of 2)'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -179,25 +176,24 @@ Begin
 				(t.fsc_code like (CASE WHEN r.[fsc_code] = '' THEN '%' ELSE r.[fsc_code] END)) AND
 				(t.ess_code like (CASE WHEN r.[ess_code] = '' THEN '%' ELSE r.[ess_code] END)) AND
 				(1=1)
-		WHERE
-			-- only transfer transactions, not adjustments     
+		WHERE        
 			(t.source_cd = 'JDE') AND 
-			-- only run once
-			(t.xfer_key is null) AND
-			-- general rule?
-			(r.SalesOrderNumber = 0) AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(t.xfer_key is null) AND		-- only run once
+			(r.SalesOrderNumber = 0) AND	-- rule-based
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
 
--- FSC
-	if (@bDebug <> 0)
-		print '4. FSC update plan & terr'
-
+------------------------------------------------------------------------------------------------------
+-- CALC - FSC
+------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '3. FSC update plan & terr'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -205,41 +201,102 @@ Begin
 			fsc_comm_plan_id = s.comm_plan_id
 		FROM
 			comm.salesperson_master AS s 
+
 			INNER JOIN BRS_FSC_Rollup AS f 
 			ON s.salesperson_key_id = f.comm_salesperson_key_id 
-			
-			INNER JOIN comm.transaction_F555115 
-			ON f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+	
+			INNER JOIN comm.transaction_F555115 ON 
+			f.TerritoryCd = comm.transaction_F555115.[fsc_code]
+
 		WHERE
-			(comm.transaction_F555115.fsc_code <>'') AND
-			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
+			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '5. FSC update item'
-
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
-		SET                fsc_comm_group_cd = i.comm_group_cd
-		FROM            comm.transaction_F555115 t INNER JOIN
-								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		if (@bDebug <> 0)
+			print '4. FSC update item commgroup - JDE'
+
+		-- OK to use Item comm live.  Business rule NOT update mid-month, 27 May 20
+		UPDATE
+			comm.transaction_F555115
+		SET
+			fsc_comm_group_cd = i.comm_group_cd
+		FROM
+			comm.transaction_F555115 t
+			INNER JOIN BRS_Item AS i 
+			ON t.WSLITM_item_number = i.Item
 		WHERE        
-			(t.fsc_code <> '') AND
-			(i.comm_group_cd <> '') AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.fsc_comm_plan_id <> '') AND
+			(t.source_cd = 'JDE') AND
+			(i.comm_group_cd <> '') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '6. FSC update comm - non-booking -new'
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '5. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
+		
+		UPDATE
+			comm.transaction_F555115
+		SET
+			fsc_comm_group_cd = CASE 
+									WHEN t.WSSRP6_manufacturer = 'PELTON' 
+									THEN 'ITMFO1'
+									ELSE 'ITMFO3'
+								END
+		FROM
+			comm.transaction_F555115 t 
+		WHERE        
+			(t.fsc_comm_plan_id <> '') AND
+			(t.source_cd = 'JDE') AND
+			(t.WS$OSC_order_source_code IN ('A', 'L')) AND		-- Astea  EQ and Service
+			(t.ess_code <> '') AND								-- Exclude Tech billing (No ESS code)
+			(t.fsc_comm_group_cd = 'ITMPAR') AND				-- ONLY effect Parts 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
 
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '6. FSC update commgroup - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			fsc_comm_group_cd = i.comm_group_cd
+		-- SELECT t.* 
+		FROM
+			comm.transaction_F555115 t
+			INNER JOIN BRS_Item AS i 
+			ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(t.fsc_comm_plan_id <> '') AND
+			(t.source_cd = 'IMP') AND
+			(i.comm_group_cd <> '') AND
+			-- If Source IMP, and the CommCode is supplied, do not override.
+			(t.WSLITM_item_number <> '') AND
+			(ISNULL(t.fsc_comm_group_cd,'') = '') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '7. FSC update comm - non-booking -new'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -263,25 +320,24 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
-			(t.fsc_code <> '') AND
+			(t.fsc_comm_plan_id <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
-			(g.booking_rt = 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.source_cd <> 'PAY') AND
+--			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-
-	if (@bDebug <> 0)
-		print '7. FSC update comm - booking - new'
-
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
+		if (@bDebug <> 0)
+			print '8. FSC update comm - pay'
+
+		UPDATE
+			comm.transaction_F555115
 		SET
-			[fsc_comm_rt] = g.booking_rt,
-			[fsc_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
 			[fsc_calc_key] = r.calc_key
 
 		FROM
@@ -300,21 +356,24 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
-			(t.fsc_code <> '') AND
+			(t.fsc_comm_plan_id <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
-			(g.booking_rt <> 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.source_cd = 'PAY') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
--- ESS
-	if (@bDebug <> 0)
-		print '8. ESS update plan & terr'
+------------------------------------------------------------------------------------------------------
+-- CALC - ESS/CCS
+------------------------------------------------------------------------------------------------------
 
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '9. ESS/CCS update plan & terr'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -322,41 +381,103 @@ Begin
 			ess_comm_plan_id = s.comm_plan_id
 		FROM
 			comm.salesperson_master AS s 
-			INNER JOIN BRS_FSC_Rollup AS f 
-			ON s.salesperson_key_id = f.comm_salesperson_key_id
+
+			INNER JOIN BRS_FSC_Rollup AS f ON 
+			s.salesperson_key_id = f.comm_salesperson_key_id 
 
 			INNER JOIN comm.transaction_F555115 
 			ON f.TerritoryCd = comm.transaction_F555115.ess_code
 		WHERE
-			(comm.transaction_F555115.ess_code <> '' ) AND
-			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum)
+			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '9. ESS update item'
-
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
-		SET                ess_comm_group_cd = i.comm_group_cd
-		FROM            comm.transaction_F555115 t INNER JOIN
-								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		if (@bDebug <> 0)
+			print '10. ESS/CCS update commgroup - JDE'
+
+		-- update from history for stability?
+		UPDATE
+			comm.transaction_F555115
+		SET
+			ess_comm_group_cd = i.comm_group_cd
+		FROM
+			comm.transaction_F555115 t 
+			INNER JOIN BRS_Item AS i 
+			ON t.WSLITM_item_number = i.Item
 		WHERE        
-			(t.ess_code <> '') AND
+			(t.ess_comm_plan_id <> '') AND
+			(t.source_cd = 'JDE') AND
 			(i.comm_group_cd <> '') AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '10. ESS update comm - non-booking -new'
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '11. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			ess_comm_group_cd = CASE 
+									WHEN t.WSSRP6_manufacturer = 'PELTON' 
+									THEN 'ITMFO1'
+									ELSE 'ITMFO3'
+								END
+		FROM
+			comm.transaction_F555115 t 
+		WHERE        
+			(t.ess_comm_plan_id <> '') AND
+			(t.source_cd = 'JDE') AND
+			(t.WS$OSC_order_source_code IN ('A', 'L')) AND		-- Astea  EQ and Service
+			(t.ess_code <> '') AND								-- Exclude Tech billing (No ESS code)
+			(t.ess_comm_group_cd = 'ITMPAR') AND				-- ONLY effect Parts 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
 
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '12. ESS/CCS update commgroup - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			ess_comm_group_cd = i.comm_group_cd
+		-- SELECT t.* 
+		FROM
+			comm.transaction_F555115 t
+			INNER JOIN BRS_Item AS i 
+			ON t.WSLITM_item_number = i.Item
+		WHERE        
+			(t.ess_comm_plan_id <> '') AND
+			(t.source_cd = 'IMP') AND
+			(i.comm_group_cd <> '') AND
+			-- If Source IMP, and the CommCode is supplied, do not override.
+			(t.WSLITM_item_number <> '') AND
+			(ISNULL(t.ess_comm_group_cd,'') = '') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '13. ESS/CCS update comm - non-booking -new'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -380,24 +501,24 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
-			(t.ess_code <> '') AND
+			(t.ess_comm_plan_id <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
-			(g.booking_rt = 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.source_cd <> 'PAY') AND
+--			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '11. ESS update comm - booking - new'
-
 	If (@nErrorCode = 0) 
 	Begin
-		UPDATE       comm.transaction_F555115
+		if (@bDebug <> 0)
+			print '14. ESS/CSS update comm - pay'
+
+		UPDATE
+			comm.transaction_F555115
 		SET
-			[ess_comm_rt] = g.booking_rt,
-			[ess_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
 			[ess_calc_key] = r.calc_key
 
 		FROM
@@ -416,21 +537,23 @@ Begin
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
-			(t.ess_code <> '') AND
+			(t.ess_comm_plan_id <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
-			(g.booking_rt <> 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.source_cd = 'PAY') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
--- CPS
-	if (@bDebug <> 0)
-		print '12. CPS update plan & terr'
-
+------------------------------------------------------------------------------------------------------
+-- CALC - CPS
+------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '15. CPS update plan & terr'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -443,49 +566,46 @@ Begin
 			INNER JOIN BRS_Customer AS c 
 			ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
 
-			INNER JOIN BRS_FSC_Rollup AS f 
-			ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
-
 			INNER JOIN comm.plan_region_map AS m 
 			ON m.comm_plan_id = 'CPSGP' AND 
 				c.PostalCode LIKE m.postal_code_where_clause_like AND 
 				1 = 1 
+
 			INNER JOIN BRS_FSC_Rollup AS sales_key 
 			ON sales_key.TerritoryCd = m.TerritoryCd
 
 		WHERE
-			-- must be valid customer, as postal code driven
+			-- must be valid customer, as postal code driven based on Current address
 			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-
-	if (@bDebug <> 0)
-		print '13. update CPS item'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '16. update CPS item'
+
 		UPDATE       comm.transaction_F555115
 		SET                cps_comm_group_cd = i.comm_group_cps_cd
 		FROM            comm.transaction_F555115 t INNER JOIN
-								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
+									BRS_Item AS i ON t.WSLITM_item_number = i.Item
 		WHERE        
 			(t.cps_code <> '') AND
 			(i.comm_group_cps_cd <> '') AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '14. CPS update comm - non-booking -new'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '17. CPS update comm - non-booking -new'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -512,17 +632,17 @@ Begin
 			(t.cps_code <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
 			(g.booking_rt = 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '15. CPS update comm - booking - new'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '18. CPS update comm - booking - new'
+
 		UPDATE       comm.transaction_F555115
 		SET
 			[cps_comm_rt] = g.booking_rt,
@@ -547,70 +667,88 @@ Begin
 			(t.cps_code <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
 			(g.booking_rt <> 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
--- EPS
-	if (@bDebug <> 0)
-		print '16. EPS update plan & terr'
-
+------------------------------------------------------------------------------------------------------
+-- CALC - EPS
+------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '19. EPS update plan & terr'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
 			eps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
 			eps_comm_plan_id = m.comm_plan_id , 
-			eps_code = m.TerritoryCd
+			eps_code = m.[master_salesperson_cd]
 		FROM
 			comm.transaction_F555115 
 
-			INNER JOIN BRS_Customer AS c 
-			ON comm.transaction_F555115.WSSHAN_shipto = c.ShipTo 
+			INNER JOIN [eps].[Customer] AS c 
+			ON comm.transaction_F555115.WSSHAN_shipto = c.[Customer_Number]
 
-			INNER JOIN BRS_FSC_Rollup AS f 
-			ON comm.transaction_F555115.fsc_code = f.TerritoryCd 
-			INNER JOIN comm.plan_region_map AS m 
-			ON m.comm_plan_id = 'EPSGP' AND 
-				f.[Branch] = m.[branch_code_where_clause_like] AND 
-				1 = 1 
 			INNER JOIN BRS_FSC_Rollup AS sales_key 
-			ON sales_key.TerritoryCd = m.TerritoryCd
+			ON sales_key.TerritoryCd = c.Eps_Code
+
+			INNER JOIN [comm].[salesperson_master] m
+			ON m.[salesperson_key_id] = sales_key.comm_salesperson_key_id
 
 		WHERE
 			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-			(comm.transaction_F555115.FiscalMonth = @sCurrentFiscalYearmoNum) AND
+			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '17. update EPS item'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '20. update EPS item'
+
 		UPDATE       comm.transaction_F555115
 		SET                eps_comm_group_cd = i.comm_group_eps_cd
 		FROM            comm.transaction_F555115 t INNER JOIN
-								 BRS_Item AS i ON t.WSLITM_item_number = i.Item
-		WHERE        
+									BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		WHERE   
 			(t.eps_code <> '') AND
-			(i.comm_group_eps_cd <> '') AND 
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(i.comm_group_eps_cd <> ISNULL(t.eps_comm_group_cd, '')) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '18. EPS update comm - non-booking -new'
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '21. EPS update comm - cleanup calc'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[eps_calc_key] = null 
+		FROM
+			comm.transaction_F555115 t
+		WHERE        
+			[eps_calc_key] is not null AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
 
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '22. EPS update comm - non-booking -new'
+
 		UPDATE
 			comm.transaction_F555115
 		SET
@@ -637,17 +775,17 @@ Begin
 			(t.eps_code <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
 			(g.booking_rt = 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
-	if (@bDebug <> 0)
-		print '19. EPS update comm - booking - new'
-
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			print '23. EPS update comm - booking - new'
+
 		UPDATE       comm.transaction_F555115
 		SET
 			[eps_comm_rt] = g.booking_rt,
@@ -673,45 +811,41 @@ Begin
 			(t.eps_code <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
 			(g.booking_rt <> 0) AND
-			(t.FiscalMonth = @sCurrentFiscalYearmoNum ) AND
+			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
 	End
 
---< END NEW
-
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
 
-
-	if (@bDebug <> 0)
-		Print 'Set BatchStatus to Processed'	
-	
 	If (@nErrorCode = 0) 
 	Begin
+		if (@bDebug <> 0)
+			Print 'Set BatchStatus to Processed'	
+
 		Update
 			[dbo].[BRS_FiscalMonth]
 		Set 
 			[comm_status_cd] = 20
 		Where 
-			[FiscalMonth] = @sCurrentFiscalYearmoNum
+			[FiscalMonth] = @nCurrentFiscalYearmoNum
 	
 		Set @nErrorCode = @@Error
 	End
 
 End
 
-
-
-if (@bDebug <> 0)
+-- force error in debug
+if (@bDebug <> 0 AND @nErrorCode = 0)
 	Set @nErrorCode = 512
 
 -- Call error message on Error
 if (@nErrorCode <> 0)
 Begin
-	Set @sMessage = 'comm_transaction_commission_calc_proc'
+	Set @sMessage = 'comm.transaction_commission_calc_proc'
 	Set @sMessage = @sMessage + ':  Return(' + Convert(varchar, @nErrorCode) + ')'
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
@@ -734,8 +868,8 @@ GO
 
 
 -- Debug
--- EXEC	[comm].[commission_calc_proc] @bDebug = 1
---  7m306s @ dev
+-- Exec comm.transaction_commission_calc_proc @bDebug=1
 
--- EXEC	[comm].[commission_calc_proc] @bDebug = 0
--- 
+-- Prod
+-- Exec comm.transaction_commission_calc_proc @bDebug=0
+

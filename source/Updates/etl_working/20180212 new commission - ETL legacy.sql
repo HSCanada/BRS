@@ -571,6 +571,41 @@ WHERE
 ORDER by 2
 */
 
+/*
+-- use this to fix FSC territory Prod vs NEW until go live
+print '11. Allign FSC Territory with Commission'
+UPDATE
+	BRS_CustomerFSC_History
+SET
+	HIST_TerritoryCd = s.fsc_min
+--select * 
+FROM
+	BRS_CustomerFSC_History 
+	INNER JOIN 
+	(
+		SELECT
+			CAST(fiscal_yearmo_num AS int) AS FiscalMonth, 
+			hsi_shipto_id, 
+			MIN(salesperson_cd) AS fsc_min
+		FROM
+			CommBE.dbo.comm_transaction
+		WHERE
+			(source_cd = 'JDE') AND 
+			(fiscal_yearmo_num BETWEEN '202001' AND '202004') AND 
+--			(record_id NOT IN (54108565, 55191867, 55976312, 55976313, 57216489, 57216490, 57216491, 57815920)) AND 
+			(1 = 1)
+		GROUP BY 
+		fiscal_yearmo_num, 
+		hsi_shipto_id
+	) AS s 
+	ON BRS_CustomerFSC_History.FiscalMonth = s.FiscalMonth AND 
+		BRS_CustomerFSC_History.Shipto = s.hsi_shipto_id AND 
+		BRS_CustomerFSC_History.HIST_SalesDivision not IN('AZA', 'AZE') AND 
+		BRS_CustomerFSC_History.HIST_TerritoryCd <> s.fsc_min AND 
+		s.fsc_min NOT IN ('', '**') AND 
+		(1 = 1)
+GO
+*/
 
 
 /*
@@ -672,7 +707,6 @@ WHERE
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
 	(t.FiscalMonth between 201901 and 202003 ) AND
---	(t.FiscalMonth = 201910 ) AND
 	(1 = 1)
 GO
 
@@ -697,7 +731,6 @@ FROM
 	INNER JOIN [comm].[group] g
 	ON t.fsc_comm_group_cd = g.comm_group_cd
 
----	LEFT JOIN [comm].[plan_group_rate] AS r 
 	INNER JOIN [comm].[plan_group_rate] AS r 
 	ON t.fsc_comm_plan_id = r.comm_plan_id AND
 		t.fsc_comm_group_cd = r.item_comm_group_cd AND
@@ -707,13 +740,7 @@ WHERE
 	(t.fsc_code <> '') AND
 	(t.fsc_comm_group_cd <> '') AND 
 	(t.FiscalMonth between 202001 and 202003 ) AND
---	(t.FiscalMonth = 201910 ) AND
 	t.fsc_comm_group_cd <> r.[disp_comm_group_cd] AND
-
-	-- test
---	t.source_cd ='IMP' AND
---	t.ID_legacy = 58656802 AND
---	t.ID = 6494245 AND
 	(1 = 1)
 GO
 -- key 263 is bad
@@ -743,8 +770,7 @@ FROM
 WHERE        
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
-	(t.FiscalMonth between 201901 and 202003 ) AND
---	(t.FiscalMonth = 201910 ) AND
+	(t.FiscalMonth between 202001 and 202003 ) AND
 	(1 = 1)
 GO
 
@@ -776,7 +802,6 @@ WHERE
 	(t.ess_code <> '') AND
 	(t.ess_comm_group_cd <> '') AND 
 	(t.FiscalMonth between 201901 and 202003 ) AND
---	(t.FiscalMonth = 201910 ) AND
 	t.ess_comm_group_cd <> r.[disp_comm_group_cd] AND
 	(1 = 1)
 GO
