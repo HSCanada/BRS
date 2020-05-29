@@ -219,19 +219,20 @@ Begin
 		if (@bDebug <> 0)
 			print '4. FSC update item commgroup - JDE'
 
-		-- OK to use Item comm live.  Business rule NOT update mid-month, 27 May 20
 		UPDATE
 			comm.transaction_F555115
 		SET
-			fsc_comm_group_cd = i.comm_group_cd
+			fsc_comm_group_cd = i.HIST_comm_group_cd
 		FROM
 			comm.transaction_F555115 t
-			INNER JOIN BRS_Item AS i 
-			ON t.WSLITM_item_number = i.Item
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
 		WHERE        
 			(t.fsc_comm_plan_id <> '') AND
 			(t.source_cd = 'JDE') AND
-			(i.comm_group_cd <> '') AND
+			(i.HIST_comm_group_cd <> '') AND
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -273,16 +274,18 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			fsc_comm_group_cd = i.comm_group_cd
+			fsc_comm_group_cd = i.HIST_comm_group_cd
 		-- SELECT t.* 
 		FROM
 			comm.transaction_F555115 t
-			INNER JOIN BRS_Item AS i 
-			ON t.WSLITM_item_number = i.Item
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
 		WHERE        
 			(t.fsc_comm_plan_id <> '') AND
 			(t.source_cd = 'IMP') AND
-			(i.comm_group_cd <> '') AND
+			(i.HIST_comm_group_cd <> '') AND
 			-- If Source IMP, and the CommCode is supplied, do not override.
 			(t.WSLITM_item_number <> '') AND
 			(ISNULL(t.fsc_comm_group_cd,'') = '') AND
@@ -399,19 +402,20 @@ Begin
 		if (@bDebug <> 0)
 			print '10. ESS/CCS update commgroup - JDE'
 
-		-- update from history for stability?
 		UPDATE
 			comm.transaction_F555115
 		SET
-			ess_comm_group_cd = i.comm_group_cd
+			ess_comm_group_cd = i.HIST_comm_group_cd
 		FROM
 			comm.transaction_F555115 t 
-			INNER JOIN BRS_Item AS i 
-			ON t.WSLITM_item_number = i.Item
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
 		WHERE        
 			(t.ess_comm_plan_id <> '') AND
 			(t.source_cd = 'JDE') AND
-			(i.comm_group_cd <> '') AND 
+			(i.HIST_comm_group_cd <> '') AND 
 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
@@ -454,16 +458,18 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			ess_comm_group_cd = i.comm_group_cd
+			ess_comm_group_cd = i.HIST_comm_group_cd
 		-- SELECT t.* 
 		FROM
 			comm.transaction_F555115 t
-			INNER JOIN BRS_Item AS i 
-			ON t.WSLITM_item_number = i.Item
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
 		WHERE        
 			(t.ess_comm_plan_id <> '') AND
 			(t.source_cd = 'IMP') AND
-			(i.comm_group_cd <> '') AND
+			(i.HIST_comm_group_cd <> '') AND
 			-- If Source IMP, and the CommCode is supplied, do not override.
 			(t.WSLITM_item_number <> '') AND
 			(ISNULL(t.ess_comm_group_cd,'') = '') AND
@@ -589,12 +595,17 @@ Begin
 			print '16. update CPS item'
 
 		UPDATE       comm.transaction_F555115
-		SET                cps_comm_group_cd = i.comm_group_cps_cd
-		FROM            comm.transaction_F555115 t INNER JOIN
-									BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		SET                cps_comm_group_cd = i.HIST_comm_group_cps_cd
+		FROM
+			comm.transaction_F555115 t 
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
+
 		WHERE        
 			(t.cps_code <> '') AND
-			(i.comm_group_cps_cd <> '') AND 
+			(i.HIST_comm_group_cps_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1 = 1)
 
@@ -713,12 +724,17 @@ Begin
 			print '20. update EPS item'
 
 		UPDATE       comm.transaction_F555115
-		SET                eps_comm_group_cd = i.comm_group_eps_cd
-		FROM            comm.transaction_F555115 t INNER JOIN
-									BRS_Item AS i ON t.WSLITM_item_number = i.Item
+		SET                eps_comm_group_cd = i.HIST_comm_group_eps_cd
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_ItemHistory] AS i 
+			ON i.Item = t.WSLITM_item_number AND
+			i.FiscalMonth = t.FiscalMonth
+
 		WHERE   
 			(t.eps_code <> '') AND
-			(i.comm_group_eps_cd <> ISNULL(t.eps_comm_group_cd, '')) AND
+			(i.HIST_comm_group_eps_cd <> ISNULL(t.eps_comm_group_cd, '')) AND
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 

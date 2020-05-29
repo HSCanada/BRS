@@ -562,9 +562,6 @@ Begin
 			ess_code = WSTKBY_order_taken_by
 		FROM
 			comm.transaction_F555115 t 
-
-			INNER JOIN BRS_Item AS i 
-			ON t.WSLITM_item_number = i.Item
 		WHERE     
 			(t.source_cd = 'JDE') AND (
 				(t.WSTKBY_order_taken_by like 'ESS%') OR
@@ -590,12 +587,15 @@ Begin
 			-- SELECT 	[FiscalMonth], t.[WSLITM_item_number], i.comm_group_cd, t.WSSOQS_quantity_shipped, t.transaction_amt, [gp_ext_amt], [gp_ext_org_amt], g.booking_rt, t.[transaction_amt] * (g.booking_rt / 100.0) as new_gp
 		FROM         
 			comm.transaction_F555115 as t
-
-			INNER JOIN [dbo].[BRS_Item] as i
-			ON i.[Item] = t.[WSLITM_item_number]
+-- XXX
+			INNER JOIN [dbo].[BRS_ItemHistory] as i
+			ON i.[Item] = t.[WSLITM_item_number] AND
+			i.FiscalMonth = t.FiscalMonth
+--			INNER JOIN [dbo].[BRS_Item] as i
+--			ON i.[Item] = t.[WSLITM_item_number]
 
 			INNER JOIN [comm].[group] AS g 
-			ON i.comm_group_cd = g.comm_group_cd
+			ON i.HIST_comm_group_cd = g.comm_group_cd
 
 		WHERE 
 			(t.source_cd = 'JDE') AND
