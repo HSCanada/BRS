@@ -42,6 +42,7 @@ AS
 --  22 Jan 17   tmc     Refactored to accomodate same date YoY sales
 --	31 Jan 17	tmc		Fixed GP MTD issue where Chargeback missing
 --	05 Apr 17	tmc		Adding Monthend mode (FiscalMonth=PriorFiscalMonth)
+--	29 May 20	tmc		replace seg with 
 **    
 *******************************************************************************/
 
@@ -104,7 +105,8 @@ SELECT
 
 	-- Use Current Seg as MTD is dynamic
 	c.MarketClass, 
-	c.SegCd, 
+	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	c.SegCd, 
 
 	'CY.DAY.ACT' AS Status,
 
@@ -154,7 +156,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,c.MarketClass
-	,c.SegCd 
+	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,c.SegCd 
 
 UNION ALL
 
@@ -176,7 +179,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	c.HIST_MarketClass AS MarketClass, 
-	c.HIST_SegCd AS SegCd, 
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	c.HIST_SegCd AS SegCd, 
 
 	'PY.DAY.ACT' AS Status,
 
@@ -199,6 +203,9 @@ FROM
 	INNER JOIN BRS_CustomerFSC_History AS c 
 	ON c.ShipTo = t.Shipto   AND
 		c.FiscalMonth = m.FiscalMonth_LY
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
@@ -228,9 +235,8 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
-
 	,c.HIST_MarketClass
-	,c.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 
 
 UNION ALL
@@ -250,7 +256,8 @@ SELECT
 	'E' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'CY.DAY.EST' AS Status,
                       
@@ -275,6 +282,9 @@ FROM
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
+
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
@@ -306,7 +316,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -326,7 +337,8 @@ SELECT
 	'P' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'PY.DAY.PRO' AS Status,
 
@@ -350,6 +362,9 @@ FROM
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
+
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
@@ -380,7 +395,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -403,7 +419,8 @@ SELECT
 
 	-- Use Current Seg as MTD is dynamic
 	c.MarketClass, 
-	c.SegCd, 
+	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	c.SegCd, 
 
 	'CY.MTD.ACT' AS Status,
 
@@ -460,7 +477,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,c.MarketClass
-	,c.SegCd 
+	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,c.SegCd 
 
 UNION ALL
 
@@ -481,7 +499,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	c.HIST_MarketClass AS MarketClass, 
-	c.HIST_SegCd AS SegCd, 
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	c.HIST_SegCd AS SegCd, 
 
 	'PY.MTD.ACT' AS Status,
 	                      
@@ -504,6 +523,9 @@ FROM
 	INNER JOIN BRS_CustomerFSC_History AS c 
 	ON c.ShipTo = t.Shipto   AND
 		c.FiscalMonth = m.FiscalMonth_LY
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
@@ -536,7 +558,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,c.HIST_MarketClass
-	,c.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,c.HIST_SegCd 
 
 UNION ALL
 
@@ -560,7 +583,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'CY.ME.ACT' AS Status,
 
@@ -579,6 +603,9 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = t.FiscalMonth
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -608,7 +635,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -629,7 +657,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'PY.ME.ACT' AS Status,
 	                      
@@ -648,6 +677,9 @@ FROM
 
     INNER JOIN BRS_DS_Day_Yoy AS m 
     ON t.SalesDate = m.SalesDate_LY
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
@@ -678,7 +710,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -702,7 +735,8 @@ SELECT
 	'E' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'CY.MTD.EST' AS Status,
 	                      
@@ -728,6 +762,9 @@ FROM
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode 
 
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
+
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
@@ -759,7 +796,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -780,7 +818,8 @@ SELECT
 	'P' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'PY.MTD.PRO' AS Status,
 
@@ -803,6 +842,9 @@ FROM
 	INNER JOIN dbo.BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode
 
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
+
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
@@ -834,7 +876,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -857,7 +900,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'CY.YTD.ACT' AS Status,
 
@@ -876,6 +920,9 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = t.FiscalMonth
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -905,7 +952,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 
 
@@ -930,7 +978,8 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'PY.YTD.ACT' AS Status,
 
@@ -950,6 +999,9 @@ FROM
 
     INNER JOIN BRS_DS_Day_Yoy AS m 
     ON t.SalesDate = m.SalesDate_LY
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
@@ -981,7 +1033,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 UNION ALL
 
@@ -1005,7 +1058,8 @@ SELECT
 	'F' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	t.HIST_SegCd AS SegCd,
+	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+--	t.HIST_SegCd AS SegCd,
 
 	'CY.PMTD.EST' AS Status,
 	                      
@@ -1027,6 +1081,9 @@ FROM
 
     INNER JOIN BRS_DS_Day_Yoy AS m 
     ON t.SalesDate = m.SalesDate
+
+	INNER JOIN BRS_Customer AS cc 
+	ON t.Shipto = cc.ShipTo 
 
 	INNER JOIN BRS_AdjCode AS a 
 	ON t.AdjCode = a.AdjCode 
@@ -1064,7 +1121,8 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,t.HIST_SegCd 
+	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+--	,t.HIST_SegCd 
 
 END
 
@@ -1076,8 +1134,10 @@ GO
 
 -- BRS_DS_Cube_proc 
 
+
 -- Prod
 -- BRS_DS_Cube_proc 0
 
 
 -- Select SalesDate, SalesDate_LY, FiscalMonth, PriorFiscalMonth, FiscalMonth_LY, YearFirstFiscalMonth, YearFirstFiscalMonth_LY, DayNumber, MonthWorkingDays FROM BRS_Rollup_Support01 g
+-- select top 10 * from BRS_AGG_CDBGAD_Sales
