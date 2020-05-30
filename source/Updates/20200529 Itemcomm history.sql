@@ -62,3 +62,41 @@ WHERE
 	BRS_ItemHistory.FiscalMonth >= 201901
 
 
+-- cleanup group, remove unneeded fields
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT FK_group_group1
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT FK_group_group3
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT FK_group_group4
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT FK_group_group
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT DF_comm_group_comm_status_cd
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT DF_comm_group_comm_group_sm_cd
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT DF_group_comm_group_rollup1cd
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT DF_group_comm_group_rollup2cd
+GO
+ALTER TABLE comm.[group]
+	DROP CONSTRAINT DF_group_comm_group_rollup3cd
+GO
+ALTER TABLE comm.[group]
+	DROP COLUMN comm_status_cd, comm_group_sm_cd, comm_note_txt, comm_group_rollup1_cd, comm_group_rollup2_cd, comm_group_rollup3_cd
+GO
+ALTER TABLE comm.[group] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--

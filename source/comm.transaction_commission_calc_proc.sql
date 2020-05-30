@@ -3,7 +3,7 @@ set QUOTED_IDENTIFIER ON
 GO
 
 ALTER PROCEDURE [comm].[transaction_commission_calc_proc] 
-	@bDebug as smallint = 1
+	@bDebug as smallint = 1, @bLegacy as smallint = 0
 AS
 
 /******************************************************************************
@@ -49,7 +49,7 @@ Begin
 	Print '---------------------------------------------------------'
 	Print 'Proc: comm_transaction_commission_calc_proc'
 	Print 'Desc: Calculate commission tranaction details'
-	Print 'Mode: DEBUG'
+	Print 'Mode: DEBUG, Legacy = ' + CAST(@bLegacy as varchar)
 	Print '---------------------------------------------------------'
 End
 
@@ -120,9 +120,9 @@ If (@nBatchStatus >= 10 and @nBatchStatus < 999)
 Begin
 
 ------------------------------------------------------------------------------------------------------
--- CALC - Transfer
+-- New - Transfer
 ------------------------------------------------------------------------------------------------------
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '1. tranfer - directed (1 of 2)'
@@ -153,7 +153,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '2. tranfer - rule-based (2 of 2)'
@@ -187,9 +187,76 @@ Begin
 	End
 
 ------------------------------------------------------------------------------------------------------
--- CALC - FSC
+-- Legacy - FSC
 ------------------------------------------------------------------------------------------------------
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 1) 
+	Begin
+		if (@bDebug <> 0)
+			print '3x. FSC legacy - set calc_key'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[fsc_calc_key] = r.calc_key
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.fsc_code <> '') AND
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+------------------------------------------------------------------------------------------------------
+-- Legacy - ESS/CCS
+------------------------------------------------------------------------------------------------------
+	If (@nErrorCode = 0 AND @bLegacy = 1) 
+	Begin
+		if (@bDebug <> 0)
+			print '9x. Ess/CCS legacy - set calc_key'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[ess_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.ess_comm_plan_id = r.comm_plan_id AND
+				t.ess_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.ess_code <> '') AND
+			(t.ess_comm_group_cd <> '') AND 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+------------------------------------------------------------------------------------------------------
+-- New - FSC
+------------------------------------------------------------------------------------------------------
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '3. FSC update plan & terr'
@@ -214,7 +281,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '4. FSC update item commgroup - JDE'
@@ -239,7 +306,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '5. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
@@ -266,7 +333,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '6. FSC update commgroup - IMP'
@@ -295,7 +362,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '7. FSC update comm - non-booking -new'
@@ -333,7 +400,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '8. FSC update comm - pay'
@@ -369,10 +436,10 @@ Begin
 	End
 
 ------------------------------------------------------------------------------------------------------
--- CALC - ESS/CCS
+-- New - ESS/CCS
 ------------------------------------------------------------------------------------------------------
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '9. ESS/CCS update plan & terr'
@@ -397,7 +464,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '10. ESS/CCS update commgroup - JDE'
@@ -423,7 +490,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '11. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
@@ -450,7 +517,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '12. ESS/CCS update commgroup - IMP'
@@ -479,7 +546,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '13. ESS/CCS update comm - non-booking -new'
@@ -517,7 +584,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
 			print '14. ESS/CSS update comm - pay'
@@ -553,7 +620,7 @@ Begin
 	End
 
 ------------------------------------------------------------------------------------------------------
--- CALC - CPS
+-- New & Legacy - CPS
 ------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
@@ -685,7 +752,7 @@ Begin
 	End
 
 ------------------------------------------------------------------------------------------------------
--- CALC - EPS
+-- New & Legacy - EPS
 ------------------------------------------------------------------------------------------------------
 	If (@nErrorCode = 0) 
 	Begin
