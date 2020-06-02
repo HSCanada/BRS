@@ -346,6 +346,7 @@ UPDATE
 	BRS_CustomerFSC_History
 SET
 	HIST_TerritoryCd = s.fsc_min
+-- SELECT *  
 FROM
 	BRS_CustomerFSC_History d
 	INNER JOIN 

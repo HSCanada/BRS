@@ -415,8 +415,11 @@ go
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 
+/*
 -- rebuild
 
-UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201905
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202005
 Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 GO
+*/
+
