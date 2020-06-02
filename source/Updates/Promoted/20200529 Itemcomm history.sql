@@ -100,3 +100,34 @@ GO
 COMMIT
 
 --
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT FK_BRS_Item_group2
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT FK_BRS_Item_group3
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT FK_BRS_Item_group4
+GO
+ALTER TABLE comm.[group] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT DF_BRS_Item_custom_comm_group1_cd
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT DF_BRS_Item_custom_comm_group2_cd
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP CONSTRAINT DF_BRS_Item_custom_comm_group3_cd
+GO
+ALTER TABLE dbo.BRS_Item
+	DROP COLUMN custom_comm_group1_cd, custom_comm_group2_cd, custom_comm_group3_cd
+GO
+ALTER TABLE dbo.BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

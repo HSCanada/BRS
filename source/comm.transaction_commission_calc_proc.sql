@@ -205,6 +205,7 @@ Begin
 			ON t.WSSHAN_shipto = c.ShipTo AND
 				t.FiscalMonth = c.FiscalMonth
 
+			-- potential gap here, check?  or assume R updated
 			INNER JOIN [comm].[plan_group_rate] AS r 
 			ON t.fsc_comm_plan_id = r.comm_plan_id AND
 				t.fsc_comm_group_cd = r.item_comm_group_cd AND

@@ -43,6 +43,7 @@ AS
 --	15 Dec 19	tmc		add size & strenge to descr and size ind for returns
 --	27 Feb 20	tmc		add additional flags for Private Label analysis
 --	03 Mar 20	tmc		add current FileCost & base
+--	02 Jun 20	tmc		remove customgroup 1 - 3.  not needed.  
 **    
 *******************************************************************************/
 
@@ -120,9 +121,6 @@ SELECT
 	,i.comm_group_cd					AS CommGroupCode
 	,i.comm_note_txt					AS CommGroupNote
 	,i.comm_group_cps_cd				AS CommGroupCpsCode
-	,i.[custom_comm_group1_cd]			AS CustomCommGroup1Code
-	,i.[custom_comm_group2_cd]			AS CustomCommGroup2Code
-	,i.[custom_comm_group3_cd]			AS CustomCommGroup3Code
 	,RTRIM(c.major_cd)					AS MajorCode
 	,RTRIM(cr.ClassGroup)				AS ClassGroup	
 	,i.size_factor

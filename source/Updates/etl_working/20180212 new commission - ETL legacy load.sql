@@ -2,6 +2,9 @@
 -- run manually, AFTER Dimension sync
 -- S:\BR\zDev\BRS\source\Updates\etl_working\20171230 new commission - ETL sync
 
+-- ensure compare prod CommBE vs prod BRSales
+use BRSales
+
 ------------------------------------------------------------------------------------------------------
 -- scrub Prod
 ------------------------------------------------------------------------------------------------------
@@ -102,6 +105,7 @@ where
 	) 
 GO
 
+-- ensure step 8 succeeds before "fixing"
 print '9. Fix doc_id - set to 0 if RI fails'
 UPDATE
 	CommBE.dbo.comm_transaction
@@ -216,7 +220,10 @@ WHERE
 	(salesperson_key_id <> '') AND 
 	(comm_plan_id = '') AND
 	(1=1)
+GO
 
+-- this fails when no JDE trans for the month -- CCS.  
+-- Use current?  Active vs non logic...
 print '14. fix missing ESS comm_plan_id - use existing'
 UPDATE
 	CommBE.[dbo].[comm_transaction]
@@ -245,6 +252,7 @@ WHERE
 	(d.ess_salesperson_key_id <> '') AND 
 	(d.ess_comm_plan_id = '') AND 
 	(1 = 1)
+GO
 
 print '15. test missing ESS - stop > 0'
 SELECT        
@@ -269,6 +277,7 @@ WHERE
 ------------------------------------------------------------------------------------------------------
 
 -- delete  from [comm].[transaction_F555115] where FiscalMonth = 202004
+-- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
 SELECT
@@ -277,7 +286,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202004') AND
+	(fiscal_yearmo_num ='201901') AND
 	(1=1)
 GO
 
@@ -288,11 +297,12 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202004') AND
+	(FiscalMonth =  '201901') AND
 	(1=1)
 GO
 
-
+-- Set to DEV?  (assuming DEV in synch with PROD)
+-- truncate table comm.transaction_F555115
 -- first set month below; 30s per month
 print '100. load prod data'
 INSERT INTO comm.transaction_F555115
@@ -385,21 +395,28 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202004' and '202004') AND
-	-- load only adj?
-	source_cd NOT in('JDE') AND
+	(fiscal_yearmo_num between  '201901' and '202005') AND
+--	load only adj?
+--	source_cd NOT in('JDE') AND
 	(1=1)
 GO
 
 print '101. Mark month as loaded'
 Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
-where [FiscalMonth] between 202004 and 202004
+where [FiscalMonth] between 201901 and 202005
 go
 
 -- Debug
+
 -- Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
+
 
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 
+-- rebuild
+
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201905
+Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
+GO

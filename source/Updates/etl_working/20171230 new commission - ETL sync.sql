@@ -373,3 +373,5 @@ FROM
 		s.fsc_min NOT IN ('', '**') AND 
 		(1 = 1)
 GO
+
+-- TBD. check HIST comm for cust / item set (s/b setup in Friday archive with Monday correction)
