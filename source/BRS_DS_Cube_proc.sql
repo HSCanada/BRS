@@ -42,7 +42,7 @@ AS
 --  22 Jan 17   tmc     Refactored to accomodate same date YoY sales
 --	31 Jan 17	tmc		Fixed GP MTD issue where Chargeback missing
 --	05 Apr 17	tmc		Adding Monthend mode (FiscalMonth=PriorFiscalMonth)
---	29 May 20	tmc		replace seg with 
+--	29 May 20	tmc		replace seg with DCC plugin
 **    
 *******************************************************************************/
 

@@ -198,7 +198,9 @@ Begin
 			comm.transaction_F555115
 		SET
 			[fsc_calc_key] = r.calc_key
---		SELECT TOP 10 *
+--		test 1 of 2
+--		SELECT TOP 10 t.FiscalMonth, t.WSSHAN_shipto, r.comm_plan_id, r.item_comm_group_cd, r.cust_comm_group_cd
+--
 		FROM
 			comm.transaction_F555115 t
 
@@ -215,12 +217,13 @@ Begin
 		WHERE        
 			(t.fsc_code <> '') AND
 			-- FSC must have a code.  
---			(t.fsc_comm_group_cd <> '') AND 
+			(t.fsc_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
---	test
---			(t.FiscalMonth = 201904 ) AND
+--	test 2 of 2
+--			(t.FiscalMonth = 201909 ) AND
+--			(t.ID_legacy = 57534231) AND
 --			(r.calc_key is null) AND
-
+--
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
