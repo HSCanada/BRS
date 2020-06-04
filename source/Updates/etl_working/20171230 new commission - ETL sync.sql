@@ -307,7 +307,9 @@ CROSS JOIN
 	FROM 
 		[comm].[group] 
 	WHERE 
-		[source_cd] in ('JDE', 'IMP', 'PAY') 
+		[source_cd] in ('JDE', 'IMP', 'PAY') OR
+		-- added blank code to serve as undefinded senario placeholder for rollups
+		[comm_group_cd] = ''
 ) s2
 CROSS JOIN
 (

@@ -198,6 +198,7 @@ Begin
 			comm.transaction_F555115
 		SET
 			[fsc_calc_key] = r.calc_key
+--		SELECT TOP 10 *
 		FROM
 			comm.transaction_F555115 t
 
@@ -213,8 +214,13 @@ Begin
 				t.[source_cd] = r.[source_cd]
 		WHERE        
 			(t.fsc_code <> '') AND
-			(t.fsc_comm_group_cd <> '') AND 
+			-- FSC must have a code.  
+--			(t.fsc_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+--	test
+--			(t.FiscalMonth = 201904 ) AND
+--			(r.calc_key is null) AND
+
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -233,6 +239,7 @@ Begin
 		SET
 			[ess_calc_key] = r.calc_key
 
+--		SELECT top 10 * 
 		FROM
 			comm.transaction_F555115 t
 
@@ -247,8 +254,12 @@ Begin
 				t.[source_cd] = r.[source_cd]
 		WHERE        
 			(t.ess_code <> '') AND
-			(t.ess_comm_group_cd <> '') AND 
+			-- relax ESS comm filter so if bad (blank), gets assigned to a key
+--			(t.ess_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+--	test
+--			(t.FiscalMonth >= 201901 ) AND
+--			(r.calc_key is null) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
