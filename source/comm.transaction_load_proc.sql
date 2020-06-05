@@ -107,6 +107,7 @@ Begin
 	Print 'Confirm BatchStatus NOT locked'
 	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
+	Print 'Checking steps 1 - 10'
 End
 
 
@@ -250,6 +251,7 @@ Begin
 			print '8. check - [WSSIC__speciality]'
 
 		SELECT @nRowCount = COUNT(*)
+--		SELECT t.WSSIC__speciality
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(

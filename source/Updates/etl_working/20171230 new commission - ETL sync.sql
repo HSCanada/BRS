@@ -168,6 +168,9 @@ FROM
 	ON s.salesperson_cd = d.TerritoryCd AND 
 		s.salesperson_key_id <> 'INTERNAL' AND
 		s.salesperson_key_id <> ISNULL(d.comm_salesperson_key_id,'') AND
+		-- do not overwrite with blanks.  Fixes CPS codes
+		-- bad data should be overridden with dummy code, not blank
+		s.salesperson_key_id <> '' AND
 		(1=1)
 
 -- Update not needed
@@ -203,7 +206,7 @@ WHERE
 	)
 GO
 
-print '6. comm.plan - Add'
+print '8. comm.plan - Add'
 INSERT INTO [comm].[plan]
 (
 [comm_plan_id]
@@ -220,7 +223,7 @@ WHERE NOT EXISTS (
 )
 
 
-print '8. salesperson_master - Update'
+print '9. salesperson_master - Update'
 UPDATE comm.salesperson_master
 SET
 	salesperson_nm = s.salesperson_nm,
@@ -248,7 +251,7 @@ WHERE
 GO
 
 
-print '9. salesperson_master - Add'
+print '10. salesperson_master - Add'
 INSERT INTO comm.salesperson_master
 (
 	salesperson_key_id,
@@ -285,7 +288,7 @@ WHERE
 GO
 
 -- TBD display set, then rate update
-print '10. plan_group_rate - Add'
+print '11. plan_group_rate - Add'
 INSERT INTO   [comm].[plan_group_rate] 
 (
 	comm_plan_id, 
@@ -343,7 +346,7 @@ WHERE
 GO
 
 -- use this to fix FSC territory Prod vs NEW until go live
-print '11. Allign FSC Territory with Commission'
+print '12. Allign FSC Territory with Commission'
 UPDATE
 	BRS_CustomerFSC_History
 SET
@@ -377,4 +380,11 @@ FROM
 		(1 = 1)
 GO
 
+/*
 -- TBD. check HIST comm for cust / item set (s/b setup in Friday archive with Monday correction)
+
+a) synchronize eps_item to BRS_Item!eps_item
+b) synch BRS_Item to item history, current month
+c) sycch BRS_Cust to cust history, current month
+
+*/

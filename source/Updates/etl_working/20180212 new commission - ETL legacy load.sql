@@ -2,12 +2,13 @@
 -- run manually, AFTER Dimension sync
 -- S:\BR\zDev\BRS\source\Updates\etl_working\20171230 new commission - ETL sync
 
--- ensure compare prod CommBE vs prod BRSales
-use BRSales
-
 ------------------------------------------------------------------------------------------------------
 -- scrub Prod
 ------------------------------------------------------------------------------------------------------
+
+-- ensure compare prod CommBE vs prod BRSales
+use BRSales
+GO
 
 print '1. fix item_id NULL -> {blank}'
 UPDATE
@@ -276,7 +277,7 @@ WHERE
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202004
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 202005
 -- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
@@ -395,7 +396,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '201901' and '202005') AND
+	(fiscal_yearmo_num between  '201904' and '201904') AND
 --	load only adj?
 --	source_cd NOT in('JDE') AND
 	(1=1)
@@ -406,6 +407,8 @@ Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
 where [FiscalMonth] between 201901 and 202005
 go
+
+-- First ensure procs and support tables updated 
 
 -- Debug
 
@@ -422,6 +425,7 @@ UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202005
 Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 GO
 
+-- test
+select distinct FiscalMonth from comm.transaction_F555115
 */
-
 

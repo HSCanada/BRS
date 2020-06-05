@@ -219,6 +219,8 @@ Begin
 			-- FSC must have a code.  
 			(t.fsc_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			ISNULL([t.fsc_calc_key],0) <> r.calc_key AND
+
 --	test 2 of 2
 --			(t.FiscalMonth = 201909 ) AND
 --			(t.ID_legacy = 57534231) AND
@@ -648,6 +650,9 @@ Begin
 			cps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
 			cps_comm_plan_id = m.comm_plan_id , 
 			cps_code = m.TerritoryCd
+--		test
+--		SELECT m.*, sales_key.comm_salesperson_key_id
+--
 		FROM
 			comm.transaction_F555115 
 
@@ -665,7 +670,10 @@ Begin
 		WHERE
 			-- must be valid customer, as postal code driven based on Current address
 			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
-			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+--			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+--			test
+--			(comm.transaction_F555115.FiscalMonth = 202005) AND
+--			(ID=3865598) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -971,3 +979,4 @@ GO
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
 
+-- PRINT (CONVERT( VARCHAR(24), GETDATE(), 121))

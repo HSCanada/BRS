@@ -13,6 +13,7 @@ SELECT        comm_plan_id, item_comm_group_cd, cust_comm_group_cd, source_cd, d
 FROM            [DEV_BRSales].comm.plan_group_rate AS plan_group_rate_1
 go
 
+-- synch first
 -- update item comm history based on current item (synced from prod)
 UPDATE       BRS_ItemHistory
 SET                HIST_comm_group_cd = s.comm_group_cd, HIST_comm_group_cps_cd = s.[comm_group_cps_cd], HIST_comm_group_eps_cd = s.comm_group_eps_cd
