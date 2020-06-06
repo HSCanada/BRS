@@ -123,7 +123,21 @@ WHERE
 	)
 GO
 
-print '10. fix duplicate line_id - set to ID if dup'
+-- set line = recode_id where doc = 0
+print '10. fix line_id where no salesorder'
+UPDATE       
+	CommBE.dbo.comm_transaction
+SET                
+	line_id = [record_id],
+	[audit_id]=line_id 
+WHERE
+	[fiscal_yearmo_num]	>= '201901' AND
+	(doc_id = 0) AND
+	(line_id <> record_id) AND
+	(1=1)
+GO
+
+print '11. fix duplicate line_id - set to ID if dup'
 UPDATE       
 	CommBE.dbo.comm_transaction
 SET                
@@ -150,7 +164,9 @@ WHERE EXISTS
 		COUNT(*) >1
 )
 GO
-
+/*
+-- PROBLEM... fix this.  Do NOT run if already loaded
+-- needed?
 print '11. fix overlapping line - set to ID if source collision'
 UPDATE
 	CommBE.dbo.comm_transaction
@@ -174,6 +190,7 @@ where
 	) and
 	line_id <> [record_id]
 GO
+*/
 
 print '12. fix missing FSC comm_plan_id - use existing'
 UPDATE
@@ -277,7 +294,7 @@ WHERE
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202005
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 202005 and source_cd NOT in('JDE')
 -- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
@@ -287,7 +304,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='201901') AND
+	(fiscal_yearmo_num ='202005') AND
 	(1=1)
 GO
 
@@ -298,7 +315,7 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '201901') AND
+	(FiscalMonth =  '202005') AND
 	(1=1)
 GO
 
@@ -396,9 +413,9 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '201904' and '201904') AND
+	(fiscal_yearmo_num between  '202005' and '202005') AND
 --	load only adj?
---	source_cd NOT in('JDE') AND
+	source_cd NOT in('JDE') AND
 	(1=1)
 GO
 
@@ -429,3 +446,19 @@ GO
 select distinct FiscalMonth from comm.transaction_F555115
 */
 
+/*
+-- fix line# mess
+SELECT        top 1000 [fiscal_yearmo_num], record_id, line_id, audit_id
+--select distinct [fiscal_yearmo_num]
+FROM            comm_transaction
+where
+[fiscal_yearmo_num] >= '201601' AND
+audit_id > 0 AND
+record_id = line_id
+
+UPDATE       comm_transaction
+SET
+line_id = audit_id
+WHERE
+(fiscal_yearmo_num >= '201601') AND (audit_id > 0) AND (record_id = line_id)
+*/

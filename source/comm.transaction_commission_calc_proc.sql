@@ -219,7 +219,7 @@ Begin
 			-- FSC must have a code.  
 			(t.fsc_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			ISNULL([t.fsc_calc_key],0) <> r.calc_key AND
+			ISNULL(t.[fsc_calc_key],0) <> r.calc_key AND
 
 --	test 2 of 2
 --			(t.FiscalMonth = 201909 ) AND
@@ -262,6 +262,7 @@ Begin
 			-- relax ESS comm filter so if bad (blank), gets assigned to a key
 --			(t.ess_comm_group_cd <> '') AND 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(ISNULL(t.[ess_calc_key],0) <> r.calc_key ) AND
 --	test
 --			(t.FiscalMonth >= 201901 ) AND
 --			(r.calc_key is null) AND
@@ -670,7 +671,7 @@ Begin
 		WHERE
 			-- must be valid customer, as postal code driven based on Current address
 			(comm.transaction_F555115.WSSHAN_shipto > 0) AND 
---			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(comm.transaction_F555115.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 --			test
 --			(comm.transaction_F555115.FiscalMonth = 202005) AND
 --			(ID=3865598) AND
@@ -979,4 +980,3 @@ GO
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
 
--- PRINT (CONVERT( VARCHAR(24), GETDATE(), 121))

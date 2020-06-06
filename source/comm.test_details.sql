@@ -25,13 +25,13 @@ AS
 -- Legacy
 SELECT
 	-- PK
-	t.record_id AS ID_legacy
-	,- 1 AS ID
+	t.record_id AS ID
+	,'P' AS src
+
+	,t.record_id AS ID_legacy
 	,CAST(t.doc_id AS int) as doc_id
 	,t.line_id
-
-	,t.fiscal_yearmo_num
-	,'PROD' AS src
+	,CAST(t.fiscal_yearmo_num AS int) fiscal_yearmo_num
 	,LEFT(t.source_cd,3) AS source_cd
 
 	,f.branch_cd
@@ -98,13 +98,13 @@ UNION ALL
 
 -- New
 SELECT
-	t.ID_legacy 
-	,t.ID AS ID
+	t.ID AS ID
+	,'T' AS src
+	,t.ID_legacy 
+
 	,t.WSDOC__document_number
 	,t.WSLNID_line_number
-
 	,t.FiscalMonth
-	,'TEST' AS src
 	,t.source_cd
 
 	,f.Branch
@@ -166,10 +166,7 @@ WHERE
 --	(t.WSLNID_line_number = 1000) AND
 	(1=1)
 
-
-
 GO
 
 
-
--- SELECT  * FROM [comm].[test_detail] where ID_legacy = 59153980 
+SELECT  top 10 * FROM [comm].[test_detail] where doc_id = 13182717
