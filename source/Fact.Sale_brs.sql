@@ -32,6 +32,7 @@ AS
 ** 17 Jan 18	tmc		Add SubSavings metrics
 -- 21 Jan 19	tmc		Add Brand Key for Business Review
 -- 15 Feb 19	tmc		Add Price Method Key for PAR
+-- 08 Jun 20	tmc		Make CalMonth logic table driven so fails 100% no maint
 **    
 *******************************************************************************/
 
@@ -41,7 +42,9 @@ SELECT
 	,t.Shipto										AS ShipTo
 	,i.ItemKey										AS ItemKey
 	,icr.[CategoryRollupKey]						AS [CategoryRollupKey]
-	,sup.SupplierKey								AS BrandKey,CAST(FORMAT(t.Date,'yyyyMM') AS INT)			AS CalMonth	
+	,sup.SupplierKey								AS BrandKey
+
+	,d.CalMonth										AS CalMonth	
 	,CAST(t.Date AS date)							AS DateKey
 	,t.SalesOrderNumber
 	,t.LineNumber
@@ -62,9 +65,9 @@ SELECT
 
 	
 	-- Substitute logic
-	,t.ShippedQty/NULLIF(i.Item_Competitive_Conversion_rt,0)						AS SubsQuantity
+	-- divide by 0 smart logic
+	,ISNULL(t.ShippedQty/NULLIF(i.Item_Competitive_Conversion_rt,0),0)					AS SubsQuantity
 	,(t.NetSalesAmt) * (isub.CurrentCorporatePrice / NULLIF(i.CurrentCorporatePrice,0)) AS SubsSalesAmt
-
 
 	-- Lookup fields for Salesorder dimension
 	,hdr.IDMin										AS sales_order_key
@@ -122,6 +125,9 @@ FROM
 
 		WHERE	
 			(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE dday2.CalMonth = dd.CalMonth)) AND
+--			Test
+--			(d.SalesOrderNumber = 13178603) AND
+			--
 			(1=1)
 		GROUP BY 
 			d.SalesOrderNumber,
@@ -133,6 +139,9 @@ FROM
 
 WHERE        
 	(EXISTS (SELECT * FROM [Dimension].[CalendarMonth] dd WHERE dd.CalMonth = t.CalMonth)) AND
+--	test
+--	(t.SalesOrderNumber = 13178603) AND
+	--
 	(1 = 1)
 
 GO
@@ -143,7 +152,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM Fact.Sale_brs
--- SELECT * FROM Fact.Sale_brs
+-- SELECT * FROM Fact.Sale_brs where SalesOrderNumber = 13178603
 
 -- 1 month test
 -- 1.03; 2 259 017 RAW
@@ -152,7 +161,7 @@ GO
 -- 25 month test
 -- 4.29; 8 399 287
 
--- SELECT count (*) FROM Fact.Sale_brs
+-- SELECT CalMonth, count (*) FROM Fact.Sale_brs Group by CalMonth order by 1
 
 -- fail afer 2 min
 
