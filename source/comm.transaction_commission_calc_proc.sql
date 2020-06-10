@@ -274,6 +274,8 @@ Begin
 ------------------------------------------------------------------------------------------------------
 -- New - FSC
 ------------------------------------------------------------------------------------------------------
+
+-- XXX fix history
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -282,6 +284,7 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
+			-- where is fsc_code set? JDE vs IMP with no ST
 			fsc_salesperson_key_id = s.salesperson_key_id, 
 			fsc_comm_plan_id = s.comm_plan_id
 		FROM
@@ -640,6 +643,7 @@ Begin
 ------------------------------------------------------------------------------------------------------
 -- New & Legacy - CPS
 ------------------------------------------------------------------------------------------------------
+-- XXX fix history
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -648,9 +652,9 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			cps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
-			cps_comm_plan_id = m.comm_plan_id , 
-			cps_code = m.TerritoryCd
+			cps_code = m.TerritoryCd,
+			cps_salesperson_key_id = sales_key.comm_salesperson_key_id, 
+			cps_comm_plan_id = m.comm_plan_id
 --		test
 --		SELECT m.*, sales_key.comm_salesperson_key_id
 --
@@ -778,6 +782,7 @@ Begin
 ------------------------------------------------------------------------------------------------------
 -- New & Legacy - EPS
 ------------------------------------------------------------------------------------------------------
+-- XXX fix history
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -786,9 +791,9 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			eps_salesperson_key_id = sales_key.comm_salesperson_key_id , 
-			eps_comm_plan_id = m.comm_plan_id , 
-			eps_code = m.[master_salesperson_cd]
+			eps_code = m.[master_salesperson_cd],
+			eps_salesperson_key_id = sales_key.comm_salesperson_key_id, 
+			eps_comm_plan_id = m.comm_plan_id
 		FROM
 			comm.transaction_F555115 
 
@@ -832,6 +837,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	-- Clear before calculating so that there is no history junk if the EPS territor scope reduces
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
