@@ -29,10 +29,12 @@ SELECT
 	,'P' AS src
 
 	,t.record_id AS ID_legacy
+	,t.doc_key_id	as dock_key_id
 	,CAST(t.doc_id AS int) as doc_id
 	,t.line_id
 	,CAST(t.fiscal_yearmo_num AS int) fiscal_yearmo_num
 	,LEFT(t.source_cd,3) AS source_cd
+	,t.reference_order_txt AS owner_cd
 
 	,f.branch_cd
 	,t.comm_plan_id AS fsc_comm_plan_id
@@ -102,10 +104,12 @@ SELECT
 	,'T' AS src
 	,t.ID_legacy 
 
+	,CAST(t.WSDOCO_salesorder_number as varchar)
 	,t.WSDOC__document_number
 	,t.WSLNID_line_number
 	,t.FiscalMonth
 	,t.source_cd
+	,t.WSVR01_reference owner_cd -- XXX
 
 	,f.Branch
 	,t.fsc_comm_plan_id
@@ -169,4 +173,4 @@ WHERE
 GO
 
 
-SELECT  top 10 * FROM [comm].[test_detail] where doc_id = 13182717
+-- SELECT  top 10 * FROM [comm].[test_detail] where source_cd = 'IMP' and src = 'T' and owner_cd <>''

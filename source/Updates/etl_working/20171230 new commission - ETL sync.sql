@@ -231,7 +231,6 @@ SET
 	creation_dt = s.creation_dt,
 	note_txt = s.note_txt,
 	master_salesperson_cd = s.master_salesperson_cd,
-	flag_ind = s.select_ind,
 	territory_start_dt = ISNULL(s.territory_start_dt,'1980-01-01'),
 	employee_num = s.employee_num
 FROM  
@@ -245,7 +244,6 @@ WHERE
 	d.creation_dt <> s.creation_dt OR
 	d.note_txt <> s.note_txt OR
 	d.master_salesperson_cd  <> s.master_salesperson_cd OR
-	d.flag_ind <> s.select_ind OR
 	d.territory_start_dt <> ISNULL(s.territory_start_dt,'1980-01-01') OR
 	d.employee_num <> s.employee_num 
 GO
@@ -260,7 +258,6 @@ INSERT INTO comm.salesperson_master
 	creation_dt,
 	note_txt,
 	master_salesperson_cd,
-	flag_ind,
 	territory_start_dt,
 	employee_num
 )
@@ -271,7 +268,6 @@ SELECT
 	creation_dt,
 	note_txt,
 	master_salesperson_cd,
-	select_ind,
 	ISNULL(territory_start_dt, '1980-01-01'),
 	employee_num
 FROM
@@ -346,45 +342,176 @@ WHERE
 GO
 
 -- use this to fix FSC territory Prod vs NEW until go live
-print '12. Allign FSC Territory with Commission'
+print '12. Allign FSC Territory with Commission - HISTORY'
 UPDATE
 	BRS_CustomerFSC_History
 SET
-	HIST_TerritoryCd = s.fsc_min
+	HIST_TerritoryCd = s.salesperson_cd_MIN,
+	HIST_fsc_salesperson_key_id = salesperson_key_id_MIN,
+	HIST_fsc_comm_plan_id = comm_plan_id_MIN
 -- SELECT *  
 FROM
 	BRS_CustomerFSC_History d
 	INNER JOIN 
 	(
 		SELECT
-			CAST(fiscal_yearmo_num AS int) AS FiscalMonth, 
-			hsi_shipto_id, 
-			MIN(salesperson_cd) AS fsc_min
+			CAST(fiscal_yearmo_num AS int) AS FiscalMonth
+			,hsi_shipto_id
+			,MIN(salesperson_cd) AS salesperson_cd_MIN
+			,MIN(salesperson_key_id) AS salesperson_key_id_MIN
+			,MIN(comm_plan_id) AS comm_plan_id_MIN
 		FROM
 			CommBE.dbo.comm_transaction
 		WHERE
 			(source_cd = 'JDE') AND 
 			(fiscal_yearmo_num >= '201901') AND 
-			-- remove cases where multiple FSC per shipto per month
-			(record_id NOT IN (54108565, 55191867, 55976312, 55976313, 57216489, 57216490, 57216491, 57815920)) AND 
+			(salesperson_cd<>'') AND
+			(salesperson_key_id<>'Internal') AND
 			(1 = 1)
 		GROUP BY 
-		fiscal_yearmo_num, 
-		hsi_shipto_id
+			fiscal_yearmo_num, 
+			hsi_shipto_id
+		HAVING
+			-- ensure no ambiguous results
+			MIN(salesperson_cd) = MAX(salesperson_cd) AND
+		--	MIN(salesperson_key_id) <> MAX(salesperson_key_id) AND
+		--	MIN(comm_plan_id) <> MAX(comm_plan_id) AND
+			(1=1)
 	) AS s 
 	ON d.FiscalMonth = s.FiscalMonth AND 
 		d.Shipto = s.hsi_shipto_id AND 
-		d.HIST_SalesDivision not IN('AZA', 'AZE') AND 
-		d.HIST_TerritoryCd <> s.fsc_min AND 
-		s.fsc_min NOT IN ('', '**') AND 
+		-- comment below to force all updates
+		d.HIST_TerritoryCd <> s.salesperson_cd_MIN AND 
 		(1 = 1)
+GO
+
+print '13. EPS update plan & terr - HISTORY'
+UPDATE
+	BRS_CustomerFSC_History
+SET
+	HIST_eps_code = [master_salesperson_cd],
+	HIST_eps_salesperson_key_id = comm_salesperson_key_id, 
+	HIST_eps_comm_plan_id = comm_plan_id
+FROM
+	BRS_CustomerFSC_History d
+	INNER JOIN 
+	(
+		SELECT 
+			-- top 10 
+			Customer_Number, master_salesperson_cd, comm_salesperson_key_id, comm_plan_id
+		FROM  
+			[eps].[Customer] AS c 
+
+			INNER JOIN BRS_FSC_Rollup AS sales_key 
+			ON sales_key.TerritoryCd = c.Eps_Code
+
+			INNER JOIN [comm].[salesperson_master] m
+			ON m.[salesperson_key_id] = sales_key.comm_salesperson_key_id
+		WHERE
+			(Customer_Number > 0)
+	) AS s
+	ON d.Shipto = s.Customer_Number AND 
+		d.FiscalMonth >= 201901 AND
+		-- comment below to force all updates
+		HIST_eps_code <> [master_salesperson_cd] AND
+		(1 = 1)
+
+print '14. CPS update plan & terr'
+UPDATE
+	BRS_CustomerFSC_History
+SET
+	HIST_cps_code = master_salesperson_cd
+	,HIST_cps_salesperson_key_id = comm_salesperson_key_id
+	,HIST_cps_comm_plan_id = comm_plan_id
+FROM
+	BRS_CustomerFSC_History d
+	INNER JOIN 
+	(
+		SELECT 
+			 -- top 10 
+			shipto, master_salesperson_cd, comm_salesperson_key_id, m.comm_plan_id
+		FROM  
+			BRS_Customer AS c
+
+			INNER JOIN comm.plan_region_map AS map
+			ON map.comm_plan_id = 'CPSGP' AND 
+				c.PostalCode LIKE map.postal_code_where_clause_like AND 
+				1 = 1 
+
+			INNER JOIN BRS_FSC_Rollup AS sales_key 
+			ON sales_key.TerritoryCd = map.TerritoryCd
+
+			INNER JOIN [comm].[salesperson_master] m
+			ON m.[salesperson_key_id] = sales_key.comm_salesperson_key_id
+		WHERE
+			-- must be valid customer, as postal code driven based on Current address
+			(shipto > 0) AND 
+			(Postalcode <>'') AND
+			(1 = 1)
+	) AS s
+	ON d.Shipto = s.ShipTo AND 
+		d.FiscalMonth >= 201901 AND
+		-- comment below to force all updates
+		-- HIST_cps_code <> master_salesperson_cd AND
+		(1 = 1)
+
+print '15. Allign Item Commission FSC / ESS - HISTORY'
+UPDATE
+	[BRS_ItemHistory]
+SET
+	[HIST_comm_group_cd] = item_comm_group_cd
+-- SELECT *  
+FROM
+	[BRS_ItemHistory] d
+	INNER JOIN 
+	(
+		SELECT
+			-- top 10
+			CAST(fiscal_yearmo_num AS int) AS FiscalMonth
+			,item_id
+			-- merge fsc and ess item codes
+			,COALESCE(
+				NULLIF(MAX(item_comm_group_cd),''), 
+				NULLIF(MAX(ess_comm_group_cd),'')
+			) AS item_comm_group_cd
+		FROM
+			CommBE.dbo.comm_transaction
+		WHERE
+			(source_cd = 'JDE') AND 
+			(fiscal_yearmo_num >= '201901') AND 
+			(item_id<>'') AND
+			(salesperson_key_id='Internal') AND
+			(1 = 1)
+		GROUP BY 
+			fiscal_yearmo_num, 
+			item_id
+	) AS s 
+	ON d.FiscalMonth = s.FiscalMonth AND 
+		d.Item = s.item_id AND 
+		s.item_comm_group_cd <>'' AND
+		-- comment below to force all updates
+		d.[HIST_comm_group_cd] <> s.item_comm_group_cd AND 
+		(1 = 1)
+GO
+
+print '16. Allign Item Commission CSP / EPS - HISTORY'
+UPDATE
+	BRS_ItemHistory
+SET
+	HIST_comm_group_cps_cd = s.comm_group_cps_cd, 
+	HIST_comm_group_eps_cd = s.comm_group_eps_cd
+FROM
+	BRS_Item s
+
+	INNER JOIN BRS_ItemHistory d ON 
+	s.Item = d.Item AND
+	d.FiscalMonth >=201901
 GO
 
 /*
 -- TBD. check HIST comm for cust / item set (s/b setup in Friday archive with Monday correction)
-
 a) synchronize eps_item to BRS_Item!eps_item
-b) synch BRS_Item to item history, current month
-c) sycch BRS_Cust to cust history, current month
+b) synch BRS_Item to item history, current month, DONE
+c) sycch BRS_Cust to cust history, current month, DONE
 
 */

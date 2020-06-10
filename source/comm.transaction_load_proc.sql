@@ -268,7 +268,9 @@ Begin
 		if (@bDebug <> 0)
 			print '9. check - [WS$SPC_supplier_code]'
 
-		SELECT @nRowCount = COUNT(*)
+		SELECT 
+			@nRowCount = COUNT(*)
+--			t.WS$SPC_supplier_code
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -501,12 +503,12 @@ Begin
 			-- calculated fields
 			'JDE' AS source_cd,
 
-			(t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount) 
+			ROUND((t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount), 2)
 				AS [transaction_amt],
-			(
+			ROUND((
 				(t.WSAEXP_extended_price - t.WS$ODS_order_discount_amount) 
 				- (t.WS$UNC_sales_order_cost_markup * t.WSSOQS_quantity_shipped)
-			)	AS [gp_ext_amt],
+			), 2)	AS [gp_ext_amt],
 
 			-- FSC Lookup (assumed monthly pull)
 			f.HIST_TerritoryCd AS [fsc_code],
@@ -584,9 +586,8 @@ Begin
 		UPDATE    
 			comm.transaction_F555115
 		SET              
-			[gp_ext_amt] = [transaction_amt] * (g.booking_rt / 100.0),
+			[gp_ext_amt] = ROUND([transaction_amt] * (g.booking_rt / 100.0), 2),
 			[gp_ext_org_amt] = [gp_ext_amt]
-			-- SELECT 	[FiscalMonth], t.[WSLITM_item_number], i.comm_group_cd, t.WSSOQS_quantity_shipped, t.transaction_amt, [gp_ext_amt], [gp_ext_org_amt], g.booking_rt, t.[transaction_amt] * (g.booking_rt / 100.0) as new_gp
 		FROM         
 			comm.transaction_F555115 as t
 
@@ -669,7 +670,7 @@ End
 Return @nErrorCode
 GO
 
--- delete from comm.transaction_F555115 where FiscalMonth = 202004
+-- delete from comm.transaction_F555115 where FiscalMonth = 202001
 
 -- Debug
 -- EXEC comm.transaction_load_proc @bDebug=1

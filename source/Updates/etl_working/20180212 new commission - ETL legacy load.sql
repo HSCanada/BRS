@@ -294,7 +294,7 @@ WHERE
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202005 and source_cd NOT in('JDE')
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 202001 and source_cd NOT in('JDE')
 -- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
@@ -332,6 +332,7 @@ INSERT INTO comm.transaction_F555115
 	,transaction_amt
 	,WSLNID_line_number
 	,WSDOCO_salesorder_number
+	,WSDOC__document_number
 	,WSVR01_reference
 	,WS$OSC_order_source_code
 	,WSLITM_item_number
@@ -375,6 +376,7 @@ SELECT
 	,transaction_dt
 	,transaction_amt
 	,line_id
+	,doc_id as salesorder
 	,doc_id
 	,ISNULL(reference_order_txt,'')
 	,order_source_cd
@@ -413,9 +415,11 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202005' and '202005') AND
+	(fiscal_yearmo_num between  '202001' and '202001') AND
 --	load only adj?
 	source_cd NOT in('JDE') AND
+--	test
+--	(doc_id = 13182717 ) AND
 	(1=1)
 GO
 

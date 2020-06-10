@@ -601,6 +601,7 @@ DEALLOCATE c;
 -- Test settings
 -- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST  FROM BRS_Rollup_Support01
 
+-- XXX add comm FSC & groups here, tmc, 10 June 20
 INSERT INTO BRS_ItemHistory 
 (
 	Item, 
