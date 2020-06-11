@@ -205,7 +205,10 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			fsc_code = s.HIST_TerritoryCd
+			-- reference cust version
+			[cust_comm_group_cd] = s.HIST_cust_comm_group_cd
+
+			,fsc_code = s.HIST_TerritoryCd
 			,fsc_salesperson_key_id = s.HIST_fsc_salesperson_key_id
 			,fsc_comm_plan_id = s.HIST_fsc_comm_plan_id
 
@@ -306,7 +309,10 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			fsc_comm_group_cd = s.HIST_comm_group_cd
+			-- reference item version
+			[item_comm_group_cd] = s.HIST_comm_group_cd
+			,fsc_comm_group_cd = s.HIST_comm_group_cd
+
 --		select s.* 
 		FROM
 			[dbo].[BRS_ItemHistory] s
@@ -319,11 +325,11 @@ Begin
 --			(s.HIST_comm_group_cd <> '') AND
 			(1 = 1)
 		WHERE 
---			(s.FiscalMonth = @nCurrentFiscalYearmoNum)
+			(s.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(s.HIST_comm_group_cd <> '') AND
 --			test
---			(s.FiscalMonth = 202001) AND
---			(s.Item = '9392416') AND
+--			(s.FiscalMonth >= 202001) AND
+--			(s.HIST_comm_group_cd like 'SPM%') AND
 			(1=1)
 
 		Set @nErrorCode = @@Error

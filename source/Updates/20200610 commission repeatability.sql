@@ -186,3 +186,25 @@ HAVING
 --	MIN(ess_comm_group_cd) <> MAX(ess_comm_group_cd) AND
 
 */
+
+-- add item_comm to track overrides, ITMPAR
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	item_comm_group_cd char(6) NULL
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group5 FOREIGN KEY
+	(
+	item_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

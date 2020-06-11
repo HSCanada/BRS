@@ -3,18 +3,39 @@
 
 -- TODO: NEW load test & FG load, 12 Feb 18
 -- 
-/*
-0. update DEV Dim & Fact - Done
-1. synch Prod Dim to Dev - Done
-2. Scrub prod fact - Done
-3. load Prod fact to Dev -Done
-4. calc Dev fact Legacy - Done
-*/
 
 ------------------------------------------------------------------------------------------------------
 -- sync Prod to NEW
 ------------------------------------------------------------------------------------------------------
 
+/*
+-- run on comm prod to ensure reverse map is correct
+
+print 'A1. reverse map update, set default nomap'
+UPDATE       comm_group
+SET                SPM_comm_group_reverse_cd = comm_group_cd
+
+print 'A2. reverse map update, set reversal (ITMEPS special case, as ITMEPS & ITMSND both map to SPMSND)'
+UPDATE
+	comm_group
+SET
+	SPM_comm_group_reverse_cd = map.comm_group_cd
+FROM
+	comm_group 
+	INNER JOIN comm_group AS map 
+	ON comm_group.comm_group_cd = map.SPM_comm_group_cd
+WHERE
+	(map.SPM_comm_group_cd LIKE 'SPM%') AND 
+	(map.comm_group_cd NOT LIKE 'SPM%') AND 
+	(map.comm_group_cd <> 'ITMEPS') AND 
+	(comm_group.comm_group_cd LIKE 'SPM%') AND 
+	(1 = 1)
+
+*/
+
+--> START
+--
+-- set DB to to BRSales dev / prod, run 1 - 10
 print '1. comm.group - Update'
 UPDATE
 	comm.[group]
@@ -72,6 +93,7 @@ WHERE comm_group_cd <>'' AND
 	NOT EXISTS (SELECT * FROM comm.[group] WHERE comm_group_cd = s.comm_group_cd)
 GO
 
+--
 -- add handled by Dimension synch
 print '3. BRS_Item - Update'
 UPDATE
@@ -341,6 +363,10 @@ WHERE
 	)
 GO
 
+--< STOP
+
+--> Careful updates to follow, effects history
+
 -- use this to fix FSC territory Prod vs NEW until go live
 print '12. Allign FSC Territory with Commission - HISTORY'
 UPDATE
@@ -455,12 +481,26 @@ FROM
 		-- HIST_cps_code <> master_salesperson_cd AND
 		(1 = 1)
 
-print '15. Allign Item Commission FSC / ESS - HISTORY'
+/*
+--
+-- clear item (one-time)
+UPDATE
+	[BRS_ItemHistory]
+SET
+	HIST_comm_group_cd = '',
+	HIST_comm_group_cps_cd = '',
+	HIST_comm_group_eps_cd = ''
+WHERE
+	FiscalMonth >= 201901
+GO
+*/
+
+print '15. Allign Item Commission FSC / ESS - HISTORY (ITMEPS issues)'
 UPDATE
 	[BRS_ItemHistory]
 SET
 	[HIST_comm_group_cd] = item_comm_group_cd
- SELECT s.*
+-- SELECT s.*
 FROM
 	[BRS_ItemHistory] d
 	INNER JOIN 
@@ -469,18 +509,31 @@ FROM
 			-- top 10
 			CAST(fiscal_yearmo_num AS int) AS FiscalMonth
 			,item_id
-			-- merge fsc and ess item codes
+			--
+			,MAX(fsc_map.[SPM_comm_group_reverse_cd]) fsc
+			,MAX(ess_map.[SPM_comm_group_reverse_cd]) ess
+
+			-- merge fsc and ess item codes, mapping reverses SM prod mapping
 			,COALESCE(
-				NULLIF(MAX(item_comm_group_cd),''), 
-				NULLIF(MAX(ess_comm_group_cd),'')
+				NULLIF(MAX(fsc_map.[SPM_comm_group_reverse_cd]),''), 
+				NULLIF(MAX(ess_map.[SPM_comm_group_reverse_cd]),'')
 			) AS item_comm_group_cd
 		FROM
-			CommBE.dbo.comm_transaction
+			CommBE.dbo.comm_transaction t
+
+			INNER JOIN CommBE.dbo.[comm_group] fsc_map
+			ON fsc_map.comm_group_cd = item_comm_group_cd
+
+			INNER JOIN CommBE.dbo.[comm_group] ess_map
+			ON ess_map.comm_group_cd = ess_comm_group_cd
 		WHERE
-			(source_cd = 'JDE') AND 
+			(t.source_cd = 'JDE') AND 
 			(fiscal_yearmo_num >= '201901') AND 
 			(item_id<>'') AND
-			(salesperson_key_id='Internal') AND
+			(salesperson_key_id<>'Internal') AND
+--			test
+--			(item_comm_group_cd like 'SPM%') AND
+			(t.item_id = '5875337') AND
 			(1 = 1)
 		GROUP BY 
 			fiscal_yearmo_num, 
@@ -490,9 +543,9 @@ FROM
 		d.Item = s.item_id AND 
 		s.item_comm_group_cd <>'' AND
 		-- comment below to force all updates
---		d.[HIST_comm_group_cd] <> s.item_comm_group_cd AND 
+		d.[HIST_comm_group_cd] <> s.item_comm_group_cd AND 
 --		test
-		d.Item = '9392416' AND
+--		d.Item = '9392416' AND
 		(1 = 1)
 GO
 
@@ -508,6 +561,25 @@ FROM
 	INNER JOIN BRS_ItemHistory d ON 
 	s.Item = d.Item AND
 	d.FiscalMonth >=201901
+GO
+
+print '17. Allign Item Commission FSC / ESS - HISTORY (ITMEPS issue FIX)'
+UPDATE
+	BRS_ItemHistory
+SET
+	HIST_comm_group_cd = 'ITMEPS'
+--SELECT distinct d.HIST_comm_group_cd, d.HIST_comm_group_eps_cd
+FROM
+	BRS_Item s
+
+	INNER JOIN BRS_ItemHistory d ON 
+	s.Item = d.Item AND
+	d.FiscalMonth >=201901
+WHERE
+	(d.HIST_comm_group_eps_cd LIKE 'EPS%') AND
+	(d.HIST_comm_group_cd = 'ITMSND') AND
+--	(d.Item = '5872630') AND
+	(1 = 1)
 GO
 
 /*

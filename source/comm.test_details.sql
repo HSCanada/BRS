@@ -73,6 +73,8 @@ SELECT
 
 	,-1 AS fsc_calc_key
 	,-1 AS ess_calc_key
+	,'' AS cust_comm_group_cd
+	,'' AS item_comm_group_cd
 
 FROM
 	[CommBE].[dbo].comm_transaction AS t 
@@ -149,6 +151,8 @@ SELECT
 
 	,t.fsc_calc_key
 	,t.ess_calc_key
+	,t.cust_comm_group_cd
+	,t.item_comm_group_cd
 
 FROM
 	comm.transaction_F555115 AS t 
