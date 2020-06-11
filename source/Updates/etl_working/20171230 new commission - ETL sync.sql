@@ -10,6 +10,7 @@
 
 /*
 -- run on comm prod to ensure reverse map is correct
+-- last ran 11 Jun 20
 
 print 'A1. reverse map update, set default nomap'
 UPDATE       comm_group
@@ -30,7 +31,6 @@ WHERE
 	(map.comm_group_cd <> 'ITMEPS') AND 
 	(comm_group.comm_group_cd LIKE 'SPM%') AND 
 	(1 = 1)
-
 */
 
 --> START
@@ -478,7 +478,7 @@ FROM
 	ON d.Shipto = s.ShipTo AND 
 		d.FiscalMonth >= 201901 AND
 		-- comment below to force all updates
-		-- HIST_cps_code <> master_salesperson_cd AND
+		HIST_cps_code <> master_salesperson_cd AND
 		(1 = 1)
 
 /*
@@ -533,7 +533,7 @@ FROM
 			(salesperson_key_id<>'Internal') AND
 --			test
 --			(item_comm_group_cd like 'SPM%') AND
-			(t.item_id = '5875337') AND
+--			(t.item_id = '5875337') AND
 			(1 = 1)
 		GROUP BY 
 			fiscal_yearmo_num, 
