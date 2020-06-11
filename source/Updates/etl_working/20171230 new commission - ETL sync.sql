@@ -460,7 +460,7 @@ UPDATE
 	[BRS_ItemHistory]
 SET
 	[HIST_comm_group_cd] = item_comm_group_cd
--- SELECT *  
+ SELECT s.*
 FROM
 	[BRS_ItemHistory] d
 	INNER JOIN 
@@ -490,7 +490,9 @@ FROM
 		d.Item = s.item_id AND 
 		s.item_comm_group_cd <>'' AND
 		-- comment below to force all updates
-		d.[HIST_comm_group_cd] <> s.item_comm_group_cd AND 
+--		d.[HIST_comm_group_cd] <> s.item_comm_group_cd AND 
+--		test
+		d.Item = '9392416' AND
 		(1 = 1)
 GO
 
