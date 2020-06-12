@@ -367,6 +367,8 @@ GO
 
 --> Careful updates to follow, effects history
 
+--- update to ONLY run on last month / prod vs dev...
+
 -- use this to fix FSC territory Prod vs NEW until go live
 print '12. Allign FSC Territory with Commission - HISTORY'
 UPDATE

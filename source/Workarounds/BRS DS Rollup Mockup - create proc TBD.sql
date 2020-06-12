@@ -46,7 +46,8 @@
 -- 17 Feb 17	tmc		Fix Summary Bug caught by Gary W
 -- 20 Feb 17	tmc		Make BRS_AGG_ICMBGAD_Sales symetrical ...
 --							to BRS_AGG_CMBGAD_Sales
-**	15 Feb 17	tmc		Add extra items to history for hfm
+--	15 Feb 17	tmc		Add extra items to history for hfm
+--	12 Jun 20	tmc		add commision state to history for commBE_new
 
 **    
 *******************************************************************************/
@@ -593,7 +594,7 @@ DEALLOCATE c;
 
 -- add alert here to say when done?
 
-/*
+-- /*
 -- Below needs to be streamlined and possibly moved (W/F Gary!  27 Oct 16)
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
@@ -604,20 +605,26 @@ DEALLOCATE c;
 -- XXX add comm FSC & groups here, tmc, 10 June 20
 INSERT INTO BRS_ItemHistory 
 (
-	Item, 
-	FiscalMonth, 
-	Supplier,
-	[MinorProductClass],
-	[Label],
-	[Brand]
+	Item
+	,FiscalMonth
+	,Supplier
+	,[MinorProductClass]
+	,[Label]
+	,[Brand]
+	,[HIST_comm_group_cd]
+	,[HIST_comm_group_cps_cd]
+	,[HIST_comm_group_eps_cd]
 )
 SELECT     
-	BRS_Item.Item, 
-	BRS_Config.FiscalMonth, 
-	BRS_Item.Supplier,
-	[MinorProductClass],
-	[Label],
-	[Brand]
+	BRS_Item.Item
+	,BRS_Config.FiscalMonth
+	,BRS_Item.Supplier
+	,[MinorProductClass]
+	,[Label]
+	,[Brand]
+	,[comm_group_cd]
+	,[comm_group_cps_cd]
+	,[comm_group_eps_cd]
 FROM         
 	BRS_Item 
 	CROSS JOIN BRS_Config
@@ -625,28 +632,38 @@ GO
 
 INSERT INTO BRS_CustomerFSC_History
 (
-	Shipto, 
-	FiscalMonth,
-	HIST_TerritoryCd,
-	HIST_VPA,
-	HIST_Specialty,
-	HIST_MarketClass,
-	HIST_SegCd,
-	HIST_TsTerritoryCd,
-	HIST_SalesDivision,
-	[HIST_cust_comm_group_cd]
+	Shipto
+	,FiscalMonth
+	,HIST_TerritoryCd
+	,HIST_VPA
+	,HIST_Specialty
+	,HIST_MarketClass
+	,HIST_SegCd
+	,HIST_TsTerritoryCd
+	,HIST_SalesDivision
+	,[HIST_cust_comm_group_cd]
+	-- new comm history
+	,[HIST_fsc_salesperson_key_id]
+	,[HIST_fsc_comm_plan_id]
+	,[HIST_cps_code]
+	,[HIST_cps_salesperson_key_id]
+	,[HIST_cps_comm_plan_id]
+	,[HIST_eps_code]
+	,[HIST_eps_salesperson_key_id]
+	,[HIST_eps_comm_plan_id]
+	
 )
 SELECT     
-	c.ShipTo, 
-	g.FiscalMonth,
-	c.TerritoryCd, 
-	c.VPA,
-	c.Specialty,
-	c.MarketClass,
-	c.SegCd,
-	c.TsTerritoryCd,
-	c.SalesDivision,
-	c.comm_status_cd
+	c.ShipTo
+	,g.FiscalMonth
+	,c.TerritoryCd
+	,c.VPA
+	,c.Specialty
+	,c.MarketClass
+	,c.SegCd			-- ok, use this, not new
+	,c.TsTerritoryCd
+	,c.SalesDivision
+	,c.comm_status_cd
 
 FROM         
 	BRS_Customer c

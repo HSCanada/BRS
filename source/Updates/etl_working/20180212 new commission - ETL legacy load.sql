@@ -415,9 +415,11 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202001' and '202001') AND
+	(fiscal_yearmo_num between  '202001' and '202005') AND
+
 --	load only adj?
 	source_cd NOT in('JDE') AND
+
 --	test
 --	(doc_id = 13182717 ) AND
 	(1=1)

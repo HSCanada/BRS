@@ -1,4 +1,3 @@
-
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -124,6 +123,7 @@ Begin
 			print '1. check - [SalesDate]'
 
 		SELECT    @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -141,6 +141,7 @@ Begin
 			print '2. check - [WSDOCO_salesorder_number]'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -160,6 +161,7 @@ Begin
 			print '3. check - [WSSHAN_shipto] - current'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -177,6 +179,7 @@ Begin
 			print '4. check - [WSSHAN_shipto] - history'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 
 			INNER JOIN BRS_SalesDay AS d 
@@ -200,6 +203,7 @@ Begin
 			print '5. check - [WSLITM_item_number]'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -217,6 +221,7 @@ Begin
 			print '6. check - [WS$ESS_equipment_specialist_code]'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -234,6 +239,7 @@ Begin
 			print '7. check - [WSCAG__cagess_code]'
 
 		SELECT @nRowCount = COUNT(*)
+		-- select *
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -251,7 +257,7 @@ Begin
 			print '8. check - [WSSIC__speciality]'
 
 		SELECT @nRowCount = COUNT(*)
---		SELECT t.WSSIC__speciality
+--		SELECT distinct t.WSSIC__speciality
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -270,7 +276,7 @@ Begin
 
 		SELECT 
 			@nRowCount = COUNT(*)
---			t.WS$SPC_supplier_code
+--		SELECT	distinct t.WS$SPC_supplier_code
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 		WHERE NOT EXISTS
 		(
@@ -288,6 +294,7 @@ Begin
 			print '10. check - [WSLITM_item_number] - history'
 
 		SELECT @nRowCount = COUNT(*)
+--		SELECT	*
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 
 			INNER JOIN BRS_SalesDay AS d 
@@ -545,7 +552,11 @@ Begin
 			ON t.WSSHAN_shipto = f.Shipto AND
 				d.FiscalMonth = f.FiscalMonth
 		WHERE 
+			-- load max fiscal month for status checking
+			-- BUT, all stage to have multiple months for speed
+			-- allows full year to be reloaded
 			(WSAC10_division_code NOT IN ('AZA','AZE')) AND
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
 
 		Set @nErrorCode = @@Error
@@ -616,6 +627,8 @@ Begin
 	Begin
 		if (@bDebug <> 0)
 			Print '14. Clear STAGE'
+		-- warning, this will clear all stage if multi months used.
+		-- default option is not clear, so leaving for now
 		Delete FROM Integration.F555115_commission_sales_extract_Staging
 
 		Set @nErrorCode = @@Error
@@ -670,7 +683,10 @@ End
 Return @nErrorCode
 GO
 
--- delete from comm.transaction_F555115 where FiscalMonth = 202001
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
+
+-- delete from comm.transaction_F555115 where FiscalMonth = 20200
+
 
 -- Debug
 -- EXEC comm.transaction_load_proc @bDebug=1

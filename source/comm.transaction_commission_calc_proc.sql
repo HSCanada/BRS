@@ -904,6 +904,7 @@ Return @nErrorCode
 
 GO
 
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 
 -- Debug
 -- Exec comm.transaction_commission_calc_proc @bDebug=1
