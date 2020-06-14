@@ -164,33 +164,6 @@ WHERE EXISTS
 		COUNT(*) >1
 )
 GO
-/*
--- PROBLEM... fix this.  Do NOT run if already loaded
--- needed?
-print '11. fix overlapping line - set to ID if source collision'
-UPDATE
-	CommBE.dbo.comm_transaction
-SET                
-	line_id = [record_id],
-	[audit_id]=line_id 
-where 
-	fiscal_yearmo_num >= '201901' and
-	EXISTS
-	(
-		SELECT         
-			doc_id,
-			doc_type_cd,
-			line_id
-		FROM            
-			comm.transaction_F555115 t
-		WHERE 
-			CAST(CommBE.dbo.comm_transaction.doc_id as int) =t.WSDOCO_salesorder_number and 
-			CommBE.dbo.comm_transaction.doc_type_cd =t.WSDCTO_order_type and 
-			CommBE.dbo.comm_transaction.line_id = t.WSLNID_line_number
-	) and
-	line_id <> [record_id]
-GO
-*/
 
 print '12. fix missing FSC comm_plan_id - use existing'
 UPDATE

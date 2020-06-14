@@ -110,7 +110,7 @@ Begin
 End
 
 
-If (@nBatchStatus <>999)
+If (@nBatchStatus=0)
 Begin
 
 ------------------------------------------------------------------------------------------------------
@@ -183,14 +183,17 @@ Begin
 		FROM  [Integration].F555115_commission_sales_extract_Staging t
 
 			INNER JOIN BRS_SalesDay AS d 
-			ON t.WSDGL__gl_date = d.SalesDate
+			ON (t.WSDGL__gl_date = d.SalesDate) AND
+				(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+				(1=1)
 
 		WHERE NOT EXISTS
 		(
 			SELECT * FROM [dbo].[BRS_CustomerFSC_History] s
 			WHERE 
-				t.WSSHAN_shipto = s.ShipTo AND
-				d.FiscalMonth = s.FiscalMonth 
+				(t.WSSHAN_shipto = s.ShipTo) AND
+				(d.FiscalMonth = s.FiscalMonth) AND
+				(1=1)
 		)
 
 		Set @nErrorCode = @@Error
@@ -423,7 +426,7 @@ Begin
 			[eps_comm_group_cd]
 		)
 		SELECT        
-		--	TOP (10) 
+		--	SELECT TOP (10) 
 
 			d.FiscalMonth,
 			t.WSCO___company,
@@ -556,6 +559,7 @@ Begin
 			-- BUT, all stage to have multiple months for speed
 			-- allows full year to be reloaded
 			(WSAC10_division_code NOT IN ('AZA','AZE')) AND
+--			(d.FiscalMonth  = 202001) AND
 			(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
 
@@ -685,7 +689,7 @@ GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 
--- delete from comm.transaction_F555115 where FiscalMonth = 20200
+-- delete from comm.transaction_F555115 where FiscalMonth = 202006
 
 
 -- Debug

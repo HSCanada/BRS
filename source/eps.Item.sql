@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	20 May 20	tmc		Centralize Compudent Handpiece expection here.  
 **						If more, add logic to table hfm.eps_code_rule
+**	13 Jun 20	tmc		add eps commission map code for synch
 *******************************************************************************/
 
 -- item
@@ -47,6 +48,7 @@ SELECT
 	,CAST(i.ItemCreationDate AS Date) AS Item_Create_Date
 	,i.ItemStatus					AS Item_Status
 	,i.StockingType					AS Stocking_Type
+	,p.[comm_group_eps_cd]
 
 
 FROM
@@ -72,6 +74,7 @@ WHERE
 	(r.StatusCd = 1) AND 
 	(p.[eps_track_ind] = 1) AND
 	(i.SalesCategory <> 'PARTS') AND
+	-- work-around to remove incorrectly coded products
 	(i.Item not In ('1074153','1076903','1070511')) AND
 	(1=1)
 

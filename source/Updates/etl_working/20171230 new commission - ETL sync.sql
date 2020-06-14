@@ -363,8 +363,87 @@ WHERE
 	)
 GO
 
+-- fsc fix
+/*
+print '14. update eps terr - current'
+UPDATE
+	[dbo].[BRS_Customer]
+SET
+	TerritoryCd = ''
+select *
+FROM
+	[dbo].[BRS_Customer] AS c 
+WHERE
+	(c.shipto > 0 ) AND
+	(c.TerritoryCd in ('')) AND
+	(c.SalesDivision NOT IN ('AZA','AZE')) AND
+	(1=1)
+*/
+
+
+-- synch eps
+
+print '12. update comm_group_eps_cd'
+UPDATE
+	[dbo].[BRS_item]
+SET
+	comm_group_eps_cd = s.[comm_group_eps_cd]
+FROM
+	[eps].[item] AS s
+WHERE
+	(s.Item_Number = Item) AND
+	([dbo].[BRS_item].comm_group_eps_cd <> s.[comm_group_eps_cd]) AND
+	(1=1)
+GO
+
+print '13. update comm_group_cd based on eps'
+UPDATE
+	[dbo].[BRS_item]
+SET
+	comm_group_eps_cd = 'ITMEPS'
+-- select top 10 item,Supplier, comm_group_cd, comm_group_eps_cd
+FROM
+	[dbo].[BRS_item]
+WHERE
+	(comm_group_eps_cd like 'EPS%') AND
+	(comm_group_cd <> 'ITMEPS') AND
+	-- business exception where handpiece NOT synched to FSC
+	NOT (supplier = 'BAINTE' and comm_group_cd='ITMFO2') AND
+	(1=1)
+GO
+
+
+print '14. update eps terr - current'
+UPDATE
+	[dbo].[BRS_Customer]
+SET
+	eps_code = c.Eps_Code
+FROM
+	[eps].[Customer] AS c 
+WHERE
+	(c.Customer_Number = shipto) AND
+	(Customer_Number > 0) AND
+	(c.Eps_Code <> [dbo].[BRS_Customer].eps_Code)
+
+
+print '15. synch cps terr - current'
+UPDATE
+	[dbo].[BRS_Customer]
+SET
+	cps_code = map.TerritoryCd
+FROM
+	comm.plan_region_map AS map
+WHERE
+	-- must be valid customer, as postal code driven based on Current address
+	(shipto > 0) AND 
+	(Postalcode <>'') AND
+	(map.comm_plan_id = 'CPSGP') AND 
+	(PostalCode LIKE map.postal_code_where_clause_like) AND 
+	(1 = 1)
+
 --< STOP
 
+/*
 --> Careful updates to follow, effects history
 
 --- update to ONLY run on last month / prod vs dev...
@@ -482,6 +561,7 @@ FROM
 		-- comment below to force all updates
 		HIST_cps_code <> master_salesperson_cd AND
 		(1 = 1)
+*/
 
 /*
 --
@@ -497,6 +577,7 @@ WHERE
 GO
 */
 
+/*
 print '15. Allign Item Commission FSC / ESS - HISTORY (ITMEPS issues)'
 UPDATE
 	[BRS_ItemHistory]
@@ -583,11 +664,5 @@ WHERE
 --	(d.Item = '5872630') AND
 	(1 = 1)
 GO
-
-/*
--- TBD. check HIST comm for cust / item set (s/b setup in Friday archive with Monday correction)
-a) synchronize eps_item to BRS_Item!eps_item
-b) synch BRS_Item to item history, current month, DONE
-c) sycch BRS_Cust to cust history, current month, DONE
-
 */
+

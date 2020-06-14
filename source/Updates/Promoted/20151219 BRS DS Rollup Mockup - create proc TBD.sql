@@ -93,11 +93,11 @@ WHERE
 --------------------------------------------------------------------------------
 Print 'Primary Update *****'
 --------------------------------------------------------------------------------
-
+/*
 -- moved from trucate due to rights
 DELETE FROM BRS_AGG_CDBGAD_Sales
 DELETE FROM BRS_AGG_CMBGAD_Sales
-
+*/
 
 OPEN c;
 
@@ -594,14 +594,10 @@ DEALLOCATE c;
 
 -- add alert here to say when done?
 
--- /*
+/*
 -- Below needs to be streamlined and possibly moved (W/F Gary!  27 Oct 16)
 
 -- Run only ONCE on Last day of month, after Dimension loaded and SM corrections run
-
--- Test settings
--- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST  FROM BRS_Rollup_Support01
-
 -- XXX add comm FSC & groups here, tmc, 10 June 20
 INSERT INTO BRS_ItemHistory 
 (
@@ -629,7 +625,8 @@ FROM
 	BRS_Item 
 	CROSS JOIN BRS_Config
 GO
-
+*/
+/*
 INSERT INTO BRS_CustomerFSC_History
 (
 	Shipto
@@ -645,9 +642,11 @@ INSERT INTO BRS_CustomerFSC_History
 	-- new comm history
 	,[HIST_fsc_salesperson_key_id]
 	,[HIST_fsc_comm_plan_id]
+
 	,[HIST_cps_code]
 	,[HIST_cps_salesperson_key_id]
 	,[HIST_cps_comm_plan_id]
+
 	,[HIST_eps_code]
 	,[HIST_eps_salesperson_key_id]
 	,[HIST_eps_comm_plan_id]
@@ -664,12 +663,15 @@ SELECT
 	,c.TsTerritoryCd
 	,c.SalesDivision
 	,c.comm_status_cd
+	-- new comm history
+
 
 FROM         
 	BRS_Customer c
 	CROSS JOIN BRS_Config g
 GO
-
+*/
+/*
 print 'True up the FSC to match last day (updated Month filter)'
 SELECT     
 	SalesOrderNumberKEY, 
@@ -720,12 +722,13 @@ WHERE
 (t.DocType <> 'AA') AND 
 (t.FiscalMonth between 202005 and 202005) 
 GO
-
+*/
 -- Run only FIRST day of month, after Dimension loaded and SM corrections run
 
 -- 1 of 2
 -- Missing Account? - due to setup and bill on last day of month.  Manual fix for now.
 -- Fixed to capture Adj Accounts
+/*
 SELECT DISTINCT    
 	t.Shipto, 
 	t.FiscalMonth, 
@@ -742,13 +745,12 @@ where
 --	(DocType <> 'AA') And
 	(NOT EXISTS (SELECT * FROM BRS_CustomerFSC_History h WHERE h.Shipto = t.Shipto AND  h.FiscalMonth = t.FiscalMonth)) AND
 	(t.FiscalMonth between 202005 and 202005) 
-
+*/
 -- see adhocDB 't sm day1' to fix.  TODO, add logic to script
-
+/*
 -- 2 of 2
-
 -- DS adj fix, tmc 7 Jan 20
-print '24. ensure that there is an adjust SO for every actaul SO'
+print '24. ensure that there is an adjust SO for every actual SO'
 INSERT INTO 
 	[dbo].[BRS_TransactionDW_Ext] 
 	([SalesOrderNumber], DocType)
@@ -764,16 +766,13 @@ where
 	) 
 ORDER BY 1
 GO
-
+*/
 -- Next steps:
 -- 1. set Monthend end & prior ME dates, after DS published
 -- 2. Run this script Summary builds (1 of 2) prior ME adj  
 --		a) set dates
 --		c) run script (about 18 min, for DS first table, 90min for full run )
-*/
-
 
 -- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
-
 
 -- 20m
