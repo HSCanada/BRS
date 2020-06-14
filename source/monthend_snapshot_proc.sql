@@ -105,7 +105,7 @@ Begin
 	Print 'Confirm BatchStatus NOT run (0)'
 	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
-	Print 'pre-process: checking steps 1 - 3'
+	Print 'pre-process: checking steps 1 - 4'
 End
 
 -- only run once
@@ -125,7 +125,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '1. check - fsc set (full check)'
+			print '1. check - fsc cust (full check)'
 
 		SELECT    @nRowCount = COUNT(*)
 		-- select top 100 *
@@ -153,7 +153,26 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '2. check - eps set (partial check)'
+			print '2. check - fsc item (full check)'
+
+		SELECT    @nRowCount = COUNT(*)
+		-- select top 100 *
+		FROM  
+			[dbo].[BRS_Item] i
+	
+		WHERE 
+			(i.item > '0') AND
+			(i.comm_group_cd ='') AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 2
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '3. check - eps cust (partial check)'
 
 		SELECT    @nRowCount = COUNT(*)
 		-- select top 10 *
@@ -169,13 +188,13 @@ Begin
 			(1=1)
 
 		Set @nErrorCode = @@Error
-		If @nRowCount > 0 Set @nErrorCode = 2
+		If @nRowCount > 0 Set @nErrorCode = 3
 	End
 
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '3. check - cps set (partial check)'
+			print '4. check - cps cust (partial check)'
 
 		SELECT    @nRowCount = COUNT(*)
 		-- select top 10 *
@@ -189,7 +208,7 @@ Begin
 			(1=1)
 
 		Set @nErrorCode = @@Error
-		If @nRowCount > 0 Set @nErrorCode = 3
+		If @nRowCount > 0 Set @nErrorCode = 4
 	End
 
 -----------------------------
@@ -199,7 +218,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '4. snapshot item'
+			print '5. snapshot item'
 
 		INSERT INTO BRS_ItemHistory 
 		(
@@ -232,7 +251,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '5. snapshot customer'
+			print '6. snapshot customer'
 
 		INSERT INTO BRS_CustomerFSC_History
 		(
@@ -315,7 +334,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '6. add dup salesorder with generic doctype AA for simplified adjustment RI'
+			print '7. add dup salesorder with generic doctype AA for simplified adjustment RI'
 
 		INSERT INTO 
 			[dbo].[BRS_TransactionDW_Ext] 
@@ -343,7 +362,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '7. set ME trans FSC & branch to match snapshot - mimic commission logic'
+			print '8. set ME trans FSC & branch to match snapshot - mimic commission logic'
 
 		UPDATE   
 			BRS_Transaction
