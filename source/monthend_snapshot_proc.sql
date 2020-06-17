@@ -452,10 +452,4 @@ GO
 
 -- Debug
 -- EXEC dbo.monthend_snapshot_proc @bDebug=1
--- cust 67 649
-
-/*
-select count(*) from brs_item
-select count(*) from BRS_Customer
-*/
 

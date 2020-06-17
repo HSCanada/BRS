@@ -5,7 +5,7 @@
 -- 
 
 ------------------------------------------------------------------------------------------------------
--- sync Prod to NEW
+-- sync BRS to CommBE legacy
 ------------------------------------------------------------------------------------------------------
 
 /*
@@ -36,6 +36,8 @@ WHERE
 --> START
 --
 -- set DB to to BRSales dev / prod, run 1 - 10
+
+/*
 print '1. comm.group - Update'
 UPDATE
 	comm.[group]
@@ -92,7 +94,7 @@ FROM
 WHERE comm_group_cd <>'' AND
 	NOT EXISTS (SELECT * FROM comm.[group] WHERE comm_group_cd = s.comm_group_cd)
 GO
-
+*/
 --
 -- add handled by Dimension synch
 print '3. BRS_Item - Update'
@@ -145,7 +147,7 @@ FROM
 	ISNULL(d.comm_note_txt,'') <> ISNULL(s.SPM_ReasonTxt,'')
 	)
 GO
-
+/*
 print '5. BRS_Branch - Update'
 UPDATE
 	BRS_Branch
@@ -157,7 +159,7 @@ FROM
 	ON s.branch_cd = d.Branch
 where ZoneName <> [zone_cd]
 GO
-
+*/
 /*
 -- does FSC terr work?  6 Feb 20
 print '5. FSC - ADD'
@@ -194,7 +196,7 @@ FROM
 		-- bad data should be overridden with dummy code, not blank
 		s.salesperson_key_id <> '' AND
 		(1=1)
-
+/*
 -- Update not needed
 print '7. hr_employee - Add (stub)'
 INSERT INTO [comm].[hr_employee]
@@ -243,7 +245,7 @@ WHERE NOT EXISTS (
 	SELECT * FROM [comm].[plan] d 
 	WHERE s.comm_plan_id = d.[comm_plan_id]
 )
-
+*/
 
 print '9. salesperson_master - Update'
 UPDATE comm.salesperson_master

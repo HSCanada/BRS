@@ -194,3 +194,122 @@ set notify_operator_id = 2
 UPDATE [dbo].[BRS_FSC_Rollup]
 set comm_salesperson_key_id = 'HouseNDZK'
 WHERE TerritoryCd = '**'
+
+-- stage tables
+
+-- item
+
+-- drop table [Integration].[Item]
+
+CREATE TABLE [Integration].[comm_item_Staging](
+	[Item] [char](10) NOT NULL,
+	[fsc_comm_group_cd] [char](6) NOT NULL,
+	[fsc_comm_note_txt] [varchar](50) NOT NULL,
+CONSTRAINT [comm_item_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[Item] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+-- customer
+-- drop table [Integration].[comm_customer_Staging]
+
+CREATE TABLE [Integration].[comm_customer_Staging](
+	[ShipTo] [int] NOT NULL,
+	[merch_comm_cd] [char](6) NOT NULL,
+	[equip_comm_cd] [char](6) NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL
+ CONSTRAINT [comm_customer_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[ShipTo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-- rebate
+CREATE TABLE [Integration].[comm_customer_rebate_Staging](
+	[FiscalMonth] [char](6) NOT NULL,
+	[ShipTo] [int] NOT NULL,
+	[fsc_code] [char](5) NOT NULL,
+	[rebate_amt] [money] NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL Default('')
+
+ CONSTRAINT [comm_customer_rebate_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[ShipTo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-- salesperson
+
+-- DROP TABLE [Integration].[salesperson_master_Staging]
+
+CREATE TABLE [Integration].[comm_salesperson_master_Staging](
+	[FiscalMonth] [char](6) NOT NULL,
+	[employee_num] [int] NOT NULL,
+	[master_salesperson_cd] [char](6) NOT NULL,
+	[salesperson_nm] [varchar](30) NOT NULL,
+	[comm_plan_id] [char](10) NOT NULL,
+	[territory_start_dt] [datetime] NOT NULL,
+	[CostCenter] [nvarchar](30) NOT NULL,
+	[salary_draw_amt] [money] NOT NULL,
+	[deficit_amt] [money] NOT NULL,
+	[comm_note_txt] [varchar](50) NULL,
+	[salesperson_key_id] [char](30) NULL,
+ CONSTRAINT [comm_salesperson_master_stage_pk] PRIMARY KEY CLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[employee_num] ASC,
+	[master_salesperson_cd] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+-- adjust
+-- drop table [Integration].[F555115_commission_sales_adjustment_Staging]
+-- drop TABLE [Integration].[comm_adjustment_Staging]
+
+CREATE TABLE [Integration].[comm_adjustment_Staging](
+	[FiscalMonth] [int] NOT NULL,
+	[owner_cd] [char](6) NOT NULL,
+	[line_number_org] [int] NOT NULL,
+
+	[fsc_code] [char](5) NOT NULL Default(''),
+	[eps_code] [char](5) NOT NULL Default(''),
+	[shipto] [int] NOT NULL Default(0),
+	[customer_name] [varchar](25) NULL Default(''),
+	[ess_code] [char](5) NOT NULL Default(''),
+	[cps_code] [char](5) NOT NULL Default(''),
+
+	[salesorder_number] [int] NOT NULL Default(0),
+	[item_number] [char](10) NOT NULL Default(''),
+	[adjustment_type] [varchar](30) NOT NULL Default(''),
+
+	[adj_cost_amt] [money] NOT NULL Default(0),
+	[adj_sales_amt] [money] NOT NULL Default(0),
+
+	[comm_note_txt] [varchar](30) NOT NULL Default(''),
+	[internal_note_txt] [varchar](255) NOT NULL Default(''),
+
+	[fsc_comm_group_cd] [char](6) NOT NULL Default(''),
+	[fsc_comm_amt] [money] NOT NULL Default(0),
+
+	[eps_comm_group_cd] [char](6) NOT NULL Default(''),
+	[eps_comm_amt] [money] NOT NULL Default(0),
+
+	[ess_comm_group_cd] [char](6) NOT NULL Default(''),
+	[ess_comm_amt] [money] NOT NULL Default(0),
+
+	[cps_comm_group_cd] [char](6) NOT NULL Default(''),
+	[cps_comm_amt] [money] NOT NULL Default(0),
+
+ CONSTRAINT [comm_adjustment_Staging_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[FiscalMonth] ASC,
+	[line_number_org] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO

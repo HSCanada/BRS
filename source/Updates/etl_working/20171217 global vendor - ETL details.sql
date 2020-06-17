@@ -280,7 +280,7 @@ GO
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Mar-20_RA.csv
+-- a_CAN_May-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202003, 202003
+-- [hfm].global_cube_proc  202005, 202005
