@@ -76,7 +76,7 @@ Else
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3. BRS_Item - Update'
+		print '1. BRS_Item - Update'
 
 	UPDATE
 		BRS_Item
@@ -97,7 +97,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '4. BRS_Customer - Update'
+		print '2. BRS_Customer - Update'
 
 	UPDATE
 		BRS_Customer
@@ -122,7 +122,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '9. salesperson_master - Update'
+		print '3. salesperson_master - Update'
 
 	UPDATE 
 		comm.salesperson_master
@@ -141,13 +141,16 @@ Begin
 		(s.[employee_num] = comm.salesperson_master.[employee_num]) AND
 		(s.[master_salesperson_cd] = comm.salesperson_master.[master_salesperson_cd])
 
+		-- XXX
+		-- add delta filter here...
+
 	Set @nErrorCode = @@Error
 End
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '10. salesperson_master - Add'
+		print '4. salesperson_master - Add'
 
 	INSERT INTO comm.salesperson_master
 	(
@@ -195,7 +198,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '11. plan_group_rate - Add'
+		print '5. plan_group_rate - Add'
 
 	INSERT INTO   [comm].[plan_group_rate] 
 	(
@@ -286,8 +289,8 @@ End
 Return @nErrorCode
 GO
 
--- Debug
--- EXEC comm.comm_stage_update_proc @bDebug=1
-
 -- Prod
 -- EXEC comm.comm_stage_update_proc @bDebug=0
+
+-- Debug
+-- EXEC comm.comm_stage_update_proc @bDebug=1

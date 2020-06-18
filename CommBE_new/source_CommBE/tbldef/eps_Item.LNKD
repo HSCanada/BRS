@@ -1,3 +1,4 @@
-﻿comm_config
+﻿eps_Item
 ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
-comm.config
+eps.Item
+Item_Number

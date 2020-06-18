@@ -220,5 +220,5 @@ GO
 -- Prod
 -- EXEC comm.comm_sync_proc @bDebug=0
 
--- Debug
+-- Debug, 40s
 -- EXEC comm.comm_sync_proc @bDebug=1

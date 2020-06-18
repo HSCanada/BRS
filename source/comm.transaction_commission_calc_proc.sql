@@ -909,6 +909,6 @@ GO
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
 
--- Debug
+-- Debug, 2m
 -- Exec comm.transaction_commission_calc_proc @bDebug=1
 

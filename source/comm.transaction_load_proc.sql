@@ -690,12 +690,12 @@ Return @nErrorCode
 GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
--- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth = 202001
+-- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth = 202006
 
 -- delete from comm.transaction_F555115 where FiscalMonth = 202006
 
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0
 
--- Debug
+-- Debug, 4m
 -- EXEC comm.transaction_load_proc @bDebug=1

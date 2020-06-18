@@ -91,8 +91,9 @@ FROM
 	t.ess_comm_group_cd = ess_map.comm_group_cd
 
 WHERE
-	(t.fiscal_yearmo_num >= '201901') AND
-	(t.fiscal_yearmo_num <= (SELECT [current_fiscal_yearmo_num] From [CommBE].[dbo].[comm_configure])) AND
+--	(t.fiscal_yearmo_num >= '201901') AND
+	(t.fiscal_yearmo_num = (SELECT [current_fiscal_yearmo_num] From [CommBE].[dbo].[comm_configure])) AND
+--	(t.fiscal_yearmo_num = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 --	(t.ess_salesperson_key_id <> '') AND 
 --	(t.doc_id = 13147628) AND
 --	(t.line_id = 1000) AND
@@ -167,8 +168,8 @@ FROM
 	ON t.ess_calc_key = p_ess.calc_key
 
 WHERE
-	(t.FiscalMonth >= 201901) AND
-	(t.FiscalMonth <=(SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
+--	(t.FiscalMonth >= 201901) AND
+	(t.FiscalMonth =(SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 --	(t.ess_salesperson_key_id <> '') AND
 --	(t.WSDOCO_salesorder_number = 13147628) AND
 --	(t.WSLNID_line_number = 1000) AND
