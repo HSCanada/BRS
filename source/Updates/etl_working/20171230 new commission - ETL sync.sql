@@ -5,7 +5,8 @@
 -- 
 
 ------------------------------------------------------------------------------------------------------
--- sync BRS to CommBE legacy
+-- THIS IS OBSOLETE CODE.  *** DO NOT RUN ***
+-- CommBE legacy -> NEW.  TBD = New -> CommBE Legacy
 ------------------------------------------------------------------------------------------------------
 
 /*
@@ -95,8 +96,71 @@ WHERE comm_group_cd <>'' AND
 	NOT EXISTS (SELECT * FROM comm.[group] WHERE comm_group_cd = s.comm_group_cd)
 GO
 */
+/*
+-- synch eps
+print '12. update comm_group_eps_cd'
+UPDATE
+	[dbo].[BRS_item]
+SET
+	comm_group_eps_cd = s.[comm_group_eps_cd]
+FROM
+	[eps].[item] AS s
+WHERE
+	(s.Item_Number = Item) AND
+	([dbo].[BRS_item].comm_group_eps_cd <> s.[comm_group_eps_cd]) AND
+	(1=1)
+GO
+*/
+/*
+print '13. update comm_group_cd based on eps'
+UPDATE
+	[dbo].[BRS_item]
+SET
+	comm_group_eps_cd = 'ITMEPS'
+-- select top 10 item,Supplier, comm_group_cd, comm_group_eps_cd
+FROM
+	[dbo].[BRS_item]
+WHERE
+	(comm_group_eps_cd like 'EPS%') AND
+	(comm_group_cd <> 'ITMEPS') AND
+	-- business exception where handpiece NOT synched to FSC
+	NOT (supplier = 'BAINTE' and comm_group_cd='ITMFO2') AND
+	(1=1)
+GO
+*/
+/*
+print '14. update eps terr - current'
+UPDATE
+	[dbo].[BRS_Customer]
+SET
+	eps_code = c.Eps_Code
+FROM
+	[eps].[Customer] AS c 
+WHERE
+	(c.Customer_Number = shipto) AND
+	(Customer_Number > 0) AND
+	(c.Eps_Code <> [dbo].[BRS_Customer].eps_Code)
+*/
+/*
+print '15. synch cps terr - current'
+UPDATE
+	[dbo].[BRS_Customer]
+SET
+	cps_code = map.TerritoryCd
+FROM
+	comm.plan_region_map AS map
+WHERE
+	-- must be valid customer, as postal code driven based on Current address
+	(shipto > 0) AND 
+	(Postalcode <>'') AND
+	(map.comm_plan_id = 'CPSGP') AND 
+	(PostalCode LIKE map.postal_code_where_clause_like) AND 
+	(1 = 1)
+*/
+
 --
--- add handled by Dimension synch
+-- LOAD
+/*
 print '3. BRS_Item - Update'
 UPDATE
 	BRS_Item
@@ -111,8 +175,9 @@ WHERE
 	d.[comm_group_cd] <> s.comm_group_cd OR
 	d.[comm_note_txt] <> LEFT(s.note_txt,50)
 GO
-
--- add handled by Dimension synch
+*/
+/*
+-- LOAD
 print '4. BRS_Customer - Update'
 UPDATE
 	BRS_Customer
@@ -147,6 +212,7 @@ FROM
 	ISNULL(d.comm_note_txt,'') <> ISNULL(s.SPM_ReasonTxt,'')
 	)
 GO
+*/
 /*
 print '5. BRS_Branch - Update'
 UPDATE
@@ -180,7 +246,7 @@ WHERE
 GO
 */
 
--- add handled by Dimension synch
+-- SYNC COMM->NEW
 print '6. BRS_FSC_Rollup - Update'
 UPDATE
 	BRS_FSC_Rollup
@@ -247,6 +313,7 @@ WHERE NOT EXISTS (
 )
 */
 
+-- SYNC COMM->NEW
 print '9. salesperson_master - Update'
 UPDATE comm.salesperson_master
 SET
@@ -272,7 +339,8 @@ WHERE
 	d.employee_num <> s.employee_num 
 GO
 
-
+/*
+--SYNC COMM->NEW
 print '10. salesperson_master - Add'
 INSERT INTO comm.salesperson_master
 (
@@ -306,8 +374,11 @@ WHERE
 		WHERE comm.salesperson_master.salesperson_key_id = s.salesperson_key_id
 	)
 GO
+*/
 
+-- SYNCH COMM->NEW
 -- TBD display set, then rate update
+/*
 print '11. plan_group_rate - Add'
 INSERT INTO   [comm].[plan_group_rate] 
 (
@@ -364,7 +435,7 @@ WHERE
 			d.[source_cd] = s4.[source_cd]
 	)
 GO
-
+*/
 -- fsc fix
 /*
 print '14. update eps terr - current'
@@ -383,65 +454,6 @@ WHERE
 */
 
 
--- synch eps
-
-print '12. update comm_group_eps_cd'
-UPDATE
-	[dbo].[BRS_item]
-SET
-	comm_group_eps_cd = s.[comm_group_eps_cd]
-FROM
-	[eps].[item] AS s
-WHERE
-	(s.Item_Number = Item) AND
-	([dbo].[BRS_item].comm_group_eps_cd <> s.[comm_group_eps_cd]) AND
-	(1=1)
-GO
-
-print '13. update comm_group_cd based on eps'
-UPDATE
-	[dbo].[BRS_item]
-SET
-	comm_group_eps_cd = 'ITMEPS'
--- select top 10 item,Supplier, comm_group_cd, comm_group_eps_cd
-FROM
-	[dbo].[BRS_item]
-WHERE
-	(comm_group_eps_cd like 'EPS%') AND
-	(comm_group_cd <> 'ITMEPS') AND
-	-- business exception where handpiece NOT synched to FSC
-	NOT (supplier = 'BAINTE' and comm_group_cd='ITMFO2') AND
-	(1=1)
-GO
-
-
-print '14. update eps terr - current'
-UPDATE
-	[dbo].[BRS_Customer]
-SET
-	eps_code = c.Eps_Code
-FROM
-	[eps].[Customer] AS c 
-WHERE
-	(c.Customer_Number = shipto) AND
-	(Customer_Number > 0) AND
-	(c.Eps_Code <> [dbo].[BRS_Customer].eps_Code)
-
-
-print '15. synch cps terr - current'
-UPDATE
-	[dbo].[BRS_Customer]
-SET
-	cps_code = map.TerritoryCd
-FROM
-	comm.plan_region_map AS map
-WHERE
-	-- must be valid customer, as postal code driven based on Current address
-	(shipto > 0) AND 
-	(Postalcode <>'') AND
-	(map.comm_plan_id = 'CPSGP') AND 
-	(PostalCode LIKE map.postal_code_where_clause_like) AND 
-	(1 = 1)
 
 --< STOP
 

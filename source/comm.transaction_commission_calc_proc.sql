@@ -906,9 +906,9 @@ GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 
--- Debug
--- Exec comm.transaction_commission_calc_proc @bDebug=1
-
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
+
+-- Debug
+-- Exec comm.transaction_commission_calc_proc @bDebug=1
 

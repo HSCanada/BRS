@@ -50,8 +50,6 @@ ALTER TABLE [comm].[item_group_rule] CHECK CONSTRAINT [FK_item_group_rule_group]
 GO
 
 --
-USE [DEV_BRSales]
-GO
 
 INSERT INTO [comm].[item_group_rule]
            ([MinorProductClass]
@@ -227,6 +225,57 @@ CREATE TABLE [Integration].[comm_customer_Staging](
 ) ON [PRIMARY]
 GO
 
+--
+-- drop TABLE [comm].[special_market_map] 
+
+CREATE TABLE [comm].[special_market_map] (
+	[merch_comm_cd] [char](6) NOT NULL,
+	[equip_comm_cd] [char](6) NOT NULL,
+	[cust_comm_group_cd] [char](6) NOT NULL,
+	[note_txt] [varchar](50) NOT NULL,
+ CONSTRAINT [special_market_map_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[merch_comm_cd] ASC,
+	[equip_comm_cd] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.special_market_map ADD CONSTRAINT
+	FK_special_market_map_group FOREIGN KEY
+	(
+	cust_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.special_market_map SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+INSERT INTO [comm].[special_market_map]
+           ([merch_comm_cd]
+           ,[equip_comm_cd]
+           ,[cust_comm_group_cd]
+		   ,[note_txt]
+           )
+     VALUES
+           ('','','', '')
+           ,('Half','Half','SPMALL','')
+           ,('Half','Full','SPMSND','')
+           ,('None','None','SPMALL','')
+           ,('Full','Half','','undefined')
+           ,('Full','Full','','')
+GO
+
+
+--
 -- rebate
 CREATE TABLE [Integration].[comm_customer_rebate_Staging](
 	[FiscalMonth] [char](6) NOT NULL,
@@ -246,9 +295,10 @@ GO
 -- salesperson
 
 -- DROP TABLE [Integration].[salesperson_master_Staging]
+-- drop TABLE [Integration].[comm_salesperson_master_Staging]
 
 CREATE TABLE [Integration].[comm_salesperson_master_Staging](
-	[FiscalMonth] [char](6) NOT NULL,
+	[FiscalMonth] [int] NOT NULL,
 	[employee_num] [int] NOT NULL,
 	[master_salesperson_cd] [char](6) NOT NULL,
 	[salesperson_nm] [varchar](30) NOT NULL,
@@ -258,15 +308,68 @@ CREATE TABLE [Integration].[comm_salesperson_master_Staging](
 	[salary_draw_amt] [money] NOT NULL,
 	[deficit_amt] [money] NOT NULL,
 	[comm_note_txt] [varchar](50) NULL,
+	[email_ind] char(1) NOT NULL,
 	[salesperson_key_id] [char](30) NULL,
  CONSTRAINT [comm_salesperson_master_stage_pk] PRIMARY KEY CLUSTERED 
 (
-	[FiscalMonth] ASC,
 	[employee_num] ASC,
 	[master_salesperson_cd] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.salesperson_master ADD
+	salary_draw_amt money NOT NULL CONSTRAINT DF_salesperson_master_salary_draw_amt DEFAULT 0,
+	deficit_amt money NOT NULL CONSTRAINT DF_salesperson_master_deficit_amt DEFAULT 0,
+	FiscalMonth int NOT NULL CONSTRAINT DF_salesperson_master_FiscalMonth DEFAULT 0
+GO
+ALTER TABLE comm.salesperson_master ADD CONSTRAINT
+	FK_salesperson_master_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.salesperson_master SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--
+ALTER TABLE comm.salesperson_master
+	DROP CONSTRAINT FK_salesperson_master_cost_center
+GO
+
+
+
+-- drop TABLE [Integration].[free_goods_redeem]
+-- drop TABLE [Integration].[comm_freegoods_Staging]
+
+CREATE TABLE [Integration].[comm_freegoods_Staging](
+	[FiscalMonth] [int] NOT NULL,
+	[SourceCode] [varchar](10) NOT NULL,
+	[Supplier] [char](6) NOT NULL,
+	[ShipTo] [int] NOT NULL,
+	[PracticeName] [varchar](40) NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[Item] [char](10) NOT NULL,
+	[ItemDescription] [varchar](40) NULL,
+	[Currency] [char](3) NOT NULL DEFAULT(''),
+	[ExtFileCostAmt] [money] NOT NULL,
+	[PromoNote] [varchar](100) NOT NULL DEFAULT(''),
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[stage_status] [varchar](50) NULL,
+ CONSTRAINT [comm_freegoods_stage_pk] PRIMARY KEY NONCLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
 
 -- adjust
 -- drop table [Integration].[F555115_commission_sales_adjustment_Staging]
@@ -312,4 +415,13 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 	[line_number_org] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
+GO
+--
+INSERT INTO comm.transaction_F555115_audit
+                         (FiscalMonth, SalesDivision, source_cd, AdjOwner, summarized_transaction_amt)
+SELECT        BRS_FiscalMonth.FiscalMonth, div.SalesDivision, 'JDE' AS src, '380' AS ownr, - 1 AS val
+FROM            BRS_FiscalMonth CROSS JOIN
+                             (SELECT DISTINCT SalesDivision
+                               FROM            comm.transaction_F555115_audit AS transaction_F555115_audit_1) AS div
+WHERE        (BRS_FiscalMonth.FiscalMonth > 202005)
 GO

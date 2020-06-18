@@ -309,8 +309,8 @@ Begin
 		(
 			SELECT * FROM [dbo].[BRS_ItemHistory] s
 			WHERE 
-				t.WSLITM_item_number = s.[Item] AND
-				d.FiscalMonth = s.FiscalMonth 
+				(s.[Item] = t.WSLITM_item_number) AND
+				(s.FiscalMonth = @nCurrentFiscalYearmoNum)
 		)
 
 		Set @nErrorCode = @@Error
@@ -694,9 +694,8 @@ GO
 
 -- delete from comm.transaction_F555115 where FiscalMonth = 202006
 
+-- Prod
+-- EXEC comm.transaction_load_proc @bDebug=0
 
 -- Debug
 -- EXEC comm.transaction_load_proc @bDebug=1
-
--- Prod
--- EXEC comm.transaction_load_proc @bDebug=0
