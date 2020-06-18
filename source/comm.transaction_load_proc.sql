@@ -109,8 +109,13 @@ Begin
 	Print 'Checking steps 1 - 10'
 End
 
-
-If (@nBatchStatus=0)
+-- only run once
+If (@nBatchStatus <> 0)
+Begin
+	print 'Exiting:  cannot run load more than once!'
+	Set @nErrorCode = 999
+End
+Else
 Begin
 
 ------------------------------------------------------------------------------------------------------
@@ -690,9 +695,10 @@ Return @nErrorCode
 GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
--- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth = 202006
+-- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 202001 and 202006
 
 -- delete from comm.transaction_F555115 where FiscalMonth = 202006
+-- truncate table comm.transaction_F555115
 
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0
