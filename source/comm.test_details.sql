@@ -75,6 +75,9 @@ SELECT
 	,-1 AS ess_calc_key
 	,'' AS cust_comm_group_cd
 	,'' AS item_comm_group_cd
+	,-1 AS xfer_key
+	,'' AS xfer_fsc_code_org
+	,'' AS xfer_ess_code_org
 
 FROM
 	[CommBE].[dbo].comm_transaction AS t 
@@ -154,6 +157,9 @@ SELECT
 	,t.ess_calc_key
 	,t.cust_comm_group_cd
 	,t.item_comm_group_cd
+	,t.xfer_key
+	,t.xfer_fsc_code_org
+	,t.xfer_ess_code_org
 
 FROM
 	comm.transaction_F555115 AS t 

@@ -300,6 +300,35 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '5b. Ken transfer - work-around'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			-- mark unassign, as this is a work-around not supported by rules
+			xfer_key = 1, 
+
+			xfer_ess_code_org = ess_code,
+			ess_code = 'ESS33'
+		FROM
+			[dbo].[BRS_FSC_Rollup] f
+		WHERE    
+			(fsc_code = f.TerritoryCd) AND
+			(source_cd = 'JDE') AND 
+			(xfer_key is null) AND		-- only run once
+			([ess_code] = 'ESS32') AND
+			(f.Branch <> 'TORNT') AND
+--			(FiscalMonth = 202002) AND
+			(FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+	End
+
 	
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
