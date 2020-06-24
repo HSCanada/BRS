@@ -119,6 +119,29 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+-- update / overwrite [salesperson_key_id] to ensure this does not change
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3a. salesperson_master - Update pre'
+
+	UPDATE 
+		[Integration].[comm_salesperson_master_Staging]
+	SET
+		[salesperson_key_id]=s.[salesperson_key_id]
+	FROM  
+		comm.salesperson_master s
+	WHERE
+		(s.[employee_num] = [Integration].[comm_salesperson_master_Staging].[employee_num]) AND
+		(s.[master_salesperson_cd] = [Integration].[comm_salesperson_master_Staging].[master_salesperson_cd]) AND
+		(s.[salesperson_key_id]<>'') AND
+		(s.[salesperson_key_id]<>ISNULL([Integration].[comm_salesperson_master_Staging].[salesperson_key_id],'')) AND
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+--
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -127,26 +150,38 @@ Begin
 	UPDATE 
 		comm.salesperson_master
 	SET
-		[salesperson_nm] = s.[salesperson_nm]
+		[FiscalMonth]=s.FiscalMonth
+		,[salesperson_nm] = s.[salesperson_nm]
 		,[comm_plan_id] = s.[comm_plan_id]
-		,territory_start_dt = ISNULL(s.territory_start_dt,'1980-01-01')
-		,[note_txt] = s.[comm_note_txt]
+		,territory_start_dt = s.territory_start_dt
 		,[CostCenter]=s.[CostCenter]
 		,[salary_draw_amt]= s.[salary_draw_amt]
 		,[deficit_amt]=s.[deficit_amt]
+		,[note_txt] = ISNULL(s.[comm_note_txt],'')
+		,[flag_ind] = CASE WHEN s.email_ind LIKE 'Y%' THEN 1 ELSE 0 END
 
 	FROM  
 		[Integration].[comm_salesperson_master_Staging] s
 	WHERE
 		(s.[employee_num] = comm.salesperson_master.[employee_num]) AND
-		(s.[master_salesperson_cd] = comm.salesperson_master.[master_salesperson_cd])
-
-		-- XXX
-		-- add delta filter here...
+		(s.[master_salesperson_cd] = comm.salesperson_master.[master_salesperson_cd]) AND
+		(
+			(s.FiscalMonth <> comm.salesperson_master.[FiscalMonth]) OR
+			(s.[salesperson_nm] <> comm.salesperson_master.[salesperson_nm]) OR
+			(s.[comm_plan_id] <> comm.salesperson_master.[comm_plan_id]) OR
+			(s.territory_start_dt <> comm.salesperson_master.territory_start_dt) OR
+			(s.[CostCenter] <> comm.salesperson_master.[CostCenter]) OR
+			(s.[salary_draw_amt] <> comm.salesperson_master.[salary_draw_amt]) OR
+			(s.[deficit_amt] <> comm.salesperson_master.[deficit_amt]) OR
+			(ISNULL(s.[comm_note_txt],'') <> [note_txt]) OR
+			(CASE WHEN s.email_ind LIKE 'Y%' THEN 1 ELSE 0 END <> [flag_ind])
+		) AND
+		(1=1)
 
 	Set @nErrorCode = @@Error
 End
 
+-- load ONLY if [salesperson_key_id] <>'', one-time set 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -155,8 +190,10 @@ Begin
 	INSERT INTO comm.salesperson_master
 	(
 		[FiscalMonth]
+
 		,[employee_num]
 		,[master_salesperson_cd]
+
 		,[salesperson_nm]
 		,[comm_plan_id]
 		,[territory_start_dt]

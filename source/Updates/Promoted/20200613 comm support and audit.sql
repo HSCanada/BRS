@@ -425,3 +425,16 @@ FROM            BRS_FiscalMonth CROSS JOIN
                                FROM            comm.transaction_F555115_audit AS transaction_F555115_audit_1) AS div
 WHERE        (BRS_FiscalMonth.FiscalMonth > 202005)
 GO
+
+--
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX comm_salesperson_master_Staging_u_idx_01 ON Integration.comm_salesperson_master_Staging
+	(
+	[salesperson_key_id]
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.comm_salesperson_master_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
