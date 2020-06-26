@@ -428,13 +428,13 @@ GO
 
 --
 
-BEGIN TRANSACTION
+-- DROP INDEX comm_salesperson_master_Staging_u_idx_01 ON Integration.comm_salesperson_master_Staging
+
+CREATE UNIQUE NONCLUSTERED INDEX comm_salesperson_master_Staging_u_idx_01
+ON Integration.comm_salesperson_master_Staging([salesperson_key_id])
+WHERE [salesperson_key_id] IS NOT NULL;
+
+
+ALTER TABLE comm.hr_employee
+	DROP CONSTRAINT FK_hr_employee_cost_center
 GO
-CREATE UNIQUE NONCLUSTERED INDEX comm_salesperson_master_Staging_u_idx_01 ON Integration.comm_salesperson_master_Staging
-	(
-	[salesperson_key_id]
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
-ALTER TABLE Integration.comm_salesperson_master_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT

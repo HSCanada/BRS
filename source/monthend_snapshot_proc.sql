@@ -150,20 +150,24 @@ Begin
 		If @nRowCount > 0 Set @nErrorCode = 1
 	End
 
+	-- due to timing, some new codes do not have groups
+	-- ensure items have comm codes where transactions in prior month
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '2. check - fsc item (full check)'
+			print '2. check - fsc item (comm code on active skus)'
 
 		SELECT    @nRowCount = COUNT(*)
 		-- select top 100 *
-		FROM  
-			[dbo].[BRS_Item] i
-	
-		WHERE 
-			(i.item > '0') AND
-			(i.comm_group_cd ='') AND
-			(1=1)
+		FROM
+			BRS_Item AS i 
+			INNER JOIN BRS_Transaction AS t 
+			ON i.Item = t.Item
+		WHERE
+			(i.Item > '0') AND 
+			(i.comm_group_cd = '') AND 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(1 = 1) 
 
 		Set @nErrorCode = @@Error
 		If @nRowCount > 0 Set @nErrorCode = 2
@@ -440,12 +444,6 @@ Return @nErrorCode
 GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
-
--- undo
--- takes forever.
--- delete from BRS_CustomerFSC_History where FiscalMonth = 202006
--- delete from BRS_ItemHistory where FiscalMonth = 202006
--- update BRS_FiscalMonth set [me_status_cd] = 0 where FiscalMonth = 202006
 
 -- Prod
 -- EXEC dbo.monthend_snapshot_proc @bDebug=0

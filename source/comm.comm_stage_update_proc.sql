@@ -123,7 +123,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3a. salesperson_master - Update pre'
+		print '3. salesperson_master - Update pre'
 
 	UPDATE 
 		[Integration].[comm_salesperson_master_Staging]
@@ -145,7 +145,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3. salesperson_master - Update'
+		print '4. salesperson_master - Update'
 
 	UPDATE 
 		comm.salesperson_master
@@ -181,11 +181,51 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5. hr_employee - Add'
+
+	INSERT INTO [comm].[hr_employee]
+	(
+		[employee_num]
+		,[CostCenter]
+		,[first_name]
+		,[last_name]
+		,[job_title]
+		,[location]
+		,[status_code]
+	)
+	SELECT        
+		[employee_num]
+		,[CostCenter]
+		,[salesperson_nm]
+		,''
+		,''
+		,[master_salesperson_cd]
+		,''
+
+	FROM
+		[Integration].[comm_salesperson_master_Staging] s
+	WHERE 
+		salesperson_key_id <> '' AND 
+		NOT EXISTS
+		(
+			SELECT * FROM [comm].[hr_employee] d
+			WHERE 
+				(s.[employee_num] = d.[employee_num]) 
+		)
+
+	Set @nErrorCode = @@Error
+End
+
+--
 -- load ONLY if [salesperson_key_id] <>'', one-time set 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '4. salesperson_master - Add'
+		print '6. salesperson_master - Add'
 
 	INSERT INTO comm.salesperson_master
 	(
@@ -202,6 +242,7 @@ Begin
 		,[deficit_amt]
 		,[note_txt]
 		,[flag_ind]
+		,salesperson_key_id
 	)
 	SELECT        
 		[FiscalMonth]
@@ -213,8 +254,9 @@ Begin
 		,[CostCenter]
 		,[salary_draw_amt]
 		,[deficit_amt]
-		,[comm_note_txt]
-		,[email_ind]
+		,ISNULL([comm_note_txt],'')
+		,CASE WHEN [email_ind] LIKE 'Y%' THEN 1 ELSE 0 END
+		,salesperson_key_id
 	FROM
 		[Integration].[comm_salesperson_master_Staging] s
 	WHERE 
@@ -235,7 +277,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '5. plan_group_rate - Add'
+		print '7. plan_group_rate - Add'
 
 	INSERT INTO   [comm].[plan_group_rate] 
 	(
