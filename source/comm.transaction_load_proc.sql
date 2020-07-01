@@ -630,6 +630,37 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+-- update adjustment support table
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '14. load adjustments into lookup table'
+
+		INSERT INTO [comm].[adjustment]
+		(
+			[adj_comment_org]
+			,[adj_source_org]
+			,[source_cd]
+		)
+		SELECT DISTINCT  
+			  ISNULL(s.[WSDSC1_description],'') adj_comment_org
+			  ,UPPER(ISNULL(s.[WSVR01_reference],'')) adj_source_org
+			  ,source_cd
+		FROM [comm].[transaction_F555115] s
+		WHERE 
+			(s.source_cd <> 'JDE') AND
+			(s.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			NOT EXISTS
+			(
+				SELECT * FROM [comm].[adjustment] d 
+				WHERE
+					(d.[adj_comment_org] = ISNULL(s.[WSDSC1_description],'')) AND
+					(d.[adj_source_org] = UPPER(ISNULL(s.[WSVR01_reference],'')))
+			) 
+
+		Set @nErrorCode = @@Error
+	End
+
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load Success Cleanup - clear stage to avoid double loading
 ------------------------------------------------------------------------------------------------------
@@ -637,7 +668,7 @@ Begin
 	If (@nErrorCode = 0 AND @bClearStage = 1) 
 	Begin
 		if (@bDebug <> 0)
-			Print '14. Clear STAGE'
+			Print 'Clear STAGE'
 		-- warning, this will clear all stage if multi months used.
 		-- default option is not clear, so leaving for now
 		Delete FROM Integration.F555115_commission_sales_extract_Staging
@@ -696,9 +727,6 @@ GO
 
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 -- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 202001 and 202006
-
--- delete from comm.transaction_F555115 where FiscalMonth = 202006
--- truncate table comm.transaction_F555115
 
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0

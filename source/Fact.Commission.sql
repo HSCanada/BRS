@@ -33,6 +33,7 @@ AS
 **  25 Sep 19	tmc		add cps & EPS salesperson and commission 
 **	25 Nov 19	tmc		replace comm group with smart version (based on calc)
 **	13 May 20	tmc		clarified calc_key->display_comm_group
+**	01 Jul 20	tmc		add adjustments 
 **    
 *******************************************************************************/
 
@@ -65,6 +66,7 @@ SELECT
 	,CAST(t.[WSDGL__gl_date] AS date)				AS DateKey
 	,t.[WSAN8__billto]								AS BillTo
 	,src.source_key									AS SourceKey
+	,ISNULL(adj.adj_key,1)							AS AdjKey
 
 	-- tbd
 	,t.FreeGoodsInvoicedInd							AS FreeGoodsInvoicedInd
@@ -155,6 +157,10 @@ FROM
 	LEFT JOIN [comm].[group] as comm_group_eps
 	ON comm_group_eps.comm_group_cd = plan_group_rate_eps.disp_comm_group_cd
 
+	-- adjustment
+	LEFT JOIN [comm].[adjustment] as adj
+	ON (adj.[adj_comment_org] = ISNULL(t.[WSDSC1_description],'')) AND
+		(adj.[adj_source_org] = UPPER(ISNULL(t.[WSVR01_reference],'')))
 
 	-- identify first sales order (for sales order dimension)
 	LEFT JOIN 
@@ -180,53 +186,8 @@ WHERE
 
 GO
 
--- SELECT top 10 * FROM Fact.Commission 
+-- SELECT top 10 * FROM Fact.Commission where adjKey is null
+-- 30s
 
 -- SELECT * FROM Fact.Commission where FiscalMonth = 201812
 
-/*
--- comm model
-
-SELECT
-	top 10
-
-	FactKey,
-	FiscalMonth,
-
-	FSC_SalespersonKey,
-	FSC_SalespersonCodeKey,
-	FSC_CommGroupKey,
-
-	ESS_SalespersonKey,
-	ESS_CommGroupKey,
-
-	CPS_SalespersonKey,
-	CPS_CommGroupKey,
-
-	EPS_SalespersonKey,
-	EPS_CommGroupKey,
-
-	ShipTo,
-	ItemKey,
-	SalesOrderNumber,
-	DocTypeKey,
-	LineNumber,
-	DateKey,
-	BillTo,
-	SourceKey,
-	FreeGoodsInvoicedInd,
-	FreeGoodsEstInd,
-	FreeGoodsRedeemedInd,
-
-	Quantity,
-	SalesAmt,
-	GPAmt,
-	FSC_CommAmt,
-	ESS_CommAmt,
-	EPS_CommAmt,
-	CPS_CommAmt
-
-FROM
-	Fact.Commission
-
-*/

@@ -200,7 +200,8 @@ SELECT
 	distinct
 	[fiscal_yearmo_num],
 	salesperson_key_id,
-	comm_plan_id
+	comm_plan_id,
+	[record_id]
 
 FROM
 	CommBE.[dbo].[comm_transaction] AS t
@@ -277,7 +278,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202005') AND
+	(fiscal_yearmo_num ='201901') AND
 	(1=1)
 GO
 
@@ -288,7 +289,7 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202005') AND
+	(FiscalMonth =  '201901') AND
 	(1=1)
 GO
 
@@ -388,36 +389,51 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202001' and '202005') AND
-
---	load only adj?
-	source_cd NOT in('JDE') AND
-
+	(fiscal_yearmo_num between  '201901' and '201912') AND
+--	load only adj? (comment out next line for all)
+--	source_cd NOT in('JDE') AND
 --	test
 --	(doc_id = 13182717 ) AND
 	(1=1)
 GO
 
+-- update adjustment support table
+
+INSERT INTO [comm].[adjustment]
+(
+	[adj_comment_org]
+	,[adj_source_org]
+	,[source_cd]
+)
+SELECT DISTINCT  
+		ISNULL(s.[WSDSC1_description],'') adj_comment_org
+		,UPPER(ISNULL(s.[WSVR01_reference],'')) adj_source_org
+		,source_cd
+FROM [comm].[transaction_F555115] s
+WHERE 
+	(s.source_cd <> 'JDE') AND
+--	(s.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+	NOT EXISTS
+	(
+		SELECT * FROM [comm].[adjustment] d 
+		WHERE
+			(d.[adj_comment_org] = ISNULL(s.[WSDSC1_description],'')) AND
+			(d.[adj_source_org] = UPPER(ISNULL(s.[WSVR01_reference],'')))
+	) 
+
 print '101. Mark month as loaded'
 Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
-where [FiscalMonth] between 201901 and 202005
+where [FiscalMonth] between 201901 and 201912
 go
 
 -- First ensure procs and support tables updated 
 
--- Debug
-
--- Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
-
-
--- Prod
--- Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 
 /*
--- rebuild
+-- rebuild for legacy calc, 2019+
 
-UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202005
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912
 Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 GO
 
@@ -425,19 +441,8 @@ GO
 select distinct FiscalMonth from comm.transaction_F555115
 */
 
-/*
--- fix line# mess
-SELECT        top 1000 [fiscal_yearmo_num], record_id, line_id, audit_id
---select distinct [fiscal_yearmo_num]
-FROM            comm_transaction
-where
-[fiscal_yearmo_num] >= '201601' AND
-audit_id > 0 AND
-record_id = line_id
+-- Prod
+-- Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 
-UPDATE       comm_transaction
-SET
-line_id = audit_id
-WHERE
-(fiscal_yearmo_num >= '201601') AND (audit_id > 0) AND (record_id = line_id)
-*/
+-- Debug
+-- Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1

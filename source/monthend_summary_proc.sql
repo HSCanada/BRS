@@ -145,7 +145,7 @@ Else
 */
 
 -- only run once
-If (@nBatchStatus < 10 )
+If (@nBatchStatus < 5 )
 Begin
 	print 'Exiting:  snapshot not complete!'
 	Set @nErrorCode = 999

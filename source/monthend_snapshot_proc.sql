@@ -443,11 +443,11 @@ End
 Return @nErrorCode
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202005
 
 -- Prod
 -- EXEC dbo.monthend_snapshot_proc @bDebug=0
 
--- Debug
+-- Debug, 1m
 -- EXEC dbo.monthend_snapshot_proc @bDebug=1
 
