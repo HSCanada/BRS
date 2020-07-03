@@ -295,7 +295,7 @@ GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
--- first set month below; 30s per month
+-- first set month below; 2m per month
 print '100. load prod data'
 INSERT INTO comm.transaction_F555115
 (
@@ -389,7 +389,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '201901' and '201912') AND
+	(fiscal_yearmo_num between  '201802' and '201812') AND
 --	load only adj? (comment out next line for all)
 --	source_cd NOT in('JDE') AND
 --	test
@@ -424,7 +424,7 @@ WHERE
 print '101. Mark month as loaded'
 Update [dbo].[BRS_FiscalMonth]
 set [comm_status_cd] = 10
-where [FiscalMonth] between 201901 and 201912
+where [FiscalMonth] between 201801 and 201812
 go
 
 -- First ensure procs and support tables updated 
@@ -433,7 +433,7 @@ go
 /*
 -- rebuild for legacy calc, 2019+
 
-UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 GO
 

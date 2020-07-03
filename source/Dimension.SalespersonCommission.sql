@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	02 Jul 20		tmc	added master code to name for easier excel mapping, post
 **    
 *******************************************************************************/
 
@@ -37,7 +38,10 @@ SELECT
 	[salesperson_master_key]	AS SalespersonKey
 	,[employee_num]				AS EmployeeNumber
 	,[master_salesperson_cd]	AS CommMasterCode
-	,[salesperson_nm]			AS SalespersonName
+	,RTRIM([salesperson_nm]) 
+	+ ' | ' 
+	+ RTRIM([master_salesperson_cd]) 			AS SalespersonName
+--	,[salesperson_nm] 			AS SalespersonName
 	,[comm_plan_id]				AS CommPlanCode
 	,CAST([territory_start_dt] AS Date)	AS TerritoryStart
 	,[salesperson_key_id]		AS SalespersonID
@@ -79,5 +83,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
---  SELECT  * FROM Dimension.SalespersonCommission order by 2
+--  SELECT  top 10 * FROM Dimension.SalespersonCommission order by 2
 
