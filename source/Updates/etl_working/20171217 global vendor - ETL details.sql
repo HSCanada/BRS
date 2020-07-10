@@ -86,7 +86,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 
@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 print '8. set Exclusives - Excl_key, 1s, 1 OF 3'
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 -- seq 0 of 2
@@ -161,7 +161,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 --6 min
@@ -187,7 +187,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 202005 and 202005)
+	(BRS_Transaction.FiscalMonth between 202006 and 202006)
 GO
 
 -- 1 min
@@ -219,7 +219,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202005 and 202005)
+	(BRS_Transaction.FiscalMonth between 202006 and 202006)
 GO
 
 -- 30s
@@ -251,7 +251,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202005 and 202005)
+	(BRS_Transaction.FiscalMonth between 202006 and 202006)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -260,7 +260,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 -- update BRS_ItemCategory!global for new codes first
@@ -274,13 +274,13 @@ FROM
 WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202005 AND 202005
+	FiscalMonth BETWEEN 202006 AND 202006
 GO
 
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_May-20_RA.csv
+-- a_CAN_Jun-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202005, 202005
+-- [hfm].global_cube_proc  202006, 202006

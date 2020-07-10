@@ -58,7 +58,7 @@
 		ON i.[MinorProductClass] = icat.[MinorProductClass]
 
 	WHERE
-		(t.FiscalMonth between 202005 AND 202005)  AND
+		(t.FiscalMonth between 202006 AND 202006)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(glru.ReportingClass <> 'NSA') AND
 		(1=1)
@@ -78,6 +78,6 @@
 		,doct.SourceCd
 
 
--- set date above; format to Text, Tab delim
+-- set date above; Resultsto Text, Tab delim
 
 
