@@ -22,7 +22,7 @@ AS
 **	Parameters:
 **	Input					Output
 **	----------				-----------
-**  @bClearStage - clear stage & exit
+**  @bClearStage			If 1, clear stage & exit; else load
 **	@bDebug - debug = rollback changes
 **
 **	Auth: tmc
@@ -50,7 +50,8 @@ AS
 **	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
 **							Updating PO from BRS_BE_Transaction_load_proc fix
 --	05 Oct 18	tmc		fix alert logic to use text
---	22 Aug 10	tmc		add new entered_by logic
+--	22 Aug 19	tmc		add new entered_by logic
+--	20 Jul 20	tmc		add credit info load logic for returns dashboard
 **    
 *******************************************************************************/
 BEGIN
@@ -90,7 +91,7 @@ BEGIN
 ------------------------------------------------------------------------------------------------------------
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
-
+	-- Clear stage tables, OR
 	if (@bClearStage <> 0)
 	Begin
 		if (@bDebug <> 0)
@@ -98,13 +99,14 @@ BEGIN
 
 		TRUNCATE TABLE STAGE_BRS_Promotion
 		TRUNCATE TABLE STAGE_BRS_TransactionDW
+		TRUNCATE TABLE [Integration].[BRS_CreditInfo]
 
 		Set @nErrorCode = @@Error
 
 	End
 	Else
+	-- Load Tables
 	Begin
-
 		--	13 Dec 16	tmc		Added Update Promo logic
 		If (@nErrorCode = 0) 
 		Begin
@@ -364,7 +366,33 @@ BEGIN
 		End
 
 		--
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Update Credit lookup table'
 
+		INSERT INTO 
+			[dbo].[BRS_Creditinfo]
+		(
+			[CreditMinorReasonCode]
+			, [CreditTypeCode]
+		)
+		SELECT 
+			DISTINCT CRMNRECD AS CreditMinorReasonCode
+			, CRTYCD AS CreditTypeCode
+		FROM
+			Integration.BRS_CreditInfo s
+		WHERE 
+			NOT EXISTS
+			(
+				SELECT * 
+				FROM [dbo].[BRS_Creditinfo] d 
+				WHERE s.CRMNRECD = d.CreditMinorReasonCode AND 
+					s.CRTYCD = d.CreditTypeCode)
+
+			Set @nErrorCode = @@Error
+		End
+--
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
@@ -735,6 +763,28 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		--
+		If (@nErrorCode = 0 And @nRowCount > 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Update Credit Info'
+
+			UPDATE
+				BRS_TransactionDW
+			SET
+				CreditMinorReasonCode = ISNULL(s.CRMNRECD,'')
+				,CreditTypeCode = ISNULL(s.CRTYCD,'')
+			FROM
+				Integration.BRS_CreditInfo AS s 
+
+				INNER JOIN BRS_TransactionDW 
+				ON s.JDEORNO = BRS_TransactionDW.SalesOrderNumber AND 
+					s.ORDOTYCD = BRS_TransactionDW.DocType AND 
+					ROUND(s.LNNO * 1000,0) = BRS_TransactionDW.LineNumber
+
+			Set @nErrorCode = @@Error
+		End
+--
 
 
 		If (@nErrorCode = 0) 
@@ -791,9 +841,6 @@ GO
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
+-- Dev run (5.45m)
 -- BRS_BE_Transaction_DW_load_proc @bDebug=1
-
-
-
-
 
