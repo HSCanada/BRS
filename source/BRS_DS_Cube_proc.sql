@@ -1138,6 +1138,8 @@ GO
 -- Prod
 -- BRS_DS_Cube_proc 0
 
+-- Dev
+-- Exec BRS_DS_Cube_proc @bDebug=1
 
 -- Select SalesDate, SalesDate_LY, FiscalMonth, PriorFiscalMonth, FiscalMonth_LY, YearFirstFiscalMonth, YearFirstFiscalMonth_LY, DayNumber, MonthWorkingDays FROM BRS_Rollup_Support01 g
 -- select top 10 * from BRS_AGG_CDBGAD_Sales
