@@ -278,7 +278,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='201901') AND
+	(fiscal_yearmo_num ='202007') AND
 	(1=1)
 GO
 
@@ -289,12 +289,14 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '201901') AND
+	(FiscalMonth =  '202007') AND
 	(1=1)
 GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
+-- delete from comm.transaction_F555115 where FiscalMonth = '202006' AND source_cd NOT in('JDE')
+
 -- first set month below; 2m per month
 print '100. load prod data'
 INSERT INTO comm.transaction_F555115
@@ -389,9 +391,9 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '201802' and '201812') AND
+	(fiscal_yearmo_num between  '202007' and '202007') AND
 --	load only adj? (comment out next line for all)
---	source_cd NOT in('JDE') AND
+	source_cd NOT in('JDE') AND
 --	test
 --	(doc_id = 13182717 ) AND
 	(1=1)

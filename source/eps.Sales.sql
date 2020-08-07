@@ -133,21 +133,25 @@ GO
 -- ^ delim
 
 
-print 'HSC_SALES_20200724.txt'
+print 'HSC_SALES_20200801.txt ...'
 SET NOCOUNT OFF;
 GO
 [eps].Sales_proc 0
 GO
+print 'done'
 
-print 'eps_customer.txt'
+print 'eps_customer.txt ...'
 SET NOCOUNT ON;
 SELECT * FROM eps.Customer 
 GO
+print 'done'
 
-print 'eps_item.txt'
+print 'eps_item.txt ...'
 SET NOCOUNT ON;
 SELECT * FROM eps.Item
 GO
+print 'done'
 
+-- SFTP next...
 */
 
