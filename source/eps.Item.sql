@@ -32,6 +32,7 @@ AS
 **	20 May 20	tmc		Centralize Compudent Handpiece expection here.  
 **						If more, add logic to table hfm.eps_code_rule
 **	13 Jun 20	tmc		add eps commission map code for synch
+**  12 Aug 20	tmc		add denmat *stupid* exception 
 *******************************************************************************/
 
 -- item
@@ -76,6 +77,9 @@ WHERE
 	(i.SalesCategory <> 'PARTS') AND
 	-- work-around to remove incorrectly coded products
 	(i.Item not In ('1074153','1076903','1070511')) AND
+	-- futher sub-define this line for commission to be tighter than financial
+	NOT (p.[Excl_Code] = 'DENMAT' AND i.Item NOT In ('1314673','1314675','1900162','1900329','1900426','9393754')) AND
+   
 	(1=1)
 
 GO
@@ -86,7 +90,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM eps.Item where Item_Number In ('1074153','1076903','1070511')
+-- SELECT  * FROM eps.Item where Supplier = 'DENMAT'
+
+
 /*
 -- dup test
 SELECT [Item_Number], COUNT (*) 
@@ -99,5 +105,6 @@ having COUNT (*) > 1
 
 /*
 SET NOCOUNT ON;
-SELECT * FROM eps.Item
+SELECT count (*) FROM eps.Item where 
+-- ORG 15 349, 34s
 */

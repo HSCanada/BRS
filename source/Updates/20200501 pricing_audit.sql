@@ -22,7 +22,7 @@ SELECT
 	"QPTDAY" AS QPTDAY_time_of_day,
 	"QPJOBN" AS QPJOBN_work_station_id 
 
-INTO Integration.F5527_price_adjustment_history_Staging
+-- INTO Integration.F5527_price_adjustment_history_Staging
 
 FROM 
     OPENQUERY (ESYS_PROD, '

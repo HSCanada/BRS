@@ -133,7 +133,7 @@ GO
 -- ^ delim
 
 
-print 'HSC_SALES_20200801.txt ...'
+print 'HSC_SALES_20200807.txt ...(1m23s)'
 SET NOCOUNT OFF;
 GO
 [eps].Sales_proc 0
