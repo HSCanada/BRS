@@ -29,18 +29,16 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
---	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
---	22 Aug 19	tmc		Fixed join now that Salesorder+DocType is PK, add csr
---	31 Oct 19	tmc		Add Historical Market Segment
---	12 Dec 19	tmc		add return codes lookup and original doctype
-
+**	30 Jan 19	tmc		Add SalesCategory to allow Merch, less free goods for speed
+**	22 Aug 19	tmc		Fixed join now that Salesorder+DocType is PK, add csr
+**	31 Oct 19	tmc		Add Historical Market Segment
+**	12 Dec 19	tmc		add return codes lookup and original doctype
+**	16 Aug 20	tmc		add Exclusives 
 **    
 *******************************************************************************/
 
 SELECT
-
 --    top 10      
-	  
 	t.ID											AS FactKey
 
 	,c.BillTo										AS BillTo
@@ -48,6 +46,7 @@ SELECT
 	,i.ItemKey										AS ItemKey
 	,csr.[entered_by_key]
 	,ISNULL( mc.[MarketClassKey], 1)				AS MarketClassKey
+	,ISNULL(excl.Excl_key,0)						AS EpsKey
 	,ISNULL(cred.[credit_key], 1)					AS CreditKey
 
 /*
@@ -92,7 +91,6 @@ SELECT
 	,t.[OrderTakenBy]
 	,pm.PriceMethod
 	,i.SalesCategory
-	
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -132,6 +130,12 @@ FROM
 		torg.DocType = t.OriginalOrderDocumentType AND
 		torg.LineNumber = t.OriginalOrderLineNumber
 
+	INNER JOIN [dbo].[BRS_ItemHistory] as ih
+	ON t.Item = ih.[Item] AND
+		d.[FiscalMonth] = ih.[FiscalMonth]
+
+	LEFT JOIN [hfm].[exclusive_product] as excl
+	ON ih.Excl_key = excl.Excl_Key
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -210,11 +214,6 @@ WHERE
 	-- test
 	(1 = 1)
 
-GO
-
-SET ANSI_NULLS OFF
-GO
-SET QUOTED_IDENTIFIER OFF
 GO
 
 -- 2m21s prod
@@ -309,7 +308,7 @@ FROM
 */
 
 -- SELECT count(*) FROM Fact.Sale_qt
--- 8 990 419, 15s
+-- 7670103, 12s
 
 -- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 and doctype = 'CM' and ReturnValidInd =0
 
