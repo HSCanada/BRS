@@ -19,7 +19,7 @@ ECHO LOAD STAGE_BRS_ItemSellPricet...
 BCP %DB_DST%..STAGE_BRS_ItemSellPrice in ../Upload/BRSItemSellPrice.TXT -c -T -S %BRS_SQLSERVER% -e BRSItemSellPrice_ERR.txt -F 5
 
 ECHO LOAD Prod...
-
+::pause
 SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=0, @bDebug=0; select MAX([SalesDate]) from [BRS_ItemBaseHistoryDayLNK]"
 
 PAUSE
