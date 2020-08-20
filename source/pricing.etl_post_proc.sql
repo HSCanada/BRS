@@ -1286,6 +1286,7 @@ Else
 		Set @nErrorCode = @@Error
 	End
 
+	-- see end of script if this section breaks.  
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -1332,8 +1333,9 @@ Else
 			(atn.ATSDGR_order_detail_group = '') AND 
 			(atn.ATLBT__level_break_type = 1) AND
 			-- terrible work-around for terrible pricing practices, 7 Dec 18
-			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF') AND
+			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
 			pj.PJAN8__billto not in(3823581) AND
+			pj.PJAN8__billto = 1670163 AND
 			(1 = 1)
 		ORDER BY 1
 
@@ -1520,10 +1522,546 @@ Else
 
 		Set @nErrorCode = @@Error
 	End
-
-
 --
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '19. append e3.profile_E3PRFL'
 
+		INSERT INTO e3.profile_E3PRFL
+			(PBIRDT_birth_date, PPTYPE_profile_type, PNAME__profile_name, PPERD__periodicity, PMESG__message_switch, PUSEDT_use_date, PIX01__seasonal_index, PIX02__seasonal_index, PIX03__seasonal_index, 
+			PIX04__seasonal_index, PIX05__seasonal_index, PIX06__seasonal_index, PIX07__seasonal_index, PIX08__seasonal_index, PIX09__seasonal_index, PIX10__seasonal_index, PIX11__seasonal_index, 
+			PIX12__seasonal_index, PIX13__seasonal_index, PIX14__seasonal_index, PIX15__seasonal_index, PIX16__seasonal_index, PIX17__seasonal_index, PIX18__seasonal_index, PIX19__seasonal_index, 
+			PIX20__seasonal_index, PIX21__seasonal_index, PIX22__seasonal_index, PIX23__seasonal_index, PIX24__seasonal_index, PIX25__seasonal_index, PIX26__seasonal_index, PIX27__seasonal_index, 
+			PIX28__seasonal_index, PIX29__seasonal_index, PIX30__seasonal_index, PIX31__seasonal_index, PIX32__seasonal_index, PIX33__seasonal_index, PIX34__seasonal_index, PIX35__seasonal_index, 
+			PIX36__seasonal_index, PIX37__seasonal_index, PIX38__seasonal_index, PIX39__seasonal_index, PIX40__seasonal_index, PIX41__seasonal_index, PIX42__seasonal_index, PIX43__seasonal_index, 
+			PIX44__seasonal_index, PIX45__seasonal_index, PIX46__seasonal_index, PIX47__seasonal_index, PIX48__seasonal_index, PIX49__seasonal_index, PIX50__seasonal_index, PIX51__seasonal_index, 
+			PIX52__seasonal_index, PMSGSW_message_switch, PPRFL__profile_id)
+		SELECT
+			PBIRDT_birth_date, PPTYPE_profile_type, PNAME__profile_name, PPERD__periodicity, PMESG__message_switch, PUSEDT_use_date, PIX01__seasonal_index, PIX02__seasonal_index, PIX03__seasonal_index, 
+			PIX04__seasonal_index, PIX05__seasonal_index, PIX06__seasonal_index, PIX07__seasonal_index, PIX08__seasonal_index, PIX09__seasonal_index, PIX10__seasonal_index, PIX11__seasonal_index, 
+			PIX12__seasonal_index, PIX13__seasonal_index, PIX14__seasonal_index, PIX15__seasonal_index, PIX16__seasonal_index, PIX17__seasonal_index, PIX18__seasonal_index, PIX19__seasonal_index, 
+			PIX20__seasonal_index, PIX21__seasonal_index, PIX22__seasonal_index, PIX23__seasonal_index, PIX24__seasonal_index, PIX25__seasonal_index, PIX26__seasonal_index, PIX27__seasonal_index, 
+			PIX28__seasonal_index, PIX29__seasonal_index, PIX30__seasonal_index, PIX31__seasonal_index, PIX32__seasonal_index, PIX33__seasonal_index, PIX34__seasonal_index, PIX35__seasonal_index, 
+			PIX36__seasonal_index, PIX37__seasonal_index, PIX38__seasonal_index, PIX39__seasonal_index, PIX40__seasonal_index, PIX41__seasonal_index, PIX42__seasonal_index, PIX43__seasonal_index, 
+			PIX44__seasonal_index, PIX45__seasonal_index, PIX46__seasonal_index, PIX47__seasonal_index, PIX48__seasonal_index, PIX49__seasonal_index, PIX50__seasonal_index, PIX51__seasonal_index, 
+			PIX52__seasonal_index, PMSGSW_message_switch, PPRFL__profile_id
+		FROM
+			Integration.E3PRFL_profile_Staging AS s
+		WHERE 
+			NOT EXISTS (SELECT * from e3.profile_E3PRFL d where s.PPRFL__profile_id = d.PPRFL__profile_id)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '20. update e3.profile_E3PRFL'
+
+		UPDATE
+			e3.profile_E3PRFL
+		SET                
+			  [PBIRDT_birth_date]		= s.[PBIRDT_birth_date]
+			  ,[PPTYPE_profile_type]	= s.[PPTYPE_profile_type] 
+			  ,[PNAME__profile_name]	= s.[PNAME__profile_name]
+			  ,[PPERD__periodicity]		= s.[PPERD__periodicity]
+			  ,[PMESG__message_switch]	= s.[PMESG__message_switch]
+			  ,[PUSEDT_use_date]		= s.[PUSEDT_use_date]
+			  ,[PIX01__seasonal_index]	= s.[PIX01__seasonal_index]
+			  ,[PIX02__seasonal_index]	= s.[PIX02__seasonal_index]
+			  ,[PIX03__seasonal_index]	= s.[PIX03__seasonal_index]
+			  ,[PIX04__seasonal_index]	= s.[PIX04__seasonal_index]
+			  ,[PIX05__seasonal_index]	= s.[PIX05__seasonal_index]
+			  ,[PIX06__seasonal_index]	= s.[PIX06__seasonal_index]
+			  ,[PIX07__seasonal_index]	= s.[PIX07__seasonal_index]
+			  ,[PIX08__seasonal_index]	= s.[PIX08__seasonal_index]
+			  ,[PIX09__seasonal_index]	= s.[PIX09__seasonal_index]
+			  ,[PIX10__seasonal_index]	= s.[PIX10__seasonal_index]
+			  ,[PIX11__seasonal_index]	= s.[PIX11__seasonal_index]
+			  ,[PIX12__seasonal_index]	= s.[PIX12__seasonal_index]
+			  ,[PIX13__seasonal_index]	= s.[PIX13__seasonal_index]
+			  ,[PIX14__seasonal_index]	= s.[PIX14__seasonal_index]
+			  ,[PIX15__seasonal_index]	= s.[PIX15__seasonal_index]
+			  ,[PIX16__seasonal_index]	= s.[PIX16__seasonal_index]
+			  ,[PIX17__seasonal_index]	= s.[PIX17__seasonal_index]
+			  ,[PIX18__seasonal_index]	= s.[PIX18__seasonal_index]
+			  ,[PIX19__seasonal_index]	= s.[PIX19__seasonal_index]
+			  ,[PIX20__seasonal_index]	= s.[PIX20__seasonal_index]
+			  ,[PIX21__seasonal_index]	= s.[PIX21__seasonal_index]
+			  ,[PIX22__seasonal_index]	= s.[PIX22__seasonal_index]
+			  ,[PIX23__seasonal_index]	= s.[PIX23__seasonal_index]
+			  ,[PIX24__seasonal_index]	= s.[PIX24__seasonal_index]
+			  ,[PIX25__seasonal_index]	= s.[PIX25__seasonal_index]
+			  ,[PIX26__seasonal_index]	= s.[PIX26__seasonal_index]
+			  ,[PIX27__seasonal_index]	= s.[PIX27__seasonal_index]
+			  ,[PIX28__seasonal_index]	= s.[PIX28__seasonal_index]
+			  ,[PIX29__seasonal_index]	= s.[PIX29__seasonal_index]
+			  ,[PIX30__seasonal_index]	= s.[PIX30__seasonal_index]
+			  ,[PIX31__seasonal_index]	= s.[PIX31__seasonal_index]
+			  ,[PIX32__seasonal_index]	= s.[PIX32__seasonal_index]
+			  ,[PIX33__seasonal_index]	= s.[PIX33__seasonal_index]
+			  ,[PIX34__seasonal_index]	= s.[PIX34__seasonal_index]
+			  ,[PIX35__seasonal_index]	= s.[PIX35__seasonal_index]
+			  ,[PIX36__seasonal_index]	= s.[PIX36__seasonal_index]
+			  ,[PIX37__seasonal_index]	= s.[PIX37__seasonal_index]
+			  ,[PIX38__seasonal_index]	= s.[PIX38__seasonal_index]
+			  ,[PIX39__seasonal_index]	= s.[PIX39__seasonal_index]
+			  ,[PIX40__seasonal_index]	= s.[PIX40__seasonal_index]
+			  ,[PIX41__seasonal_index]	= s.[PIX41__seasonal_index]
+			  ,[PIX42__seasonal_index]	= s.[PIX42__seasonal_index]
+			  ,[PIX43__seasonal_index]	= s.[PIX43__seasonal_index]
+			  ,[PIX44__seasonal_index]	= s.[PIX44__seasonal_index]
+			  ,[PIX45__seasonal_index]	= s.[PIX45__seasonal_index]
+			  ,[PIX46__seasonal_index]	= s.[PIX46__seasonal_index]
+			  ,[PIX47__seasonal_index]	= s.[PIX47__seasonal_index]
+			  ,[PIX48__seasonal_index]	= s.[PIX48__seasonal_index]
+			  ,[PIX49__seasonal_index]	= s.[PIX49__seasonal_index]
+			  ,[PIX50__seasonal_index]	= s.[PIX50__seasonal_index]
+			  ,[PIX51__seasonal_index]	= s.[PIX51__seasonal_index]
+			  ,[PIX52__seasonal_index]	= s.[PIX52__seasonal_index]
+			  ,[PMSGSW_message_switch]	= s.[PMSGSW_message_switch]
+		FROM
+			Integration.E3PRFL_profile_Staging AS s 
+			INNER JOIN e3.profile_E3PRFL ON 
+			s.PPRFL__profile_id = e3.profile_E3PRFL.PPRFL__profile_id
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '21. append BRS_ItemSupplier'
+
+		INSERT INTO [dbo].[BRS_ItemSupplier]
+		(
+			[Supplier]
+		)
+		SELECT DISTINCT
+			IVNDR__vendor_id
+		FROM
+			Integration.E3ITEMA_trim_Staging s
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [dbo].[BRS_ItemSupplier] d
+				WHERE
+					d.[Supplier] = s.IVNDR__vendor_id AND
+					(1=1)
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '22. append BRS_Item'
+
+		INSERT INTO [dbo].[BRS_Item]
+		(
+			[Item]
+		)
+		SELECT DISTINCT
+			[IITEM__item_id]
+		FROM
+			Integration.E3ITEMA_trim_Staging s
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [dbo].[BRS_Item] d
+				WHERE
+					d.[Item] = s.[IITEM__item_id] AND
+					(1=1)
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '23. append e3.demand_E3ITEMA_dimension'
+
+		INSERT INTO [e3].[demand_E3ITEMA_dimension]
+		(
+			IVNDR__vendor_id, 
+			ISUBV__subvendor_id, 
+			IBUYR__buyer_id, 
+			IDMPRF_item_demand_profile_id
+		)
+		SELECT DISTINCT
+			IVNDR__vendor_id, 
+			ISUBV__subvendor_id, 
+			IBUYR__buyer_id, 
+			IDMPRF_item_demand_profile_id
+		FROM
+			Integration.E3ITEMA_trim_Staging s
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [e3].[demand_E3ITEMA_dimension] d
+				WHERE
+					d.IVNDR__vendor_id = s.IVNDR__vendor_id AND
+					d.ISUBV__subvendor_id = s.ISUBV__subvendor_id AND
+					d.IBUYR__buyer_id = s.IBUYR__buyer_id AND
+					d.IDMPRF_item_demand_profile_id = s.IDMPRF_item_demand_profile_id AND
+					(1=1)
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	-- there is a lot going on here:  reduce data size & pivot seasonality
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '24. append e3.demand_E3ITEMA'
+
+		INSERT INTO [e3].[demand_E3ITEMA]
+		(
+			[SalesDay],
+			[ItemKey],
+			[IWHSE__warehouse_id],
+			[IDEM52_demand_forecast_weekly],
+			[PIX_seasonal_index],
+			[demand_dim_id]
+		)
+		SELECT
+			CAST( [SalesDateLastWeekly] as date) dt,
+			i.ItemKey, 
+			CAST(s.IWHSE__warehouse_id as tinyint) whse, 
+			s.IDEM52_demand_forecast_weekly, 
+			CASE 
+				WHEN idx.PPRFL__profile_id = '' 
+				THEN 1.0 
+				ELSE idx.current_index 
+			END AS seasonal_index,
+			d.demand_dim_id
+		FROM
+			Integration.E3ITEMA_trim_Staging AS s 
+			INNER JOIN e3.demand_E3ITEMA_dimension AS d 
+			ON s.IVNDR__vendor_id = d.IVNDR__vendor_id AND 
+				s.ISUBV__subvendor_id = d.ISUBV__subvendor_id AND 
+				s.IBUYR__buyer_id = d.IBUYR__buyer_id AND
+				s.IDMPRF_item_demand_profile_id = d.IDMPRF_item_demand_profile_id
+
+			INNER JOIN [dbo].[BRS_Item] i
+			ON s.IITEM__item_id = i.Item
+
+			CROSS JOIN 
+			[dbo].[BRS_Config] c
+
+			INNER JOIN
+			(
+				SELECT 
+					[PPRFL__profile_id], 
+					seasonal_index as current_index
+				FROM 
+				(
+					SELECT 
+						[PPRFL__profile_id]
+						,[PIX01__seasonal_index]
+						,[PIX02__seasonal_index]
+						,[PIX03__seasonal_index]
+						,[PIX04__seasonal_index]
+						,[PIX05__seasonal_index]
+						,[PIX06__seasonal_index]
+						,[PIX07__seasonal_index]
+						,[PIX08__seasonal_index]
+						,[PIX09__seasonal_index]
+						,[PIX10__seasonal_index]
+						,[PIX11__seasonal_index]
+						,[PIX12__seasonal_index]
+						,[PIX13__seasonal_index]
+						,[PIX14__seasonal_index]
+						,[PIX15__seasonal_index]
+						,[PIX16__seasonal_index]
+						,[PIX17__seasonal_index]
+						,[PIX18__seasonal_index]
+						,[PIX19__seasonal_index]
+						,[PIX20__seasonal_index]
+						,[PIX21__seasonal_index]
+						,[PIX22__seasonal_index]
+						,[PIX23__seasonal_index]
+						,[PIX24__seasonal_index]
+						,[PIX25__seasonal_index]
+						,[PIX26__seasonal_index]
+						,[PIX27__seasonal_index]
+						,[PIX28__seasonal_index]
+						,[PIX29__seasonal_index]
+						,[PIX30__seasonal_index]
+						,[PIX31__seasonal_index]
+						,[PIX32__seasonal_index]
+						,[PIX33__seasonal_index]
+						,[PIX34__seasonal_index]
+						,[PIX35__seasonal_index]
+						,[PIX36__seasonal_index]
+						,[PIX37__seasonal_index]
+						,[PIX38__seasonal_index]
+						,[PIX39__seasonal_index]
+						,[PIX40__seasonal_index]
+						,[PIX41__seasonal_index]
+						,[PIX42__seasonal_index]
+						,[PIX43__seasonal_index]
+						,[PIX44__seasonal_index]
+						,[PIX45__seasonal_index]
+						,[PIX46__seasonal_index]
+						,[PIX47__seasonal_index]
+						,[PIX48__seasonal_index]
+						,[PIX49__seasonal_index]
+						,[PIX50__seasonal_index]
+						,[PIX51__seasonal_index]
+						,[PIX52__seasonal_index]
+						,[PMSGSW_message_switch]
+				  FROM 
+					e3.[profile_E3PRFL]
+				) piv
+				UNPIVOT 
+				(
+					seasonal_index FOR weeks in
+					(
+						[PIX01__seasonal_index]
+						,[PIX02__seasonal_index]
+						,[PIX03__seasonal_index]
+						,[PIX04__seasonal_index]
+						,[PIX05__seasonal_index]
+						,[PIX06__seasonal_index]
+						,[PIX07__seasonal_index]
+						,[PIX08__seasonal_index]
+						,[PIX09__seasonal_index]
+						,[PIX10__seasonal_index]
+						,[PIX11__seasonal_index]
+						,[PIX12__seasonal_index]
+						,[PIX13__seasonal_index]
+						,[PIX14__seasonal_index]
+						,[PIX15__seasonal_index]
+						,[PIX16__seasonal_index]
+						,[PIX17__seasonal_index]
+						,[PIX18__seasonal_index]
+						,[PIX19__seasonal_index]
+						,[PIX20__seasonal_index]
+						,[PIX21__seasonal_index]
+						,[PIX22__seasonal_index]
+						,[PIX23__seasonal_index]
+						,[PIX24__seasonal_index]
+						,[PIX25__seasonal_index]
+						,[PIX26__seasonal_index]
+						,[PIX27__seasonal_index]
+						,[PIX28__seasonal_index]
+						,[PIX29__seasonal_index]
+						,[PIX30__seasonal_index]
+						,[PIX31__seasonal_index]
+						,[PIX32__seasonal_index]
+						,[PIX33__seasonal_index]
+						,[PIX34__seasonal_index]
+						,[PIX35__seasonal_index]
+						,[PIX36__seasonal_index]
+						,[PIX37__seasonal_index]
+						,[PIX38__seasonal_index]
+						,[PIX39__seasonal_index]
+						,[PIX40__seasonal_index]
+						,[PIX41__seasonal_index]
+						,[PIX42__seasonal_index]
+						,[PIX43__seasonal_index]
+						,[PIX44__seasonal_index]
+						,[PIX45__seasonal_index]
+						,[PIX46__seasonal_index]
+						,[PIX47__seasonal_index]
+						,[PIX48__seasonal_index]
+						,[PIX49__seasonal_index]
+						,[PIX50__seasonal_index]
+						,[PIX51__seasonal_index]
+						,[PIX52__seasonal_index]
+					  )
+				  ) AS unpvt
+				WHERE
+					CAST(SUBSTRING(weeks,4,2) as int) = 
+					(
+						SELECT [CalWeek] 
+						FROM [dbo].[BRS_Config], [dbo].[BRS_SalesDay] d 
+						WHERE [SalesDateLastWeekly] = d.[SalesDate]
+					) 
+			) idx
+			ON 
+			d.IDMPRF_item_demand_profile_id = idx.PPRFL__profile_id AND
+			(1=1)
+			WHERE 
+				NOT EXISTS 
+				(
+					SELECT * 
+					FROM [e3].[demand_E3ITEMA] dest
+					WHERE c.SalesDateLastWeekly = dest.SalesDay
+				)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '25. append dbo.BRS_FSC_Rollup'
+
+		INSERT INTO [dbo].[BRS_FSC_Rollup]
+		(
+			[TerritoryCd]
+			,[Branch]
+		)
+		SELECT 
+			[GD$TER_territory_code], ''
+		FROM 
+			[Integration].[F5553_territory_Staging] s
+		WHERE
+			[GDCO___company]='02000' AND
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [dbo].[BRS_FSC_Rollup] d
+				WHERE
+					d.[TerritoryCd] = s.[GD$TER_territory_code]
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '26. update dbo.BRS_FSC_Rollup'
+
+		UPDATE
+			BRS_FSC_Rollup
+		SET
+			group_type = [GD$GTY_group_type]
+			,LastReviewDate = [GDUPMJ_date_updated]
+		FROM
+			Integration.F5553_territory_Staging AS s 
+			INNER JOIN BRS_FSC_Rollup d
+			ON s.GD$TER_territory_code = d.TerritoryCd
+		WHERE
+			(s.GDCO___company = '02000') AND
+			(d.TerritoryCd =s.GD$TER_territory_code) AND
+			(
+				([GD$GTY_group_type] <> d.group_type) OR
+				([GDUPMJ_date_updated] <> LastReviewDate) 
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '27. append Pricing.entered_by'
+
+		INSERT INTO [Pricing].[entered_by]
+		(
+			[entered_by_code]
+		)
+		SELECT 
+			DISTINCT [QPUSER_user_id]
+		FROM 
+			[Integration].[F5527_price_adjustment_history_Staging] s
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [Pricing].[entered_by] d
+				WHERE
+					d.[entered_by_code] = s.[QPUSER_user_id]
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '28. append Pricing.entered_by-Auth'
+
+		INSERT INTO [Pricing].[entered_by]
+		(
+			[entered_by_code]
+		)
+		SELECT 
+			DISTINCT [QP$AID_authorized_id]
+		FROM 
+			[Integration].[F5527_price_adjustment_history_Staging] s
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [Pricing].[entered_by] d
+				WHERE
+					d.[entered_by_code] = s.[QP$AID_authorized_id]
+			)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '29. append Pricing.price_adjustment_history_F5527'
+
+		INSERT INTO [Pricing].[price_adjustment_history_F5527]
+		(
+		  [QPUPMJ_date_updated]
+		  ,[Item]
+		  ,[QPOVPR_override_price]
+		  ,[QP$RSC_reason_code]
+		  ,[QP$CTR_competitor]
+		  ,[QP$AID_authorized_id]
+		  ,[QPUSER_user_id]
+		  ,[QPTDAY_time_of_day]
+		  ,[QPAC08_market_segment]
+		  ,[QPUOM4_pricing_uom]
+		  ,[QP$TO__total_number_of_orders]
+		  ,[QPCO___company]
+		  ,[QPITM__item_number_short]
+		  ,[QPPID__program_id]
+		  ,[QPJOBN_work_station_id]
+		)
+		SELECT 
+--		top 10
+		  [QPUPMJ_date_updated]
+		  ,i.IMLITM_item_number
+		  ,[QPOVPR_override_price]
+		  ,[QP$RSC_reason_code]
+		  ,[QP$CTR_competitor]
+		  ,[QP$AID_authorized_id]
+		  ,[QPUSER_user_id]
+		  ,[QPTDAY_time_of_day]
+		  ,[QPAC08_market_segment]
+		  ,[QPUOM4_pricing_uom]
+		  ,[QP$TO__total_number_of_orders]
+		  ,[QPCO___company]
+		  ,[QPITM__item_number_short]
+		  ,[QPPID__program_id]
+		  ,[QPJOBN_work_station_id]
+		FROM 
+			[Integration].[F5527_price_adjustment_history_Staging] s,
+			[Pricing].[item_master_F4101] i
+		WHERE
+			(s.QPITM__item_number_short = i.IMITM__item_number_short) AND
+			NOT EXISTS 
+			(
+				SELECT *
+				FROM [Pricing].[price_adjustment_history_F5527] d
+				WHERE
+					(d.[QPUPMJ_date_updated] = s.[QPUPMJ_date_updated]) AND
+					(d.[QPTDAY_time_of_day] = s.[QPTDAY_time_of_day]) AND
+					(1=1)
+			)
+
+
+		Set @nErrorCode = @@Error
+	End
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
@@ -1554,19 +2092,15 @@ End
 Return @nErrorCode
 GO
 
-SET ANSI_NULLS OFF
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
 
 --fix 14
--- exec pricing.etl_post_proc
-
 /*
 -- dup fix
 		SELECT        
 			pj.PJAN8__billto AS BillTo
---			,*
+			,min(sn.SNAST__adjustment_name) min_adj
+			,max(sn.SNAST__adjustment_name) max_adj
+
 		FROM            
 			Pricing.price_adjustment_enroll_F40314 AS pj 
 
@@ -1585,19 +2119,20 @@ GO
 			(atn.ATSDGR_order_detail_group = '') AND 
 			(atn.ATLBT__level_break_type = 1) AND
 			-- terrible work-around for terrible pricing practices, 7 Dec 18
-			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF') AND
---			sn.SNAST__adjustment_name in('CAP02YR2') AND
+			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
 			-- test
---			pj.PJAN8__billto in(1664982, 1664985, 1665074, 1665758, 1666172, 1666579, 1667771) AND
---			pj.PJAN8__billto in(1527764, 1527824, 2078615, 2354368, 2808656, 3196973, 3301185, 3346212, 3412505, 3412512) AND
 			pj.PJAN8__billto not in(3823581) AND
 			(1 = 1)
 		Group BY pj.PJAN8__billto 
 		Having count(*) > 1
-
 */
 
 
---EXECUTE [Pricing].[etl_post_proc] @bDebug=1
---EXECUTE [Pricing].[etl_post_proc] @bDebug=0
+-- prod
+-- EXECUTE [Pricing].[etl_post_proc] @bDebug=0
 
+-- debug
+-- EXECUTE [Pricing].[etl_post_proc] @bDebug=1
+-- 184927 rows
+-- org 1m57s
+-- new 1m55s

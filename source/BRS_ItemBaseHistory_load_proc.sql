@@ -412,11 +412,12 @@ truncate table STAGE_BRS_ItemSellPrice
 
 -- Step 3:  run below script
 
--- prod run
-
+-- prod
 -- Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=1, @bDebug=0
 
--- Exec [BRS_ItemBaseHistory_load_proc] 0
+-- debug
+-- Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=0, @bDebug=1
+
 
 
 

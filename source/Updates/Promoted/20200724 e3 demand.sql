@@ -364,6 +364,7 @@ CREATE TABLE [e3].[demand_E3ITEMA](
 	[ItemKey] [int] NOT NULL,
 	[IWHSE__warehouse_id] [tinyint] NOT NULL,
 	[IDEM52_demand_forecast_weekly] real NOT NULL,
+	[PIX_seasonal_index] real NOT NULL,
 	[demand_dim_id] [int] NOT NULL
 
  CONSTRAINT [PK_E3ITEMA_trim_Staging] PRIMARY KEY CLUSTERED 
@@ -381,12 +382,14 @@ INSERT INTO [e3].[demand_E3ITEMA]
            ,[ItemKey]
            ,[IWHSE__warehouse_id]
            ,[IDEM52_demand_forecast_weekly]
+		   ,[PIX_seasonal_index]
            ,[demand_dim_id])
      VALUES
            ('1980-01-01'
            ,1
            ,0
            ,0
+		   ,0
            ,1)
 GO
 
@@ -610,7 +613,7 @@ FROM
 
 --------------------------------------------------------------------------------
 
-/****** Script for SelectTopNRows command from SSMS  ******/
+
 SELECT 
 	[PPRFL__profile_id], 
 	seasonal_index as current_index
@@ -672,7 +675,7 @@ FROM
 		,[PIX52__seasonal_index]
 		,[PMSGSW_message_switch]
   FROM 
-	[Integration].[E3PRFL_profile_Staging]
+	e3.[profile_E3PRFL]
 ) piv
 UNPIVOT 
 (
@@ -734,4 +737,12 @@ UNPIVOT
   ) AS unpvt
 WHERE
 	CAST(SUBSTRING(weeks,4,2) as int) = 
-	(select [CalWeek] from [dbo].[BRS_Config], [dbo].[BRS_SalesDay] d where [SalesDateLastWeekly] = d.[SalesDate])
+	(
+		SELECT [CalWeek] 
+		FROM [dbo].[BRS_Config], [dbo].[BRS_SalesDay] d 
+		WHERE [SalesDateLastWeekly] = d.[SalesDate]
+	) AND
+	[PPRFL__profile_id] <>''
+
+
+
