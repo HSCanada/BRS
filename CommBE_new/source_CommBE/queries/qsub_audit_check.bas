@@ -1,25 +1,12 @@
-﻿Operation =1
-Option =0
-Begin InputTables
-    Name ="Integration_F555115_commission_sales_extract_Staging"
-End
-Begin OutputColumns
-    Expression ="Integration_F555115_commission_sales_extract_Staging.WSAC10_division_code"
-    Alias ="stage_sales_amt"
-    Expression ="Sum(Integration_F555115_commission_sales_extract_Staging.WSAEXP_extended_price)"
-    Alias ="CountOfID"
-    Expression ="Count(Integration_F555115_commission_sales_extract_Staging.ID)"
-    Alias ="MaxOfWSDGL__gl_date"
-    Expression ="Max(Integration_F555115_commission_sales_extract_Staging.WSDGL__gl_date)"
-End
-Begin OrderBy
-    Expression ="Integration_F555115_commission_sales_extract_Staging.WSAC10_division_code"
-    Flag =0
-End
-Begin Groups
-    Expression ="Integration_F555115_commission_sales_extract_Staging.WSAC10_division_code"
-    GroupLevel =0
-End
+﻿dbMemo "SQL" ="SELECT\015\012\011d.FiscalMonth\015\012\011, s.WSAC10_division_code SalesDivisio"
+    "n\015\012\011, FORMAT(SUM(s.WSAEXP_extended_price - s.WS$ODS_order_discount_amou"
+    "nt), 'C', 'en-us') AS stage_sales_amt\015\012FROM\015\012\011Integration.F555115"
+    "_commission_sales_extract_Staging AS s \015\012\015\012\011INNER JOIN BRS_SalesD"
+    "ay AS d \015\012\011ON s.WSDGL__gl_date = d.SalesDate\015\012WHERE\015\012\011d."
+    "FiscalMonth = (Select [PriorFiscalMonth] from [comm].[config])\015\012\015\012GR"
+    "OUP BY\015\012\011d.FiscalMonth, \015\012\011s.WSAC10_division_code"
+dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;DATABASE=D"
+    "EV_BRSales"
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
@@ -29,6 +16,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbBoolean "LogMessages" ="0"
 Begin
     Begin
         dbText "Name" ="Integration_F555115_commission_sales_extract_Staging.WSAC10_division_code"
@@ -59,27 +47,36 @@ Begin
         dbText "Name" ="Integration_F555115_commission_sales_extract_Staging.WSDGL__gl_date"
         dbLong "AggregateType" ="-1"
     End
-End
-Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
-    Left =-1
-    Top =-1
-    Right =1388
-    Bottom =276
-    Left =0
-    Top =0
-    ColumnsShown =543
     Begin
-        Left =276
-        Top =21
-        Right =688
-        Bottom =311
-        Top =0
-        Name ="Integration_F555115_commission_sales_extract_Staging"
-        Name =""
+        dbText "Name" ="1.SalesDivision"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="1.FiscalMonth"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="1.stage_sales_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="qsub_audit_check.FiscalMonth"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="qsub_audit_check.SalesDivision"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="qsub_audit_check.stage_sales_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FiscalMonth"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="SalesDivision"
+        dbLong "AggregateType" ="-1"
     End
 End

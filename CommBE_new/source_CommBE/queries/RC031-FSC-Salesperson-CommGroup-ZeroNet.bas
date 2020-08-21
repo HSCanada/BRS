@@ -45,12 +45,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([RC031-FSC-Salesperson-CommGroup-ZeroNet].[fsc_salesperson_key_id]=\"Csteel    "
+    "                    \")"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -104,15 +106,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =0
+    Top =40
+    Right =1412
+    Bottom =817
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =197
+    Right =1388
+    Bottom =180
     Left =0
     Top =0
     ColumnsShown =543

@@ -52,6 +52,9 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([RC040-ESS-MonthSalesperson-ZeroRow].[ess_salesperson_key_id]=\"RBurtonESS     "
+    "               \")"
+dbMemo "OrderBy" ="[RC040-ESS-MonthSalesperson-ZeroRow].[SumOfess_comm_amt1] DESC"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -104,12 +107,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1438
-    Bottom =825
+    Right =1198
+    Bottom =795
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =217
+    Right =1388
+    Bottom =183
     Left =0
     Top =0
     ColumnsShown =543

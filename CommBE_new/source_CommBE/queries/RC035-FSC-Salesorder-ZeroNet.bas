@@ -48,6 +48,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[RC035-FSC-Salesorder-ZeroNet].[SumOffsc_comm_amt] DESC"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -98,12 +99,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1438
-    Bottom =825
+    Right =1198
+    Bottom =795
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =250
+    Right =1016
+    Bottom =233
     Left =0
     Top =0
     ColumnsShown =543

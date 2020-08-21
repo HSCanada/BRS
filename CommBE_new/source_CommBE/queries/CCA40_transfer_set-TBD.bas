@@ -22,13 +22,15 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbText "Description" ="Update Fiscal period"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([CCA40_transfer_set-TBD].[xfer_type] Like \"*T*\")"
+dbMemo "OrderBy" ="[CCA40_transfer_set-TBD].[FiscalMonth] DESC"
 Begin
     Begin
         dbText "Name" ="comm_transfer_rule.comment"
@@ -88,15 +90,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
+    State =2
+    Left =-8
+    Top =-31
+    Right =1198
+    Bottom =795
     Left =-1
     Top =-1
     Right =1388
-    Bottom =220
+    Bottom =203
     Left =0
     Top =0
     ColumnsShown =539

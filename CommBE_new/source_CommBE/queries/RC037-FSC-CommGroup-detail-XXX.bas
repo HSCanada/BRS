@@ -1,8 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.ID_legacy)=58275283 Or (comm_test_detail.ID_legacy)=58275294"
-    ") AND ((comm_test_detail.fsc_comm_plan_id) Like \"fsc*\") AND ((comm_test_detail"
-    ".fsc_salesperson_key_id)<>\"Internal\"))"
+Where ="(((comm_test_detail.doc_id)=12877596) AND ((comm_test_detail.fsc_comm_plan_id) L"
+    "ike \"fsc*\") AND ((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\"))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -145,15 +144,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =176
+    Top =252
+    Right =1172
+    Bottom =787
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =467
+    Right =1174
+    Bottom =450
     Left =0
     Top =0
     ColumnsShown =539
