@@ -19,12 +19,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[CCB30_salesperson_stage_load].[salesperson_key_id]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -43,6 +44,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.salesperson_nm"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2970"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.FiscalMonth"
@@ -82,7 +85,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =369
+    Bottom =352
     Left =0
     Top =0
     ColumnsShown =539

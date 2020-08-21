@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
 Begin InputTables
-    Name ="qryCommStatementDetailReport-Summary"
     Name ="qsubCommStatementDetailReportSummary"
+    Name ="zqryCommStatementDetailReport-Summary"
 End
 Begin OutputColumns
     Alias ="salesperson_key_id"
@@ -19,9 +19,9 @@ Begin OutputColumns
 End
 Begin Joins
     LeftTable ="qsubCommStatementDetailReportSummary"
-    RightTable ="qryCommStatementDetailReport-Summary"
-    Expression ="qsubCommStatementDetailReportSummary.comm_group_cd = [qryCommStatementDetailRepo"
-        "rt-Summary].item_comm_group_cd"
+    RightTable ="zqryCommStatementDetailReport-Summary"
+    Expression ="qsubCommStatementDetailReportSummary.comm_group_cd=[zqryCommStatementDetailRepor"
+        "t-Summary].item_comm_group_cd"
     Flag =2
 End
 dbBoolean "ReturnsRecords" ="-1"

@@ -48,6 +48,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([RC020-FSC-MonthSalesperson-ZeroRow].[fsc_salesperson_key_id]=\"mdelorenzi     "
+    "               \")"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fsc_salesperson_key_id"
@@ -97,15 +99,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =0
-    Right =1583
-    Bottom =797
+    State =2
+    Left =-8
+    Top =-31
+    Right =1438
+    Bottom =945
     Left =-1
     Top =-1
     Right =1559
-    Bottom =194
+    Bottom =177
     Left =0
     Top =0
     ColumnsShown =543

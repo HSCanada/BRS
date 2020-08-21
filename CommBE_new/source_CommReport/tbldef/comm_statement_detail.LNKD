@@ -1,3 +1,4 @@
 ﻿comm_statement_detail
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=DEV_BRSales
 comm.backend_detail_fsc
+record_id

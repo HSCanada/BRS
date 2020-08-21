@@ -1,4 +1,4 @@
 ﻿Integration_comm_salesperson_master_Staging
-ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
 Integration.comm_salesperson_master_Staging
 employee_num;+master_salesperson_cd

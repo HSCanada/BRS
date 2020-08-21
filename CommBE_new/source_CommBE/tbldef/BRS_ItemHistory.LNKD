@@ -1,0 +1,4 @@
+﻿BRS_ItemHistory
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
+dbo.BRS_ItemHistory
+FiscalMonth;+Item

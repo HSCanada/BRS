@@ -1,10 +1,10 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115_audit.source_cd)=\"JDE\") AND ((comm_transaction_F55"
-    "5115_audit.AdjOwner)='380'))"
+Where ="(((comm_transaction_F555115_audit.FiscalMonth)=202007) AND ((comm_transaction_F5"
+    "55115_audit.source_cd)=\"JDE\") AND ((comm_transaction_F555115_audit.AdjOwner)='"
+    "380'))"
 Begin InputTables
     Name ="comm_transaction_F555115_audit"
-    Name ="comm_config"
 End
 Begin OutputColumns
     Expression ="comm_transaction_F555115_audit.FiscalMonth"
@@ -12,12 +12,6 @@ Begin OutputColumns
     Expression ="comm_transaction_F555115_audit.AdjOwner"
     Expression ="comm_transaction_F555115_audit.SalesDivision"
     Expression ="comm_transaction_F555115_audit.summarized_transaction_amt"
-End
-Begin Joins
-    LeftTable ="comm_transaction_F555115_audit"
-    RightTable ="comm_config"
-    Expression ="comm_transaction_F555115_audit.FiscalMonth = comm_config.PriorFiscalMonth"
-    Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -56,12 +50,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1191
-    Bottom =817
+    Right =1533
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1167
-    Bottom =271
+    Right =1509
+    Bottom =237
     Left =0
     Top =0
     ColumnsShown =539
@@ -72,15 +66,6 @@ Begin
         Bottom =232
         Top =0
         Name ="comm_transaction_F555115_audit"
-        Name =""
-    End
-    Begin
-        Left =476
-        Top =59
-        Right =729
-        Bottom =257
-        Top =0
-        Name ="comm_config"
         Name =""
     End
 End

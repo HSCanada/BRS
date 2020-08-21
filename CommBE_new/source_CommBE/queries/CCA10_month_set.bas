@@ -41,6 +41,8 @@ Begin
     Begin
         dbText "Name" ="BRS_Config.PriorFiscalMonth"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2190"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Config.id"
@@ -56,7 +58,7 @@ Begin
     Left =-1
     Top =-1
     Right =1140
-    Bottom =525
+    Bottom =508
     Left =0
     Top =0
     ColumnsShown =539

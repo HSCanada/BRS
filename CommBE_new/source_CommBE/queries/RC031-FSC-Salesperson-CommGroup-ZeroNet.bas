@@ -51,8 +51,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([RC031-FSC-Salesperson-CommGroup-ZeroNet].[fsc_salesperson_key_id]=\"Csteel    "
-    "                    \")"
+dbMemo "Filter" ="([RC031-FSC-Salesperson-CommGroup-ZeroNet].[fsc_salesperson_key_id]=\"TYLER.MCCL"
+    "ENDON               \")"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -107,14 +107,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
+    Left =44
+    Top =93
     Right =1412
-    Bottom =817
+    Bottom =920
     Left =-1
     Top =-1
-    Right =1388
-    Bottom =180
+    Right =1344
+    Bottom =129
     Left =0
     Top =0
     ColumnsShown =543

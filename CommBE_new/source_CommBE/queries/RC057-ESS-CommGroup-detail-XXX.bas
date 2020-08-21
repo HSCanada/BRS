@@ -1,8 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_com"
-    "m_plan_id) Like \"ccs*\") AND ((comm_test_detail.ess_salesperson_key_id) Like \""
-    "*oak*\"))"
+Where ="(((comm_test_detail.doc_id)=1201004) AND ((comm_test_detail.ess_comm_plan_id) Li"
+    "ke \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"ccs*\"))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -32,15 +31,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([RC057-ESS-CommGroup-detail-XXX].[disp_ess_comm_group_cd]=\"DIGOTH\")"
-dbMemo "OrderBy" ="[RC057-ESS-CommGroup-detail-XXX].[doc_id], [RC057-ESS-CommGroup-detail-XXX].[lin"
-    "e_id], [RC057-ESS-CommGroup-detail-XXX].[src] DESC"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fiscal_yearmo_num"
@@ -134,15 +130,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =88
-    Top =146
-    Right =1412
-    Bottom =816
+    State =2
+    Left =-8
+    Top =-31
+    Right =1438
+    Bottom =945
     Left =-1
     Top =-1
     Right =1300
-    Bottom =340
+    Bottom =323
     Left =0
     Top =0
     ColumnsShown =539

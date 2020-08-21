@@ -77,6 +77,8 @@ Begin
     Begin
         dbText "Name" ="comm_test_detail.fiscal_yearmo_num"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2235"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="MinOfID_legacy"
@@ -107,12 +109,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1198
-    Bottom =795
+    Right =1438
+    Bottom =945
     Left =-1
     Top =-1
-    Right =1388
-    Bottom =183
+    Right =1344
+    Bottom =166
     Left =0
     Top =0
     ColumnsShown =543

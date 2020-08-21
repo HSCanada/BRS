@@ -49,6 +49,7 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbMemo "OrderBy" ="[RC035-FSC-Salesorder-ZeroNet].[SumOffsc_comm_amt] DESC"
+dbMemo "Filter" ="([RC035-FSC-Salesorder-ZeroNet].[doc_id]=13215762)"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -85,26 +86,32 @@ Begin
     Begin
         dbText "Name" ="MaxOfID_legacy"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1710"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.doc_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1035"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="MaxOfitem_comm_group_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2070"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =2
     Left =-8
     Top =-31
-    Right =1198
-    Bottom =795
+    Right =1559
+    Bottom =945
     Left =-1
     Top =-1
-    Right =1016
-    Bottom =233
+    Right =1509
+    Bottom =199
     Left =0
     Top =0
     ColumnsShown =543

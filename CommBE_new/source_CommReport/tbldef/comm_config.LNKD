@@ -1,4 +1,4 @@
-﻿comm_plan_group_rate
+﻿comm_config
 ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=DEV_BRSales
-comm.plan_group_rate
-comm_plan_id;+comm_group_cd
+comm.config
+id

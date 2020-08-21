@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.doc_id)=12877596) AND ((comm_test_detail.fsc_comm_plan_id) L"
+Where ="(((comm_test_detail.doc_id)=13282713) AND ((comm_test_detail.fsc_comm_plan_id) L"
     "ike \"fsc*\") AND ((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\"))"
 Begin InputTables
     Name ="comm_test_detail"
@@ -32,12 +32,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[RC037-FSC-CommGroup-detail-XXX].[doc_id], [RC037-FSC-CommGroup-detail-XXX].[lin"
+    "e_id], [RC037-FSC-CommGroup-detail-XXX].[src]"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fiscal_yearmo_num"
@@ -105,6 +107,8 @@ Begin
     Begin
         dbText "Name" ="comm_test_detail.fsc_calc_key"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1725"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.line_id"
@@ -138,21 +142,17 @@ Begin
         dbInteger "ColumnWidth" ="2430"
         dbBoolean "ColumnHidden" ="0"
     End
-    Begin
-        dbText "Name" ="Expr1005"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
-    Left =176
-    Top =252
-    Right =1172
-    Bottom =787
+    Left =0
+    Top =40
+    Right =1412
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1174
-    Bottom =450
+    Right =1245
+    Bottom =399
     Left =0
     Top =0
     ColumnsShown =539
