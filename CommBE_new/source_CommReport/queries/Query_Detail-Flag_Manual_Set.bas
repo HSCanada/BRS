@@ -1,7 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_salesperson_master.salesperson_nm) Like \"*sul*\")) OR (((comm_salespers"
-    "on_master.salesperson_nm) Like \"*cron*\"))"
+Where ="(((comm_salesperson_master.salesperson_nm) Like \"*sul*\" Or (comm_salesperson_m"
+    "aster.salesperson_nm) Like \"*cron*\")) OR (((comm_salesperson_master.salesperso"
+    "n_key_id) Like \"*JAIME.SULLIVAN*\")) OR (((comm_salesperson_master.salesperson_"
+    "key_id) Like \"*p*ch*\"))"
 Begin InputTables
     Name ="comm_salesperson_master"
 End
@@ -53,8 +55,8 @@ Begin
     Bottom =917
     Left =-1
     Top =-1
-    Right =1583
-    Bottom =582
+    Right =1184
+    Bottom =565
     Left =0
     Top =0
     ColumnsShown =539

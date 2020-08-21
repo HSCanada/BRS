@@ -33,6 +33,7 @@ GO
 -- 29 Sep 16	tmc	Add PO number to help ID conventions
 --	7 Dec 17	tmc	Convert to new backend
 **	19 Dec 19	tmc		Fix mapped rate & hist custinfo
+**	21 Aug 20	tmc	Fix missing name & ref custinfo in detail (new)
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -58,12 +59,12 @@ SELECT
 	t.WSDOCO_salesorder_number		AS doc_key_id, 
 	t.[WSLNID_line_number]			AS line_id, 
 	t.WSDOCO_salesorder_number		AS doc_id, 
-	0								AS order_id, 
+	t.[WSDOC__document_number]		AS order_id, 
 
 	t.[WSDGL__gl_date]				AS transaction_dt, 
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
-	t.WS$NM1__name_1				AS customer_nm, 
+	ISNULL(cust.PracticeName, 'na')	AS customer_nm, 
 	pr.disp_comm_group_cd			AS item_comm_group_cd,
 
 	g.comm_group_desc,
@@ -82,9 +83,9 @@ SELECT
 	t.[WSCYCL_cycle_count_category]	AS item_label_cd,
 	t.[WSSRP1_major_product_class]	AS IMCLMJ,
 
-	t.[WSVR01_reference]			AS customer_po_num
-	,cust.HIST_cust_comm_group_cd	AS SPM_StatusCd
-	,t.ID_legacy
+	t.[WSVR01_reference]			AS customer_po_num,
+	t.[cust_comm_group_cd]			AS SPM_StatusCd,
+	t.ID_legacy
 
 
 FROM         
@@ -105,9 +106,13 @@ FROM
 	INNER JOIN [comm].[group] g
 	ON g.comm_group_cd = pr.disp_comm_group_cd
 
+	LEFT JOIN [dbo].[BRS_Customer] cust
+	ON t.WSSHAN_shipto = cust.ShipTo
+/*
 	INNER JOIN [dbo].[BRS_CustomerFSC_History] as cust
 	ON cust.[Shipto] = t.[WSSHAN_shipto] AND
 		cust.[FiscalMonth] = t.FiscalMonth
+*/
 
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
@@ -121,4 +126,5 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM [comm].[backend_detail_fsc] 
+-- SELECT top 10 * FROM [comm].[backend_detail_fsc] where source_cd = 'JDE'
+-- 10rows, 6s

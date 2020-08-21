@@ -70,7 +70,7 @@ Public Function GetCurrentFSC() As String
     GetCurrentFSC = IIf(msCurrentFSC <> "", msCurrentFSC, "*")
 'GetCurrentFSC = "TYLER.MCCLENDON "
 'GetCurrentFSC = "CDynes"
-'GetCurrentFSC = "KIM.OBLENIS"
+'GetCurrentFSC = "JAIME.SULLIVAN"
 'GetCurrentFSC = "dmonette"
 'GetCurrentFSC = "RWong"
 'GetCurrentFSC = "RPoch"

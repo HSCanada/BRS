@@ -91,10 +91,6 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="comm_ess_statement_detail.comm_rt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_ess_statement_detail.comm_amt"
         dbLong "AggregateType" ="-1"
     End
@@ -123,12 +119,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_customer_master.SPM_StatusCd"
-        dbInteger "ColumnWidth" ="1740"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_ess_statement_detail.salesperson_nm"
         dbLong "AggregateType" ="-1"
     End
@@ -136,25 +126,17 @@ Begin
         dbText "Name" ="comm_ess_statement_detail.source_cd"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="Expr1"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr2"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1343
-    Bottom =797
+    Right =1599
+    Bottom =917
     Left =-1
     Top =-1
-    Right =1327
-    Bottom =425
+    Right =1583
+    Bottom =408
     Left =0
     Top =0
     ColumnsShown =539
