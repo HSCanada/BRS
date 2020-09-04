@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	31 Aug 20	tmc		Fix bug where supplier too big -- Left 6 it to fit
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -1640,7 +1641,7 @@ Else
 			[Supplier]
 		)
 		SELECT DISTINCT
-			IVNDR__vendor_id
+			LEFT(IVNDR__vendor_id,6)
 		FROM
 			Integration.E3ITEMA_trim_Staging s
 		WHERE
@@ -1695,7 +1696,7 @@ Else
 			IDMPRF_item_demand_profile_id
 		)
 		SELECT DISTINCT
-			IVNDR__vendor_id, 
+			LEFT(IVNDR__vendor_id,6), 
 			ISUBV__subvendor_id, 
 			IBUYR__buyer_id, 
 			IDMPRF_item_demand_profile_id
@@ -1746,7 +1747,7 @@ Else
 		FROM
 			Integration.E3ITEMA_trim_Staging AS s 
 			INNER JOIN e3.demand_E3ITEMA_dimension AS d 
-			ON s.IVNDR__vendor_id = d.IVNDR__vendor_id AND 
+			ON LEFT(s.IVNDR__vendor_id,6) = d.IVNDR__vendor_id AND 
 				s.ISUBV__subvendor_id = d.ISUBV__subvendor_id AND 
 				s.IBUYR__buyer_id = d.IBUYR__buyer_id AND
 				s.IDMPRF_item_demand_profile_id = d.IDMPRF_item_demand_profile_id

@@ -90,7 +90,7 @@ WHERE
 	(doc_type_cd = '')
 GO
 
-print '8. test SO RI - stop > 0'
+print '8. test SO RI - stop if > 0'
 SELECT
 	DISTINCT fiscal_yearmo_num, source_cd, doc_id,doc_type_cd
 FROM
@@ -131,7 +131,7 @@ SET
 	line_id = [record_id],
 	[audit_id]=line_id 
 WHERE
-	[fiscal_yearmo_num]	>= '201901' AND
+	[fiscal_yearmo_num]	>= '202001' AND
 	(doc_id = 0) AND
 	(line_id <> record_id) AND
 	(1=1)
@@ -179,7 +179,7 @@ FROM
         FROM            
 			CommBE.[dbo].[comm_transaction] AS t
         WHERE        
-			([fiscal_yearmo_num] >= '201901') AND 
+			([fiscal_yearmo_num] >= '202001') AND 
 			(source_cd = 'JDE') AND 
 			(salesperson_key_id <> '') AND 
 			(comm_plan_id <> '') AND 
@@ -193,8 +193,9 @@ WHERE
 	(d.salesperson_key_id <> '') AND 
 	(d.comm_plan_id = '') AND 
 	(1 = 1)
+GO
 
-print '13. test missing FSC - stop > 0'
+print '13. test missing FSC - stop if > 0, manual fix'
 SELECT        
 --	TOP (1000) 
 	distinct
@@ -230,7 +231,7 @@ FROM
         FROM            
 			CommBE.[dbo].[comm_transaction] AS t
         WHERE        
-			([fiscal_yearmo_num] >= '201901') AND 
+			([fiscal_yearmo_num] >= '202001') AND 
 			(source_cd = 'JDE') AND 
 			(ess_salesperson_key_id <> '') AND 
 			(ess_comm_plan_id <> '') AND 
@@ -239,14 +240,14 @@ FROM
 	ON d.[fiscal_yearmo_num] = s.[fiscal_yearmo_num] AND 
 		d.ess_salesperson_key_id = s.ess_salesperson_key_id
 WHERE
-	(d.[fiscal_yearmo_num] >= '201901') AND 
+	(d.[fiscal_yearmo_num] >= '202001') AND 
 	(d.source_cd = 'IMPORT') AND 
 	(d.ess_salesperson_key_id <> '') AND 
 	(d.ess_comm_plan_id = '') AND 
 	(1 = 1)
 GO
 
-print '15. test missing ESS - stop > 0'
+print '15. test missing ESS - stop if > 0'
 SELECT        
 --	TOP (1000) 
 	distinct
@@ -257,7 +258,7 @@ SELECT
 FROM
 	CommBE.[dbo].[comm_transaction] AS t
 WHERE
-	([fiscal_yearmo_num] >= 201901) AND 
+	([fiscal_yearmo_num] >= 202001) AND 
 	(source_cd = 'IMPORT') AND 
 	-- fsc or ess
 	(ess_salesperson_key_id <> '') AND 
@@ -295,7 +296,7 @@ GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
--- delete from comm.transaction_F555115 where FiscalMonth = '202006' AND source_cd NOT in('JDE')
+-- delete from comm.transaction_F555115 where FiscalMonth = '202007' AND source_cd NOT in('JDE')
 
 -- first set month below; 2m per month
 print '100. load prod data'
@@ -391,7 +392,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202007' and '202007') AND
+	(fiscal_yearmo_num between  '202008' and '202008') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
@@ -399,8 +400,7 @@ WHERE
 	(1=1)
 GO
 
--- update adjustment support table
-
+print 'update adjustment support table'
 INSERT INTO [comm].[adjustment]
 (
 	[adj_comment_org]
@@ -423,28 +423,21 @@ WHERE
 			(d.[adj_source_org] = UPPER(ISNULL(s.[WSVR01_reference],'')))
 	) 
 
-print '101. Mark month as loaded'
-Update [dbo].[BRS_FiscalMonth]
-set [comm_status_cd] = 10
-where [FiscalMonth] between 201801 and 201812
-go
 
--- First ensure procs and support tables updated 
-
-
-/*
 -- rebuild for legacy calc, 2019+
-
+-- First ensure procs and support tables updated 
+/*
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
 Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 GO
 
 -- test
 select distinct FiscalMonth from comm.transaction_F555115
-*/
 
 -- Prod
--- Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
+Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 
 -- Debug
--- Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
+Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
+
+*/
