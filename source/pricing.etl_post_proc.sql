@@ -1650,7 +1650,7 @@ Else
 				SELECT *
 				FROM [dbo].[BRS_ItemSupplier] d
 				WHERE
-					d.[Supplier] = s.IVNDR__vendor_id AND
+					d.[Supplier] = LEFT(s.IVNDR__vendor_id,6) AND
 					(1=1)
 			)
 
@@ -1708,7 +1708,7 @@ Else
 				SELECT *
 				FROM [e3].[demand_E3ITEMA_dimension] d
 				WHERE
-					d.IVNDR__vendor_id = s.IVNDR__vendor_id AND
+					d.IVNDR__vendor_id = LEFT(s.IVNDR__vendor_id,6) AND
 					d.ISUBV__subvendor_id = s.ISUBV__subvendor_id AND
 					d.IBUYR__buyer_id = s.IBUYR__buyer_id AND
 					d.IDMPRF_item_demand_profile_id = s.IDMPRF_item_demand_profile_id AND
