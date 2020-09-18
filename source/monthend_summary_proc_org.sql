@@ -195,11 +195,14 @@ Begin
 		if (@bDebug <> 0)
 			Print '2. Primary Update...'
 
+		SET @sMessage = N'monthend_summary_proc(1 of 3) - ' + DB_NAME()
 		EXEC msdb.dbo.sp_notify_operator
 			@id = @nNotifyID,
-			@subject = N'monthend_summary_proc(1 of 3)',  
-			@body = N'Daily Sales - start (est 15m)...' ;  
+			@subject = @sMessage,  
+--			@subject = N'monthend_summary_proc(1 of 3)',  
+			@body = N'Daily Sales - start (est 15m)... ';
 
+--,DB_NAME())
 		OPEN c;
 		FETCH NEXT FROM c INTO @nFiscalCurrent;
 
@@ -386,9 +389,11 @@ Begin
 		if (@bDebug <> 0)
 			Print '4. Secondary Update...'
 
+		SET @sMessage = N'monthend_summary_proc(2 of 3) - ' + DB_NAME()
 		EXEC msdb.dbo.sp_notify_operator
 			@id = @nNotifyID,
-			@subject = N'monthend_summary_proc(2 of 3)',  
+			@subject = @sMessage,  
+--			@subject = N'monthend_summary_proc(2 of 3)',  
 			@body = N'Daily Sales - complete!' ;  
 
 		OPEN c;
@@ -633,9 +638,11 @@ Begin
 		if (@bDebug <> 0)
 			Print '5. post-process - alert TBD'	
 
+		SET @sMessage = N'monthend_summary_proc(3 of 3) - ' + DB_NAME()
 		EXEC msdb.dbo.sp_notify_operator
 			@id = @nNotifyID,
-			@subject = N'monthend_summary_proc(3 of 3)',  
+			@subject = @sMessage,  
+--			@subject = N'monthend_summary_proc(3 of 3)',  
 			@body = N'Complete.' ;  
 	
 		Set @nErrorCode = @@Error
