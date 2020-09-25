@@ -266,6 +266,7 @@ GO
 -- prod run 
 -- [nes].[open_order_opordrpt_proc] @bDebug=0
 
+-- dev
 -- [nes].[open_order_opordrpt_proc] @bDebug=1
 
 

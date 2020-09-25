@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	22 Sep 20	tmc		Add EQ Order lookup logic credit rebill -- see step 12
 **    
 *******************************************************************************/
 
@@ -426,6 +427,7 @@ Begin
 			[ess_salesperson_key_id],
 			[cps_salesperson_key_id],
 			[eps_salesperson_key_id],
+			[isr_salesperson_key_id],
 
 			[fsc_comm_group_cd],
 			[ess_comm_group_cd],
@@ -546,11 +548,14 @@ Begin
 			''									AS [ess_salesperson_key_id],
 			''									AS [cps_salesperson_key_id],
 			''									AS [eps_salesperson_key_id],
+			''									AS [isr_salesperson_key_id],
 
 			''									AS [fsc_comm_group_cd],
 			''									AS [ess_comm_group_cd],
 			''									AS [cps_comm_group_cd],
 			''									AS [eps_comm_group_cd]
+
+
 		FROM
 			Integration.F555115_commission_sales_extract_Staging AS t 
 
@@ -585,15 +590,30 @@ Begin
 		UPDATE
 			comm.transaction_F555115
 		SET
-			ess_code = WSTKBY_order_taken_by
+			ess_code = LEFT(WSTKBY_order_taken_by,5)
+			,WSORD__equipment_order = RIGHT(RTRIM(ISNULL(WSVR02_reference_2,'')),6)
+
+		-- test
+		-- SELECT  FiscalMonth, WSDOCO_salesorder_number,WS$OSC_order_source_code, ess_code, WSTKBY_order_taken_by, WSORD__equipment_order, WSVR02_reference_2, RIGHT(RTRIM(WSVR02_reference_2),6) eq
+		--
 		FROM
 			comm.transaction_F555115 t 
 		WHERE     
 			(t.source_cd = 'JDE') AND (
+				-- service
+				-- (t.WSTKBY_order_taken_by in ('ASTEAD1')) OR
+				-- EQ prod
 				(t.WSTKBY_order_taken_by like 'ESS%') OR
-				(t.WSTKBY_order_taken_by like 'CCS%') 
+				(t.WSTKBY_order_taken_by like 'CCS%') OR
+				(t.WSTKBY_order_taken_by like 'PMT%') OR
+				-- EQ legacy
+				(t.WSTKBY_order_taken_by like 'DTS%') OR
+				(t.WSTKBY_order_taken_by like 'DSS%') 
 			) AND
+			-- this should catch missing ESS codes and Orders
 			ISNULL(ess_code,'') <> WSTKBY_order_taken_by AND
+			-- test
+			-- (t.WSORD__equipment_order = '') AND
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -725,8 +745,13 @@ End
 Return @nErrorCode
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202006
--- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 202001 and 202006
+-- truncate table [Integration].[F555115_commission_sales_extract_Staging]
+-- truncate table [comm].[transaction_F555115]
+
+-- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 201901 and 202012
+-- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202012
+
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
 
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0

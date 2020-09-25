@@ -1,3 +1,4 @@
+-- finalize adjustment 
 SELECT
 	-- test       
 --	TOP (10) 

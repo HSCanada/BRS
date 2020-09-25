@@ -28,7 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	22 Sep 20	tmc		Add ISR commission logic, track FSC & share fsc_comm    
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -200,7 +200,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '3. FSC, CPS, EPS update plan & terr - JDE'
+			print '3. FSC, CPS, EPS, ISR update plan & terr - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -219,6 +219,11 @@ Begin
 			,eps_code = s.HIST_eps_code
 			,eps_salesperson_key_id = s.HIST_eps_salesperson_key_id
 			,eps_comm_plan_id = s.HIST_eps_comm_plan_id
+
+			,isr_code = s.HIST_TsTerritoryCd
+			,isr_salesperson_key_id = s.HIST_isr_salesperson_key_id
+			,isr_comm_plan_id = s.HIST_isr_comm_plan_id
+
 
 		FROM
 			[dbo].[BRS_CustomerFSC_History] AS s 
@@ -884,6 +889,89 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+------------------------------------------------------------------------------------------------------
+-- New & Legacy - ISR
+------------------------------------------------------------------------------------------------------
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '23. ISR update comm - non-booking -new'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[isr_comm_rt] = r.comm_rt,
+			[isr_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[isr_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.isr_comm_plan_id = r.comm_plan_id AND
+				-- using fsc comm group is OK 
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.isr_comm_plan_id <> '') AND
+			-- using fsc comm group is OK 
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '24. ISR update comm - booking - new'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[isr_comm_rt] = g.booking_rt,
+			[isr_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[isr_calc_key] = r.calc_key
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.isr_comm_plan_id = r.comm_plan_id AND
+				-- using fsc comm group is OK 
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.isr_comm_plan_id <> '') AND
+			-- using fsc comm group is OK 
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+			(g.booking_rt <> 0) AND
+			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
@@ -933,7 +1021,8 @@ Return @nErrorCode
 
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202008
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
+-- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 201912
 
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0

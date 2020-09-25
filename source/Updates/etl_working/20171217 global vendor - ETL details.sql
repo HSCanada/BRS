@@ -153,6 +153,8 @@ WHERE
 	FiscalMonth BETWEEN 202008 AND 202008
 GO
 
+-- Set GPS rules at the BRS_Transaction.GpsKey level
+
 -- seq 0 of 2
 
 print '11. test GpsKey init - should be 0 records to start, clear if not (below)'

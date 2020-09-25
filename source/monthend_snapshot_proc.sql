@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	22 Sep 20	tmc		Add ISR commission logic
 **    
 *******************************************************************************/
 
@@ -215,6 +216,28 @@ Begin
 		If @nRowCount > 0 Set @nErrorCode = 4
 	End
 
+/*
+	-- activeate once EVERY account has ISR terr
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '5. check - isr cust (partial check)'
+
+		SELECT    @nRowCount = COUNT(*)
+		-- select top 10 *
+		FROM  [dbo].[BRS_Customer]
+		WHERE 
+			(Shipto > 0) AND
+			([Country] = 'CA') AND
+			([SalesDivision] IN('AAD', 'AAL')) AND
+			([PostalCode] <> '') AND
+			([TsTerritoryCd] = '') AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+		If @nRowCount > 0 Set @nErrorCode = 4
+	End
+*/
 -----------------------------
 -- process
 ------------------------------------------------------------------------------------------------------
@@ -280,6 +303,12 @@ Begin
 			,[HIST_eps_code]
 			,[HIST_eps_salesperson_key_id]
 			,[HIST_eps_comm_plan_id]
+
+			-- dup, see HIST_TsTerritoryCd
+			--	,[HIST_isr_code]
+			,[HIST_isr_salesperson_key_id]
+			,[HIST_isr_comm_plan_id]
+
 		)
 		SELECT     
 			c.ShipTo
@@ -304,6 +333,11 @@ Begin
 			,ISNULL(eps_comm.salesperson_key_id,'')
 			,ISNULL(eps_comm.comm_plan_id,'')
 
+			-- dup, see HIST_TsTerritoryCd
+			-- ,c.TsTerritoryCd
+			,ISNULL(isr_comm.salesperson_key_id,'')
+			,ISNULL(isr_comm.comm_plan_id,'')
+
 		FROM         
 			BRS_Customer c
 
@@ -327,6 +361,13 @@ Begin
 
 			LEFT JOIN [comm].[salesperson_master] cps_comm
 			ON cps_comm.[salesperson_key_id] = cps.comm_salesperson_key_id
+
+			-- isr
+			INNER JOIN BRS_FSC_Rollup AS isr
+			ON isr.TerritoryCd = c.TsTerritoryCd
+
+			LEFT JOIN [comm].[salesperson_master] isr_comm
+			ON isr_comm.[salesperson_key_id] = isr.comm_salesperson_key_id
 
 		Set @nErrorCode = @@Error
 	End
@@ -393,7 +434,6 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
-
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
