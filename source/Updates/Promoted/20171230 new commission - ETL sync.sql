@@ -481,6 +481,11 @@ FROM
 			,MIN(salesperson_cd) AS salesperson_cd_MIN
 			,MIN(salesperson_key_id) AS salesperson_key_id_MIN
 			,MIN(comm_plan_id) AS comm_plan_id_MIN
+
+			,MAX(salesperson_cd) AS salesperson_cd_MAX
+			,MAX(salesperson_key_id) AS salesperson_key_id_MAX
+			,MAX(comm_plan_id) AS comm_plan_id_MAX
+
 		FROM
 			CommBE.dbo.comm_transaction
 		WHERE
@@ -488,13 +493,17 @@ FROM
 			(fiscal_yearmo_num >= '201901') AND 
 			(salesperson_cd<>'') AND
 			(salesperson_key_id<>'Internal') AND
+			-- test
+--			([hsi_shipto_id] = 3765608) AND
+			--
 			(1 = 1)
 		GROUP BY 
 			fiscal_yearmo_num, 
 			hsi_shipto_id
 		HAVING
 			-- ensure no ambiguous results
-			MIN(salesperson_cd) = MAX(salesperson_cd) AND
+--			MIN(salesperson_cd) = MAX(salesperson_cd) AND
+			MIN(salesperson_cd) <> MAX(salesperson_cd) AND
 		--	MIN(salesperson_key_id) <> MAX(salesperson_key_id) AND
 		--	MIN(comm_plan_id) <> MAX(comm_plan_id) AND
 			(1=1)
@@ -502,7 +511,7 @@ FROM
 	ON d.FiscalMonth = s.FiscalMonth AND 
 		d.Shipto = s.hsi_shipto_id AND 
 		-- comment below to force all updates
-		d.HIST_TerritoryCd <> s.salesperson_cd_MIN AND 
+--		d.HIST_TerritoryCd <> s.salesperson_cd_MIN AND 
 		(1 = 1)
 GO
 

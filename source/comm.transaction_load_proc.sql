@@ -571,7 +571,9 @@ Begin
 			-- BUT, all stage to have multiple months for speed
 			-- allows full year to be reloaded
 			(WSAC10_division_code NOT IN ('AZA','AZE')) AND
---			(d.FiscalMonth  = 202001) AND
+			-- test
+--			(d.FiscalMonth  = 201901) AND
+			--
 			(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
 
@@ -591,10 +593,12 @@ Begin
 			comm.transaction_F555115
 		SET
 			ess_code = LEFT(WSTKBY_order_taken_by,5)
+			-- dup storeage to allow repeatability of transfer (see calc proc)
+			,[WS$ESS_equipment_specialist_code] = LEFT(WSTKBY_order_taken_by,5)
 			,WSORD__equipment_order = RIGHT(RTRIM(ISNULL(WSVR02_reference_2,'')),6)
 
 		-- test
-		-- SELECT  FiscalMonth, WSDOCO_salesorder_number,WS$OSC_order_source_code, ess_code, WSTKBY_order_taken_by, WSORD__equipment_order, WSVR02_reference_2, RIGHT(RTRIM(WSVR02_reference_2),6) eq
+		-- SELECT  FiscalMonth, WSDOCO_salesorder_number,WS$OSC_order_source_code, ess_code, WSTKBY_order_taken_by, [WS$ESS_equipment_specialist_code], WSORD__equipment_order, WSVR02_reference_2, RIGHT(RTRIM(WSVR02_reference_2),6) eq
 		--
 		FROM
 			comm.transaction_F555115 t 
@@ -610,10 +614,12 @@ Begin
 				(t.WSTKBY_order_taken_by like 'DTS%') OR
 				(t.WSTKBY_order_taken_by like 'DSS%') 
 			) AND
-			-- this should catch missing ESS codes and Orders
-			ISNULL(ess_code,'') <> WSTKBY_order_taken_by AND
+			-- blank EQ order due to credit rebills.  manualy add back
+			(ISNULL(t.WSORD__equipment_order,'') = '') AND
 			-- test
-			-- (t.WSORD__equipment_order = '') AND
+--			([WSDOCO_salesorder_number] = 11958164) AND
+--			(t.FiscalMonth = 201901 ) AND
+			--
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -747,14 +753,17 @@ GO
 
 -- truncate table [Integration].[F555115_commission_sales_extract_Staging]
 -- truncate table [comm].[transaction_F555115]
+-- select count (*) from [Integration].[F555115_commission_sales_extract_Staging]
 
--- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 201901 and 202012
 -- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202012
+-- UPDATE BRS_FiscalMonth SET comm_status_cd =0 where FiscalMonth between 201901 and 202012
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
+-- SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config] 
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202009
 
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0
 
 -- Debug, 4m
 -- EXEC comm.transaction_load_proc @bDebug=1
+

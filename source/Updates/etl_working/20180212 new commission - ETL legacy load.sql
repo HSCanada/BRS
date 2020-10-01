@@ -89,7 +89,28 @@ WHERE
 	(source_cd <> 'JDE') AND 
 	(doc_type_cd = '')
 GO
+---
+INSERT INTO 
+	[dbo].[BRS_TransactionDW_Ext] 
+	(
+		[SalesOrderNumber], 
+		DocType
+	)
+SELECT DISTINCT 
+	s.SalesOrderNumber, 
+	'AA' DocType
+FROM
+	[dbo].[BRS_TransactionDW_Ext]  s 
+WHERE
+	NOT EXISTS 
+	(
+		SELECT * 
+		FROM [dbo].[BRS_TransactionDW_Ext]  d
+		WHERE d.SalesOrderNumber = s.[SalesOrderNumber] AND 
+		d.DocType = 'AA'
+	) 
 
+---
 print '8. test SO RI - stop if > 0'
 SELECT
 	DISTINCT fiscal_yearmo_num, source_cd, doc_id,doc_type_cd
@@ -106,7 +127,11 @@ where
 	) 
 GO
 
--- ensure step 8 succeeds before "fixing"
+------------------------------------------------------------------------------------------------------
+-- stop
+------------------------------------------------------------------------------------------------------
+
+-- ensure step 8 succeeds for JDE, only IMP should be "fixed"
 print '9. Fix doc_id - set to 0 if RI fails'
 UPDATE
 	CommBE.dbo.comm_transaction
@@ -165,7 +190,7 @@ WHERE EXISTS
 )
 GO
 
-print '12. fix missing FSC comm_plan_id - use existing'
+print '12. fix missing FSC comm_plan_id - use existing sales as source'
 UPDATE
 	CommBE.[dbo].[comm_transaction]
 SET
@@ -214,6 +239,10 @@ WHERE
 	(comm_plan_id = '') AND
 	(1=1)
 GO
+
+------------------------------------------------------------------------------------------------------
+-- stop, if prior report > 0
+------------------------------------------------------------------------------------------------------
 
 -- this fails when no JDE trans for the month -- CCS.  
 -- Use current?  Active vs non logic...
@@ -264,6 +293,93 @@ WHERE
 	(ess_salesperson_key_id <> '') AND 
 	(ess_comm_plan_id = '') AND
 	(1=1)
+------------------------------------------------------------------------------------------------------
+-- stop, if prior > 0
+------------------------------------------------------------------------------------------------------
+
+
+-- XXX TDB Add IMPORT fix so that :  IF FSC sales KEY then NOT ESS ess_comm_plan_id	ess_salesperson_key_id	ess_code
+/*
+print '16. Fix duplicate FSC ESS assignments on IMPORTS'
+SELECT        
+	TOP (1000) 
+	[fiscal_yearmo_num],
+	doc_id,
+	line_id,
+	source_cd,
+	order_source_cd,
+	salesperson_cd,
+	salesperson_key_id,
+
+	ess_comm_plan_id,
+	ess_salesperson_key_id,
+	ess_salesperson_cd,
+
+	transaction_amt,
+	gp_ext_amt
+
+FROM
+	CommBE.[dbo].[comm_transaction] AS t
+WHERE
+	([fiscal_yearmo_num] >= 201901) AND 
+	(source_cd = 'IMPORT') AND 
+	-- fsc or ess
+	(salesperson_key_id <> '') AND 
+	(salesperson_cd <>'') AND
+	(ess_salesperson_key_id <> '') AND 
+	(1=1)
+ORDER BY 1
+*/
+
+-- XXX TDB Add IMPORT fix so that :  IF FSC sales KEY then NOT ESS ess_comm_plan_id	ess_salesperson_key_id	ess_code
+print '16. Fix duplicate FSC ESS assignments on IMPORTS'
+UPDATE       CommBE.dbo.comm_transaction
+SET
+ess_comm_plan_id ='', 
+ess_salesperson_key_id ='', 
+ess_salesperson_cd = ''
+WHERE        
+(fiscal_yearmo_num >= 201901) AND (source_cd = 'IMPORT') AND (salesperson_key_id <> '') AND (salesperson_cd <> '') AND (ess_salesperson_key_id <> '') AND (1 = 1)
+
+/*
+print '17. Fix bad FSC IMPORTS '
+SELECT        
+	TOP (1000) 
+	[fiscal_yearmo_num],
+	doc_id,
+	line_id,
+	source_cd,
+	order_source_cd,
+	ess_salesperson_cd,
+	ess_salesperson_key_id,
+	ess_comm_plan_id,
+
+	comm_plan_id,
+	salesperson_key_id,
+	salesperson_cd,
+
+	transaction_amt,
+	gp_ext_amt
+
+FROM
+	CommBE.[dbo].[comm_transaction] AS t
+WHERE
+	([fiscal_yearmo_num] >= 201901) AND 
+	(source_cd = 'IMPORT') AND 
+	-- fsc or ess
+	(salesperson_key_id <> '') AND 
+	(salesperson_cd ='') AND
+--	(ess_salesperson_key_id <> '') AND 
+	(1=1)
+ORDER BY 1
+*/
+
+UPDATE        CommBE.dbo.comm_transaction
+SET
+	comm_plan_id ='', 
+	salesperson_key_id =''
+WHERE
+(fiscal_yearmo_num >= 201901) AND (source_cd = 'IMPORT') AND (salesperson_key_id <> '') AND (salesperson_cd = '') AND (1 = 1)
 
 ------------------------------------------------------------------------------------------------------
 -- load Prod
@@ -279,7 +395,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202005') AND
+	(fiscal_yearmo_num ='202009') AND
 	(1=1)
 GO
 
@@ -290,13 +406,14 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202005') AND
+	(FiscalMonth =  '202009') AND
 	(1=1)
 GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
--- delete from comm.transaction_F555115 where FiscalMonth = '202005' AND source_cd NOT in('JDE')
+-- delete from comm.transaction_F555115 where FiscalMonth = '202008' AND source_cd NOT in('JDE')
+-- delete from comm.transaction_F555115 where FiscalMonth between 201901 and 202009 AND source_cd NOT in('JDE')
 
 -- first set month below; 2m per month
 print '100. load prod data'
@@ -336,6 +453,7 @@ INSERT INTO comm.transaction_F555115
 	,WSSRP3_minor_product_class
 	,WSSRP4_sub_minor_product_class
 	,ess_code
+	,[WS$ESS_equipment_specialist_code]
 	,WSCAG__cagess_code
 	,WSAN8__billto
 	,WSAC10_division_code
@@ -381,6 +499,8 @@ SELECT
 	,IMCLMC
 	,IMCLSM
 	,LEFT(ess_salesperson_cd,5)
+	-- dup ESS ok
+	,LEFT(ess_salesperson_cd,5)
 	,LEFT(pmts_salesperson_cd,5)
 	,hsi_billto_id
 	,hsi_shipto_div_cd
@@ -392,7 +512,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202005' and '202005') AND
+	(fiscal_yearmo_num between  '202001' and '202009') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
@@ -423,6 +543,77 @@ WHERE
 			(d.[adj_source_org] = UPPER(ISNULL(s.[WSVR01_reference],'')))
 	) 
 
+/*
+-- Fix ESS 
+-- reset ESS based on load 1
+UPDATE       comm.transaction_F555115
+SET                ess_code =WS$ESS_equipment_specialist_code
+WHERE        (FiscalMonth >= 201901) AND (xfer_ess_code_org = ess_code) AND (ess_code <> WS$ESS_equipment_specialist_code) AND (source_cd = 'JDE') AND (1 = 1)
+
+-- reset ESS based on transfer capture 2
+UPDATE       comm.transaction_F555115
+SET                ess_code = xfer_ess_code_org
+WHERE        (FiscalMonth >= 201901) AND (xfer_ess_code_org <> ess_code) AND (WS$ESS_equipment_specialist_code = xfer_ess_code_org) AND (source_cd = 'JDE') AND (1 = 1)
+
+-- reset ESS based on transfer 3
+UPDATE       comm.transaction_F555115
+SET                xfer_ess_code_org = '', xfer_fsc_code_org = '', xfer_key = NULL
+WHERE        (FiscalMonth >= 201901) AND (xfer_key > 1) AND (source_cd = 'JDE') AND (1 = 1)
+
+-- fix ESS default  4
+UPDATE       comm.transaction_F555115
+SET                WS$ESS_equipment_specialist_code = ess_code
+WHERE        (FiscalMonth >= 201901) AND (WSORD__equipment_order <> '') AND (WSTKBY_order_taken_by LIKE 'ESS%' OR
+                         WSTKBY_order_taken_by LIKE 'CCS%' OR
+                         WSTKBY_order_taken_by LIKE 'PMT%' OR
+                         WSTKBY_order_taken_by LIKE 'DTS%' OR
+                         WSTKBY_order_taken_by LIKE 'DSS%') AND (ess_code <> WS$ESS_equipment_specialist_code) AND (source_cd = 'JDE') AND (1 = 1)
+*/
+/*
+select
+-- top 10
+[FiscalMonth]
+,ess_code
+,[WS$ESS_equipment_specialist_code]
+,WSORD__equipment_order
+,WSTKBY_order_taken_by
+,[xfer_ess_code_org]
+,xfer_fsc_code_org
+,xfer_key 
+FROM [comm].[transaction_F555115] 
+WHERE 
+	([FiscalMonth] >= 201901) AND
+	(xfer_key>1) AND
+--	[xfer_ess_code_org]<>[ess_code] AND
+--	[WS$ESS_equipment_specialist_code] = [xfer_ess_code_org] AND
+	(source_cd = 'JDE') AND
+	(1=1)
+
+select
+--	top 10
+	[FiscalMonth]
+	,ess_code
+	,[WS$ESS_equipment_specialist_code]
+	,WSORD__equipment_order
+	,WSTKBY_order_taken_by
+	,[xfer_ess_code_org]
+FROM 
+	[comm].[transaction_F555115] 
+WHERE 
+	([FiscalMonth] >= 201901) AND
+	(WSORD__equipment_order <>'') AND
+	(
+		(WSTKBY_order_taken_by like 'ESS%') OR
+		(WSTKBY_order_taken_by like 'CCS%') OR
+		(WSTKBY_order_taken_by like 'PMT%') OR
+		-- EQ legacy
+		(WSTKBY_order_taken_by like 'DTS%') OR
+		(WSTKBY_order_taken_by like 'DSS%') 
+	) AND
+	(ess_code <> [WS$ESS_equipment_specialist_code]) AND
+	(source_cd = 'JDE') AND
+	(1=1)
+*/
 
 -- rebuild for legacy calc, 2019+
 -- First ensure procs and support tables updated 

@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	22 Sep 20	tmc		Add ISR commission logic, track FSC & share fsc_comm    
+**	27 Sep 20	tmc		Fix Transfer FSC bug, code changed bug not key
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -224,6 +225,11 @@ Begin
 			,isr_salesperson_key_id = s.HIST_isr_salesperson_key_id
 			,isr_comm_plan_id = s.HIST_isr_comm_plan_id
 
+			-- plan and Key set downstream in ESS calc section
+			-- ESS code reset, saved on load proc
+			,ess_code = [WS$ESS_equipment_specialist_code]
+			,ess_salesperson_key_id = ''
+			,ess_comm_plan_id = ''
 
 		FROM
 			[dbo].[BRS_CustomerFSC_History] AS s 
@@ -264,7 +270,8 @@ Begin
 				r.SalesOrderNumber = t.WSDOCO_salesorder_number
 		WHERE        
 			(t.source_cd = 'JDE') AND 
-			(t.xfer_key is null) AND		-- only run once 
+			--- FIX, only run once for ESS, FSC is reset? or store fixed ESS code and reset as well (better)
+--			(t.xfer_key is null) AND		-- only run once 
 			(r.SalesOrderNumber > 0) AND	-- non rule-based 
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
@@ -297,7 +304,7 @@ Begin
 				(1=1)
 		WHERE        
 			(t.source_cd = 'JDE') AND 
-			(t.xfer_key is null) AND		-- only run once
+--			(t.xfer_key is null) AND		-- only run once
 			(r.SalesOrderNumber = 0) AND	-- rule-based
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(1=1)
@@ -333,7 +340,40 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+---
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '5c. FSC Post transfer update plan & salesperson_key update'
 
+		UPDATE
+			comm.transaction_F555115
+		SET
+			-- if fsc_code changed, update plan & key.  ESS / CSS fixed downstream
+			fsc_salesperson_key_id = s.salesperson_key_id, 
+			fsc_comm_plan_id = s.comm_plan_id
+		-- Select s.salesperson_key_id, s.comm_plan_id, d.* 
+		FROM
+			comm.salesperson_master AS s 
+
+			INNER JOIN BRS_FSC_Rollup AS f ON 
+			s.salesperson_key_id = f.comm_salesperson_key_id 
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (f.TerritoryCd = d.fsc_code) AND
+			-- only review CHANGED FSC (1 is unassigned)
+			(d.[xfer_key] > 1) AND
+			(d.xfer_fsc_code_org <> d.fsc_code) AND
+			--test
+--			(d.FiscalMonth between 201901 and 201912) AND
+			--
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(d.source_cd = 'JDE')
+
+		Set @nErrorCode = @@Error
+	End
+
+---
 	
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
@@ -1021,8 +1061,8 @@ Return @nErrorCode
 
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
--- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 201912
+-- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202012
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202009
 
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0

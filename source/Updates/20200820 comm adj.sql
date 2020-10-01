@@ -181,3 +181,92 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 ) ON [USERDATA]
 GO
 
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT 
+	top 10
+		[FiscalMonth]
+      ,[WSDOCO_salesorder_number]
+      ,[WSORD__equipment_order]
+      ,[WSAC10_division_code]
+      ,[ID]
+
+      ,[WSTKBY_order_taken_by]
+      ,[WS$ESS_equipment_specialist_code]
+      ,[ess_code]
+
+  FROM [BRSales].[comm].[transaction_F555115]
+  where
+	(	
+  				(WSTKBY_order_taken_by like 'ESS%') OR
+				(WSTKBY_order_taken_by like 'CCS%') OR
+				(WSTKBY_order_taken_by like 'PMT%') OR
+				-- EQ legacy
+				(WSTKBY_order_taken_by like 'DTS%') OR
+				(WSTKBY_order_taken_by like 'DSS%') 
+	) AND
+	[WSORD__equipment_order] is null AND
+--	[ess_code] <> '' AND
+--  [WS$ESS_equipment_specialist_code] <> ''
+  (1=1)
+
+  UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
+UPDATE [CommBE].[dbo].[comm_configure] SET [current_fiscal_yearmo_num] = 201901
+
+SELECT comm.test_detail.fiscal_yearmo_num, comm.test_detail.ID_legacy, comm.test_detail.doc_id, comm.test_detail.dock_key_id, comm.test_detail.line_id, comm.test_detail.source_cd, comm.test_detail.owner_cd, comm.test_detail.src, comm.test_detail.hsi_shipto_id, comm.test_detail.item_id, comm.test_detail.fsc_comm_plan_id, comm.test_detail.fsc_salesperson_key_id, comm.test_detail.fsc_code, comm.test_detail.ess_code, comm.test_detail.disp_fsc_comm_group_cd, comm.test_detail.fsc_comm_group_cd, comm.test_detail.shipped_qty, comm.test_detail.transaction_amt, comm.test_detail.gp_ext_amt, comm.test_detail.fsc_comm_amt, comm.test_detail.fsc_calc_key, comm.test_detail.cust_comm_group_cd, comm.test_detail.item_comm_group_cd, comm.test_detail.ess_calc_key, comm.test_detail.xfer_key, comm.test_detail.xfer_fsc_code_org, comm.test_detail.xfer_ess_code_org
+FROM comm.test_detail
+WHERE 
+(comm.test_detail.doc_id=1110225) AND 
+(comm.test_detail.fsc_comm_plan_id Like 'fsc%') AND 
+(comm.test_detail.fsc_salesperson_key_id<>'Internal') AND
+(1=1)
+
+--
+
+SELECT
+-- TOP (10) 
+s.Shipto, 
+s.FiscalMonth, 
+
+d.HIST_TerritoryCd, 
+s.HIST_TerritoryCd, 
+
+d.HIST_fsc_salesperson_key_id, 
+s.HIST_fsc_salesperson_key_id, 
+
+d.HIST_fsc_comm_plan_id,
+s.HIST_fsc_comm_plan_id
+
+FROM
+	DEV_BRSales.dbo.BRS_CustomerFSC_History AS s 
+	INNER JOIN BRS_CustomerFSC_History AS d 
+	ON s.Shipto = d.Shipto AND 
+	s.FiscalMonth = d.FiscalMonth
+where 
+	d.Shipto > 0 AND
+	d.FiscalMonth >= 201901 AND
+--	(d.HIST_TerritoryCd <> s.HIST_TerritoryCd) AND
+	(
+	(d.HIST_fsc_salesperson_key_id <> s.HIST_fsc_salesperson_key_id) OR
+	(d.HIST_fsc_comm_plan_id <> s.HIST_fsc_comm_plan_id) 
+	) 
+
+
+-- 919 109
+
+UPDATE       d
+SET
+HIST_fsc_salesperson_key_id = s.HIST_fsc_salesperson_key_id, 
+HIST_fsc_comm_plan_id = s.HIST_fsc_comm_plan_id
+FROM
+DEV_BRSales.dbo.BRS_CustomerFSC_History AS s 
+INNER JOIN BRS_CustomerFSC_History AS d 
+ON s.Shipto = d.Shipto AND 
+s.FiscalMonth = d.FiscalMonth
+WHERE
+(d.Shipto > 0) AND 
+(d.FiscalMonth >= 201901) AND 
+(d.HIST_fsc_salesperson_key_id <> s.HIST_fsc_salesperson_key_id) 
+OR
+(d.Shipto > 0) AND 
+(d.FiscalMonth >= 201901) AND 
+(d.HIST_fsc_comm_plan_id <> s.HIST_fsc_comm_plan_id)
