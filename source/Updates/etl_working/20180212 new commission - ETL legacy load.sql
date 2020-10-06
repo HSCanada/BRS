@@ -329,7 +329,7 @@ WHERE
 	(ess_salesperson_key_id <> '') AND 
 	(1=1)
 ORDER BY 1
-*/
+
 
 -- XXX TDB Add IMPORT fix so that :  IF FSC sales KEY then NOT ESS ess_comm_plan_id	ess_salesperson_key_id	ess_code
 print '16. Fix duplicate FSC ESS assignments on IMPORTS'
@@ -340,7 +340,7 @@ ess_salesperson_key_id ='',
 ess_salesperson_cd = ''
 WHERE        
 (fiscal_yearmo_num >= 201901) AND (source_cd = 'IMPORT') AND (salesperson_key_id <> '') AND (salesperson_cd <> '') AND (ess_salesperson_key_id <> '') AND (1 = 1)
-
+*/
 /*
 print '17. Fix bad FSC IMPORTS '
 SELECT        
@@ -372,7 +372,7 @@ WHERE
 --	(ess_salesperson_key_id <> '') AND 
 	(1=1)
 ORDER BY 1
-*/
+
 
 UPDATE        CommBE.dbo.comm_transaction
 SET
@@ -380,12 +380,12 @@ SET
 	salesperson_key_id =''
 WHERE
 (fiscal_yearmo_num >= 201901) AND (source_cd = 'IMPORT') AND (salesperson_key_id <> '') AND (salesperson_cd = '') AND (1 = 1)
-
+*/
 ------------------------------------------------------------------------------------------------------
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202001 and source_cd NOT in('JDE')
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 202009 and source_cd NOT in('JDE')
 -- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
@@ -512,7 +512,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202001' and '202009') AND
+	(fiscal_yearmo_num between  '202009' and '202009') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
