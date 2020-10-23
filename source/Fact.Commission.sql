@@ -33,11 +33,14 @@ AS
 **  25 Sep 19	tmc		add cps & EPS salesperson and commission 
 **	25 Nov 19	tmc		replace comm group with smart version (based on calc)
 **	13 May 20	tmc		clarified calc_key->display_comm_group
-**	01 Jul 20	tmc		add adjustments 
+**	01 Jul 20	tmc		add adjustments
+**	22 Oct 20	tmc		add Inside Sales Rep (ISR)
 **    
 *******************************************************************************/
 
 SELECT        
+--	top 10
+
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 
@@ -48,6 +51,9 @@ SELECT
 	,ISNULL(fsc.salesperson_master_key, 2) 			AS FSC_SalespersonKey
 	,ISNULL(fsc_code.[FscKey], 2) 					AS FSC_SalespersonCodeKey
 	,ISNULL(comm_group_fsc.comm_group_key, 1) 		AS FSC_CommGroupKey
+
+	,ISNULL(isr.salesperson_master_key, 2) 			AS ISR_SalespersonKey
+	,ISNULL(comm_group_isr.comm_group_key, 1) 		AS ISR_CommGroupKey
 
 	,ISNULL(ess.salesperson_master_key, 2)			AS ESS_SalespersonKey
 	,ISNULL(comm_group_ess.comm_group_key, 1)		AS ESS_CommGroupKey
@@ -78,6 +84,7 @@ SELECT
 	,(t.[gp_ext_amt])								AS GPAmt
 
 	,ISNULL((t.[fsc_comm_amt]),0)					AS FSC_CommAmt
+	,ISNULL((t.[isr_comm_amt]),0)					AS ISR_CommAmt
 	,ISNULL((t.[ess_comm_amt]),0)					AS ESS_CommAmt
 	,ISNULL((t.[cps_comm_amt]),0)					AS CPS_CommAmt
 	,ISNULL((t.[eps_comm_amt]),0)					AS EPS_CommAmt
@@ -118,6 +125,9 @@ FROM
 	LEFT JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
 	ON fsc_code.[TerritoryCd] = t.fsc_code
 
+	LEFT JOIN [comm].[salesperson_master] as isr
+	ON isr.salesperson_key_id = t.[isr_salesperson_key_id]
+
 	LEFT JOIN [comm].[salesperson_master] as ess
 	ON ess.salesperson_key_id = t.[ess_salesperson_key_id]
 
@@ -135,6 +145,13 @@ FROM
 
 	LEFT JOIN [comm].[group] as comm_group_fsc
 	ON comm_group_fsc.comm_group_cd = plan_group_rate_fsc.disp_comm_group_cd
+
+	-- isr
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_isr
+	ON t.isr_calc_key = plan_group_rate_isr.calc_key
+
+	LEFT JOIN [comm].[group] as comm_group_isr
+	ON comm_group_isr.comm_group_cd = plan_group_rate_isr.disp_comm_group_cd
 
 	-- ess
 	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_ess
