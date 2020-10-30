@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	22 Sep 20	tmc		Add ISR commission logic, track FSC & share fsc_comm    
 **	27 Sep 20	tmc		Fix Transfer FSC bug, code changed bug not key
+**	27 Oct 20	tmc		Fix ISR commission locic bug, use seperate comm_group
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -231,6 +232,13 @@ Begin
 			,ess_salesperson_key_id = ''
 			,ess_comm_plan_id = ''
 
+			-- reset calc for repeatabilty on rate / scope changes 
+			,[fsc_calc_key]=NULL
+			,[ess_calc_key]=NULL
+			,[cps_calc_key]=NULL
+			,[eps_calc_key]=NULL
+			,[isr_calc_key]=NULL
+
 		FROM
 			[dbo].[BRS_CustomerFSC_History] AS s 
 
@@ -409,6 +417,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	-- XXX fix ITMF03 hardcode for 2021 plan?
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -465,6 +474,58 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	-- at this point, (a) ISR = FSC for JDE source, but (b) IMP is special case
+	-- copy allows us to leverage prior FSC logic
+	-- note that we my copy over codes that are not applicable to plan
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '8a. ISR clone FSC commgroup - JDE'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			isr_comm_group_cd = fsc_comm_group_cd
+		-- SELECT t.* 
+		WHERE        
+			(isr_comm_plan_id <> '') AND
+			(source_cd = 'JDE') AND
+			(FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+--
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '8b. ISR update commgroup - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			isr_comm_group_cd = s.HIST_comm_group_cd
+		-- SELECT t.* 
+		FROM
+			[dbo].[BRS_ItemHistory] AS s 
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (d.WSLITM_item_number = s.Item) AND
+			(d.FiscalMonth = s.FiscalMonth)
+		WHERE        
+			(d.isr_comm_plan_id <> '') AND
+			(d.source_cd = 'IMP') AND
+			(s.HIST_comm_group_cd <> '') AND
+			-- If Source IMP, and the CommCode is supplied, do not override.
+			(d.WSLITM_item_number <> '') AND
+			(ISNULL(d.isr_comm_group_cd,'') = '') AND
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+--
+--
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -945,6 +1006,7 @@ Begin
 			[isr_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
 			[isr_calc_key] = r.calc_key
 
+--		select * 
 		FROM
 			comm.transaction_F555115 t
 
@@ -953,20 +1015,25 @@ Begin
 				t.FiscalMonth = c.FiscalMonth
 
 			INNER JOIN [comm].[group] g
-			ON t.fsc_comm_group_cd = g.comm_group_cd
+			ON t.isr_comm_group_cd = g.comm_group_cd
 
 			INNER JOIN [comm].[plan_group_rate] AS r 
 			ON t.isr_comm_plan_id = r.comm_plan_id AND
-				-- using fsc comm group is OK 
-				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				t.isr_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
 			(t.isr_comm_plan_id <> '') AND
-			-- using fsc comm group is OK 
-			(t.fsc_comm_group_cd <> '') AND 
+			(t.isr_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
 			(g.booking_rt = 0) AND
+			(r.active_ind = 1) AND
+
+			-- test
+			-- (t.FiscalMonth = 201912 ) AND
+			-- (t.source_cd = 'IMP') AND
+			-- (t.isr_comm_group_cd='REBSND') AND 
+			--
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -992,20 +1059,19 @@ Begin
 				t.FiscalMonth = c.FiscalMonth
 
 			INNER JOIN [comm].[group] g
-			ON t.fsc_comm_group_cd = g.comm_group_cd
+			ON t.isr_comm_group_cd = g.comm_group_cd
 
 			INNER JOIN [comm].[plan_group_rate] AS r 
 			ON t.isr_comm_plan_id = r.comm_plan_id AND
-				-- using fsc comm group is OK 
-				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				t.isr_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
 			(t.isr_comm_plan_id <> '') AND
-			-- using fsc comm group is OK 
-			(t.fsc_comm_group_cd <> '') AND 
+			(t.isr_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
 			(g.booking_rt <> 0) AND
+			(r.active_ind = 1) AND
 			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 

@@ -1,7 +1,7 @@
 -- model 2021 EQ changes 
 
 /*
--- recalc model (4m25s)
+-- recalc model (5m40s)
 print 201901
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
 Exec comm.transaction_commission_calc_proc @bDebug=0
@@ -111,8 +111,9 @@ WHERE
  ,'MIDMAK'
  ,'SCICAN'
  ,'CAIRTE'
- ,'BELTAK'
- ,'DCI'
+ -- remove belmont as per Bill, 26 Oct 20
+ --,'BELTAK'
+  ,'DCI'
  ,'MCC'
  ,'DENSCH'
  ,'BAINTE'
@@ -134,7 +135,8 @@ WHERE
  ,'MIDMAK'
  ,'SCICAN'
  ,'CAIRTE'
- ,'BELTAK'
+ -- remove belmont as per Bill, 26 Oct 20
+ -- ,'BELTAK'
  ,'DCI'
  ,'MCC'
  ,'DENSCH'
@@ -332,18 +334,20 @@ WHERE
 
 -- set rates
 
-/*
-Line	Current	Plan 2	Plan 3
-Focus 1 = Premium	18/21	19%	22%
-Focus 2 = Mid-Line	18/21	17%	20%
-Focus 3 = Economy	18/21	15%	18%
-*/
+--were looking at 18/21%, 17/20% & 16/19% for focus 1-3 respectively
 
 UPDATE comm.plan_group_rate
-SET [comm_rt] = 19
+SET [comm_rt] = 18
 FROM comm.plan_group_rate 
 WHERE (item_comm_group_cd LIKE 'ITMTEP') AND ([comm_plan_id] = 'FSCGP02'   ) AND ([comm_rt] <> 0)
 GO
+
+UPDATE comm.plan_group_rate
+SET [comm_rt] = 21
+FROM comm.plan_group_rate 
+WHERE (item_comm_group_cd LIKE 'ITMTEP') AND ([comm_plan_id] = 'FSCGP03'   ) AND ([comm_rt] <> 0)
+GO
+
 
 UPDATE comm.plan_group_rate
 SET [comm_rt] = 17
@@ -352,23 +356,20 @@ WHERE (item_comm_group_cd LIKE 'ITMTEM') AND ([comm_plan_id] = 'FSCGP02'   ) AND
 GO
 
 UPDATE comm.plan_group_rate
-SET [comm_rt] = 15
+SET [comm_rt] = 20
+FROM comm.plan_group_rate 
+WHERE (item_comm_group_cd LIKE 'ITMTEM') AND ([comm_plan_id] = 'FSCGP03'   ) AND ([comm_rt] <> 0)
+GO
+
+
+UPDATE comm.plan_group_rate
+SET [comm_rt] = 16
 FROM comm.plan_group_rate 
 WHERE (item_comm_group_cd LIKE 'ITMTEE') AND ([comm_plan_id] = 'FSCGP02'   ) AND ([comm_rt] <> 0)
 GO
 
 UPDATE comm.plan_group_rate
-SET [comm_rt] = 22
-FROM comm.plan_group_rate 
-WHERE (item_comm_group_cd LIKE 'ITMTEP') AND ([comm_plan_id] = 'FSCGP03'   ) AND ([comm_rt] <> 0)
-GO
-UPDATE comm.plan_group_rate
-SET [comm_rt] = 20
-FROM comm.plan_group_rate 
-WHERE (item_comm_group_cd LIKE 'ITMTEM') AND ([comm_plan_id] = 'FSCGP03'   ) AND ([comm_rt] <> 0)
-GO
-UPDATE comm.plan_group_rate
-SET [comm_rt] = 18
+SET [comm_rt] = 19
 FROM comm.plan_group_rate 
 WHERE (item_comm_group_cd LIKE 'ITMTEE') AND ([comm_plan_id] = 'FSCGP03'   ) AND ([comm_rt] <> 0)
 GO
@@ -406,6 +407,38 @@ WHERE        (Item IN ('1670114', '1670573', '1670951', '1671001', '1671451', '1
 -- re-run calc above & dev model 
 
 --- ISR model
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD
+	isr_comm_group_cd char(6) NULL
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group6 FOREIGN KEY
+	(
+	item_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX transaction_F555115_idx_16 ON comm.transaction_F555115
+	(
+	isr_comm_group_cd
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 -- update new group
 
@@ -447,8 +480,42 @@ comm.plan_group_rate AS d
 WHERE 
 ([comm_plan_id] like 'ISRGP0[2 3]' ) AND
 -- merch & small eq
-not d.disp_comm_group_cd in('ITMSND', 'FRESND', 'FRESEQ', 'REBSND', 'ITMEPS', 'SPMSND', 'SPMREB', 'SPMFGE', 'SPMFGS') AND
+not d.disp_comm_group_cd in('ITMEPS', 'ITMSND', 'SPMSND', 'STMPBA', 'SALD30') AND
 (1=1)
+GO
+
+-- full list, for ref.  FG & REB will not work currently
+SELECT [item_comm_group_cd], disp_comm_group_cd, active_ind
+  FROM [comm].[plan_group_rate]
+  where 
+	comm_plan_id like 'ISR%' AND
+	item_comm_group_cd in('FRESEQ', 'FRESND', 'ITMEPS', 'ITMSND', 'REBSND', 'REBTEE', 'SPMFGE', 'SPMFGS', 'SPMREB', 'SPMSND', 'STMPBA', 'SALD30') AND
+	(1 = 1)
+GO
+
+-- set ISR comm group - active
+UPDATE
+	comm.plan_group_rate
+SET
+	active_ind = 1
+	,disp_comm_group_cd = item_comm_group_cd
+
+WHERE
+	(comm_plan_id LIKE 'ISR%') AND 
+	(item_comm_group_cd in('ITMEPS', 'ITMSND', 'SPMSND', 'STMPBA', 'SALD30') ) AND 
+	(1 = 1)
+GO
+
+-- set ISR comm group - NOT active
+UPDATE
+	comm.plan_group_rate
+SET
+	active_ind = 0
+	,disp_comm_group_cd = ''
+WHERE
+	(comm_plan_id LIKE 'ISR%') AND 
+	(item_comm_group_cd NOT in('ITMEPS', 'ITMSND', 'SPMSND', 'STMPBA', 'SALD30') ) AND 
+	(1 = 1)
 GO
 
 -- No comm - Zero Plan
@@ -465,7 +532,7 @@ FROM comm.plan_group_rate
 WHERE 
 ([comm_plan_id] like 'ISRGP0[2 3]' ) AND
 -- merch & small eq
-not disp_comm_group_cd in('ITMSND', 'FRESND', 'FRESEQ', 'REBSND', 'ITMEPS', 'SPMSND', 'SPMREB', 'SPMFGE', 'SPMFGS') AND
+not disp_comm_group_cd in('ITMEPS', 'ITMSND', 'SPMSND', 'STMPBA', 'SALD30') AND
 (1=1)
 GO
 
@@ -476,7 +543,7 @@ FROM comm.plan_group_rate
 WHERE 
 ([comm_plan_id] like 'ISRGP0[2 3]' ) AND
 -- merch & small eq
-disp_comm_group_cd in('ITMSND', 'FRESND', 'FRESEQ', 'REBSND', 'ITMEPS') AND
+disp_comm_group_cd in('ITMEPS', 'ITMSND') AND
 (1=1)
 GO
 
@@ -487,7 +554,7 @@ FROM comm.plan_group_rate
 WHERE 
 ([comm_plan_id] like 'ISRGP0[2 3]' ) AND
 -- merch & small eq
-disp_comm_group_cd in('SPMSND', 'SPMREB', 'SPMFGE', 'SPMFGS') AND
+disp_comm_group_cd in('SPMSND') AND
 (1=1)
 GO
 
@@ -568,31 +635,54 @@ FROM            BRS_CustomerFSC_History INNER JOIN
 WHERE        (BRS_CustomerFSC_History.FiscalMonth >= 201901) AND (comm.salesperson_master.comm_plan_id LIKE 'ISR%')
 
 
-
-SELECT [item_comm_group_cd], active_ind
-  FROM [comm].[plan_group_rate]
-  where 
-	comm_plan_id like 'ISR%' AND
-	item_comm_group_cd not in('FRESEQ', 'FRESND', 'ITMEPS', 'ITMSND', 'REBSND', 'REBTEE', 'SPMFGE', 'SPMFGS', 'SPMREB', 'SPMSND') AND
-	(1 = 1)
-
+-- set ISR plan for Adjustments.  in prod, this is set manually.  We need to fake it
 UPDATE
-	comm.plan_group_rate
+	comm.transaction_F555115
 SET
-	active_ind = 1
-WHERE
-	(comm_plan_id LIKE 'ISR%') AND 
-	(item_comm_group_cd IN ('FRESEQ', 'FRESND', 'ITMEPS', 'ITMSND', 'REBSND', 'REBTEE', 'SPMFGE', 'SPMFGS', 'SPMREB', 'SPMSND')) AND 
-	(1 = 1)
-GO
+	isr_code = s.HIST_TsTerritoryCd
+	,isr_salesperson_key_id = s.HIST_isr_salesperson_key_id
+	,isr_comm_plan_id = s.HIST_isr_comm_plan_id
+	,[isr_calc_key]=NULL
+-- Select s.FiscalMonth, d.[WSLITM_item_number], isr_code, fsc_code, isr_salesperson_key_id, fsc_salesperson_key_id, isr_comm_plan_id, fsc_comm_plan_id, [isr_calc_key], [fsc_calc_key], fsc_comm_group_cd
+-- Select s.*	
+FROM
+	[dbo].[BRS_CustomerFSC_History] AS s 
 
+	INNER JOIN comm.transaction_F555115 d
+	ON (d.WSSHAN_shipto = s.Shipto) AND
+	(d.FiscalMonth = s.FiscalMonth) AND
+	(d.source_cd = 'IMP')
+WHERE
+	(s.HIST_isr_comm_plan_id <> '') AND
+	(s.FiscalMonth between 201901 and 201912) AND
+	(1=1)
+
+-- set ISR comm rate for Adjustments.  in prod, this is set manually.  We need to fake it
 UPDATE
-	comm.plan_group_rate
+	comm.transaction_F555115
 SET
-	active_ind = 0
+	isr_comm_group_cd = fsc_comm_group_cd
+-- Select FiscalMonth, [WSLITM_item_number], isr_code, fsc_code, isr_salesperson_key_id, fsc_salesperson_key_id, isr_comm_plan_id, fsc_comm_plan_id, [isr_calc_key], [fsc_calc_key], isr_comm_group_cd, fsc_comm_group_cd
+FROM
+	comm.transaction_F555115 
 WHERE
-	(comm_plan_id LIKE 'ISR%') AND 
-	(item_comm_group_cd NOT IN ('FRESEQ', 'FRESND', 'ITMEPS', 'ITMSND', 'REBSND', 'REBTEE', 'SPMFGE', 'SPMFGS', 'SPMREB', 'SPMSND')) AND 
-	(1 = 1)
-GO
+	(source_cd = 'IMP') AND
+	(isr_comm_plan_id <> '') AND
+	([WSLITM_item_number]='') AND
+	fsc_comm_group_cd in('ITMEPS', 'ITMSND', 'SPMSND') AND
+	(FiscalMonth between 201901 and 201912) AND
+	(1=1)
 
+
+-- test
+Select FiscalMonth, [WSLITM_item_number], [WSSHAN_shipto], isr_code, fsc_code, isr_salesperson_key_id, fsc_salesperson_key_id, isr_comm_plan_id, fsc_comm_plan_id, [isr_calc_key], [fsc_calc_key], isr_comm_group_cd, fsc_comm_group_cd
+FROM
+comm.transaction_F555115
+where 
+(FiscalMonth = 201912) and
+(source_cd = 'imp') and
+(isr_comm_plan_id <> '') AND
+--(fsc_comm_group_cd like 'reb%') and
+(1=1)
+order by 
+fsc_comm_group_cd
