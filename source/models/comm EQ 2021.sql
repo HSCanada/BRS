@@ -92,6 +92,8 @@ WHERE
  ,'AIRTEC'
  ,'SIRONG'
  ,'SDSINY'
+ ,'D4DTEC'
+ ,'PLANME'
 )) AND 
 (comm_group_cd like 'ITMF%' )
 --(SalesCategory not in('EQUIPM','HITECH','SMEQU')) AND
@@ -121,8 +123,13 @@ WHERE
  ,'AIRTEC'
  ,'SIRONG'
  ,'SDSINY'
+	-- add to Foc1 as per Prashant, 2 Nov 20
+ ,'D4DTEC'
+ ,'PLANME'
+
 )) AND 
 (comm_group_cd like 'ITMF%' )
+GO
 
 -- b) Move Focus 2
 UPDATE       BRS_Item
@@ -145,16 +152,18 @@ WHERE
  ,'AIRTEC'
  ,'SIRONG'
  ,'SDSINY'
+	-- add to Foc1 as per Prashant, 2 Nov 20
+ ,'D4DTEC'
+ ,'PLANME'
 )) AND 
 (comm_group_cd like 'ITMF%' )
+GO
 
 -- c) Move Focus 3->2
 UPDATE       BRS_Item
 SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model2021'
 WHERE
 (comm_group_cd = 'ITMFO3' )
-
-
 GO
 
  /*

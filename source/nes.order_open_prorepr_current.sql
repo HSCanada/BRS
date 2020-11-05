@@ -173,26 +173,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT MAX(sales_date) FROM nes.order_open_prorepr_current
-
-
---SELECT count(*) FROM nes.order_open_prorepr_current
--- ORG 1516
--- Fix 1890
-
-
---SELECT count(*) FROM [Integration].[open_order_prorepr]
-
-
-
-
--- SELECT FROM nes.order_open_prorepr_current where rma not in('rma', '')
-
--- SELECT branch_hub, count(*) FROM nes.order_open_prorepr_current group by branch_hub
-
-
--- SELECT * FROM nes.order_open_prorepr_current where sales_date = '20120101'
 
 -- SELECT top 10 * FROM nes.order_open_prorepr_current order by sales_date desc
 
--- SELECT * FROM nes.order_open_prorepr_current order by sales_date desc
+

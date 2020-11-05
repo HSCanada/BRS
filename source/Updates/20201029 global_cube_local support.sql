@@ -52,3 +52,54 @@ SalesDivisionCode, BranchCode, MarketClassCode,
 FscTerritoryCd
 
 FROM            Dimension.Customer
+
+
+-- setup finacial services dummy
+INSERT INTO BRS_Item
+                         (Item, ItemDescription, MajorProductClass)
+VALUES        ('105ZZZZ','Finacial services','701')
+GO
+
+UPDATE
+BRS_ItemCategory
+SET
+	note_txt ='map to finacial service, Scott, 5 Nov 20', 
+	global_product_class = '930-10'
+WHERE        (MinorProductClass LIKE '701%')
+GO
+
+insert into 
+[dbo].[BRS_ItemHistory]
+(
+	[FiscalMonth]
+	,[Item]
+	,[Supplier]
+	,[MinorProductClass]
+	,[Label]
+	,[Brand]
+)
+SELECT 
+	f.[FiscalMonth]
+	,[Item]
+	,[Supplier]
+	,[MinorProductClass]
+	,[Label]
+	,[Brand]
+FROM BRS_Item i, 
+[dbo].[BRS_FiscalMonth] f
+WHERE 
+	([item] = '105ZZZZ') AND
+	(f.FiscalMonth between 201301 and 202010) AND
+	(1=1)
+GO
+
+
+UPDATE       BRS_ItemHistory
+SET
+	[MinorProductClass]='701-**-**',
+	[global_product_class]='930-10',
+	[Excl_key] = 2
+WHERE
+(BRS_ItemHistory.Item = '105ZZZZ') AND 
+(BRS_ItemHistory.FiscalMonth >= 201301)
+GO

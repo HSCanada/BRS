@@ -385,7 +385,7 @@ WHERE
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202009 and source_cd NOT in('JDE')
+-- delete  from [comm].[transaction_F555115] where FiscalMonth = 202010 and source_cd NOT in('JDE')
 -- truncate table [comm].[transaction_F555115]
 
 print 'manual check src linecount'
@@ -395,7 +395,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202009') AND
+	(fiscal_yearmo_num ='202010') AND
 	(1=1)
 GO
 
@@ -406,7 +406,7 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202009') AND
+	(FiscalMonth =  '202010') AND
 	(1=1)
 GO
 
@@ -512,7 +512,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202009' and '202009') AND
+	(fiscal_yearmo_num between  '202010' and '202010') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
@@ -632,3 +632,6 @@ Exec comm.transaction_commission_calc_proc @bDebug=0, @bLegacy=1
 Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
 
 */
+
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
+-- Exec comm.transaction_commission_calc_proc @bDebug=0

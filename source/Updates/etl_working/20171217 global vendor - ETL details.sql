@@ -278,10 +278,26 @@ WHERE
 	FiscalMonth BETWEEN 202009 AND 202009
 GO
 
+
+print '17. set Financial services dummy code - Transaction'
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 201701 AND 202009) AND
+	(1=1)
+GO
+
+
+
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
 -- a_CAN_Sep-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202009, 202009
+-- [hfm].global_cube_proc  202008, 202008

@@ -144,7 +144,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT * FROM nes.order_open_prorepr_kpi where branch_hub <> 'QUEBC'
+-- SELECT * FROM nes.order_open_prorepr_kpi where branch_hub <> 'QUEBC'
 
 
 
