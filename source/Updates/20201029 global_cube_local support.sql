@@ -54,7 +54,7 @@ FscTerritoryCd
 FROM            Dimension.Customer
 
 
--- setup finacial services dummy
+-- setup finacial services dummy:  added to prod 5 Nov 20
 INSERT INTO BRS_Item
                          (Item, ItemDescription, MajorProductClass)
 VALUES        ('105ZZZZ','Finacial services','701')
@@ -103,3 +103,20 @@ WHERE
 (BRS_ItemHistory.Item = '105ZZZZ') AND 
 (BRS_ItemHistory.FiscalMonth >= 201301)
 GO
+
+print '17. set Financial services dummy code - Transaction'
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 201301 AND 202010) AND
+	(1=1)
+GO
+
+
+
+-- prod end

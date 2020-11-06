@@ -300,4 +300,4 @@ GO
 -- a_CAN_Sep-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202008, 202008
+-- [hfm].global_cube_proc  202009, 202009
