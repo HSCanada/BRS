@@ -76,7 +76,7 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 --> STOP
 
 
--- GPS update 1 & 2 -- wait for ME complete (post adj load)
+-- Excl update 1 & 2 -- wait for ME complete (post adj load)
 
 ---
 
@@ -86,11 +86,11 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 
-print '7. reset Excl_key (only needed for re-run, working, clear all...)'
+print '7. OPTIONAL reset Excl_key (only needed for re-run, working, clear all...)'
 UPDATE
 	BRS_ItemHistory
 SET
@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 print '8. set Exclusives - Excl_key, 1s, 1 OF 3'
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level
@@ -163,11 +163,11 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
---6 min
-print '12. clear GpsKey, if needed'
+--2 min
+print '12. OPTIONAL clear GpsKey, if needed'
 UPDATE
 	BRS_Transaction
 SET
@@ -189,7 +189,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 202009 and 202009)
+	(BRS_Transaction.FiscalMonth between 202010 and 202010)
 GO
 
 -- 1 min
@@ -221,7 +221,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202009 and 202009)
+	(BRS_Transaction.FiscalMonth between 202010 and 202010)
 GO
 
 -- 30s
@@ -253,7 +253,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202009 and 202009)
+	(BRS_Transaction.FiscalMonth between 202010 and 202010)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -262,7 +262,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 -- update BRS_ItemCategory!global for new codes first
@@ -275,7 +275,7 @@ FROM
 WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202009 AND 202009
+	FiscalMonth BETWEEN 202010 AND 202010
 GO
 
 
@@ -288,7 +288,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 201701 AND 202009) AND
+	(FiscalMonth BETWEEN 202010 AND 202010) AND
 	(1=1)
 GO
 
@@ -297,7 +297,7 @@ GO
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Sep-20_RA.csv
+-- a_CAN_Oct-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202009, 202009
+-- [hfm].global_cube_proc  202010, 202010

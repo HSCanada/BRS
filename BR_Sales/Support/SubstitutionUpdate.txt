@@ -4,9 +4,7 @@
 # 12 Dec 18, tmc, added FSC, EST to detail
 
 #$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20201023.xlsm'
-
-# This is the tempalate.  Can be anything
-$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
+$File_in = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Subtitutes_Data.xlsm'
 
 # Part 1 - Pull data into 1 template
 
@@ -14,10 +12,6 @@ $x1 = New-Object -ComObject "Excel.Application"
 #$x1.Visible = $false
 $x1.Visible = $true
 
-# this will set a filter
-# $Data.Cells.Item(1,2) = 'AAAAA'
-
-# there is an automacro that run on open.  put customer logic here
 # filter and logging happens on open
 $wb = $x1.workbooks.Open($file_in)
 
