@@ -51,7 +51,6 @@ PROCESS {
 
 
         # Part 3 - Save Branch version to staging Area (avoid locks)
-        $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Test\'
         $file_out = 'BusReviewSubs'+'_'+$param_branch+'_'+$param_fsc+'_'+$param_AccountName+'_'+$param_billto+'.pdf'
         #$file_out = 'BusinessReviewSubstituation_Data-out.xlsx'
         Remove-Item –path ($file_out_path+$file_out) -ErrorAction Ignore
