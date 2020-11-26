@@ -31,6 +31,7 @@ AS
 **	22 Sep 20	tmc		Add ISR commission logic, track FSC & share fsc_comm    
 **	27 Sep 20	tmc		Fix Transfer FSC bug, code changed bug not key
 **	27 Oct 20	tmc		Fix ISR commission locic bug, use seperate comm_group
+**  20 Nov 20	tmc		setup table-driven parts promotion logic
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -41,6 +42,10 @@ Set @nTranCount = @@Trancount
 
 Declare @nCurrentFiscalYearmoNum int
 Declare @nBatchStatus int
+
+Declare @sCommPartpromSupplier char(6)
+Declare @sCommPartpromGroup char(6)
+Declare @sCommPartpromGroupFocus char(6)
 
 SET NOCOUNT ON;
 if (@bDebug <> 0)
@@ -75,6 +80,11 @@ Begin
 
 	Select 	
 		@nCurrentFiscalYearmoNum = [PriorFiscalMonth]
+
+		,@sCommPartpromSupplier = comm_partprom_supplier
+		,@sCommPartpromGroup = comm_partprom_group_cd
+		,@sCommPartpromGroupFocus = comm_partprom_group_focus_cd
+
 	From 
 		[dbo].[BRS_Config]
 
@@ -417,7 +427,7 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	-- XXX fix ITMF03 hardcode for 2021 plan?
+	-- fix ITMF03 hardcode for 2021 plan
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -427,9 +437,9 @@ Begin
 			comm.transaction_F555115
 		SET
 			fsc_comm_group_cd = CASE 
-									WHEN t.WSSRP6_manufacturer = 'PELTON' 
-									THEN 'ITMFO1'
-									ELSE 'ITMFO3'
+									WHEN t.WSSRP6_manufacturer = @sCommPartpromSupplier 
+									THEN @sCommPartpromGroupFocus
+									ELSE @sCommPartpromGroup
 								END
 		FROM
 			comm.transaction_F555115 t 
@@ -661,9 +671,9 @@ Begin
 			comm.transaction_F555115
 		SET
 			ess_comm_group_cd = CASE 
-									WHEN t.WSSRP6_manufacturer = 'PELTON' 
-									THEN 'ITMFO1'
-									ELSE 'ITMFO3'
+									WHEN t.WSSRP6_manufacturer = @sCommPartpromSupplier 
+									THEN @sCommPartpromGroupFocus
+									ELSE @sCommPartpromGroup
 								END
 		FROM
 			comm.transaction_F555115 t 
@@ -1128,7 +1138,7 @@ Return @nErrorCode
 GO
 
 -- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202012
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202009
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
 
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
