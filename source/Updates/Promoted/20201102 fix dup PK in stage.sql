@@ -1,5 +1,6 @@
 
 -- fix dup PK in stage, 2 Nov 20
+-- added to allow manual correction for bad data.  if not in place, the entire pull fails
 
 BEGIN TRANSACTION
 GO

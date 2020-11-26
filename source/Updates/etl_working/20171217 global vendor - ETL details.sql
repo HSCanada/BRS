@@ -98,7 +98,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202010 AND 202010
+	FiscalMonth BETWEEN 202001 AND 202010
 GO
 
 print '8. set Exclusives - Excl_key, 1s, 1 OF 3'
@@ -118,7 +118,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202010 AND 202010
+	FiscalMonth BETWEEN 202001 AND 202010
 GO
 
 
@@ -137,7 +137,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202010 AND 202010
+	FiscalMonth BETWEEN 202001 AND 202010
 GO
 
 
@@ -150,7 +150,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202010 AND 202010
+	FiscalMonth BETWEEN 202001 AND 202010
 GO
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level
