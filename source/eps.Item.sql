@@ -91,7 +91,8 @@ GO
 
 
 -- SELECT  * FROM eps.Item where Supplier = 'DENMAT'
-
+-- SELECT  * FROM eps.Item where Supplier = 'ZYRISI'
+              
 
 /*
 -- dup test

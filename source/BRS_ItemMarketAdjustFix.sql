@@ -29,7 +29,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
---	06 Feb 19	tmc		fixed extra join bug on brand resulting in missed exept
+**	06 Feb 19	tmc		fixed extra join bug on brand resulting in missed exept
+**	25 Nov 20	tmc		exclude zero Freight items (internal codes)
 **    
 *******************************************************************************/
 
@@ -89,6 +90,8 @@ WHERE
 	(i.ItemStatus <> 'P') AND 
 	-- no MSDS items
 	(i.MajorProductClass <> '904') AND
+
+	(i.FreightAdjPct > 0) AND
 
 	-- light items
 	FreightAdjPct <= cfg.ma_heavy_thresh AND
@@ -151,6 +154,8 @@ WHERE
 	-- no MSDS items
 	(i.MajorProductClass <> '904') AND
 
+	(i.FreightAdjPct > 0) AND
+
 	-- light items
 	FreightAdjPct > cfg.ma_heavy_thresh AND
 
@@ -168,4 +173,4 @@ GO
 -- SELECT top 10 * FROM BRS_ItemMarketAdjustFix where ma_heavy_ind = 1
 -- SELECT * FROM BRS_ItemMarketAdjustFix where item = '5650053'
 
-SELECT count(*) FROM BRS_ItemMarketAdjustFix
+-- SELECT count(*) FROM BRS_ItemMarketAdjustFix
