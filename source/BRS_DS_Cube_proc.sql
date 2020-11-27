@@ -44,6 +44,7 @@ AS
 --	05 Apr 17	tmc		Adding Monthend mode (FiscalMonth=PriorFiscalMonth)
 --	29 May 20	tmc		replace seg with DCC plugin
 --	13 Aug 20	tmc		add specialist to seg
+--	18
 **    
 *******************************************************************************/
 
@@ -109,6 +110,7 @@ SELECT
 	
 	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+	[CategoryRollupPPE],
 
 	'CY.DAY.ACT' AS Status,
 
@@ -131,6 +133,13 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
+	-- PPE
+	INNER JOIN [dbo].[BRS_Item] i
+	ON i.Item = t.Item
+
+	INNER JOIN [dbo].[BRS_ItemCategory] cat
+	ON cat.[MinorProductClass] = i.[MinorProductClass]
+	--
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -159,7 +168,10 @@ GROUP BY
 
 	,c.MarketClass
 	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
+
+
 
 UNION ALL
 
@@ -183,6 +195,7 @@ SELECT
 	c.HIST_MarketClass AS MarketClass, 
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
+	[CategoryRollupPPE],
 
 
 	'PY.DAY.ACT' AS Status,
@@ -240,8 +253,7 @@ GROUP BY
 	,t.SalesDivision
 	,c.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
-
-
+	,[CategoryRollupPPE]
 
 UNION ALL
 
@@ -263,6 +275,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'CY.DAY.EST' AS Status,
                       
@@ -322,6 +335,8 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
+
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -346,6 +361,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'PY.DAY.PRO' AS Status,
 
@@ -403,6 +419,8 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
+
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -430,6 +448,7 @@ SELECT
 	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	c.SegCd, 
+	[CategoryRollupPPE],
 
 	'CY.MTD.ACT' AS Status,
 
@@ -455,6 +474,14 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = t.FiscalMonth
+
+	-- PPE
+	INNER JOIN [dbo].[BRS_Item] i
+	ON i.Item = t.Item
+
+	INNER JOIN [dbo].[BRS_ItemCategory] cat
+	ON cat.[MinorProductClass] = i.[MinorProductClass]
+	--
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -487,6 +514,7 @@ GROUP BY
 
 	,c.MarketClass
 	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,c.SegCd 
 
@@ -512,6 +540,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	c.HIST_SegCd AS SegCd, 
+	[CategoryRollupPPE],
 
 	'PY.MTD.ACT' AS Status,
 	                      
@@ -570,6 +599,7 @@ GROUP BY
 
 	,c.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,c.HIST_SegCd 
 
@@ -598,6 +628,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'CY.ME.ACT' AS Status,
 
@@ -649,6 +680,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -674,6 +706,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'PY.ME.ACT' AS Status,
 	                      
@@ -726,6 +759,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -754,6 +788,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'CY.MTD.EST' AS Status,
 	                      
@@ -814,6 +849,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -839,6 +875,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'PY.MTD.PRO' AS Status,
 
@@ -896,6 +933,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -923,6 +961,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'CY.YTD.ACT' AS Status,
 
@@ -974,6 +1013,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -1003,6 +1043,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'PY.YTD.ACT' AS Status,
 
@@ -1057,6 +1098,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
 --	,t.HIST_SegCd 
 
@@ -1085,6 +1127,7 @@ SELECT
 	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
 --	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END as SegCd,
 --	t.HIST_SegCd AS SegCd,
+	[CategoryRollupPPE],
 
 	'CY.PMTD.EST' AS Status,
 	                      
@@ -1147,23 +1190,24 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	,[CategoryRollupPPE]
 --	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE '' END
---	,t.HIST_SegCd 
+--	,et.HIST_SegCd 
+
 
 END
 
 GO
-
--- ME Normal pre 9147 rows in 3s
--- ME New Normal 9147 in 4s
--- ME New ME	 7931 in 2s
 
 -- BRS_DS_Cube_proc 
 
 
 -- Prod
 -- BRS_DS_Cube_proc 0
--- 9 061, 58s
+-- ORG 8 772, 9s (cached)
+-- NEW, pre PPE 13 345, 31s (cached)
+-- NEW, PPE @ item 13 345, 5min + (abort)
+-- NEW, PPE # code 21 146, 18s (cached)
 
 -- Dev
 -- Exec BRS_DS_Cube_proc @bDebug=1

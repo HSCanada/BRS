@@ -52,9 +52,12 @@ AS
 -- 17 Feb 17	tmc		Fix Summary Bug caught by Gary W
 -- 20 Feb 17	tmc		Make BRS_AGG_ICMBGAD_Sales symetrical ...
 --							to BRS_AGG_CMBGAD_Sales
---	15 Feb 17	tmc		Add extra items to history for hfm
+-- 	15 Feb 17	tmc		Add extra items to history for hfm
 --	12 Jun 20	tmc		add commision state to history for commBE_new
---	13 Jun 20	tmc		migrated code from stand-alone script    
+--	13 Jun 20	tmc		migrated code from stand-alone script  
+-- 17 Nov 20	tmc		add item to BRS_AGG_CDBGAD_Sales for PPE
+-- 26 Nov 20	tmc		use PPE code instead of item for performace reasons
+
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -220,6 +223,7 @@ Begin
 				AdjCode, 
 				SalesDivision, 
 				Shipto, 
+				[CategoryRollupPPE],
 				FreeGoodsEstInd, 
 				OrderSourceCode, 
 				SalesAmt, 
@@ -241,6 +245,7 @@ Begin
 				t.AdjCode, 
 				SalesDivision, 
 				t.Shipto, 
+				[CategoryRollupPPE],
 				t.FreeGoodsEstInd, 
 				OrderSourceCode, 
 				SUM(NetSalesAmt) AS SalesAmt, 
@@ -268,6 +273,14 @@ Begin
 				INNER JOIN BRS_DS_GLBU_Rollup AS glru
 				ON	t.GLBU_Class = glru.GLBU_Class
 
+				-- PPE
+				INNER JOIN [dbo].[BRS_Item] i
+				ON i.Item = t.Item
+
+				INNER JOIN [dbo].[BRS_ItemCategory] cat
+				ON cat.[MinorProductClass] = i.[MinorProductClass]
+				--
+
 				LEFT JOIN BRS_CustomerFSC_History AS c 
 				ON c.ShipTo = t.Shipto   AND
 					c.FiscalMonth = t.FiscalMonth
@@ -276,12 +289,13 @@ Begin
 
 			GROUP BY 
 				t.SalesDate,
-				Branch, 
+				t.FreeGoodsEstInd, 
+				t.Shipto, 
 				t.GLBU_Class, 
+				[CategoryRollupPPE],
+				Branch, 
 				t.AdjCode,	
 				SalesDivision, 
-				t.Shipto, 
-				t.FreeGoodsEstInd, 
 				OrderSourceCode
 
 			if (@bDebug <> 0)
@@ -295,6 +309,7 @@ Begin
 				AdjCode, 
 				SalesDivision, 
 				Shipto, 
+				[CategoryRollupPPE],
 				FreeGoodsEstInd, 
 				OrderSourceCode, 
 				SalesAmt, 
@@ -316,6 +331,7 @@ Begin
 				t.AdjCode, 
 				SalesDivision, 
 				t.Shipto, 
+				[CategoryRollupPPE],
 				t.FreeGoodsEstInd, 
 				OrderSourceCode, 
 				SUM(NetSalesAmt) AS SalesAmt, 
@@ -343,6 +359,14 @@ Begin
 				INNER JOIN BRS_DS_GLBU_Rollup AS glru
 				ON	t.GLBU_Class = glru.GLBU_Class
 
+				-- PPE
+				INNER JOIN [dbo].[BRS_Item] i
+				ON i.Item = t.Item
+
+				INNER JOIN [dbo].[BRS_ItemCategory] cat
+				ON cat.[MinorProductClass] = i.[MinorProductClass]
+				--
+
 				LEFT JOIN BRS_CustomerFSC_History AS c 
 				ON c.ShipTo = t.Shipto   AND
 					c.FiscalMonth = t.FiscalMonth
@@ -350,12 +374,13 @@ Begin
 				(t.FiscalMonth = @nFiscalCurrent)
 			GROUP BY 
 				t.FiscalMonth, 
-				Branch, 
+				t.FreeGoodsEstInd, 
+				t.Shipto, 
 				t.GLBU_Class, 
+				[CategoryRollupPPE],
+				Branch, 
 				t.AdjCode,	
 				SalesDivision, 
-				t.Shipto, 
-				t.FreeGoodsEstInd, 
 				OrderSourceCode
 
 			FETCH NEXT FROM c INTO @nFiscalCurrent;
