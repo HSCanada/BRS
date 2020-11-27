@@ -4,10 +4,6 @@
 -- truncate table dbo.BRS_AGG_CDBGAD_Sales
 -- truncate table dbo.BRS_AGG_CMBGAD_Sales
 
--- 1 of 2
-
---
-
 CREATE TABLE [dbo].[BRS_ItemCategoryPPE](
 	[CategoryRollupPPE] [char](10) NOT NULL,
 	[category_rollup_ppe_desc] [nvarchar](35) NOT NULL default (''),
@@ -24,6 +20,21 @@ CREATE UNIQUE NONCLUSTERED INDEX BRS_ItemCategoryPPE_u_idx_01 ON dbo.BRS_ItemCat
 	(
 	category_ppe_key
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+
+-- truncate table [dbo].[BRS_ItemCategoryPPE]
+INSERT INTO [dbo].[BRS_ItemCategoryPPE]([CategoryRollupPPE])
+VALUES 
+(''),
+('INFO-DAMS'),
+('INFO-EVAC'),
+('INFO-THERM'),
+('PPE-EYEWAR'),
+('PPE-GLOV'),
+('PPE-GOWNS'),
+('PPE-INFCON'),
+('PPE-MASK'),
+('PPQ-AIRPY')
 GO
 
 BEGIN TRANSACTION
@@ -44,20 +55,6 @@ GO
 COMMIT
 
 --
--- truncate table [dbo].[BRS_ItemCategoryPPE]
-INSERT INTO [dbo].[BRS_ItemCategoryPPE]([CategoryRollupPPE])
-VALUES 
-(''),
-('INFO-DAMS'),
-('INFO-EVAC'),
-('INFO-THERM'),
-('PPE-EYEWAR'),
-('PPE-GLOV'),
-('PPE-GOWNS'),
-('PPE-INFCON'),
-('PPE-MASK'),
-('PPQ-AIRPY')
-GO
 
 
 BEGIN TRANSACTION
@@ -154,4 +151,9 @@ ALTER TABLE dbo.BRS_AGG_CMBGAD_Sales SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+
+-- run below scripts AFTER
+
+[dbo].[BRS_DS_Cube_proc]
+[dbo].[monthend_summary_proc] -- exec after to build summary
 

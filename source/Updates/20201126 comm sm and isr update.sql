@@ -80,7 +80,6 @@ COMMIT
 
 --
 -- add EQ only special markets, based on SPMALL
-
 insert into [comm].[group]
 (
 	[comm_group_cd]
@@ -199,7 +198,8 @@ SET
 	comm_partprom_group_cd = 'ITMFO3'
 GO
 
--- DEV below
+
+--> END OF PROD, DEV below, 26 Nov 20
 
 ----------------------------------------------------------------
 --- ISR model
