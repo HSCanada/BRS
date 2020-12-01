@@ -395,7 +395,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202010') AND
+	(fiscal_yearmo_num ='202011') AND
 	(1=1)
 GO
 
@@ -406,7 +406,7 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202010') AND
+	(FiscalMonth =  '202011') AND
 	(1=1)
 GO
 
@@ -512,7 +512,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202010' and '202010') AND
+	(fiscal_yearmo_num between  '202011' and '202011') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
