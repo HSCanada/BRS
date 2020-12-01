@@ -153,7 +153,6 @@ COMMIT
 
 
 -- run below scripts AFTER
-
-[dbo].[BRS_DS_Cube_proc]
-[dbo].[monthend_summary_proc] -- exec after to build summary
+-- [dbo].[BRS_DS_Cube_proc]
+-- [dbo].[monthend_summary_proc] -- exec after to build summary
 
