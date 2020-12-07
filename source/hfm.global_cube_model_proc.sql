@@ -74,7 +74,9 @@ BEGIN
 --		,t.SalesDivision		
 		,sdiv.SalesDivision_key
 		
-		,CAST(t.SalesDate as date)					AS sales_day
+		,t.SalesDate								AS SalesDate_ORG
+		,d.day_key
+
 		,t.Shipto
 
 --		,t.Item
@@ -86,6 +88,8 @@ BEGIN
 --		,t.AdjCode	
 		,adj.[AdjCodeKey]
 
+		,promo.promotion_key
+
 		,t.SalesOrderNumber	
 		,t.LineNumber
 
@@ -94,6 +98,7 @@ BEGIN
 		,(t.[NetSalesAmt])							AS sales_amt
 		,(t.[ExtendedCostAmt]) 
 		-ISNULL(t.[ExtChargebackAmt],0)				AS gp_amt
+
 -- test
 
 	FROM         
@@ -154,6 +159,16 @@ BEGIN
 		INNER JOIN [dbo].[BRS_DocType] as doct
 		ON t.DocType = doct.DocType
 
+		INNER JOIN [dbo].[BRS_TransactionDW_Ext] ext
+		ON t.[SalesOrderNumber] = ext.[SalesOrderNumber] AND
+		t.[DocType] = ext.[DocType]
+
+		INNER JOIN [dbo].[BRS_Promotion] promo
+		ON ext.PromotionTrackingCode =promo.[PromotionCode]
+
+		INNER JOIN [dbo].[BRS_SalesDay] d
+		ON t.SalesDate = d.[SalesDate]
+
 		LEFT JOIN [hfm].[gps_code] as g
 		ON t.GpsKey = g.GpsKey
 
@@ -164,7 +179,10 @@ BEGIN
 --		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE CAST(t.SalesDate as date) = dd.SalesDate)) AND
 
 		-- test
---		t.SalesOrderNumber = 1109883 AND
+		t.SalesOrderNumber = 1109883 AND
+--		ext.PromotionTrackingCode is null AND
+--		(t.FiscalMonth = 202009)  AND
+--		d.SalesDate is null AND
 		--
 		(1=1)
 
@@ -177,4 +195,4 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Exec [hfm].global_cube_model_proc 
--- 8 163 932 in 2m50s
+-- 8 778 939 in 2.42m

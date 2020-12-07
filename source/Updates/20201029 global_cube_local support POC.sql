@@ -41,7 +41,28 @@ ALTER TABLE dbo.BRS_SalesDivision SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE [dbo].[BRS_SalesDay] ADD
+	day_key int identity(1,1) NOT NULL 
+GO
+ALTER TABLE [dbo].[BRS_SalesDay] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX BRS_SalesDay_idx_u_03 ON [dbo].[BRS_SalesDay] 
+	(
+	day_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE dbo.[BRS_SalesDay] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
 
 
 SELECT
@@ -53,6 +74,7 @@ FscTerritoryCd
 
 FROM            Dimension.Customer
 
+-- in prod ->
 
 -- setup finacial services dummy:  added to prod 5 Nov 20
 INSERT INTO BRS_Item
@@ -116,7 +138,29 @@ WHERE
 	(FiscalMonth BETWEEN 201301 AND 202010) AND
 	(1=1)
 GO
-
-
-
 -- prod end
+/*
+SELECT top 10
+	SalesDate_ORG
+	,SalesDate
+	,SalesDay
+	,DayNumber
+	,DayType
+	,[CalWeek]
+	,[FiscWeekName]
+
+FROM
+Dimension.Day 
+order by 
+SalesDate desc
+
+SELECT
+promotion_key
+,PromotionCode
+,PromotionDescription
+,PromotionTrackingCode
+,PromotionType
+FROM
+BRS_Promotion
+
+*/

@@ -38,6 +38,9 @@ AS
 
 SELECT
 	CAST(d.SalesDate as Date) as SalesDate
+	,[SalesDay]
+	,d.SalesDate SalesDate_ORG
+	,[day_key]
 	,d.DaySeq
 	,d.DayNumber
 	,d.DayType
@@ -52,6 +55,8 @@ SELECT
 	,fm.FirstMonthSeqInQtr
 	,fm.FirstMonthSeqInYear
 	,d.FiscalWeek						AS FirstWeekSeqInDay
+	,[CalWeek]
+	,[FiscWeekName]
 
 FROM
 	BRS_SalesDay d

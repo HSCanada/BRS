@@ -184,7 +184,7 @@ SELECT
 			'Exclude_Cust'
 	END							AS PrivateLabelScope_Cust
 	,c.sm_focus_code			AS SmFocusCode
-
+	,[Est12MoMerch]
 
 FROM
 	BRS_Customer AS c 
@@ -285,7 +285,7 @@ print '2. dup check?'
 SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
 
 -- test details
--- SELECT  top 10      * FROM            Dimension.Customer where [CustomerGroup] = 'BT_3187697'
+-- SELECT  top 10      * FROM            Dimension.Customer 
 
 
 
