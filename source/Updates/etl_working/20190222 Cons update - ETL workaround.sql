@@ -2,8 +2,9 @@
 -- updated 3 Apr 19
 
 
--- START
--- update current day so correct promos updated
+-------------------------------------------------------------------------------
+-- BEGIN
+-------------------------------------------------------------------------------
 
 
 -- clear prod
@@ -11,7 +12,6 @@ truncate table Redemptions_tbl_Main
 GO
 truncate table Redemptions_tbl_Items
 GO
-
 
 INSERT INTO [dbo].[Redemptions_tbl_Main]
            ([RecID]
@@ -21,7 +21,7 @@ INSERT INTO [dbo].[Redemptions_tbl_Main]
            (0, '', '')
 GO
 
--- set day today
+-- 
 INSERT INTO Redemptions_tbl_Main
                          (RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired)
 SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
@@ -29,8 +29,10 @@ SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, 
 FROM            
 	Redemptions..tbl_Main
 WHERE        
---	RecID = 7889 AND
-	(CAST('2020-10-20' AS DATETIME) BETWEEN EffDate AND Expired) AND
+	-- update date
+	( (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) BETWEEN EffDate AND Expired) AND
+	--	RecID = 7889 AND
+	--	(CAST('2020-10-20' AS DATETIME) BETWEEN EffDate AND Expired) AND
 	(1=1)
 GO
 
@@ -58,8 +60,7 @@ GROUP BY
 
 --
 
--- test
--- must be null
+print 'test:  below must be zero rows'
 SELECT        i.ItemNumber, COUNT(d.RecID) AS deal_code
 FROM            Redemptions_tbl_Main AS d INNER JOIN
                          Redemptions_tbl_Items AS i ON d.RecID = i.RecID
@@ -67,14 +68,17 @@ GROUP BY i.ItemNumber
 HAVING        (COUNT(d.RecID) > 1) order by 2 desc
 
 
+-------------------------------------------------------------------------------
+-- END
+-------------------------------------------------------------------------------
 
----  STOP
+---  
 
 --
 
--- move to prod
+-- move to prod, on hold, waiting for Free goods project
 -- 25 Feb 19, tmc
-
+/*
 -- START - prod move
 --drop table [Redemptions_tbl_Items]
 GO
@@ -115,3 +119,5 @@ CREATE TABLE [dbo].[Redemptions_tbl_Main](
 GO
 
 -- END - Prod move
+
+*/
