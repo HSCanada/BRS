@@ -276,6 +276,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+/*
 print 'integrity checks (s/b 0):'
 
 print '1. missing customer?'
@@ -283,6 +284,7 @@ SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer wh
 
 print '2. dup check?'
 SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
+*/
 
 -- test details
 -- SELECT  top 10      * FROM            Dimension.Customer 

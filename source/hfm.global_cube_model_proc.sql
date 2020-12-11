@@ -179,7 +179,7 @@ BEGIN
 --		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE CAST(t.SalesDate as date) = dd.SalesDate)) AND
 
 		-- test
-		t.SalesOrderNumber = 1109883 AND
+--		t.SalesOrderNumber = 1109883 AND
 --		ext.PromotionTrackingCode is null AND
 --		(t.FiscalMonth = 202009)  AND
 --		d.SalesDate is null AND
@@ -195,4 +195,4 @@ GO
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Exec [hfm].global_cube_model_proc 
--- 8 778 939 in 2.42m
+-- 8 778 939 in 3.30m
