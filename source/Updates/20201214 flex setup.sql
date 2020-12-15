@@ -12,38 +12,39 @@ GO
 
 -- drop TABLE [Integration].[flex_order_lines_Staging]
 CREATE TABLE [Integration].[flex_order_lines_Staging](
-	[file_name] [varchar](50) NOT NULL,
-	[file_line_id] [smallint] NOT NULL,
+	[order_file_name] [varchar](50) NOT NULL,
+	[line_id] [int] IDENTITY(1,1) NOT NULL,
+
+	[flex_code] [char](6) NULL,
 
 	[status_code] [smallint] NOT NULL Default (-1),
 
-	[ORDERNO] [int] NOT NULL,
-	[ACCOUNT] [int] NOT NULL,
-	[ITEMNO] [char](15) NOT NULL,
-	[QTY] [smallint] NOT NULL,
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[ORDERNO] [varchar](50)  NULL,
+	[ACCOUNT] [varchar](50)  NULL,
+	[ITEMNO] [varchar](50)  NULL,
+	[QTY] [smallint]  NULL,
 
-	[REFERENCE] [int] NULL,
+	[REFERENCE] [varchar](50) NULL,
 	[ITEMDESC] [varchar](50) NULL,
-	[UPC] [varchar](15) NULL,
+	[UPC] [varchar](50) NULL,
 	[PRICE] [money] NULL,
 	[FREEGDS] [char](1) NULL,
-	[DATE] [date] NULL,
-	[DUEDATE] [date] NULL,
-	[REF2] [varchar](30) NULL,
+	[DATE] [varchar](50) NULL,
+	[DUEDATE] [varchar](50) NULL,
+	[REF2] [varchar](50) NULL,
 	[COMPANY] [varchar](50) NULL,
 	[FIRSTLAST] [varchar](50) NULL,
 	[ADDRESS1] [varchar](50) NULL,
 	[ADDRESS2] [varchar](50) NULL,
 	[ADDRESS3] [varchar](50) NULL,
-	[CITY] [varchar](10) NULL,
-	[ST] [char](2) NULL,
-	[POSTALCODE] [char](10) NULL,
-	[PHONE] [varchar](15) NULL,
-	[COUNTRY] [char](5) NULL,
-	[PROMOCODE] [char](10) NULL,
-	[PROGRAMCODE] [nchar](10) NULL,
-	[ORIGINAL_INVOICE] [int] NULL
+	[CITY] [varchar](50) NULL,
+	[ST] [varchar](50) NULL,
+	[POSTALCODE] [varchar](50) NULL,
+	[PHONE] [varchar](50) NULL,
+	[COUNTRY] [varchar](50) NULL,
+	[PROMOCODE] [varchar](50) NULL,
+	[PROGRAMCODE] [varchar](50) NULL,
+	[ORIGINAL_INVOICE] [varchar](50) NULL
 ) ON [USERDATA]
 GO
 
@@ -52,8 +53,8 @@ GO
 ALTER TABLE Integration.flex_order_lines_Staging ADD CONSTRAINT
 	idx_flex_order_lines_Staging_c_pk PRIMARY KEY CLUSTERED 
 	(
-	file_name,
-	file_line_id
+	[order_file_name],
+	line_id
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
@@ -63,11 +64,11 @@ COMMIT
 
 -- drop TABLE [flex].[order_file]
 CREATE TABLE [flex].[order_file](
-	[file_name] [varchar](50) NOT NULL,
+	[order_file_name] [varchar](50) NOT NULL,
 
-	[flex_code] [char](20) NOT NULL,
+	[flex_code] [char](6) NOT NULL,
 	[Supplier] [char](6) NOT NULL,
-	[file_key] [int] IDENTITY(1,1) NOT NULL,
+	[order_file_key] [int] IDENTITY(1,1) NOT NULL,
 
 	[status_code] [smallint] NOT NULL Default (-1),
 	[batch_id] [int] NULL,
@@ -81,13 +82,13 @@ GO
 ALTER TABLE flex.order_file ADD CONSTRAINT
 	idx_flex_order_file_c_pk PRIMARY KEY CLUSTERED 
 	(
-	file_name
+	order_file_name
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
 CREATE UNIQUE NONCLUSTERED INDEX idx_flex_order_file_u_idx_01 ON flex.order_file
 	(
-	file_key
+	order_file_key
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 GO
 ALTER TABLE flex.order_file SET (LOCK_ESCALATION = TABLE)
@@ -97,9 +98,9 @@ COMMIT
 -- drop TABLE [flex].[order_header]
 CREATE TABLE [flex].[order_header](
 	[Supplier] [char](6) NOT NULL,
-	[ORDERNO] [int] NOT NULL,
+	[ORDERNO] [char](10) NOT NULL,
 
-	[file_key] [int] NOT NULL,
+	[order_file_key] [int] NOT NULL,
 	[ACCOUNT] [int] NOT NULL,
 
 	[status_code] [smallint] NOT NULL Default (-1),
@@ -109,7 +110,7 @@ CREATE TABLE [flex].[order_header](
 	[DocType] [char](2) NULL,
 	[note] [varchar](50) NULL,
 
-	[REFERENCE] [int] NULL,
+	[REFERENCE] [varchar](30) NULL,
 	[DATE] [date] NULL,
 	[DUEDATE] [date] NULL,
 	[REF2] [varchar](30) NULL,
@@ -133,8 +134,8 @@ GO
 ALTER TABLE flex.order_header ADD CONSTRAINT
 	flex_order_header_c_pk PRIMARY KEY CLUSTERED 
 	(
-	Supplier,
-	ORDERNO
+	ORDERNO,
+	Supplier
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
@@ -145,8 +146,8 @@ COMMIT
 -- drop TABLE [flex].[order_detail]
 CREATE TABLE [flex].[order_detail](
 	[Supplier] [char](6) NOT NULL,
-	[ORDERNO] [int] NOT NULL,
-	[file_line_id] [smallint] NOT NULL,
+	[ORDERNO] [char](10) NOT NULL,
+	[line_id] [smallint] NOT NULL,
 
 	[ITEMNO] [char](15) NOT NULL,
 	[QTY] [smallint] NOT NULL,
@@ -172,9 +173,9 @@ GO
 ALTER TABLE flex.order_detail ADD CONSTRAINT
 	idx_flex_order_detail_c_pk PRIMARY KEY CLUSTERED 
 	(
-	Supplier,
 	ORDERNO,
-	file_line_id
+	Supplier,
+	line_id
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
@@ -211,8 +212,8 @@ GO
 ALTER TABLE flex.customer_xref ADD CONSTRAINT
 	idx_customer_xref_c_pk PRIMARY KEY CLUSTERED 
 	(
-	Supplier,
-	ACCOUNT
+	ACCOUNT,
+	Supplier
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
@@ -236,13 +237,14 @@ CREATE TABLE [flex].[item_xref](
 
 ) ON [USERDATA]
 GO
+
 BEGIN TRANSACTION
 GO
 ALTER TABLE flex.item_xref ADD CONSTRAINT
 	idx_item_xref_c_pk PRIMARY KEY CLUSTERED 
 	(
-	Supplier,
-	ITEMNO
+	ITEMNO,
+	Supplier
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
@@ -250,20 +252,29 @@ ALTER TABLE flex.item_xref SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE flex.item_xref ADD
+	product_type char(20) NOT NULL CONSTRAINT DF_item_xref_product_type DEFAULT ''
+GO
+ALTER TABLE flex.item_xref SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 -- drop TABLE [flex].[batch_template]
 CREATE TABLE [flex].[batch_template](
-	[flex_code] [char](20) NOT NULL,
+	[flex_code] [char](6) NOT NULL,
 
-	[Supplier] [char](6) NOT NULL,
-	[flex_descr] [varchar](50) NOT NULL,
+	[Supplier] [char](6) NOT NULL Default(''),
+	[flex_descr] [varchar](50) NOT NULL Default(''),
 
-	[flex_template] [varchar](20) NOT NULL,
-	[flex_import_prefix] [varchar](10) NOT NULL,
-	[flex_export_prefix] [varchar](10) NOT NULL,
-	[flex_po_prefix] [varchar](10) NOT NULL,
-	[flex_po_num] [int] NOT NULL,
+	[flex_template] [varchar](20) NOT NULL Default(''),
+	[flex_import_prefix] [varchar](10) NOT NULL Default(''),
+	[flex_export_prefix] [varchar](10) NOT NULL Default(''),
+	[flex_po_prefix] [varchar](10) NOT NULL Default(''),
+	[flex_po_num] [int] NOT NULL Default(0),
 
-	[default_pend_status] [smallint] NOT NULL,
+	[default_pend_status] [smallint] NOT NULL Default(0),
 
 	[need_customer_xref_ind] [smallint] NOT NULL Default (1),
 	[need_item_xref_ind] [smallint] NOT NULL Default (1),
@@ -287,12 +298,21 @@ ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE flex.batch_template ADD
+	dealer_code char(10) NOT NULL CONSTRAINT DF_batch_template_dealer_code DEFAULT ''
+GO
+ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
 -- drop TABLE [flex].[batch]
 CREATE TABLE [flex].[batch](
 	[batch_id] [int] NOT NULL IDENTITY(1,1),
 
-	[flex_code] [char](20) NOT NULL,
---	[Supplier] [char](6) NOT NULL,
+	[flex_code] [char](6) NOT NULL,
 	[status_code] [smallint] NOT NULL Default (-1),
 
 	[flex_user] [varchar](50) NULL,
@@ -373,10 +393,10 @@ GO
 ALTER TABLE flex.order_header ADD CONSTRAINT
 	FK_order_header_order_file FOREIGN KEY
 	(
-	file_key
+	order_file_key
 	) REFERENCES flex.order_file
 	(
-	file_key
+	order_file_key
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
@@ -384,12 +404,12 @@ GO
 ALTER TABLE flex.order_header ADD CONSTRAINT
 	FK_order_header_customer_xref FOREIGN KEY
 	(
-	Supplier,
-	ACCOUNT
+	ACCOUNT,
+	Supplier
 	) REFERENCES flex.customer_xref
 	(
-	Supplier,
-	ACCOUNT
+	ACCOUNT,
+	Supplier
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
@@ -439,12 +459,12 @@ GO
 ALTER TABLE flex.order_detail ADD CONSTRAINT
 	FK_order_detail_order_header FOREIGN KEY
 	(
-	Supplier,
-	ORDERNO
+	ORDERNO,
+	Supplier
 	) REFERENCES flex.order_header
 	(
-	Supplier,
-	ORDERNO
+	ORDERNO,
+	Supplier
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
@@ -452,12 +472,12 @@ GO
 ALTER TABLE flex.order_detail ADD CONSTRAINT
 	FK_order_detail_item_xref FOREIGN KEY
 	(
-	Supplier,
-	ITEMNO
+	ITEMNO,
+	Supplier
 	) REFERENCES flex.item_xref
 	(
-	Supplier,
-	ITEMNO
+	ITEMNO,
+	Supplier
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
@@ -579,6 +599,23 @@ ALTER TABLE flex.batch ADD CONSTRAINT
 	
 GO
 ALTER TABLE flex.batch SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.flex_order_lines_Staging ADD CONSTRAINT
+	FK_flex_order_lines_Staging_batch_template FOREIGN KEY
+	(
+	flex_code
+	) REFERENCES flex.batch_template
+	(
+	flex_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE Integration.flex_order_lines_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 --
