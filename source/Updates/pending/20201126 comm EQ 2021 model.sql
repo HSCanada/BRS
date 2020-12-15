@@ -1,7 +1,7 @@
 -- model 2021 EQ changes 
 
 /*
--- recalc model (5m40s)
+-- recalc model (11m30s)
 print 201901
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
 Exec comm.transaction_commission_calc_proc @bDebug=0
@@ -50,7 +50,6 @@ print 201912
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
--- update model from DEV next
 
 -- recalc model 2020 (5m40s)
 print 202001
@@ -94,6 +93,9 @@ UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
 
+-- update model from DEV next
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912
+
 */
 
 -- reset
@@ -113,64 +115,89 @@ WHERE
 	BRS_Item.comm_note_txt <> s.comm_note_txt
 GO
 
+/*
+Focus 1:
+Adec
+Dentsply Sirona
+DCI
+
+Focus 2:
+Planmeca/Triangle
+Belmont
+Midmark
+Air Techniques
+SciCan
+Kavo Kerr Group
+MCC
+
+Focus 3:
+EVERYTHING ELSE
+
+-No changes to small equipment
+-Keep Pelton removed from the analysis
+
+
+*/
 
 -- test
 SELECT BRS_Item.Item, BRS_Item.ItemDescription, [SubMajorProdClass], BRS_Item.Supplier, BRS_Item.SalesCategory, BRS_Item.comm_group_cd, BRS_Item.comm_note_txt, BRS_Item.Est12MoSales
 FROM BRS_Item
 WHERE 
---(BRS_Item.Supplier = 'MIDMAK')  AND 
 (Supplier IN (
-'ADEC'
+ 'ADEC'
  ,'SIRONC'
  ,'DENTZA'
- ,'MIDMAK'
- ,'SCICAN'
- ,'CAIRTE'
- ,'BELTAK'
  ,'DCI'
- ,'MCC'
  ,'DENSCH'
- ,'BAINTE'
- ,'TRIAFS'
- ,'AIRTEC'
  ,'SIRONG'
  ,'SDSINY'
+ 
  ,'D4DTEC'
  ,'PLANME'
+ ,'TRIAFS'
+ ,'BELTAK'
+ ,'MIDMAK'
+ ,'AIRTEC'
+ ,'CAIRTE'
+ ,'SCICAN'
+ ,'MCC'
+ ,'DEXISL'
+ ,'GENDEN'
+ ,'GENDEX'
+ ,'IMASCI'
+ ,'KAVOCA'
+ ,'KAVODC'
+ ,'KAVODG'
+ ,'INSTRM'
+ ,'PELCRA'
+ ,'PELTON'
+
+ 
 )) AND 
-	(comm_group_cd like 'ITMF%' ) AND
-	(SalesCategory = 'SMEQU') AND
+	(comm_group_cd like 'ITMFO%' ) AND
+	(SalesCategory <> 'SMEQU') AND
+	--
+	(comm_group_cd <> 'ITMFO2') AND
 	(1=1)
 --	(SalesCategory not in('EQUIPM','HITECH','SMEQU')) AND
 -- ORDER BY [SubMajorProdClass] desc
-ORDER BY comm_group_cd desc
---ORDER BY Est12MoSales desc
+--ORDER BY comm_group_cd desc
+ORDER BY Est12MoSales desc
 
- 
+
 -- a) Move Focus 1, less small EQ
 UPDATE       BRS_Item
 SET                comm_group_cd = 'ITMFO1', comm_note_txt = 'model2021'
 WHERE
 (Supplier IN (
-'ADEC'
+
+ 'ADEC'
  ,'SIRONC'
  ,'DENTZA'
- ,'MIDMAK'
- ,'SCICAN'
- ,'CAIRTE'
- -- remove belmont as per Bill, 26 Oct 20
- --,'BELTAK'
-  ,'DCI'
- ,'MCC'
+ ,'DCI'
  ,'DENSCH'
- ,'BAINTE'
- ,'TRIAFS'
- ,'AIRTEC'
  ,'SIRONG'
  ,'SDSINY'
-	-- add to Foc1 as per Prashant, 2 Nov 20
- ,'D4DTEC'
- ,'PLANME'
 
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
@@ -182,41 +209,76 @@ GO
 UPDATE       BRS_Item
 SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model2021'
 WHERE
-(Supplier not IN (
-'ADEC'
- ,'SIRONC'
- ,'DENTZA'
- ,'MIDMAK'
- ,'SCICAN'
- ,'CAIRTE'
- -- remove belmont as per Bill, 26 Oct 20
- -- ,'BELTAK'
- ,'DCI'
- ,'MCC'
- ,'DENSCH'
- ,'BAINTE'
- ,'TRIAFS'
- ,'AIRTEC'
- ,'SIRONG'
- ,'SDSINY'
-	-- add to Foc1 as per Prashant, 2 Nov 20
- ,'D4DTEC'
+(Supplier IN (
+ 'D4DTEC'
  ,'PLANME'
+ ,'TRIAFS'
+ ,'BELTAK'
+ ,'MIDMAK'
+ ,'AIRTEC'
+ ,'CAIRTE'
+ ,'SCICAN'
+ ,'MCC'
+ ,'DEXISL'
+ ,'GENDEN'
+ ,'GENDEX'
+ ,'IMASCI'
+ ,'KAVOCA'
+ ,'KAVODC'
+ ,'KAVODG'
+ ,'INSTRM'
+ ,'PELCRA'
+ ,'PELTON'
+
 )) AND 
-(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') )
+	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
+	(SalesCategory <> 'SMEQU') AND
+	(1=1)
 GO
 
--- c) Move Focus 3->2
+-- b) Move Focus 3
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model2021'
+SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'model2021'
 WHERE
-(comm_group_cd = 'ITMFO3' )
+(Supplier NOT IN (
+ 'ADEC'
+ ,'SIRONC'
+ ,'DENTZA'
+ ,'DCI'
+ ,'DENSCH'
+ ,'SIRONG'
+ ,'SDSINY'
+ 
+ ,'D4DTEC'
+ ,'PLANME'
+ ,'TRIAFS'
+ ,'BELTAK'
+ ,'MIDMAK'
+ ,'AIRTEC'
+ ,'CAIRTE'
+ ,'SCICAN'
+ ,'MCC'
+ ,'DEXISL'
+ ,'GENDEN'
+ ,'GENDEX'
+ ,'IMASCI'
+ ,'KAVOCA'
+ ,'KAVODC'
+ ,'KAVODG'
+ ,'INSTRM'
+ ,'PELCRA'
+ ,'PELTON'
+
+)) AND 
+	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
+	(SalesCategory <> 'SMEQU') AND
+	(1=1)
 GO
 
  
 -- update 2019 item history - test
 SELECT
--- TOP (100) 
+ TOP (100) 
 d.Item, d.FiscalMonth, d.HIST_comm_group_cd, s.comm_group_cd
 FROM            BRS_ItemHistory AS d INNER JOIN
                          BRS_Item AS s ON d.Item = s.Item
@@ -237,7 +299,7 @@ FROM            BRS_ItemHistory INNER JOIN
 WHERE        (BRS_ItemHistory.FiscalMonth >= 201901) AND (BRS_ItemHistory.Item > '') AND (s.comm_group_cd <> '') AND (1 = 1)
 GO
 
--- set rates
+-- set rates, WIP as of 14 Dec 20
 
 -- part promtion logic
 UPDATE
@@ -248,7 +310,7 @@ SET
 	comm_partprom_group_cd = 'ITMFO2'
 GO
 
-
+/*
 -- EQ Plan 2 rates - NEW
 UPDATE comm.plan_group_rate
 SET [comm_rt] = 19
@@ -314,4 +376,4 @@ FROM comm.plan_group_rate
 WHERE ([comm_plan_id] = 'FSCGP03'   ) AND ([disp_comm_group_cd] = 'SPMFO2') AND 
 ([comm_rt] <> 0)
 GO
-
+*/
