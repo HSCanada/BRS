@@ -48,6 +48,7 @@ AS
 --	20 Apr 20	tmc		remove spend logic -- buggy, replace with DAX
 --	22 Apr 20	tmc		set unassigned group to "other" for better rollups
 --						fix segment name, based on seg not specialty rollup
+--	15 Dec 20	tmc		Add new 2021 MarketClass logic
 **    
 *******************************************************************************/
 
@@ -96,6 +97,16 @@ SELECT
 	,RTRIM(mcroll.MarketClassDesc)						AS MarketClassRollup
 	,RTRIM(mclass.MarketClassDesc)						AS MarketClass
 	,RTRIM(seg.SegName)	+ ' | ' + RTRIM(seg.SegCd)		AS Segment
+
+	-- break out Primary Dental Schools for 2021
+	,RTRIM(seg.SegCd)		AS SegmentCode
+	,CASE 
+		WHEN seg.SegCd = 'PDS' 
+		THEN 'DENSCH'
+		ELSE mclass.MarketClass
+	END 												AS MarketClass2021Code
+
+
 	,s.SpecialtyNm + ' | ' + RTRIM(s.Specialty)			AS Specialty
 	,iif(c.AccountType='D',
 		'Closed',
@@ -287,7 +298,7 @@ SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo
 */
 
 -- test details
--- SELECT  top 10      * FROM            Dimension.Customer 
+-- SELECT  top 10      * FROM            Dimension.Customer where SegmentCode <> 'PDS'
 
 
 
