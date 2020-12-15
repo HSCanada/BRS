@@ -1,0 +1,4 @@
+﻿flex_order_detail
+ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+flex.order_detail
+Supplier;+ORDERNO;+file_line_id
