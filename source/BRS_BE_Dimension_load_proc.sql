@@ -44,6 +44,7 @@ AS
 --	03 Jan 18	tmc		sunset BRS_TS_Rollup
 --	05 Oct 18	tmc		Add Brand to supplier load for RI
 **	9 Jun 19	tmc		add subminorcode
+--	16 Dec 20	tmc		add EST
  
 *******************************************************************************/
 
@@ -142,6 +143,24 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+	--	16 Dec 20 add EST territory load
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print 'Add new EST (from Cust FULL)...'
+
+				INSERT INTO BRS_FSC_Rollup
+					  (TerritoryCd, FSCRollup, Branch, group_type)
+				SELECT DISTINCT EstTerritoryCd, '', '', 'DEST' 
+				FROM         STAGE_BRS_CustomerFull AS c
+				WHERE     (NOT EXISTS
+										  (SELECT     *
+											FROM          BRS_FSC_Rollup AS s
+											WHERE       s.TerritoryCd = c.EstTerritoryCd ))
+			Set @nErrorCode = @@Error
+		End
+
 
 		--	07 Dec 16	tmc		Moved new BT for RI logic 
 		-- added 24 Aug 15, tmc
@@ -218,6 +237,7 @@ BEGIN
 				ParentCustomerNumber = ISNULL(s.ParentCustomerNumber, 0),
 
 				TsTerritoryCd = ISNULL(s.TsTerritoryCd, 0),
+				est_code = ISNULL(s.EstTerritoryCd, 0),
 
 				FSA = LEFT(ISNULL(s.PostalCode, ''), 3)
 
@@ -254,6 +274,7 @@ BEGIN
 				BRS_Customer.ParentCustomerNumber <> ISNULL(s.ParentCustomerNumber, 0) OR
 
 				BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  OR
+				BRS_Customer.est_code <> ISNULL(s.EstTerritoryCd, 0)  OR
 				BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3)
 
 			Set @nErrorCode = @@Error
@@ -291,6 +312,7 @@ BEGIN
 				SpecialHandlingInstCd,
 				ParentCustomerNumber,
 				TsTerritoryCd,
+				est_code,
 				FSA
 
 			)
@@ -321,6 +343,7 @@ BEGIN
 				ISNULL(s.ParentCustomerNumber, 0) AS ParentCustomerNumber,
 
 				ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd,
+				ISNULL(s.EstTerritoryCd, 0)  AS EstTerritoryCd,
 				LEFT(ISNULL(s.PostalCode, ''), 3) AS FSA
 
 			FROM         

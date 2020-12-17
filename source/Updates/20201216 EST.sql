@@ -1,62 +1,75 @@
--- sm and isr update, tmc, 26 nov 20
--- add config-based part to eq promo support, added to QA, 20 Nov 20
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_Config ADD
-	comm_partprom_supplier char(6) NOT NULL CONSTRAINT DF_BRS_Config_comm_partprom_supplier DEFAULT '',
-	comm_partprom_group_cd char(6) NOT NULL CONSTRAINT DF_BRS_Config_comm_partprom_group_cd DEFAULT '',
-	comm_partprom_group_focus_cd char(6) NOT NULL CONSTRAINT DF_BRS_Config_comm_partprom_group_focus_cd DEFAULT ''
-GO
-ALTER TABLE dbo.BRS_Config ADD CONSTRAINT
-	FK_BRS_Config_BRS_ItemSupplier FOREIGN KEY
-	(
-	comm_partprom_supplier
-	) REFERENCES dbo.BRS_ItemSupplier
-	(
-	Supplier
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_Config ADD CONSTRAINT
-	FK_BRS_Config_group FOREIGN KEY
-	(
-	comm_partprom_group_cd
-	) REFERENCES comm.[group]
-	(
-	comm_group_cd
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_Config ADD CONSTRAINT
-	FK_BRS_Config_group1 FOREIGN KEY
-	(
-	comm_partprom_group_focus_cd
-	) REFERENCES comm.[group]
-	(
-	comm_group_cd
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE dbo.BRS_Config SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
+-- setup EST support fields
 
---
+INSERT INTO [comm].[plan]
+           ([comm_plan_id]
+           ,[comm_plan_nm]
+)
+     VALUES
+           ('ESTGP00'
+           ,'EST plan 0'),
+           ('ESTGP02'
+           ,'EST plan 2'),
+           ('ESTGP03'
+           ,'EST plan 3'
+			)
+GO
+
 BEGIN TRANSACTION
 GO
 ALTER TABLE comm.transaction_F555115 ADD
-	isr_comm_group_cd char(6) NULL
+	est_salesperson_key_id varchar(30) NULL,
+	est_comm_plan_id char(10) NULL,
+	est_comm_rt float(53) NULL,
+	est_comm_amt money NOT NULL CONSTRAINT DF_transaction_F555115_est_comm_amt DEFAULT ((0)),
+	est_code char(5) NULL,
+	est_calc_key int NULL
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
 GO
 ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
-	FK_transaction_F555115_group6 FOREIGN KEY
+	FK_transaction_F555115_salesperson_master5 FOREIGN KEY
 	(
-	item_comm_group_cd
-	) REFERENCES comm.[group]
+	est_salesperson_key_id
+	) REFERENCES comm.salesperson_master
 	(
-	comm_group_cd
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan5 FOREIGN KEY
+	(
+	est_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_BRS_FSC_Rollup12 FOREIGN KEY
+	(
+	est_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_plan_group_rate5 FOREIGN KEY
+	(
+	isr_calc_key
+	) REFERENCES comm.plan_group_rate
+	(
+	calc_key
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
@@ -66,143 +79,80 @@ GO
 COMMIT
 
 --
+
 BEGIN TRANSACTION
 GO
-CREATE NONCLUSTERED INDEX transaction_F555115_idx_16 ON comm.transaction_F555115
-	(
-	isr_comm_group_cd
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD
+	HIST_est_salesperson_key_id varchar(30) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_HIST_est_salesperson_key_id DEFAULT (''),
+	HIST_est_comm_plan_id char(10) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_HIST_est_comm_plan_id DEFAULT ('')
 GO
-ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD
+	HIST_est_code char(5) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_HIST_est_code DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --
--- add EQ only special markets, based on SPMALL
-insert into [comm].[group]
-(
-	[comm_group_cd]
-	,[comm_group_desc]
-	,[source_cd]
-	,[active_ind]
-	,[note_txt]
-	,[booking_rt]
-	,[show_ind]
-	,[sort_id]
-	,[comm_group_scorecard_cd]
-)
-SELECT 'SPMEQU' as [comm_group_cd]
-      ,'Special Market Customer, EQ only' as [comm_group_desc]
-      ,[source_cd]
-      ,[active_ind]
-      ,[note_txt]
-      ,[booking_rt]
-      ,[show_ind]
-      ,33 as [sort_id]
-      ,[comm_group_scorecard_cd]
-  FROM [comm].[group]
-  where comm_group_cd = 'SPMALL'
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD CONSTRAINT
+	FK_BRS_CustomerFSC_History_salesperson_master2 FOREIGN KEY
+	(
+	HIST_est_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD CONSTRAINT
+	FK_BRS_CustomerFSC_History_plan2 FOREIGN KEY
+	(
+	HIST_est_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD CONSTRAINT
+	FK_BRS_CustomerFSC_History_code2 FOREIGN KEY
+	(
+	HIST_est_code
+	) REFERENCES [dbo].[BRS_FSC_Rollup]
+	(
+	[TerritoryCd]
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
 GO
 
-insert into [comm].[plan_group_rate]
-(
-	[comm_plan_id]
-	,[item_comm_group_cd]
-	,[cust_comm_group_cd]
-    ,[source_cd]
-	,[disp_comm_group_cd]
-	,[comm_rt]
-    ,[active_ind]
-	,[creation_dt]
-    ,[note_txt]
-    ,[show_ind]
-)
-SELECT
-	[comm_plan_id]
-	,[item_comm_group_cd]
-	,'SPMEQU' as [cust_comm_group_cd]
-    ,[source_cd]
-	,[disp_comm_group_cd]
-	,[comm_rt]
-    ,[active_ind]
-	,[creation_dt]
-    ,'Special Market Customer, EQxx only, 26 Nov 20' as [note_txt]
-    ,[show_ind]
-  FROM [comm].[plan_group_rate]
-    where [cust_comm_group_cd] = 'SPMALL'
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
 GO
+COMMIT
 
--- update new group rate
-
--- revert for non EQ - test
-EXEC comm.comm_stage_update_proc @bDebug=0
-
-SELECT
-d.comm_plan_id, d.item_comm_group_cd, d.cust_comm_group_cd, d.source_cd, d.disp_comm_group_cd, s.disp_comm_group_cd, d.comm_rt, s.comm_rt, d.active_ind, d.note_txt, d.show_ind
-FROM
-comm.plan_group_rate AS d 
-INNER JOIN comm.plan_group_rate AS s 
-ON d.comm_plan_id = s.comm_plan_id AND 
-d.item_comm_group_cd = s.item_comm_group_cd AND
-d.source_cd = s.source_cd AND 
-d.item_comm_group_cd  = s.item_comm_group_cd 
-WHERE
-  (s.[cust_comm_group_cd] = ' ') and
-  (d.[cust_comm_group_cd] = 'SPMEQU') and
-  (d.[comm_plan_id] like 'FSCGP0[2 3]') and
-  (d.[active_ind] = 1) and
-  (d.[comm_rt] <>0) and
-  d.comm_rt <> s.comm_rt and
-  d.item_comm_group_cd not like 'ITMFO[1 2 3]' and
-  d.item_comm_group_cd <> 'FRESEQ' and
-  (1=1)
-order by 2
-
--- revert for non EQ 
-UPDATE
-	comm.plan_group_rate
-SET
-	disp_comm_group_cd = s.disp_comm_group_cd, 
-	comm_rt = s.comm_rt
-FROM
-	comm.plan_group_rate 
-	INNER JOIN comm.plan_group_rate AS s 
-	ON comm.plan_group_rate.comm_plan_id = s.comm_plan_id AND 
-	comm.plan_group_rate.item_comm_group_cd = s.item_comm_group_cd AND 
-	comm.plan_group_rate.source_cd = s.source_cd AND 
-	comm.plan_group_rate.item_comm_group_cd = s.item_comm_group_cd AND 
-	comm.plan_group_rate.comm_rt <> s.comm_rt
-WHERE
-	(s.cust_comm_group_cd = ' ') AND 
-	(comm.plan_group_rate.cust_comm_group_cd = 'SPMEQU') AND 
-	(comm.plan_group_rate.comm_plan_id LIKE 'FSCGP0[2 3]') AND 
-	(comm.plan_group_rate.active_ind = 1) AND 
-    (comm.plan_group_rate.comm_rt <> 0) AND 
-	(comm.plan_group_rate.item_comm_group_cd NOT LIKE 'ITMFO[1 2 3]') AND 
-	(comm.plan_group_rate.item_comm_group_cd <> 'FRESEQ') AND 
-	(1 = 1)
-
--- enable mapping so that above calc works
-UPDATE       comm.special_market_map
-SET                cust_comm_group_cd = 'SPMEQU', note_txt = 'SM EQ only'
-WHERE        (merch_comm_cd = 'Full') AND (equip_comm_cd = 'Half')
-
-
--- part promtion logic
-UPDATE
-	BRS_Config
-SET
-	comm_partprom_supplier = 'PELTON', 
-	comm_partprom_group_focus_cd = 'ITMFO1',
-	comm_partprom_group_cd = 'ITMFO3'
+-- update est current, in Prod 16 Dec 20
+BEGIN TRANSACTION
 GO
-
-
---> END OF PROD, DEV below, 26 Nov 20
+ALTER TABLE dbo.STAGE_BRS_CustomerFull ADD
+	EstTerritoryCd char(5) NULL
+GO
+ALTER TABLE dbo.STAGE_BRS_CustomerFull SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--< in QA, 16 Dec 20
 
 ----------------------------------------------------------------
---- ISR model
+--- EST setup plans and groups TBD
 ----------------------------------------------------------------
 -- set history items, run '-- update 2019 history' above
 -- re-run calc above & dev model 
@@ -348,6 +298,26 @@ disp_comm_group_cd in(
 (1=1)
 GO
 
+-- update 2019 customer history - test
+SELECT
+-- TOP (100) 
+d.[Shipto], d.FiscalMonth, d.[HIST_cust_comm_group_cd], s.[comm_status_cd]
+FROM            [dbo].[BRS_CustomerFSC_History] AS d INNER JOIN
+                         [dbo].[BRS_Customer] AS s ON d.[Shipto] = s.[Shipto]
+WHERE
+(d.FiscalMonth = 202010) AND 
+(s.[comm_status_cd] <> d.[HIST_cust_comm_group_cd]) and
+(1=1)
+GO
+
+-- update 2019 customer history
+UPDATE       BRS_CustomerFSC_History
+SET                HIST_cust_comm_group_cd = s.comm_status_cd
+FROM            BRS_CustomerFSC_History INNER JOIN
+                         BRS_Customer AS s ON BRS_CustomerFSC_History.Shipto = s.ShipTo AND BRS_CustomerFSC_History.HIST_cust_comm_group_cd <> s.comm_status_cd
+WHERE        (BRS_CustomerFSC_History.FiscalMonth = 202010) AND (1 = 1)
+
+--
 -- setup ISR users
 -- manually populate integration.comm_salesperson_master_Staging
 /*
@@ -493,21 +463,3 @@ where
 order by 
 fsc_comm_group_cd
 
--- update 2019 customer history - test
-SELECT
--- TOP (100) 
-d.[Shipto], d.FiscalMonth, d.[HIST_cust_comm_group_cd], s.[comm_status_cd]
-FROM            [dbo].[BRS_CustomerFSC_History] AS d INNER JOIN
-                         [dbo].[BRS_Customer] AS s ON d.[Shipto] = s.[Shipto]
-WHERE
-(d.FiscalMonth = 202010) AND 
-(s.[comm_status_cd] <> d.[HIST_cust_comm_group_cd]) and
-(1=1)
-GO
-
--- update 2019 customer history
-UPDATE       BRS_CustomerFSC_History
-SET                HIST_cust_comm_group_cd = s.comm_status_cd
-FROM            BRS_CustomerFSC_History INNER JOIN
-                         BRS_Customer AS s ON BRS_CustomerFSC_History.Shipto = s.ShipTo AND BRS_CustomerFSC_History.HIST_cust_comm_group_cd <> s.comm_status_cd
-WHERE        (BRS_CustomerFSC_History.FiscalMonth = 202010) AND (1 = 1)

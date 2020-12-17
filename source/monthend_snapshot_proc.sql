@@ -309,6 +309,10 @@ Begin
 			,[HIST_isr_salesperson_key_id]
 			,[HIST_isr_comm_plan_id]
 
+			,[HIST_est_code]
+			,[HIST_est_salesperson_key_id]
+			,[HIST_est_comm_plan_id]
+
 		)
 		SELECT     
 			c.ShipTo
@@ -337,6 +341,10 @@ Begin
 			-- ,c.TsTerritoryCd
 			,ISNULL(isr_comm.salesperson_key_id,'')
 			,ISNULL(isr_comm.comm_plan_id,'')
+
+			,c.est_code
+			,ISNULL(est_comm.salesperson_key_id,'')
+			,ISNULL(est_comm.comm_plan_id,'')
 
 		FROM         
 			BRS_Customer c
@@ -368,6 +376,14 @@ Begin
 
 			LEFT JOIN [comm].[salesperson_master] isr_comm
 			ON isr_comm.[salesperson_key_id] = isr.comm_salesperson_key_id
+
+
+			-- est
+			INNER JOIN BRS_FSC_Rollup AS est
+			ON est.TerritoryCd = c.TsTerritoryCd
+
+			LEFT JOIN [comm].[salesperson_master] est_comm
+			ON est_comm.[salesperson_key_id] = est.comm_salesperson_key_id
 
 		Set @nErrorCode = @@Error
 	End
