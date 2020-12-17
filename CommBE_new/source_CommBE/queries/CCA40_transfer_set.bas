@@ -29,6 +29,8 @@ dbText "Description" ="Update Fiscal period"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[CCA40_transfer_set].[xfer_key] DESC, [CCA40_transfer_set].[FiscalMonth]"
+dbMemo "Filter" ="([CCA40_transfer_set].[xfer_type]=\"T\")"
 Begin
     Begin
         dbText "Name" ="comm_transfer_rule.comment"
@@ -88,15 +90,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =88
-    Top =146
-    Right =1412
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1557
+    Bottom =943
     Left =-1
     Top =-1
-    Right =1300
-    Bottom =186
+    Right =1421
+    Bottom =118
     Left =0
     Top =0
     ColumnsShown =539

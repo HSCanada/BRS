@@ -28,6 +28,10 @@ Begin OutputColumns
     Expression ="Max(comm_test_detail.ID_legacy)"
     Alias ="MaxOfitem_comm_group_cd"
     Expression ="Max(comm_test_detail.item_comm_group_cd)"
+    Alias ="MinOfitem_id"
+    Expression ="Min(comm_test_detail.item_id)"
+    Alias ="MaxOfitem_id"
+    Expression ="Max(comm_test_detail.item_id)"
 End
 Begin OrderBy
     Expression ="Sum(comm_test_detail.gp_ext_amt)"
@@ -42,14 +46,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([RC020-FSC-MonthSalesperson-ZeroRow].[fsc_salesperson_key_id]=\"mdelorenzi     "
-    "               \")"
+dbMemo "OrderBy" ="[RC020-FSC-MonthSalesperson-ZeroRow].[SumOfgp_ext_amt] DESC"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fsc_salesperson_key_id"
@@ -97,17 +100,25 @@ Begin
         dbText "Name" ="MaxOfitem_comm_group_cd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="MinOfitem_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="MaxOfitem_id"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =945
+    State =0
+    Left =0
+    Top =40
+    Right =1533
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1559
-    Bottom =177
+    Right =1509
+    Bottom =338
     Left =0
     Top =0
     ColumnsShown =543

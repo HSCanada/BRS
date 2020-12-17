@@ -24,6 +24,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_customer_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1890"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_customer_Staging.equip_comm_cd"
@@ -47,7 +49,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =220
+    Bottom =203
     Left =0
     Top =0
     ColumnsShown =539

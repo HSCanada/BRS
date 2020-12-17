@@ -1,4 +1,0 @@
-﻿hfm_exclusive_product_rule
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
-hfm.exclusive_product_rule
-Supplier_WhereClauseLike;+Brand_WhereClauseLike;+MinorProductClass_WhereClauseLike;+Item_WhereClauseLike

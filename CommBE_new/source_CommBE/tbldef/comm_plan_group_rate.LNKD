@@ -1,4 +1,0 @@
-﻿comm_plan_group_rate
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
-comm.plan_group_rate
-comm_plan_id;+item_comm_group_cd;+cust_comm_group_cd;+source_cd

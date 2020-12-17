@@ -1,10 +1,11 @@
 ﻿Operation =1
 Option =0
 Where ="(((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detai"
-    "l.fsc_comm_plan_id) Like \"fsc*\")) OR (((comm_test_detail.fsc_salesperson_key_i"
-    "d)<>\"Internal\") AND ((comm_test_detail.fsc_comm_plan_id) Like \"fsc*\")) OR (("
+    "l.fsc_comm_plan_id) Like \"fsc*\") AND ((comm_test_detail.IMCLMJ)=\"856\")) OR ("
+    "((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detail"
+    ".fsc_comm_plan_id) Like \"fsc*\") AND ((comm_test_detail.IMCLMJ)=\"856\")) OR (("
     "(comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detail."
-    "fsc_comm_plan_id) Like \"fsc*\"))"
+    "fsc_comm_plan_id) Like \"fsc*\") AND ((comm_test_detail.IMCLMJ)=\"856\"))"
 Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((Sum"
     "(comm_test_detail.gp_ext_amt)) Not Between -0.01 And 0.01)) OR (((Sum(comm_test_"
     "detail.fsc_comm_amt)) Not Between -0.01 And 0.01))"
@@ -42,14 +43,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[RC035-FSC-Salesorder-ZeroNet].[SumOffsc_comm_amt] DESC"
-dbMemo "Filter" ="([RC035-FSC-Salesorder-ZeroNet].[doc_id]=13215762)"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -110,8 +109,8 @@ Begin
     Bottom =945
     Left =-1
     Top =-1
-    Right =1509
-    Bottom =199
+    Right =1465
+    Bottom =437
     Left =0
     Top =0
     ColumnsShown =543

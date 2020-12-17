@@ -1,17 +1,25 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115_audit.FiscalMonth)=202007) AND ((comm_transaction_F5"
+Where ="(((comm_transaction_F555115_audit.FiscalMonth)=202011) AND ((comm_transaction_F5"
     "55115_audit.source_cd)=\"JDE\") AND ((comm_transaction_F555115_audit.AdjOwner)='"
     "380'))"
 Begin InputTables
     Name ="comm_transaction_F555115_audit"
+    Name ="BRS_SalesDivision"
 End
 Begin OutputColumns
     Expression ="comm_transaction_F555115_audit.FiscalMonth"
     Expression ="comm_transaction_F555115_audit.source_cd"
     Expression ="comm_transaction_F555115_audit.AdjOwner"
     Expression ="comm_transaction_F555115_audit.SalesDivision"
+    Expression ="BRS_SalesDivision.SalesDivisionDesc"
     Expression ="comm_transaction_F555115_audit.summarized_transaction_amt"
+End
+Begin Joins
+    LeftTable ="comm_transaction_F555115_audit"
+    RightTable ="BRS_SalesDivision"
+    Expression ="comm_transaction_F555115_audit.SalesDivision = BRS_SalesDivision.SalesDivision"
+    Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -45,17 +53,21 @@ Begin
         dbText "Name" ="comm_transaction_F555115_audit.SalesDivision"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_SalesDivision.SalesDivisionDesc"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1533
-    Bottom =937
+    Left =-522
+    Top =53
+    Right =1011
+    Bottom =950
     Left =-1
     Top =-1
     Right =1509
-    Bottom =237
+    Bottom =318
     Left =0
     Top =0
     ColumnsShown =539
@@ -66,6 +78,15 @@ Begin
         Bottom =232
         Top =0
         Name ="comm_transaction_F555115_audit"
+        Name =""
+    End
+    Begin
+        Left =438
+        Top =11
+        Right =582
+        Bottom =155
+        Top =0
+        Name ="BRS_SalesDivision"
         Name =""
     End
 End

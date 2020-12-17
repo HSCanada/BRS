@@ -36,7 +36,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCB36_salesperson_stage_check_updated].[salesperson_nm]"
+dbMemo "OrderBy" ="[comm_salesperson_master].[FiscalMonth] DESC, [CCB36_salesperson_stage_check_upd"
+    "ated].[salesperson_nm]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -85,14 +86,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_plan.comm_plan_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_FSC_Rollup.TerritoryCd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_salesperson_master.FiscalMonth"
         dbLong "AggregateType" ="-1"
     End
@@ -106,15 +99,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
+    State =2
+    Left =-8
+    Top =-31
+    Right =1087
+    Bottom =584
     Left =-1
     Top =-1
     Right =1388
-    Bottom =399
+    Bottom =382
     Left =0
     Top =0
     ColumnsShown =539

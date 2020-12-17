@@ -60,10 +60,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="Expr1"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_item_group_rule.id"
         dbLong "AggregateType" ="-1"
     End

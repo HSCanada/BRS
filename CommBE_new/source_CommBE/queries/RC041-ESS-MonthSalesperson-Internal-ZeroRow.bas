@@ -1,12 +1,12 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detai"
-    "l.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \""
-    "ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((com"
-    "m_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan"
-    "_id) Like \"ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\""
-    ") AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.es"
-    "s_comm_plan_id) Like \"ccs*\"))"
+Where ="(((comm_test_detail.fsc_salesperson_key_id)=\"Internal\") AND ((comm_test_detail"
+    ".ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"c"
+    "cs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)=\"Internal\") AND ((comm_"
+    "test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_i"
+    "d) Like \"ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)=\"Internal\") "
+    "AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_"
+    "comm_plan_id) Like \"ccs*\"))"
 Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((Sum"
     "(comm_test_detail.gp_ext_amt)) Not Between -0.01 And 0.01)) OR (((Sum(comm_test_"
     "detail.ess_comm_amt)) Not Between -0.01 And 0.01))"
@@ -103,21 +103,21 @@ End
 Begin
     State =0
     Left =132
-    Top =48
+    Top =199
     Right =1533
     Bottom =937
     Left =-1
     Top =-1
     Right =1377
-    Bottom =325
+    Bottom =115
     Left =0
     Top =0
     ColumnsShown =543
     Begin
         Left =88
         Top =17
-        Right =319
-        Bottom =333
+        Right =271
+        Bottom =287
         Top =0
         Name ="comm_test_detail"
         Name =""

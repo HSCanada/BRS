@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.doc_id)=13282713) AND ((comm_test_detail.fsc_comm_plan_id) L"
+Where ="(((comm_test_detail.doc_id)=13799581) AND ((comm_test_detail.fsc_comm_plan_id) L"
     "ike \"fsc*\") AND ((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\"))"
 Begin InputTables
     Name ="comm_test_detail"
@@ -16,9 +16,11 @@ Begin OutputColumns
     Expression ="comm_test_detail.src"
     Expression ="comm_test_detail.hsi_shipto_id"
     Expression ="comm_test_detail.item_id"
+    Expression ="comm_test_detail.IMCLMJ"
     Expression ="comm_test_detail.fsc_comm_plan_id"
     Expression ="comm_test_detail.fsc_salesperson_key_id"
     Expression ="comm_test_detail.fsc_code"
+    Expression ="comm_test_detail.ess_code"
     Expression ="comm_test_detail.disp_fsc_comm_group_cd"
     Expression ="comm_test_detail.fsc_comm_group_cd"
     Expression ="comm_test_detail.shipped_qty"
@@ -28,18 +30,20 @@ Begin OutputColumns
     Expression ="comm_test_detail.fsc_calc_key"
     Expression ="comm_test_detail.cust_comm_group_cd"
     Expression ="comm_test_detail.item_comm_group_cd"
+    Expression ="comm_test_detail.ess_calc_key"
+    Expression ="comm_test_detail.xfer_key"
+    Expression ="comm_test_detail.xfer_fsc_code_org"
+    Expression ="comm_test_detail.xfer_ess_code_org"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[RC037-FSC-CommGroup-detail-XXX].[doc_id], [RC037-FSC-CommGroup-detail-XXX].[lin"
-    "e_id], [RC037-FSC-CommGroup-detail-XXX].[src]"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fiscal_yearmo_num"
@@ -142,17 +146,47 @@ Begin
         dbInteger "ColumnWidth" ="2430"
         dbBoolean "ColumnHidden" ="0"
     End
+    Begin
+        dbText "Name" ="comm_test_detail.xfer_fsc_code_org"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2115"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_test_detail.ess_calc_key"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_test_detail.xfer_key"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1230"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_test_detail.xfer_ess_code_org"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2160"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_test_detail.ess_code"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_test_detail.IMCLMJ"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =40
-    Right =1412
+    Right =1533
     Bottom =937
     Left =-1
     Top =-1
-    Right =1245
-    Bottom =399
+    Right =1509
+    Bottom =442
     Left =0
     Top =0
     ColumnsShown =539

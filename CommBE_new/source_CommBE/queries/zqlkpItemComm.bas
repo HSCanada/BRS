@@ -7,8 +7,12 @@ End
 Begin OutputColumns
     Expression ="zzzItem.Item"
     Expression ="BRS_Item.Item"
+    Expression ="BRS_Item.ItemDescription"
     Expression ="BRS_Item.comm_group_cd"
     Expression ="BRS_Item.comm_note_txt"
+    Expression ="BRS_Item.MajorProductClass"
+    Expression ="BRS_Item.ItemCreationDate"
+    Expression ="BRS_Item.CurrentFileCost"
 End
 Begin Joins
     LeftTable ="zzzItem"
@@ -30,6 +34,8 @@ Begin
     Begin
         dbText "Name" ="BRS_Item.comm_note_txt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4740"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Item.comm_group_cd"
@@ -43,6 +49,24 @@ Begin
         dbText "Name" ="BRS_Item.Item"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_Item.MajorProductClass"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="BRS_Item.ItemDescription"
+        dbInteger "ColumnWidth" ="2760"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="BRS_Item.ItemCreationDate"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="BRS_Item.CurrentFileCost"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
@@ -53,7 +77,7 @@ Begin
     Left =-1
     Top =-1
     Right =1509
-    Bottom =600
+    Bottom =583
     Left =0
     Top =0
     ColumnsShown =539

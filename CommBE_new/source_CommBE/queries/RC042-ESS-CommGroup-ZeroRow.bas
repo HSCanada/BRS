@@ -7,11 +7,9 @@ Where ="(((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_te
     "_id) Like \"ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\""
     ") AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.es"
     "s_comm_plan_id) Like \"ccs*\"))"
-Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01) AND ((comm"
-    "_test_detail.ess_salesperson_key_id)<>\"KCroney\")) OR (((Sum(comm_test_detail.g"
-    "p_ext_amt)) Not Between -0.01 And 0.01) AND ((comm_test_detail.ess_salesperson_k"
-    "ey_id)<>\"KCroney\")) OR (((Sum(comm_test_detail.ess_comm_amt)) Not Between -0.0"
-    "1 And 0.01) AND ((comm_test_detail.ess_salesperson_key_id)<>\"KCroney\"))"
+Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((Sum"
+    "(comm_test_detail.gp_ext_amt)) Not Between -0.01 And 0.01)) OR (((Sum(comm_test_"
+    "detail.ess_comm_amt)) Not Between -0.01 And 0.01))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -49,7 +47,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
@@ -106,15 +104,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =0
+    Top =40
+    Right =1533
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =257
+    Right =1509
+    Bottom =240
     Left =0
     Top =0
     ColumnsShown =543

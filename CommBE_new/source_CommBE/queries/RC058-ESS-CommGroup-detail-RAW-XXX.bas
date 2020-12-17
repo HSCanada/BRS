@@ -1,13 +1,13 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.doc_id)=13796657) AND ((comm_test_detail.ess_comm_plan_id) L"
-    "ike \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"ccs*\"))"
+Where ="(((comm_test_detail.doc_id)=13796657))"
 Begin InputTables
     Name ="comm_test_detail"
 End
 Begin OutputColumns
     Expression ="comm_test_detail.fiscal_yearmo_num"
     Expression ="comm_test_detail.doc_id"
+    Expression ="comm_test_detail.hsi_shipto_div_cd"
     Expression ="comm_test_detail.dock_key_id"
     Expression ="comm_test_detail.line_id"
     Expression ="comm_test_detail.src"
@@ -74,8 +74,6 @@ Begin
     Begin
         dbText "Name" ="comm_test_detail.line_id"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="645"
-        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.doc_id"
@@ -84,8 +82,6 @@ Begin
     Begin
         dbText "Name" ="comm_test_detail.dock_key_id"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1980"
-        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.ess_comm_amt"
@@ -139,6 +135,10 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="comm_test_detail.hsi_shipto_div_cd"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =2
@@ -148,8 +148,8 @@ Begin
     Bottom =945
     Left =-1
     Top =-1
-    Right =1509
-    Bottom =-1
+    Right =1535
+    Bottom =175
     Left =0
     Top =0
     ColumnsShown =539

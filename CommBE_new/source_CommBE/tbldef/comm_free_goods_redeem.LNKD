@@ -1,4 +1,0 @@
-﻿comm_free_goods_redeem
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
-comm.free_goods_redeem
-FiscalMonth;+Item;+SalesOrderNumber;+DocType

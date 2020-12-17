@@ -5,11 +5,9 @@ Where ="(((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_te
     "d)<>\"Internal\") AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\")) OR (("
     "(comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detail."
     "ess_comm_plan_id) Like \"ess*\"))"
-Having ="(((comm_test_detail.ess_salesperson_key_id)<>\"KCroney\") AND ((Sum(comm_test_de"
-    "tail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((comm_test_detail.ess_s"
-    "alesperson_key_id)<>\"KCroney\") AND ((Sum(comm_test_detail.gp_ext_amt)) Not Bet"
-    "ween -0.01 And 0.01)) OR (((comm_test_detail.ess_salesperson_key_id)<>\"KCroney\""
-    ") AND ((Sum(comm_test_detail.ess_comm_amt)) Not Between -0.01 And 0.01))"
+Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((Sum"
+    "(comm_test_detail.gp_ext_amt)) Not Between -0.01 And 0.01)) OR (((Sum(comm_test_"
+    "detail.ess_comm_amt)) Not Between -0.01 And 0.01))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -49,6 +47,9 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([RC051-ESS-Salesperson-CommGroup-ZeroNet].[ess_salesperson_key_id]=\"jheckbert "
+    "                    \")"
+dbMemo "OrderBy" ="[RC051-ESS-Salesperson-CommGroup-ZeroNet].[SumOftransaction_amt] DESC"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -102,15 +103,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =-62
+    Top =172
+    Right =1471
+    Bottom =1069
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =274
+    Right =1509
+    Bottom =172
     Left =0
     Top =0
     ColumnsShown =543

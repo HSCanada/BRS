@@ -2,13 +2,11 @@
 Option =0
 Where ="(((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detai"
     "l.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \""
-    "ccs*\") AND ((comm_test_detail.ess_salesperson_key_id)<>\"KCroney\")) OR (((comm"
-    "_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detail.ess_c"
-    "omm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"ccs*\")"
-    " AND ((comm_test_detail.ess_salesperson_key_id)<>\"KCroney\")) OR (((comm_test_d"
-    "etail.fsc_salesperson_key_id)<>\"Internal\") AND ((comm_test_detail.ess_comm_pla"
-    "n_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"ccs*\") AND (("
-    "comm_test_detail.ess_salesperson_key_id)<>\"KCroney\"))"
+    "ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\") AND ((com"
+    "m_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.ess_comm_plan"
+    "_id) Like \"ccs*\")) OR (((comm_test_detail.fsc_salesperson_key_id)<>\"Internal\""
+    ") AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_detail.es"
+    "s_comm_plan_id) Like \"ccs*\"))"
 Having ="(((Sum(comm_test_detail.transaction_amt)) Not Between -0.01 And 0.01)) OR (((Sum"
     "(comm_test_detail.gp_ext_amt)) Not Between -0.01 And 0.01)) OR (((Sum(comm_test_"
     "detail.ess_comm_amt)) Not Between -0.01 And 0.01))"
@@ -46,7 +44,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
@@ -99,15 +97,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =0
+    Top =40
+    Right =1533
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =261
+    Right =1509
+    Bottom =370
     Left =0
     Top =0
     ColumnsShown =543

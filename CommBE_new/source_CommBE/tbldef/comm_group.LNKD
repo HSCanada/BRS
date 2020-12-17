@@ -1,4 +1,4 @@
 ﻿comm_group
-ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales
+ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
 comm.group
 comm_group_cd

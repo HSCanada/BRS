@@ -30,6 +30,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2025"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.comm_plan_id"
@@ -80,12 +82,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1412
-    Bottom =817
+    Right =1533
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1388
-    Bottom =352
+    Right =1509
+    Bottom =318
     Left =0
     Top =0
     ColumnsShown =539
