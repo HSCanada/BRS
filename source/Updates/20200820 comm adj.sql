@@ -7,9 +7,6 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 	-- ORG Sales order (may have bad data)
 	[WSDOC__document_number] [int] NOT NULL
 
-	-- default to AA
-	,[WSDCTO_order_type] [char](2) NOT NULL Default('AA')
-
 	-- ORG Line No (may get extented)
 	,[WSOGNO_original_line_number] [int] NOT NULL
 
@@ -28,13 +25,9 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 	-- transaction_amt
 	,[transaction_amt] [money] NOT NULL
 
-	,[gp_ext_amt] [money] NOT NULL
+	-- add costs from Pre- process. 
+	,[WS$UNC_sales_order_cost_markup] [money] NOT NULL
 
-	--item_id
-	,[WSLITM_item_number] [char](10) NOT NULL
-
-	-- Shipto
-	,[WSSHAN_shipto] [int] NOT NULL
 
 	-- Additional Notes	
 	,[WSDSC1_description] [varchar](30) NOT NULL
@@ -42,50 +35,62 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 	-- customer_nm
 	,[WSVR02_reference_2] [varchar](25) NOT NULL
 
+	-- following may be defaulted
+
+	,[source_cd] [char](3) NOT NULL Default ('IMP')
+
+	--item_id
+	,[WSLITM_item_number] [char](10) NOT NULL Default ('')
+
+	-- Shipto
+	,[WSSHAN_shipto] [int] NOT NULL Default (0)
+
 	-- FSC
-	,[fsc_code] [char](5) NULL
-	,[fsc_comm_group_cd] [char](6) NULL
-	,[fsc_comm_amt] [money] NOT NULL
+	,[fsc_code] [char](5) NOT NULL Default ('')
+	,[fsc_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[fsc_comm_amt] [money] NOT NULL Default (0)
 
 	-- ESS / CSS
-	,[ess_code] [char](5) NULL
-	,[ess_comm_group_cd] [char](6) NULL
-	,[ess_comm_amt] [money] NOT NULL
+	,[ess_code] [char](5) NOT NULL Default ('')
+	,[ess_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[ess_comm_amt] [money] NOT NULL Default (0)
 
 	-- CPS / PMTS
-	,[cps_code] [char](5) NULL
-	,[cps_comm_group_cd] [char](6) NULL
-	,[cps_comm_amt] [money] NOT NULL
+	,[cps_code] [char](5) NOT NULL Default ('')
+	,[cps_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[cps_comm_amt] [money] NOT NULL Default (0)
 
 	-- EPS
-	,[eps_code] [char](5) NULL
-	,[eps_comm_group_cd] [char](6) NULL
-	,[eps_comm_amt] [money] NULL
+	,[eps_code] [char](5) NOT NULL Default ('')
+	,[eps_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[eps_comm_amt] [money] NOT NULL Default (0)
 
 	-- ISR
-	,[isr_code] [char](5) NULL
-	,[isr_comm_group_cd] [char](6) NULL
-	,[isr_comm_amt] [money] NULL
+	,[isr_code] [char](5) NOT NULL Default ('')
+	,[isr_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[isr_comm_amt] [money] NOT NULL Default (0)
 
 	-- EST
-	,[est_code] [char](5) NULL
-	,[est_comm_group_cd] [char](6) NULL
-	,[est_comm_amt] [money] NULL
+	,[est_code] [char](5) NOT NULL Default ('')
+	,[est_comm_group_cd] [char](6) NOT NULL Default ('')
+	,[est_comm_amt] [money] NOT NULL Default (0)
+
 
 	-- internal flags
 
-	,[source_cd] [char](3) NOT NULL
+	-- default to AA
+	,[WSDCTO_order_type] [char](2) NOT NULL Default('AA')
 
 	-- Sales order (clean)
 	,[WSDOCO_salesorder_number] [int] NULL
 
 	-- based on ORG, but may be extended due to ESS split
-	,[WSLNID_line_number] [int] NOT NULL
-	-- add costs from Pre- process. 
-	,[WS$UNC_sales_order_cost_markup] [money] NOT NULL
+	,[WSLNID_line_number] [int] NULL
+
+	,[gp_ext_amt] [money] NULL
 
 	-- add MA for GP
-	,[WSURAT_user_reserved_amount] [money] NOT NULL
+	,[WSURAT_user_reserved_amount] [money] NULL
 
 	,[ID_legacy] [int] NULL
 	,[cust_comm_group_cd] [char](6) NULL
@@ -100,142 +105,152 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 
  CONSTRAINT [comm_adjustment_Staging_c_pk] PRIMARY KEY CLUSTERED 
 (
+	[FiscalMonth] ASC,
 	[WSDOC__document_number] ASC,
 	[WSDCTO_order_type] ASC,
 	[WSOGNO_original_line_number] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
-
-SELECT
-	-- test       
---	TOP (10) 
-	fiscal_yearmo_num
-	,LEFT(salesperson_cd,5) salesperson_cd
-	,LEFT(source_cd,3) source_cd
-	,transaction_dt
-	,transaction_amt
-	,line_id
-	,doc_id as salesorder
-	,doc_id
-	,ISNULL(reference_order_txt,'') reference_order_txt
-	,LEFT(item_id,10) item_id
-	,transaction_txt
-	,salesperson_key_id
-	,comm_plan_id
-	,comm_amt
-	,item_comm_group_cd
-	,item_comm_rt
-	,ess_salesperson_key_id
-	,gp_ext_amt
-	,doc_type_cd
-	,ess_comm_plan_id
-	,ess_comm_group_cd
-	,ess_comm_rt
-	,ess_comm_amt
-	,hsi_shipto_id
-	,LEFT(ess_salesperson_cd,5) ess_salesperson_cd
-	,LEFT(pmts_salesperson_cd,5) pmts_salesperson_cd
-	,record_id
-FROM            
-	CommBE.dbo.comm_transaction
-WHERE        
-	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202006' and '202006') AND
---	load only adj? (comment out next line for all)
-	source_cd NOT in('JDE') AND
---	test
---	(doc_id = 13182717 ) AND
-	(1=1)
+--
+BEGIN TRANSACTION
 GO
-
-
-/****** Script for SelectTopNRows command from SSMS  ******/
-SELECT 
-	top 10
-		[FiscalMonth]
-      ,[WSDOCO_salesorder_number]
-      ,[WSORD__equipment_order]
-      ,[WSAC10_division_code]
-      ,[ID]
-
-      ,[WSTKBY_order_taken_by]
-      ,[WS$ESS_equipment_specialist_code]
-      ,[ess_code]
-
-  FROM [BRSales].[comm].[transaction_F555115]
-  where
-	(	
-  				(WSTKBY_order_taken_by like 'ESS%') OR
-				(WSTKBY_order_taken_by like 'CCS%') OR
-				(WSTKBY_order_taken_by like 'PMT%') OR
-				-- EQ legacy
-				(WSTKBY_order_taken_by like 'DTS%') OR
-				(WSTKBY_order_taken_by like 'DSS%') 
-	) AND
-	[WSORD__equipment_order] is null AND
---	[ess_code] <> '' AND
---  [WS$ESS_equipment_specialist_code] <> ''
-  (1=1)
-
-  UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201901
-UPDATE [CommBE].[dbo].[comm_configure] SET [current_fiscal_yearmo_num] = 201901
-
-SELECT comm.test_detail.fiscal_yearmo_num, comm.test_detail.ID_legacy, comm.test_detail.doc_id, comm.test_detail.dock_key_id, comm.test_detail.line_id, comm.test_detail.source_cd, comm.test_detail.owner_cd, comm.test_detail.src, comm.test_detail.hsi_shipto_id, comm.test_detail.item_id, comm.test_detail.fsc_comm_plan_id, comm.test_detail.fsc_salesperson_key_id, comm.test_detail.fsc_code, comm.test_detail.ess_code, comm.test_detail.disp_fsc_comm_group_cd, comm.test_detail.fsc_comm_group_cd, comm.test_detail.shipped_qty, comm.test_detail.transaction_amt, comm.test_detail.gp_ext_amt, comm.test_detail.fsc_comm_amt, comm.test_detail.fsc_calc_key, comm.test_detail.cust_comm_group_cd, comm.test_detail.item_comm_group_cd, comm.test_detail.ess_calc_key, comm.test_detail.xfer_key, comm.test_detail.xfer_fsc_code_org, comm.test_detail.xfer_ess_code_org
-FROM comm.test_detail
-WHERE 
-(comm.test_detail.doc_id=1110225) AND 
-(comm.test_detail.fsc_comm_plan_id Like 'fsc%') AND 
-(comm.test_detail.fsc_salesperson_key_id<>'Internal') AND
-(1=1)
+ALTER TABLE Integration.comm_adjustment_Staging ADD
+	status_code smallint NOT NULL CONSTRAINT DF_comm_adjustment_Staging_status_code DEFAULT -1
+GO
+ALTER TABLE Integration.comm_adjustment_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--
+-- remove unused fields
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup2
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup3
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup4
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup5
+GO
+ALTER TABLE dbo.BRS_FSC_Rollup SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_ESS_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_CCS_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_CPS_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_TSS_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_FSC_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP COLUMN ESS_code, CCS_code, CPS_code, TSS_code, FSC_code
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --
+BEGIN TRANSACTION
+GO
+ALTER TABLE [dbo].[BRS_TransactionDW_Ext] ADD
+	HIST_ess_salesperson_key_id varchar(30) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_HIST_ess_salesperson_key_id DEFAULT (''),
+	HIST_ess_comm_plan_id char(10) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_HIST_ess_comm_plan_id DEFAULT (''),
+	HIST_ess_code char(5) NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_HIST_ess_code DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_salesperson_master FOREIGN KEY
+	(
+	HIST_ess_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_plan FOREIGN KEY
+	(
+	HIST_ess_comm_plan_id
+	) REFERENCES comm.[plan]
+	(
+	comm_plan_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_BRS_FSC_Rollup FOREIGN KEY
+	(
+	HIST_ess_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- ESS history populate, TBD add logic to ME snapshot proc
+
+UPDATE [dbo].[BRS_TransactionDW_Ext]
+SET 
+      [HIST_ess_salesperson_key_id] = s.ess_key
+      ,[HIST_ess_comm_plan_id] = s.ess_plan
+      ,[HIST_ess_code] = s.ess_code
+FROM
+	(SELECT
+--	 TOP (10) 
+	WSDOCO_salesorder_number, WSDCTO_order_type, MIN(ess_code) ess_code, MIN(ess_salesperson_key_id) ess_key,  MIN(ess_comm_plan_id) ess_plan
+	FROM            comm.transaction_F555115
+	WHERE        
+	(WSDCTO_order_type <> 'AA') AND (ess_code <> '')
+	GROUP BY WSDOCO_salesorder_number, WSDCTO_order_type
+	) s
+	
+WHERE 
+	s.WSDOCO_salesorder_number = [BRS_TransactionDW_Ext].SalesOrderNumber AND
+	s.ess_code <> [BRS_TransactionDW_Ext].[HIST_ess_code]
+
+GO
+
+/*
 SELECT
 -- TOP (10) 
-s.Shipto, 
-s.FiscalMonth, 
-
-d.HIST_TerritoryCd, 
-s.HIST_TerritoryCd, 
-
-d.HIST_fsc_salesperson_key_id, 
-s.HIST_fsc_salesperson_key_id, 
-
-d.HIST_fsc_comm_plan_id,
-s.HIST_fsc_comm_plan_id
-
-FROM
-	DEV_BRSales.dbo.BRS_CustomerFSC_History AS s 
-	INNER JOIN BRS_CustomerFSC_History AS d 
-	ON s.Shipto = d.Shipto AND 
-	s.FiscalMonth = d.FiscalMonth
-where 
-	d.Shipto > 0 AND
-	d.FiscalMonth >= 201901 AND
---	(d.HIST_TerritoryCd <> s.HIST_TerritoryCd) AND
-	(
-	(d.HIST_fsc_salesperson_key_id <> s.HIST_fsc_salesperson_key_id) OR
-	(d.HIST_fsc_comm_plan_id <> s.HIST_fsc_comm_plan_id) 
-	) 
+WSDOCO_salesorder_number, WSDCTO_order_type, MIN(ess_code), MIN(ess_salesperson_key_id), MIN(ess_comm_plan_id)
+FROM            comm.transaction_F555115
+WHERE        
+(WSDCTO_order_type <> 'AA') AND (ess_code <> '')
+GROUP BY WSDOCO_salesorder_number, WSDCTO_order_type
+*/
 
 
--- 919 109
 
-UPDATE       d
-SET
-HIST_fsc_salesperson_key_id = s.HIST_fsc_salesperson_key_id, 
-HIST_fsc_comm_plan_id = s.HIST_fsc_comm_plan_id
-FROM
-DEV_BRSales.dbo.BRS_CustomerFSC_History AS s 
-INNER JOIN BRS_CustomerFSC_History AS d 
-ON s.Shipto = d.Shipto AND 
-s.FiscalMonth = d.FiscalMonth
-WHERE
-(d.Shipto > 0) AND 
-(d.FiscalMonth >= 201901) AND 
-(d.HIST_fsc_salesperson_key_id <> s.HIST_fsc_salesperson_key_id) 
-OR
-(d.Shipto > 0) AND 
-(d.FiscalMonth >= 201901) AND 
-(d.HIST_fsc_comm_plan_id <> s.HIST_fsc_comm_plan_id)
