@@ -15,13 +15,15 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbMemo "OrderBy" ="[CCB45_TerritoryReview].[Branch] DESC"
 dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "Filter" ="([CCA43_TerritoryReview].[Branch]=\"CORP \")"
+dbMemo "OrderBy" ="[CCA43_TerritoryReview].[Branch], [CCA43_TerritoryReview].[comm_salesperson_key_"
+    "id], [CCA43_TerritoryReview].[order_taken_by]"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -52,14 +54,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1533
-    Bottom =937
+    Left =-282
+    Top =4
+    Right =1251
+    Bottom =901
     Left =-1
     Top =-1
     Right =1509
-    Bottom =357
+    Bottom =306
     Left =0
     Top =0
     ColumnsShown =539

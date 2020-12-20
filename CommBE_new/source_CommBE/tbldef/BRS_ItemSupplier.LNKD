@@ -1,4 +1,4 @@
-﻿Integration_comm_customer_rebate_Staging
+﻿BRS_ItemSupplier
 ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
-Integration.comm_customer_rebate_Staging
-ShipTo;+FiscalMonth
+dbo.BRS_ItemSupplier
+Supplier

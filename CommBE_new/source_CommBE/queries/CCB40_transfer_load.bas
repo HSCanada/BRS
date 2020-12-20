@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transfer_rule.FiscalMonth)>=201901))"
+Where ="(((comm_transfer_rule.FiscalMonth)=(select [PriorFiscalMonth] from [BRS_Config])"
+    "))"
 Begin InputTables
     Name ="comm_transfer_rule"
 End
@@ -22,15 +23,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbText "Description" ="Update Fiscal period"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA40_transfer_set].[xfer_key] DESC, [CCA40_transfer_set].[FiscalMonth]"
-dbMemo "Filter" ="([CCA40_transfer_set].[xfer_type]=\"T\")"
 Begin
     Begin
         dbText "Name" ="comm_transfer_rule.comment"
@@ -90,15 +89,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1557
-    Bottom =943
+    State =0
+    Left =44
+    Top =93
+    Right =1167
+    Bottom =770
     Left =-1
     Top =-1
-    Right =1421
-    Bottom =118
+    Right =1099
+    Bottom =84
     Left =0
     Top =0
     ColumnsShown =539

@@ -30,7 +30,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =378
+    Bottom =361
     Left =0
     Top =0
     ColumnsShown =539

@@ -5,15 +5,17 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="Integration_comm_freegoods_Staging.FiscalMonth"
-    Expression ="Integration_comm_freegoods_Staging.Supplier"
+    Expression ="Integration_comm_freegoods_Staging.SalesOrderNumber"
+    Expression ="Integration_comm_freegoods_Staging.original_line_number"
     Expression ="Integration_comm_freegoods_Staging.ShipTo"
     Expression ="Integration_comm_freegoods_Staging.PracticeName"
-    Expression ="Integration_comm_freegoods_Staging.SalesOrderNumber"
     Expression ="Integration_comm_freegoods_Staging.Item"
     Expression ="Integration_comm_freegoods_Staging.ItemDescription"
-    Expression ="Integration_comm_freegoods_Staging.ExtFileCostAmt"
+    Expression ="Integration_comm_freegoods_Staging.Supplier"
+    Expression ="Integration_comm_freegoods_Staging.ExtFileCostCadAmt"
     Expression ="Integration_comm_freegoods_Staging.SourceCode"
     Expression ="Integration_comm_freegoods_Staging.ID"
+    Expression ="Integration_comm_freegoods_Staging.DocType"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -60,11 +62,19 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.ExtFileCostAmt"
+        dbText "Name" ="Integration_comm_freegoods_Staging.SourceCode"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.SourceCode"
+        dbText "Name" ="Integration_comm_freegoods_Staging.ExtFileCostCadAmt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.original_line_number"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.DocType"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -72,12 +82,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1412
-    Bottom =817
+    Right =1167
+    Bottom =787
     Left =-1
     Top =-1
-    Right =1388
-    Bottom =191
+    Right =1143
+    Bottom =157
     Left =0
     Top =0
     ColumnsShown =539

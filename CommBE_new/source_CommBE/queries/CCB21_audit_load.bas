@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115_audit.FiscalMonth)=202011) AND ((comm_transaction_F5"
-    "55115_audit.source_cd)=\"JDE\") AND ((comm_transaction_F555115_audit.AdjOwner)='"
-    "380'))"
+Where ="(((comm_transaction_F555115_audit.FiscalMonth)=(select [PriorFiscalMonth] from ["
+    "BRS_Config])) AND ((comm_transaction_F555115_audit.source_cd)=\"JDE\") AND ((com"
+    "m_transaction_F555115_audit.AdjOwner)='380'))"
 Begin InputTables
     Name ="comm_transaction_F555115_audit"
     Name ="BRS_SalesDivision"
@@ -60,14 +60,14 @@ Begin
 End
 Begin
     State =0
-    Left =-522
-    Top =53
-    Right =1011
-    Bottom =950
+    Left =-126
+    Top =54
+    Right =1407
+    Bottom =951
     Left =-1
     Top =-1
     Right =1509
-    Bottom =318
+    Bottom =301
     Left =0
     Top =0
     ColumnsShown =539

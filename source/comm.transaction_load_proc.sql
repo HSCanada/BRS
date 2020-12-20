@@ -687,6 +687,36 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '15. add dup salesorder with generic doctype AA for simplified adjustment RI'
+
+		INSERT INTO 
+			[dbo].[BRS_TransactionDW_Ext] 
+			(
+				[SalesOrderNumber], 
+				DocType
+			)
+		SELECT DISTINCT 
+			s.SalesOrderNumber, 
+			'AA' DocType
+		FROM
+			[dbo].[BRS_TransactionDW_Ext]  s 
+		WHERE
+			NOT EXISTS 
+			(
+				SELECT * 
+				FROM [dbo].[BRS_TransactionDW_Ext]  d
+				WHERE d.SalesOrderNumber = s.[SalesOrderNumber] AND 
+				d.DocType = 'AA'
+			) 
+
+		Set @nErrorCode = @@Error
+	End
+
+
 ------------------------------------------------------------------------------------------------------
 -- DATA - Load Success Cleanup - clear stage to avoid double loading
 ------------------------------------------------------------------------------------------------------
@@ -764,6 +794,6 @@ GO
 -- Prod
 -- EXEC comm.transaction_load_proc @bDebug=0
 
--- Debug, 4m
+-- Debug, 6m
 -- EXEC comm.transaction_load_proc @bDebug=1
 

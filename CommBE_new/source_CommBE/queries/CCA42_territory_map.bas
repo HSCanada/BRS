@@ -1,9 +1,12 @@
 ﻿Operation =1
 Option =0
 Where ="(((BRS_FSC_Rollup.group_type)=\"AAFS\") AND ((BRS_FSC_Rollup.comm_salesperson_ke"
-    "y_id) Is Null)) OR (((BRS_FSC_Rollup.TerritoryCd) Like \"ESS*\") AND ((BRS_FSC_R"
-    "ollup.comm_salesperson_key_id) Is Null)) OR (((BRS_FSC_Rollup.TerritoryCd) Like "
-    "\"CCS*\") AND ((BRS_FSC_Rollup.comm_salesperson_key_id) Is Null))"
+    "y_id) Is Null Or (BRS_FSC_Rollup.comm_salesperson_key_id)=\"\")) OR (((BRS_FSC_R"
+    "ollup.TerritoryCd) Like \"ESS*\") AND ((BRS_FSC_Rollup.comm_salesperson_key_id) "
+    "Is Null Or (BRS_FSC_Rollup.comm_salesperson_key_id)=\"\")) OR (((BRS_FSC_Rollup."
+    "TerritoryCd) Like \"CCS*\") AND ((BRS_FSC_Rollup.comm_salesperson_key_id) Is Nul"
+    "l Or (BRS_FSC_Rollup.comm_salesperson_key_id)=\"\")) OR (((BRS_FSC_Rollup.Territ"
+    "oryCd)<>\"\") AND ((BRS_FSC_Rollup.group_type)=\"\"))"
 Begin InputTables
     Name ="BRS_FSC_Rollup"
 End
@@ -64,14 +67,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =937
+    Left =-136
+    Top =157
+    Right =1276
+    Bottom =1054
     Left =-1
     Top =-1
-    Right =1063
-    Bottom =300
+    Right =1388
+    Bottom =340
     Left =0
     Top =0
     ColumnsShown =539

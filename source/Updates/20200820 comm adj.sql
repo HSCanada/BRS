@@ -1,6 +1,13 @@
 --finalize adjustment 
 -- Add TS and EST, tmc, 16 Dec 20
 
+-- test
+
+-- DELETE FROM [DEV_BRSales].[comm].[transaction_F555115] where fiscalMonth = 202011
+-- DELETE FROM [DEV_BRSales].[dbo].[BRS_ItemHistory] where [FiscalMonth]= 202011
+-- drop rel pre and add post
+-- DELETE FROM [DEV_BRSales].[dbo].[BRS_CustomerFSC_History] where [FiscalMonth]= 202011 and shipto = 1520908
+
 --drop TABLE [Integration].[comm_adjustment_Staging]
 CREATE TABLE [Integration].[comm_adjustment_Staging](
 
@@ -121,6 +128,169 @@ GO
 ALTER TABLE Integration.comm_adjustment_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+--
+
+-- drop TABLE [Integration].[comm_customer_rebate_Staging]
+CREATE TABLE [Integration].[comm_customer_rebate_Staging](
+	[FiscalMonth] [char](6) NOT NULL,
+	[ShipTo] [int] NOT NULL,
+	[fsc_code] [char](5) NOT NULL,
+	[rebate_amt] [money] NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL DEFAULT (''),
+	[salesperson_key_id] [char](3) NULL
+ 
+ CONSTRAINT [comm_customer_rebate_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[ShipTo] ASC,
+	[FiscalMonth] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+--
+-- drop TABLE [Integration].[comm_freegoods_Staging]
+CREATE TABLE [Integration].[comm_freegoods_Staging](
+	[FiscalMonth] [int] NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[original_line_number] [int] NOT NULL,
+	[SourceCode] [char](3) NOT NULL,
+
+	[ShipTo] [int] NOT NULL,
+	[PracticeName] [varchar](40) NULL,
+	[Item] [char](10) NOT NULL,
+	[ItemDescription] [varchar](40) NULL,
+	[Supplier] [char](6) NOT NULL,
+	[ExtFileCostCadAmt] [money] NOT NULL,
+
+	ID [integer] NOT NULL Identity(1,1),
+	[DocType] [char](2) NOT NULL Default('AA'),
+	[cust_comm_group_cd] [char](6) NULL,
+	[item_comm_group_cd] [char](6) NULL,
+
+	[fsc_salesperson_key_id] [varchar](30) NULL,
+	[ess_salesperson_key_id] [varchar](30) NULL,
+	[eps_salesperson_key_id] [varchar](30) NULL,
+	[isr_salesperson_key_id] [varchar](30) NULL,
+
+	[fsc_comm_group_cd] [char](6) NOT NULL Default(''),
+	[ess_comm_group_cd] [char](6) NOT NULL Default(''),
+	[eps_comm_group_cd] [char](6) NOT NULL Default(''),
+	[isr_comm_group_cd] [char](6) NOT NULL Default(''),
+
+	[status_code] [smallint] NOT NULL Default(-1)
+
+ CONSTRAINT [comm_freegoods_stage_pk] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumber] ASC,
+	[DocType] ASC,
+	[original_line_number] ASC,
+	[FiscalMonth] ASC,
+	[SourceCode] ASC
+
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX comm_freegoods_Staging_u_idx_01 ON Integration.comm_freegoods_Staging
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+--
+-- MA default support
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemSalesCategory ADD
+	ma_estimate_factor float(53) NOT NULL CONSTRAINT DF_BRS_ItemSalesCategory_ma_estimate_factor DEFAULT 1.0
+GO
+ALTER TABLE dbo.BRS_ItemSalesCategory SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+UPDATE [dbo].[BRS_ItemSalesCategory]
+   SET [ma_estimate_factor] = 1.085
+ WHERE [SalesCategory] in('MERCH', 'VALADD', 'PARTS', 'TEETH', 'SMEQU', 'CAMLOG')
+GO
+
+UPDATE [dbo].[BRS_ItemSalesCategory]
+   SET [ma_estimate_factor] = 1.03
+ WHERE [SalesCategory] in('EQUIPM', 'HITECH', 'DENTRX', 'ITS', 'CEHP', 'OTHER')
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.[group] ADD
+	SalesCategory varchar(6) NOT NULL CONSTRAINT DF_group_SalesCategory DEFAULT ''
+GO
+ALTER TABLE comm.[group] ADD CONSTRAINT
+	FK_group_BRS_ItemSalesCategory FOREIGN KEY
+	(
+	SalesCategory
+	) REFERENCES dbo.BRS_ItemSalesCategory
+	(
+	SalesCategory
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.[group] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- map comm group to sales category for default market Adjustment access
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'CAMLOG'
+ WHERE [comm_group_cd] in('ITMCAM')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'DENTRX'
+ WHERE [comm_group_cd] in('ITMSOF')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'EQUIPM'
+ WHERE [comm_group_cd] in('ITMFO1', 'ITMFO2', 'ITMFO3', 'ITMFRT', 'ITMISC', 'FRESEQ', 'SPMFGE', 'SPMFO1', 'SPMFO2', 'SPMFO3')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'HITECH'
+ WHERE [comm_group_cd] in('DIGCCS', 'DIGCIM', 'DIGIMP', 'DIGLAB', 'ITMCPU', 'ITS', 'DIGCCC', 'DIGOTH')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'MERCH'
+ WHERE [comm_group_cd] in('DIGMAT', 'ITMEPS', 'ITMSND', 'SPMSND', 'FRESND', 'SPMFGS', 'SPMREB', 'REBSND')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'PARTS'
+ WHERE [comm_group_cd] in('ITMPAR')
+GO
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'SERVIC'
+ WHERE [comm_group_cd] in('ITMSER')
+GO
+
+
+UPDATE [comm].[group]
+   SET [SalesCategory] = 'TEETH'
+ WHERE [comm_group_cd] in('ITMTEE', 'REBTEE')
+GO
+
 --
 -- remove unused fields
 BEGIN TRANSACTION

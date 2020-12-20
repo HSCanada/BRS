@@ -337,6 +337,34 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '8. add dup salesorder with generic doctype AA for simplified adjustment RI'
+
+	INSERT INTO 
+		[dbo].[BRS_TransactionDW_Ext] 
+		(
+			[SalesOrderNumber], 
+			DocType
+		)
+	SELECT DISTINCT 
+		s.SalesOrderNumber, 
+		'AA' DocType
+	FROM
+		[dbo].[BRS_TransactionDW_Ext]  s 
+	WHERE
+		NOT EXISTS 
+		(
+			SELECT * 
+			FROM [dbo].[BRS_TransactionDW_Ext]  d
+			WHERE d.SalesOrderNumber = s.[SalesOrderNumber] AND 
+			d.DocType = 'AA'
+		) 
+
+	Set @nErrorCode = @@Error
+End
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------

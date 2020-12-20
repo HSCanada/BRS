@@ -63,6 +63,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.fsc_comm_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1815"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.WSOGNO_original_line_number"
@@ -71,6 +73,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.WSDCTO_order_type"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2370"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Owner"
@@ -115,18 +119,20 @@ Begin
     Begin
         dbText "Name" ="File_TAG_COST_ADJ"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2280"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1407
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1549
+    Bottom =555
     Left =-1
     Top =-1
     Right =1383
-    Bottom =273
+    Bottom =256
     Left =0
     Top =0
     ColumnsShown =539
