@@ -1088,6 +1088,34 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '25. ESS history populate'
+
+
+		UPDATE [dbo].[BRS_TransactionDW_Ext]
+		SET 
+			  [HIST_ess_salesperson_key_id] = s.ess_key
+			  ,[HIST_ess_comm_plan_id] = s.ess_plan
+			  ,[HIST_ess_code] = s.ess_code
+		FROM
+			(SELECT
+		--	 TOP (10) 
+			WSDOCO_salesorder_number, WSDCTO_order_type, MIN(ess_code) ess_code, MIN(ess_salesperson_key_id) ess_key,  MIN(ess_comm_plan_id) ess_plan
+			FROM            comm.transaction_F555115
+			WHERE        
+			(WSDCTO_order_type <> 'AA') AND (ess_code <> '')
+			GROUP BY WSDOCO_salesorder_number, WSDCTO_order_type
+			) s
+	
+		WHERE 
+			s.WSDOCO_salesorder_number = [BRS_TransactionDW_Ext].SalesOrderNumber AND
+			s.ess_code <> [BRS_TransactionDW_Ext].[HIST_ess_code]
+
+		Set @nErrorCode = @@Error
+	End
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------

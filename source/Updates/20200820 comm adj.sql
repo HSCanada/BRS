@@ -389,8 +389,8 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- ESS history populate, TBD add logic to ME snapshot proc
-
+/*
+-- ESS history populate, moved to calc
 UPDATE [dbo].[BRS_TransactionDW_Ext]
 SET 
       [HIST_ess_salesperson_key_id] = s.ess_key
@@ -409,10 +409,9 @@ FROM
 WHERE 
 	s.WSDOCO_salesorder_number = [BRS_TransactionDW_Ext].SalesOrderNumber AND
 	s.ess_code <> [BRS_TransactionDW_Ext].[HIST_ess_code]
-
 GO
 
-/*
+
 SELECT
 -- TOP (10) 
 WSDOCO_salesorder_number, WSDCTO_order_type, MIN(ess_code), MIN(ess_salesperson_key_id), MIN(ess_comm_plan_id)
