@@ -84,6 +84,9 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 
 
 	-- internal flags
+	,ID [integer] NOT NULL Identity(1,1)
+	,[comm_note_txt] [varchar](50) NOT NULL DEFAULT ('')
+	,[ma_estimate_factor] [float] NOT NULL DEFAULT(1)
 
 	-- default to AA
 	,[WSDCTO_order_type] [char](2) NOT NULL Default('AA')
@@ -133,20 +136,95 @@ COMMIT
 
 -- drop TABLE [Integration].[comm_customer_rebate_Staging]
 CREATE TABLE [Integration].[comm_customer_rebate_Staging](
-	[FiscalMonth] [char](6) NOT NULL,
+	[FiscalMonth] [int] NOT NULL,
 	[ShipTo] [int] NOT NULL,
-	[fsc_code] [char](5) NOT NULL,
+	[original_line_number] [int] NOT NULL,
+	[SourceCode] [char](3) NOT NULL DEFAULT ('EST'),
+
+	[PracticeName] [varchar](40) NOT NULL DEFAULT (''),
 	[rebate_amt] [money] NOT NULL,
+
+	ID [integer] NOT NULL Identity(1,1),
 	[comm_note_txt] [varchar](50) NOT NULL DEFAULT (''),
-	[salesperson_key_id] [char](3) NULL
+
+	[fsc_salesperson_key_id] [varchar](30) NULL,
+	[fsc_comm_group_cd] [char](6) NOT NULL Default(''),
+	[fsc_code] [char](5) NOT NULL Default(''),
+
+	[isr_salesperson_key_id] [varchar](30) NULL,
+	[isr_comm_group_cd] [char](6) NOT NULL Default(''),
+	[isr_code] [char](5) NOT NULL Default(''),
+
+	[status_code] [smallint] NOT NULL Default(-1)
  
  CONSTRAINT [comm_customer_rebate_c_pk] PRIMARY KEY CLUSTERED 
 (
 	[ShipTo] ASC,
-	[FiscalMonth] ASC
+	[FiscalMonth] ASC,
+	[original_line_number] ASC,
+	[SourceCode] ASC
+
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.comm_customer_rebate_Staging ADD
+	teeth_share_rt [real] NOT NULL CONSTRAINT [DF_comm_customer_rebate_Staging_teeth_share_rt
+teeth_share_rt] DEFAULT (0)
+GO
+COMMIT
+
+
+--drop TABLE [comm].[customer_rebate]
+CREATE TABLE [comm].[customer_rebate](
+	[FiscalMonth] [int] NOT NULL,
+	[ShipTo] [int] NOT NULL,
+	[original_line_number] [int] NOT NULL,
+	[SourceCode] [char](3) NOT NULL,
+
+	[PracticeName] [varchar](40) NOT NULL DEFAULT(''),
+	[rebate_amt] [money] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL DEFAULT(''),
+	[fsc_salesperson_key_id] [varchar](30) DEFAULT(''),
+	[fsc_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[fsc_code] [char](5) NOT NULL DEFAULT(''),
+	[isr_salesperson_key_id] [varchar](30) NOT NULL DEFAULT(''),
+	[isr_comm_group_cd] [char](6) DEFAULT(''),
+	[isr_code] [char](5) DEFAULT(''),
+	[status_code] [smallint] NOT NULL DEFAULT(-1),
+ CONSTRAINT [comm_customer_rebate_prod_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[ShipTo] ASC,
+	[FiscalMonth] ASC,
+	[original_line_number] ASC,
+	[SourceCode] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX comm_customer_rebate_u_idx_01 ON comm.customer_rebate
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.customer_rebate SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.customer_rebate ADD
+	teeth_share_rt real NOT NULL CONSTRAINT DF_customer_rebate_teeth_share_rt DEFAULT (0.0)
+GO
+ALTER TABLE comm.customer_rebate SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --
 -- drop TABLE [Integration].[comm_freegoods_Staging]
@@ -164,6 +242,9 @@ CREATE TABLE [Integration].[comm_freegoods_Staging](
 	[ExtFileCostCadAmt] [money] NOT NULL,
 
 	ID [integer] NOT NULL Identity(1,1),
+	[comm_note_txt] [varchar](50) NOT NULL DEFAULT (''),
+	[ma_estimate_factor] [float] NOT NULL DEFAULT(1),
+
 	[DocType] [char](2) NOT NULL Default('AA'),
 	[cust_comm_group_cd] [char](6) NULL,
 	[item_comm_group_cd] [char](6) NULL,
@@ -204,6 +285,55 @@ GO
 COMMIT
 
 --
+-- drop TABLE [comm].[freegoods]
+CREATE TABLE [comm].[freegoods](
+	[FiscalMonth] [int] NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[original_line_number] [int] NOT NULL,
+	[SourceCode] [char](3) NOT NULL,
+
+	[ShipTo] [int] NOT NULL,
+	[PracticeName] [varchar](40) NOT NULL DEFAULT(''),
+	[Item] [char](10) NOT NULL,
+	[ItemDescription] [varchar](40) NOT NULL DEFAULT(''),
+	[Supplier] [char](6) NOT NULL DEFAULT(''),
+	[ExtFileCostCadAmt] [money] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[comm_note_txt] [varchar](50) NOT NULL DEFAULT(''),
+	[ma_estimate_factor] [float] NOT NULL DEFAULT(1),
+	[DocType] [char](2) NOT NULL DEFAULT('AA'),
+	[cust_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[item_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[fsc_salesperson_key_id] [varchar](30) NOT NULL DEFAULT(''),
+	[ess_salesperson_key_id] [varchar](30) NOT NULL DEFAULT(''),
+	[eps_salesperson_key_id] [varchar](30) NOT NULL DEFAULT(''),
+	[isr_salesperson_key_id] [varchar](30) NOT NULL DEFAULT(''),
+	[fsc_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[ess_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[eps_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[isr_comm_group_cd] [char](6) NOT NULL DEFAULT(''),
+	[status_code] [smallint] NOT NULL DEFAULT(-1),
+ CONSTRAINT [comm_freegoods_stage_pk] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumber] ASC,
+	[DocType] ASC,
+	[original_line_number] ASC,
+	[FiscalMonth] ASC,
+	[SourceCode] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX comm_freegoods_u_idx_01 ON comm.freegoods
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --
 -- MA default support
@@ -389,6 +519,291 @@ ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_BRS_TransactionDW_Ext FOREIGN KEY
+	(
+	SalesOrderNumber,
+	DocType
+	) REFERENCES dbo.BRS_TransactionDW_Ext
+	(
+	SalesOrderNumber,
+	DocType
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_BRS_CustomerFSC_History FOREIGN KEY
+	(
+	FiscalMonth,
+	ShipTo
+	) REFERENCES dbo.BRS_CustomerFSC_History
+	(
+	FiscalMonth,
+	Shipto
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_BRS_ItemHistory FOREIGN KEY
+	(
+	FiscalMonth,
+	Item
+	) REFERENCES dbo.BRS_ItemHistory
+	(
+	FiscalMonth,
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_BRS_ItemSupplier FOREIGN KEY
+	(
+	Supplier
+	) REFERENCES dbo.BRS_ItemSupplier
+	(
+	Supplier
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group FOREIGN KEY
+	(
+	cust_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group1 FOREIGN KEY
+	(
+	item_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group2 FOREIGN KEY
+	(
+	fsc_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group3 FOREIGN KEY
+	(
+	ess_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group4 FOREIGN KEY
+	(
+	eps_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_group5 FOREIGN KEY
+	(
+	isr_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_salesperson_master FOREIGN KEY
+	(
+	fsc_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_salesperson_master1 FOREIGN KEY
+	(
+	ess_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_salesperson_master2 FOREIGN KEY
+	(
+	eps_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods ADD CONSTRAINT
+	FK_freegoods_salesperson_master3 FOREIGN KEY
+	(
+	isr_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_BRS_FiscalMonth FOREIGN KEY
+	(
+	FiscalMonth
+	) REFERENCES dbo.BRS_FiscalMonth
+	(
+	FiscalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_BRS_CustomerFSC_History FOREIGN KEY
+	(
+	FiscalMonth,
+	ShipTo
+	) REFERENCES dbo.BRS_CustomerFSC_History
+	(
+	FiscalMonth,
+	Shipto
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_salesperson_master FOREIGN KEY
+	(
+	fsc_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_salesperson_master1 FOREIGN KEY
+	(
+	isr_salesperson_key_id
+	) REFERENCES comm.salesperson_master
+	(
+	salesperson_key_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_BRS_FSC_Rollup FOREIGN KEY
+	(
+	fsc_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_BRS_FSC_Rollup1 FOREIGN KEY
+	(
+	isr_code
+	) REFERENCES dbo.BRS_FSC_Rollup
+	(
+	TerritoryCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_group FOREIGN KEY
+	(
+	fsc_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate ADD CONSTRAINT
+	FK_customer_rebate_group1 FOREIGN KEY
+	(
+	isr_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.customer_rebate SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+
 /*
 -- ESS history populate, moved to calc
 UPDATE [dbo].[BRS_TransactionDW_Ext]
@@ -421,5 +836,86 @@ WHERE
 GROUP BY WSDOCO_salesorder_number, WSDCTO_order_type
 */
 
+insert into [dbo].[BRS_CustomerFSC_History]
+(
+[FiscalMonth],
+[Shipto]
+
+)
+SELECT distinct [FiscalMonth]
+      ,[ShipTo]
+  FROM [comm].[free_goods_redeem]
+  
+  where not exists( select * from [dbo].[BRS_CustomerFSC_History] s where [comm].[free_goods_redeem].FiscalMonth = s.FiscalMonth and [comm].[free_goods_redeem].Shipto = s.Shipto)
+  order by 1
+GO
+
+insert into [dbo].[BRS_ItemHistory]
+(
+[FiscalMonth],
+[Item],
+[Supplier]
+
+)
+SELECT distinct [FiscalMonth]
+      ,[Item]
+	  ,''
+  FROM [comm].[free_goods_redeem]
+  
+  where not exists( select * from [dbo].[BRS_ItemHistory] s where [comm].[free_goods_redeem].FiscalMonth = s.FiscalMonth and [comm].[free_goods_redeem].Item = s.item)
+  order by 1
+GO
+
+-- truncate table [comm].[freegoods]
+INSERT INTO [comm].[freegoods]
+(
+[FiscalMonth]
+,[Item]
+,[SalesOrderNumber]
+,[ShipTo]
+,[Supplier]
+,[ExtFileCostCadAmt]
+,[original_line_number]
+,[DocType]
+,[SourceCode]
+)
+SELECT        FiscalMonth, Item, SalesOrderNumber, ShipTo, Supplier, ExtFileCostCadAmt, ID, 'AA' AS DocType, 'ACT' as src
+FROM            comm.free_goods_redeem
+GO
+
+drop table [comm].[free_goods_redeem]
+
+update 
+[dbo].[comm_customer_rebate_YTD]
+set  [fiscalmonth] = [fiscal_yearmo_num]
+
+update 
+[dbo].[comm_customer_rebate_YTD]
+set  [hsi_shipto_id] = [cust_account]
+
+update 
+[dbo].[comm_customer_rebate_YTD]
+set  [hsi_shipto_id] = 1658123
+where [hsi_shipto_id] = 1658122
+
+update 
+[dbo].[comm_customer_rebate_YTD]
+set  [hsi_shipto_id] = 1678207
+where [hsi_shipto_id] = 1678206
 
 
+insert into [dbo].[BRS_CustomerFSC_History]
+(
+[FiscalMonth],
+[Shipto]
+
+)
+SELECT distinct [fiscalmonth]
+      ,[hsi_shipto_id]
+  FROM [dbo].[comm_customer_rebate_YTD]
+  
+  where 
+  [fiscalmonth] >= 201301 AND
+  not exists( select * from [dbo].[BRS_CustomerFSC_History] s where [dbo].[comm_customer_rebate_YTD].[fiscalmonth] = s.FiscalMonth and [dbo].[comm_customer_rebate_YTD].[hsi_shipto_id] = s.Shipto)
+  order by 1
+GO

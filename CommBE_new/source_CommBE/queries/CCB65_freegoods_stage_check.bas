@@ -109,22 +109,6 @@ Begin
         dbText "Name" ="BRS_ItemSupplier.Supplier"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.DocType"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.ExtFileCostCadAmt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.original_line_number"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_comm_freegoods_Staging.PracticeName"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0

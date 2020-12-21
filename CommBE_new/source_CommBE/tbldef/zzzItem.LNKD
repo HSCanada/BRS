@@ -1,4 +1,4 @@
-﻿comm_rebate_by_shipto_F55479C
+﻿zzzItem
 ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
-comm.rebate_by_shipto_F55479C
-FiscalMonth;+QMSHAN_shipto
+dbo.zzzItem
+Item

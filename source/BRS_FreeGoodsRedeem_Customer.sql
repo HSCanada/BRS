@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	14 Dec 16	tmc		Add Historical FSC associated Branch 
+--	20 Dec 20	tmc		refactor using [comm].[customer_rebate]
 **    
 *******************************************************************************/
 
@@ -45,7 +46,7 @@ SELECT
 
 FROM         
 
-	comm.free_goods_redeem AS f 
+	[comm].[freegoods] AS f 
 	INNER JOIN BRS_Item AS i 
 	ON f.Item = i.Item 
 
@@ -60,7 +61,9 @@ WHERE
 	(f.FiscalMonth =
           (SELECT     PriorFiscalMonth
             FROM          BRS_Config)
-	)
+	) AND
+	([SourceCode] = 'ACT') AND
+	(1=1)
 GROUP BY 
 	f.FiscalMonth, 
 	f.ShipTo, 

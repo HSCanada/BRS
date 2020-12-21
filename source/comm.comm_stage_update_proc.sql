@@ -365,6 +365,14 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+
+/*
+-- TDO update 
+[Integration].[comm_customer_rebate_Staging]
+[Integration].[comm_freegoods_Staging]
+[Integration].[comm_adjustment_Staging]
+*/
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
