@@ -212,7 +212,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '3. FSC, CPS, EPS, ISR update plan & terr - JDE'
+			print '3. FSC, CPS, EPS, ISR, EST update plan & terr - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -236,6 +236,10 @@ Begin
 			,isr_salesperson_key_id = s.HIST_isr_salesperson_key_id
 			,isr_comm_plan_id = s.HIST_isr_comm_plan_id
 
+			,est_code = s.HIST_est_code
+			,est_salesperson_key_id = s.HIST_est_salesperson_key_id
+			,est_comm_plan_id = s.HIST_est_comm_plan_id
+
 			-- plan and Key set downstream in ESS calc section
 			-- ESS code reset, saved on load proc
 			,ess_code = [WS$ESS_equipment_specialist_code]
@@ -248,6 +252,7 @@ Begin
 			,[cps_calc_key]=NULL
 			,[eps_calc_key]=NULL
 			,[isr_calc_key]=NULL
+			,[est_calc_key]=NULL
 
 		FROM
 			[dbo].[BRS_CustomerFSC_History] AS s 
@@ -1115,6 +1120,123 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+
+--
+------------------------------------------------------------------------------------------------------
+-- New & Legacy - EST
+------------------------------------------------------------------------------------------------------
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '26. EST update item commgroup - JDE'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			est_comm_group_cd = s.HIST_comm_group_est_cd
+		FROM
+			[dbo].[BRS_ItemHistory] AS s
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (d.WSLITM_item_number = s.Item) AND
+			(d.FiscalMonth = s.FiscalMonth) AND
+			(d.source_cd = 'JDE') AND
+			(d.est_comm_plan_id <> '') AND
+			(s.HIST_comm_group_est_cd <> '') AND
+			(1 = 1)
+		WHERE   
+			(s.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '26. EST update comm - non-booking -new'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[est_comm_rt] = r.comm_rt,
+			[est_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[est_calc_key] = r.calc_key
+
+--		select * 
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.est_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.est_comm_plan_id = r.comm_plan_id AND
+				t.est_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.est_comm_plan_id <> '') AND
+			(t.est_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+			(g.booking_rt = 0) AND
+			(r.active_ind = 1) AND
+
+			-- test
+			-- (t.FiscalMonth = 201912 ) AND
+			-- (t.source_cd = 'IMP') AND
+			-- (t.isr_comm_group_cd='REBSND') AND 
+			--
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '27. EST update comm - booking - new'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[est_comm_rt] = g.booking_rt,
+			[est_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
+			[est_calc_key] = r.calc_key
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.est_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.est_comm_plan_id = r.comm_plan_id AND
+				t.est_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.est_comm_plan_id <> '') AND
+			(t.est_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+			(g.booking_rt <> 0) AND
+			(r.active_ind = 1) AND
+			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  

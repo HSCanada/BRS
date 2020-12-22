@@ -347,6 +347,57 @@ ALTER TABLE dbo.BRS_ItemSalesCategory SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- rebate teeth share percent support
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD
+	total_month_sales_amt float(53) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_total_sales_amt DEFAULT 0,
+	merch_month_sales_amt float(53) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_merch_sales_amt DEFAULT 0,
+	teeth_month_sales_amt float(53) NOT NULL CONSTRAINT DF_BRS_CustomerFSC_History_teeth_sales_amt DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- XXX pop hisory -> snapshot
+
+UPDATE dbo.BRS_CustomerFSC_History
+SET
+	total_month_sales_amt = src.total_sales,
+	merch_month_sales_amt = src.merch_sales,
+	teeth_month_sales_amt = src.teeth_sales
+FROM
+(
+	SELECT
+	s.FiscalMonth, s.Shipto, 
+	SUM(s.NetSalesAmt) AS total_sales, 
+	SUM(CASE WHEN i.SalesCategory = 'MERCH' THEN s.NetSalesAmt ELSE 0 END) AS merch_sales, 
+	SUM(CASE WHEN i.SalesCategory = 'TEETH' THEN s.NetSalesAmt ELSE 0 END) AS teeth_sales
+	FROM            BRS_Transaction AS s INNER JOIN
+							 BRS_Item AS i ON s.Item = i.Item
+	WHERE        (s.SalesDivision IN ('AAD', 'AAL', 'AAM', 'AAV')) AND (s.DocType <> 'AA') AND (1 = 1)
+	GROUP BY s.FiscalMonth, s.Shipto
+	HAVING        (s.FiscalMonth between 201501 and 202012) 
+) src
+WHERE
+	dbo.BRS_CustomerFSC_History.[Shipto] = src.Shipto AND
+	dbo.BRS_CustomerFSC_History.[FiscalMonth] = src.FiscalMonth
+
+SELECT
+-- distinct i.SalesCategory
+ TOP (1000)
+ s.FiscalMonth, s.Shipto, s.SalesDivision, i.SalesCategory
+ , s.NetSalesAmt as total_sales
+ ,CASE WHEN i.SalesCategory = 'MERCH' THEN s.NetSalesAmt  ELSE 0 END as merch_sales
+ ,CASE WHEN i.SalesCategory = 'TEETH' THEN s.NetSalesAmt  ELSE 0 END as teeth_sales
+FROM            BRS_Transaction AS s INNER JOIN
+                         BRS_Item AS i ON s.Item = i.Item
+WHERE        (s.FiscalMonth = 202011) AND (s.SalesDivision IN ('AAD', 'AAL', 'AAM', 'AAV')) AND (s.DocType <> 'AA') AND 
+ i.SalesCategory = 'TEETH' AND
+(1 = 1)
+  --
+
+
 
 UPDATE [dbo].[BRS_ItemSalesCategory]
    SET [ma_estimate_factor] = 1.085
@@ -918,4 +969,102 @@ SELECT distinct [fiscalmonth]
   [fiscalmonth] >= 201301 AND
   not exists( select * from [dbo].[BRS_CustomerFSC_History] s where [dbo].[comm_customer_rebate_YTD].[fiscalmonth] = s.FiscalMonth and [dbo].[comm_customer_rebate_YTD].[hsi_shipto_id] = s.Shipto)
   order by 1
+GO
+
+-- update 2019 customer history - test
+
+-- est
+UPDATE [dbo].[BRS_CustomerFSC_History]
+set 
+	[HIST_est_code] = src.est_code,
+	[HIST_est_salesperson_key_id] = src.comm_salesperson_key_id,
+	[HIST_est_comm_plan_id] = src.comm_plan_id
+FROM
+(
+SELECT
+--	TOP (100)
+	BRS_Customer.ShipTo, BRS_Customer.est_code, BRS_FSC_Rollup.comm_salesperson_key_id, comm.salesperson_master.comm_plan_id
+FROM            BRS_Customer INNER JOIN
+                         BRS_FSC_Rollup ON BRS_Customer.est_code = BRS_FSC_Rollup.TerritoryCd INNER JOIN
+                         comm.salesperson_master ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id
+WHERE
+	(BRS_Customer.ShipTo > 0) AND (BRS_Customer.est_code <> 'NA') AND (BRS_Customer.est_code <> '')  AND (1 = 1)
+) src
+WHERE
+	([dbo].[BRS_CustomerFSC_History].FiscalMonth between 201901 AND 202011) AND
+	([dbo].[BRS_CustomerFSC_History].Shipto = src.ShipTo) AND
+	(1=1)
+
+-- isr
+UPDATE [dbo].[BRS_CustomerFSC_History]
+set 
+	[HIST_TsTerritoryCd] = src.[TsTerritoryCd],
+	[HIST_isr_salesperson_key_id] = src.comm_salesperson_key_id,
+	[HIST_isr_comm_plan_id] = src.comm_plan_id
+FROM
+(
+SELECT
+--	TOP (100)
+	BRS_Customer.ShipTo, BRS_Customer.[TsTerritoryCd], BRS_FSC_Rollup.comm_salesperson_key_id, comm.salesperson_master.comm_plan_id
+FROM            BRS_Customer INNER JOIN
+                         BRS_FSC_Rollup ON BRS_Customer.[TsTerritoryCd] = BRS_FSC_Rollup.TerritoryCd INNER JOIN
+                         comm.salesperson_master ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id
+WHERE
+	(BRS_Customer.ShipTo > 0) AND 
+	(BRS_Customer.[TsTerritoryCd] <> '**') AND 
+	(BRS_Customer.[TsTerritoryCd] <> '')  AND 
+	(1 = 1)
+) src
+WHERE
+	([dbo].[BRS_CustomerFSC_History].FiscalMonth between 201901 AND 202011) AND
+	([dbo].[BRS_CustomerFSC_History].Shipto = src.ShipTo) AND
+	(1=1)
+
+--
+UPDATE [dbo].[BRS_CustomerFSC_History]
+set 
+	[HIST_TsTerritoryCd] = '',
+	[HIST_isr_salesperson_key_id] = '',
+	[HIST_isr_comm_plan_id] = ''
+WHERE
+	([dbo].[BRS_CustomerFSC_History].FiscalMonth between 201901 AND 202011) AND
+	([HIST_TsTerritoryCd] = '**') AND 
+	(1=1)
+
+/*
+SELECT        TOP (100) BRS_Customer.ShipTo, BRS_Customer.est_code, BRS_FSC_Rollup.comm_salesperson_key_id, comm.salesperson_master.comm_plan_id
+FROM            BRS_Customer INNER JOIN
+                         BRS_FSC_Rollup ON BRS_Customer.est_code = BRS_FSC_Rollup.TerritoryCd INNER JOIN
+                         comm.salesperson_master ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id
+WHERE        (BRS_Customer.ShipTo > 0) AND (BRS_Customer.est_code <> 'NA') AND (BRS_Customer.est_code <> '')  AND (1 = 1)
+ORDER BY BRS_FSC_Rollup.comm_salesperson_key_id
+*/
+--
+-- update 2019 item history - test
+SELECT
+ TOP (100) 
+d.Item, d.FiscalMonth, d.HIST_comm_group_est_cd, s.comm_group_est_cd
+FROM
+	BRS_ItemHistory AS d 
+	INNER JOIN BRS_Item AS s 
+	ON d.Item = s.Item
+WHERE
+	(d.FiscalMonth >= 201901) AND 
+	(d.Item > '') AND
+	(s.comm_group_est_cd<>'') AND
+	(s.comm_group_est_cd <> d.HIST_comm_group_est_cd) and
+	--d.HIST_comm_group_cd <> ''
+	--d.HIST_comm_group_cd = 'ITMTEE'
+	(1=1)
+
+UPDATE [dbo].[BRS_Item]
+set [comm_group_est_cd] = [comm_group_cd]
+where [comm_group_cd] in ('ITMPAR', 'ITMSER')
+
+-- update 2019 item history
+UPDATE       BRS_ItemHistory
+SET                HIST_comm_group_est_cd = s.comm_group_est_cd
+FROM            BRS_ItemHistory INNER JOIN
+                         BRS_Item AS s ON BRS_ItemHistory.Item = s.Item AND BRS_ItemHistory.HIST_comm_group_est_cd <> s.comm_group_est_cd
+WHERE        (BRS_ItemHistory.FiscalMonth >= 201901) AND (BRS_ItemHistory.Item > '') AND (s.comm_group_est_cd <> '') AND (1 = 1)
 GO

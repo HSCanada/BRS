@@ -29,6 +29,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	22 Sep 20	tmc		Add ISR commission logic
+**	21 Dec 20	tmc		Add sales summary logic to help with rebate allocation
+**						Add EST and fix ISR snapshots
 **    
 *******************************************************************************/
 
@@ -258,6 +260,8 @@ Begin
 			,[HIST_comm_group_cd]
 			,[HIST_comm_group_cps_cd]
 			,[HIST_comm_group_eps_cd]
+			,[HIST_comm_group_est_cd]
+
 		)
 		SELECT     
 			BRS_Item.Item
@@ -269,6 +273,8 @@ Begin
 			,[comm_group_cd]
 			,[comm_group_cps_cd]
 			,[comm_group_eps_cd]
+			,[comm_group_est_cd]
+
 		FROM         
 			BRS_Item 
 
@@ -371,16 +377,20 @@ Begin
 			ON cps_comm.[salesperson_key_id] = cps.comm_salesperson_key_id
 
 			-- isr
-			INNER JOIN BRS_FSC_Rollup AS isr
-			ON isr.TerritoryCd = c.TsTerritoryCd
+			LEFT JOIN BRS_FSC_Rollup AS isr
+			ON isr.TerritoryCd = c.TsTerritoryCd AND
+				c.TsTerritoryCd <> '**' AND
+				c.TsTerritoryCd <> '' AND
+				(1=1)
 
 			LEFT JOIN [comm].[salesperson_master] isr_comm
 			ON isr_comm.[salesperson_key_id] = isr.comm_salesperson_key_id
 
 
 			-- est
-			INNER JOIN BRS_FSC_Rollup AS est
-			ON est.TerritoryCd = c.TsTerritoryCd
+			LEFT JOIN BRS_FSC_Rollup AS est
+			ON est.TerritoryCd = c.est_code AND
+				c.est_code <> 'NA'
 
 			LEFT JOIN [comm].[salesperson_master] est_comm
 			ON est_comm.[salesperson_key_id] = est.comm_salesperson_key_id
@@ -451,6 +461,45 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '9. set summary sales by shipto'
+
+		UPDATE 
+			dbo.BRS_CustomerFSC_History
+		SET
+			total_month_sales_amt = src.total_sales,
+			merch_month_sales_amt = src.merch_sales,
+			teeth_month_sales_amt = src.teeth_sales
+		FROM
+		(
+			SELECT
+				s.FiscalMonth, s.Shipto, 
+				SUM(s.NetSalesAmt) AS total_sales, 
+				SUM(CASE WHEN i.SalesCategory = 'MERCH' THEN s.NetSalesAmt ELSE 0 END) AS merch_sales, 
+				SUM(CASE WHEN i.SalesCategory = 'TEETH' THEN s.NetSalesAmt ELSE 0 END) AS teeth_sales
+			FROM
+				BRS_Transaction AS s 
+
+				INNER JOIN BRS_Item AS i 
+				ON s.Item = i.Item
+			WHERE
+				(s.SalesDivision IN ('AAD', 'AAL', 'AAM', 'AAV')) AND 
+				(s.DocType <> 'AA') AND 
+				(1 = 1)
+			GROUP BY 
+				s.FiscalMonth, s.Shipto
+			HAVING
+				(s.FiscalMonth = @nCurrentFiscalYearmoNum) 
+		) src
+		WHERE
+			dbo.BRS_CustomerFSC_History.[Shipto] = src.Shipto AND
+			dbo.BRS_CustomerFSC_History.[FiscalMonth] = src.FiscalMonth
+
+		Set @nErrorCode = @@Error
+	End
+
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
@@ -499,7 +548,7 @@ End
 Return @nErrorCode
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202007
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202012
 
 -- Prod
 -- EXEC dbo.monthend_snapshot_proc @bDebug=0
