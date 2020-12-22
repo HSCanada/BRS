@@ -25,8 +25,9 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[employee_num] DESC, [CCA30_salesperson_stage_loa"
-    "d].[CostCenter] DESC, [CCA30_salesperson_stage_load].[salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[employee_num], [CCA30_salesperson_stage_load].[s"
+    "alesperson_key_id], [CCA30_salesperson_stage_load].[salesperson_nm], [CCA30_sale"
+    "sperson_stage_load].[CostCenter]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -80,15 +81,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =-231
-    Top =37
-    Right =1302
-    Bottom =934
+    State =2
+    Left =-8
+    Top =-31
+    Right =1549
+    Bottom =945
     Left =-1
     Top =-1
     Right =1509
-    Bottom =267
+    Bottom =182
     Left =0
     Top =0
     ColumnsShown =539

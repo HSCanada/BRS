@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\")))"
+Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\",\"DDTS\",\"DEST\",\"AAES\",\""
+    "DEPS\")))"
 Begin InputTables
     Name ="BRS_FSC_Rollup"
 End
@@ -21,9 +22,9 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([CCA43_TerritoryReview].[Branch]=\"CORP \")"
-dbMemo "OrderBy" ="[CCA43_TerritoryReview].[Branch], [CCA43_TerritoryReview].[comm_salesperson_key_"
-    "id], [CCA43_TerritoryReview].[order_taken_by]"
+dbMemo "OrderBy" ="[CCA43_territory_review].[comm_salesperson_key_id], [CCA43_territory_review].[Br"
+    "anch], [CCA43_territory_review].[group_type]"
+dbMemo "Filter" ="([CCA43_territory_review].[group_type]=\"DEPS\")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -42,6 +43,8 @@ Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.FSCName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3495"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_FSC_Rollup.TerritoryCd"
@@ -54,14 +57,14 @@ Begin
 End
 Begin
     State =0
-    Left =-282
-    Top =4
-    Right =1251
-    Bottom =901
+    Left =0
+    Top =40
+    Right =961
+    Bottom =547
     Left =-1
     Top =-1
-    Right =1509
-    Bottom =306
+    Right =937
+    Bottom =170
     Left =0
     Top =0
     ColumnsShown =539

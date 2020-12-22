@@ -36,8 +36,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[comm_salesperson_master].[FiscalMonth], [CCA44_salesperson_stage_check_review]."
-    "[salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[salesperson_key_id]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -56,6 +55,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.salesperson_nm"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2580"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.FiscalMonth"
@@ -102,12 +103,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1433
+    Right =1549
     Bottom =945
     Left =-1
     Top =-1
-    Right =1383
-    Bottom =297
+    Right =1525
+    Bottom =229
     Left =0
     Top =0
     ColumnsShown =539
