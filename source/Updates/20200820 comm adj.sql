@@ -1059,12 +1059,22 @@ WHERE
 
 UPDATE [dbo].[BRS_Item]
 set [comm_group_est_cd] = [comm_group_cd]
+
 where [comm_group_cd] in ('ITMPAR', 'ITMSER')
 
 -- update 2019 item history
-UPDATE       BRS_ItemHistory
-SET                HIST_comm_group_est_cd = s.comm_group_est_cd
-FROM            BRS_ItemHistory INNER JOIN
-                         BRS_Item AS s ON BRS_ItemHistory.Item = s.Item AND BRS_ItemHistory.HIST_comm_group_est_cd <> s.comm_group_est_cd
-WHERE        (BRS_ItemHistory.FiscalMonth >= 201901) AND (BRS_ItemHistory.Item > '') AND (s.comm_group_est_cd <> '') AND (1 = 1)
+UPDATE
+	BRS_ItemHistory
+SET
+	[HIST_comm_group_cd] = [comm_group_cd]
+	,[HIST_comm_group_cps_cd] = [comm_group_cps_cd]
+	,[HIST_comm_group_eps_cd] = [comm_group_eps_cd]
+	,[HIST_comm_group_est_cd] = [comm_group_est_cd]
+FROM
+	BRS_ItemHistory 
+	INNER JOIN BRS_Item AS s 
+	ON BRS_ItemHistory.Item = s.Item AND
+	(BRS_ItemHistory.FiscalMonth >= 202010) AND 
+	(BRS_ItemHistory.Item > '') 
 GO
+

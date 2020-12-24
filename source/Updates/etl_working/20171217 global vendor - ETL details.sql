@@ -92,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202011 AND 202011
+	FiscalMonth BETWEEN 202001 AND 202011
 GO
 
 
@@ -104,9 +104,14 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202011 AND 202011
+	FiscalMonth BETWEEN 202001 AND 202007
 GO
 
+/*
+UPDATE       hfm.exclusive_product_rule 
+SET                StatusCd = 0
+WHERE        (Excl_Code_TargKey = 'CAO_LASER')
+*/
 print '8. set Exclusives - Excl_key, 1s, 1 OF 3'
 UPDATE       
 	BRS_ItemHistory
@@ -124,7 +129,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202011 AND 202011
+	FiscalMonth BETWEEN 202001 AND 202007
 GO
 
 
@@ -143,7 +148,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202011 AND 202011
+	FiscalMonth BETWEEN 202001 AND 202007
 GO
 
 
@@ -156,7 +161,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202011 AND 202011
+	FiscalMonth BETWEEN 202001 AND 202007
 GO
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level
@@ -312,7 +317,9 @@ GO
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Nov-20_RA.csv
+-- a_CAN_Jul-20_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202011, 202011
+-- [hfm].global_cube_proc  202007, 202007
+
+-- stop @ 7

@@ -35,6 +35,7 @@ AS
 **	13 May 20	tmc		clarified calc_key->display_comm_group
 **	01 Jul 20	tmc		add adjustments
 **	22 Oct 20	tmc		add Inside Sales Rep (ISR)
+**	21 Dec 20	tmc		add Equipment Service Tech (EST)
 **    
 *******************************************************************************/
 
@@ -64,6 +65,9 @@ SELECT
 	,ISNULL(eps.salesperson_master_key, 2)			AS EPS_SalespersonKey
 	,ISNULL(comm_group_eps.comm_group_key, 1)		AS EPS_CommGroupKey
 
+	,ISNULL(est.salesperson_master_key, 2)			AS EST_SalespersonKey
+	,ISNULL(comm_group_est.comm_group_key, 1)		AS EST_CommGroupKey
+
 	,t.[WSSHAN_shipto]								AS ShipTo
 	,i.ItemKey										AS ItemKey
 	,t.[WSDOCO_salesorder_number]					AS SalesOrderNumber
@@ -88,7 +92,7 @@ SELECT
 	,ISNULL((t.[ess_comm_amt]),0)					AS ESS_CommAmt
 	,ISNULL((t.[cps_comm_amt]),0)					AS CPS_CommAmt
 	,ISNULL((t.[eps_comm_amt]),0)					AS EPS_CommAmt
-
+	,ISNULL((t.[est_comm_amt]),0)					AS EST_CommAmt
 
 	,(t.source_cd)
 
@@ -137,6 +141,9 @@ FROM
 	LEFT JOIN [comm].[salesperson_master] as eps
 	ON eps.salesperson_key_id = t.[eps_salesperson_key_id]
 
+	LEFT JOIN [comm].[salesperson_master] as est
+	ON est.salesperson_key_id = t.[est_salesperson_key_id]
+
 	-- Dim Item
 
 	-- fsc	
@@ -173,6 +180,13 @@ FROM
 
 	LEFT JOIN [comm].[group] as comm_group_eps
 	ON comm_group_eps.comm_group_cd = plan_group_rate_eps.disp_comm_group_cd
+
+	-- est
+	LEFT JOIN [comm].[plan_group_rate] plan_group_rate_est
+	ON t.est_calc_key = plan_group_rate_est.calc_key
+
+	LEFT JOIN [comm].[group] as comm_group_est
+	ON comm_group_est.comm_group_cd = plan_group_rate_est.disp_comm_group_cd
 
 	-- adjustment
 	LEFT JOIN [comm].[adjustment] as adj

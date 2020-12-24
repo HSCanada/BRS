@@ -365,13 +365,204 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '9. update support fields for [Integration].[comm_customer_rebate_Staging]'
 
-/*
--- TDO update 
-[Integration].[comm_customer_rebate_Staging]
-[Integration].[comm_freegoods_Staging]
-[Integration].[comm_adjustment_Staging]
-*/
+	UPDATE
+		Integration.comm_customer_rebate_Staging
+	SET
+		fsc_salesperson_key_id = [HIST_fsc_salesperson_key_id]
+		-- to be split to merch and teeth.  cust will help
+		, fsc_comm_group_cd = [HIST_cust_comm_group_cd]
+		, fsc_code = [HIST_TerritoryCd]
+		-- future
+		, isr_salesperson_key_id = [HIST_isr_salesperson_key_id]
+		, isr_comm_group_cd = [HIST_TerritoryCd]
+		, isr_code = [HIST_TsTerritoryCd]
+		, teeth_share_rt = ISNULL( [teeth_month_sales_amt]/ NULLIF(([merch_month_sales_amt]+[teeth_month_sales_amt]),0),0)
+		, status_code = 0
+	FROM
+		Integration.comm_customer_rebate_Staging 
+		INNER JOIN BRS_CustomerFSC_History AS src 
+		ON Integration.comm_customer_rebate_Staging.ShipTo = src.Shipto AND 
+		Integration.comm_customer_rebate_Staging.FiscalMonth = src.FiscalMonth
+	
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '10. update support fields for [Integration].[comm_freegoods_Staging]'
+
+	UPDATE
+		Integration.comm_freegoods_Staging
+	SET
+		fsc_salesperson_key_id = ch.[HIST_fsc_salesperson_key_id]
+		, eps_salesperson_key_id = ch.[HIST_eps_salesperson_key_id]
+		, isr_salesperson_key_id = ch.[HIST_isr_salesperson_key_id]
+		, cust_comm_group_cd = ch.[HIST_cust_comm_group_cd]
+
+		, ess_salesperson_key_id = doc.[HIST_ess_salesperson_key_id]
+
+		, fsc_comm_group_cd = ih.[HIST_comm_group_cd]
+		, eps_comm_group_cd = ih.[HIST_comm_group_eps_cd]
+		, ess_comm_group_cd = ih.[HIST_comm_group_cd]
+		, isr_comm_group_cd = ih.[HIST_comm_group_cd]
+		, item_comm_group_cd = ih.[HIST_comm_group_cd]
+
+		, ma_estimate_factor = cat.ma_estimate_factor
+		, status_code = 0
+	FROM
+		BRS_ItemSalesCategory AS cat 
+
+		INNER JOIN BRS_Item AS i 
+		ON cat.SalesCategory = i.SalesCategory 
+	
+		INNER JOIN Integration.comm_freegoods_Staging 
+	
+		INNER JOIN BRS_ItemHistory AS ih 
+		ON Integration.comm_freegoods_Staging.Item = ih.Item AND 
+			Integration.comm_freegoods_Staging.FiscalMonth = ih.FiscalMonth 
+	
+		INNER JOIN BRS_TransactionDW_Ext AS doc 
+		ON Integration.comm_freegoods_Staging.SalesOrderNumber = doc.SalesOrderNumber AND 
+			Integration.comm_freegoods_Staging.DocType = doc.DocType 
+		
+		INNER JOIN BRS_CustomerFSC_History AS ch 
+		ON Integration.comm_freegoods_Staging.ShipTo = ch.Shipto AND 
+		Integration.comm_freegoods_Staging.FiscalMonth = ch.FiscalMonth 
+	
+		ON i.Item = Integration.comm_freegoods_Staging.Item
+	
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '11. update support fields for [Integration].[comm_adjustment_Staging] - FSC (required)'
+
+	UPDATE
+		Integration.comm_adjustment_Staging
+	SET
+		WSDGL__gl_date = m.[EndDt]
+		, fsc_salesperson_key_id = ISNULL(f.comm_salesperson_key_id,'')
+		, ess_salesperson_key_id = ISNULL(e.comm_salesperson_key_id,'')
+		-- note:  does for missing primary required, space for missing derived
+		, item_comm_group_cd = ISNULL(ih.[HIST_comm_group_cd],'.')
+		-- set missing to item-based default
+		,[fsc_comm_group_cd] = ISNULL(NULLIF([fsc_comm_group_cd],'.'),ISNULL(ih.[HIST_comm_group_cd],'.'))
+	FROM
+		BRS_FiscalMonth AS m 
+		INNER JOIN Integration.comm_adjustment_Staging 
+	
+		ON m.FiscalMonth = Integration.comm_adjustment_Staging.FiscalMonth 
+	
+		LEFT OUTER JOIN BRS_ItemHistory AS ih 
+		ON Integration.comm_adjustment_Staging.WSLITM_item_number = NULLIF(ih.Item, '.') AND 
+			Integration.comm_adjustment_Staging.FiscalMonth = ih.FiscalMonth 
+
+		LEFT OUTER JOIN BRS_FSC_Rollup AS e 
+		ON Integration.comm_adjustment_Staging.ess_code = NULLIF(e.TerritoryCd, '.')
+	
+		LEFT OUTER JOIN BRS_FSC_Rollup AS f 
+		ON Integration.comm_adjustment_Staging.fsc_code = NULLIF(f.TerritoryCd, '.')
+	
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '12. update support fields for [Integration].[comm_adjustment_Staging] - Non FSC/ESS (experimental)'
+
+	UPDATE
+		Integration.comm_adjustment_Staging
+	SET
+		cust_comm_group_cd = [HIST_cust_comm_group_cd]
+		, cps_salesperson_key_id = [HIST_cps_salesperson_key_id]
+		, cps_code = [HIST_cps_code]
+
+		, eps_salesperson_key_id = [HIST_eps_salesperson_key_id]
+		, eps_code = [HIST_eps_code]
+
+		, isr_salesperson_key_id = [HIST_isr_salesperson_key_id]
+		, isr_code = [HIST_TsTerritoryCd]
+
+		, est_salesperson_key_id = [HIST_est_salesperson_key_id]
+		, est_code = [HIST_est_code]
+
+	  -- item History
+      ,[cps_comm_group_cd] = ISNULL([HIST_comm_group_cps_cd],'.')
+      ,[eps_comm_group_cd] = ISNULL([HIST_comm_group_eps_cd],'.')
+      ,[isr_comm_group_cd] = ISNULL([HIST_comm_group_cd],'.')
+      ,[est_comm_group_cd] = ISNULL([HIST_comm_group_est_cd],'.')
+
+	FROM
+		Integration.comm_adjustment_Staging
+
+		INNER JOIN BRS_CustomerFSC_History AS ch 
+		ON Integration.comm_adjustment_Staging.FiscalMonth = ch.FiscalMonth AND 
+			Integration.comm_adjustment_Staging.WSSHAN_shipto = ch.Shipto
+
+		LEFT JOIN [dbo].[BRS_ItemHistory] AS ih 
+		ON Integration.comm_adjustment_Staging.FiscalMonth = ih.FiscalMonth AND 
+			Integration.comm_adjustment_Staging.WSLITM_item_number = ih.[Item]
+
+	WHERE
+		(Integration.comm_adjustment_Staging.WSSHAN_shipto > 0) AND 
+		-- set customer specific plan for FSC, non  duplidated ESS adj
+		(NOT (Integration.comm_adjustment_Staging.fsc_code IN ('', '.')))	  
+
+	
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '13. update support fields for [Integration].[comm_adjustment_Staging] - set complete'
+
+	UPDATE
+		Integration.comm_adjustment_Staging
+	SET
+		-- ensure valid document number & stash original
+		WSDOC__document_number = ISNULL(doc.SalesOrderNumber,0)
+		, WSDOCO_salesorder_number = WSDOC__document_number
+
+		-- used to calc GP from costs
+		, ma_estimate_factor = cat.ma_estimate_factor
+		, status_code = 0
+	FROM
+		Integration.comm_adjustment_Staging 
+
+		-- group (join)
+		INNER JOIN comm.[group] AS g 
+		ON Integration.comm_adjustment_Staging.fsc_comm_group_cd = g.comm_group_cd 
+	
+		INNER JOIN BRS_ItemSalesCategory AS cat 
+		ON g.SalesCategory = cat.SalesCategory AND 
+			g.SalesCategory = cat.SalesCategory 
+		
+		LEFT OUTER JOIN BRS_TransactionDW_Ext AS doc 
+		ON NULLIF(Integration.comm_adjustment_Staging.WSDOC__document_number,0) = doc.SalesOrderNumber AND 
+			Integration.comm_adjustment_Staging.WSDCTO_order_type = doc.DocType
+	WHERE
+		-- valid adjust must have valid comm group (join) and either FSC or ESS
+		fsc_code <> '.' OR
+		ess_code <> '.' 
+
+	
+	Set @nErrorCode = @@Error
+End
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
@@ -409,3 +600,4 @@ GO
 
 -- Debug
 -- EXEC comm.comm_stage_update_proc @bDebug=1
+
