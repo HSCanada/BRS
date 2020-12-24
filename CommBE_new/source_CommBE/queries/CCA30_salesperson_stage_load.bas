@@ -81,15 +81,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1549
-    Bottom =945
+    State =0
+    Left =0
+    Top =40
+    Right =961
+    Bottom =547
     Left =-1
     Top =-1
-    Right =1509
-    Bottom =182
+    Right =937
+    Bottom =315
     Left =0
     Top =0
     ColumnsShown =539

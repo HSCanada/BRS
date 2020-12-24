@@ -1,5 +1,7 @@
 -- setup EST support fields
 
+--> promote to prod, 23 Dec 20, 8.53pm
+
 INSERT INTO [comm].[plan]
            ([comm_plan_id]
            ,[comm_plan_nm]
@@ -28,7 +30,7 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- add missed est comm group code
+-- add missed est comm group code (25s)
 BEGIN TRANSACTION
 GO
 ALTER TABLE comm.transaction_F555115 ADD
@@ -49,7 +51,7 @@ ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- add est comm code historical
+-- add est comm code historical (1.15m)
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_ItemHistory ADD
@@ -69,6 +71,7 @@ GO
 ALTER TABLE dbo.BRS_ItemHistory SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
 -- add est to item
 BEGIN TRANSACTION
 GO
@@ -227,6 +230,8 @@ FROM comm.plan_group_rate
 WHERE ([comm_plan_id] = 'ESTGP00'   ) AND ([comm_rt] <> 0)
 GO
 
+-- update new plan rates
+EXEC comm.comm_stage_update_proc @bDebug=0
 
 -- mock up est rates
 UPDATE comm.plan_group_rate
@@ -268,10 +273,11 @@ WHERE
 	(1=1)
 GO
 
---
+-- XXX
+-- PART 2.  continue AFTER adj run & reps populdated
+
 -- setup ISR users
 -- load vis DEV salesperson 
-
 -- set ISR customer history
 UPDATE
 	BRS_CustomerFSC_History

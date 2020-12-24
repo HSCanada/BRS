@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	22 Sep 20	tmc		Add EQ Order lookup logic credit rebill -- see step 12
+**	23 Dec 20	tmc		add est to load data init
 **    
 *******************************************************************************/
 
@@ -428,11 +429,13 @@ Begin
 			[cps_salesperson_key_id],
 			[eps_salesperson_key_id],
 			[isr_salesperson_key_id],
+			[est_salesperson_key_id],
 
 			[fsc_comm_group_cd],
 			[ess_comm_group_cd],
 			[cps_comm_group_cd],
-			[eps_comm_group_cd]
+			[eps_comm_group_cd],
+			[est_comm_group_cd]
 		)
 		SELECT        
 		--	SELECT TOP (10) 
@@ -549,11 +552,13 @@ Begin
 			''									AS [cps_salesperson_key_id],
 			''									AS [eps_salesperson_key_id],
 			''									AS [isr_salesperson_key_id],
+			''									AS [est_salesperson_key_id],
 
 			''									AS [fsc_comm_group_cd],
 			''									AS [ess_comm_group_cd],
 			''									AS [cps_comm_group_cd],
-			''									AS [eps_comm_group_cd]
+			''									AS [eps_comm_group_cd],
+			''									AS [est_comm_group_cd]
 
 
 		FROM

@@ -16,6 +16,7 @@ Begin OutputColumns
     Expression ="Integration_comm_freegoods_Staging.SourceCode"
     Expression ="Integration_comm_freegoods_Staging.ID"
     Expression ="Integration_comm_freegoods_Staging.DocType"
+    Expression ="Integration_comm_freegoods_Staging.status_code"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -77,25 +78,29 @@ Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.DocType"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.status_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1167
-    Bottom =787
+    State =2
+    Left =-8
+    Top =-31
+    Right =987
+    Bottom =555
     Left =-1
     Top =-1
-    Right =1143
-    Bottom =157
+    Right =963
+    Bottom =264
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =167
         Top =17
-        Right =311
-        Bottom =161
+        Right =449
+        Bottom =219
         Top =0
         Name ="Integration_comm_freegoods_Staging"
         Name =""

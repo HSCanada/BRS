@@ -8,6 +8,8 @@
 -- drop rel pre and add post
 -- DELETE FROM [DEV_BRSales].[dbo].[BRS_CustomerFSC_History] where [FiscalMonth]= 202011 and shipto = 1520908
 
+--> promote to prod, 23 Dec 20, 9.14pm
+
 --drop TABLE [Integration].[comm_adjustment_Staging]
 CREATE TABLE [Integration].[comm_adjustment_Staging](
 
@@ -397,8 +399,6 @@ WHERE        (s.FiscalMonth = 202011) AND (s.SalesDivision IN ('AAD', 'AAL', 'AA
 (1 = 1)
   --
 
-
-
 UPDATE [dbo].[BRS_ItemSalesCategory]
    SET [ma_estimate_factor] = 1.085
  WHERE [SalesCategory] in('MERCH', 'VALADD', 'PARTS', 'TEETH', 'SMEQU', 'CAMLOG')
@@ -494,6 +494,7 @@ GO
 ALTER TABLE dbo.BRS_FSC_Rollup SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_TransactionDW_Ext
@@ -936,6 +937,18 @@ GO
 
 drop table [comm].[free_goods_redeem]
 
+-- MANUAL import comm prod access to SQL 
+-- S:\BR\zDev\CommBE\CBE\CommBE.accdb
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.comm_customer_rebate_YTD ADD
+	fiscalmonth int NULL
+GO
+ALTER TABLE dbo.comm_customer_rebate_YTD SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 update 
 [dbo].[comm_customer_rebate_YTD]
 set  [fiscalmonth] = [fiscal_yearmo_num]
@@ -959,7 +972,6 @@ insert into [dbo].[BRS_CustomerFSC_History]
 (
 [FiscalMonth],
 [Shipto]
-
 )
 SELECT distinct [fiscalmonth]
       ,[hsi_shipto_id]
@@ -970,6 +982,26 @@ SELECT distinct [fiscalmonth]
   not exists( select * from [dbo].[BRS_CustomerFSC_History] s where [dbo].[comm_customer_rebate_YTD].[fiscalmonth] = s.FiscalMonth and [dbo].[comm_customer_rebate_YTD].[hsi_shipto_id] = s.Shipto)
   order by 1
 GO
+
+-- XXX
+-- PART 2.  continue AFTER adj run & reps populated
+-- promote CommBE-New to prod
+-- promote scripts udpates since 26 Nov 20
+-- load and process salesperson
+
+/*
+BRS_BE_Dimension_load_proc
+[dbo].[BRS_FreeGoodsRedeem_Customer]
+[comm].[comm_stage_update_proc] 
+[comm].[comm_sync_proc] 
+[comm].[transaction_commission_calc_proc] 
+[comm].[transaction_load_proc] 
+[Fact].[Commission]
+[dbo].[monthend_snapshot_proc] 
+[dbo].[monthend_summary_proc] 
+
+load dim for EST pop
+*/
 
 -- update 2019 customer history - test
 
@@ -1066,15 +1098,14 @@ where [comm_group_cd] in ('ITMPAR', 'ITMSER')
 UPDATE
 	BRS_ItemHistory
 SET
-	[HIST_comm_group_cd] = [comm_group_cd]
-	,[HIST_comm_group_cps_cd] = [comm_group_cps_cd]
+	[HIST_comm_group_cps_cd] = [comm_group_cps_cd]
 	,[HIST_comm_group_eps_cd] = [comm_group_eps_cd]
 	,[HIST_comm_group_est_cd] = [comm_group_est_cd]
 FROM
 	BRS_ItemHistory 
 	INNER JOIN BRS_Item AS s 
 	ON BRS_ItemHistory.Item = s.Item AND
-	(BRS_ItemHistory.FiscalMonth >= 202010) AND 
+	(BRS_ItemHistory.FiscalMonth >= 201901) AND 
 	(BRS_ItemHistory.Item > '') 
 GO
 

@@ -5,10 +5,14 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="Integration_comm_customer_rebate_Staging.FiscalMonth"
+    Expression ="Integration_comm_customer_rebate_Staging.original_line_number"
     Expression ="Integration_comm_customer_rebate_Staging.ShipTo"
     Expression ="Integration_comm_customer_rebate_Staging.fsc_code"
     Expression ="Integration_comm_customer_rebate_Staging.rebate_amt"
+    Expression ="Integration_comm_customer_rebate_Staging.PracticeName"
+    Expression ="Integration_comm_customer_rebate_Staging.SourceCode"
     Expression ="Integration_comm_customer_rebate_Staging.comm_note_txt"
+    Expression ="Integration_comm_customer_rebate_Staging.status_code"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -26,25 +30,57 @@ Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.PracticeName"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.fsc_code"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.ShipTo"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.FiscalMonth"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.SourceCode"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.original_line_number"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.rebate_amt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.status_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
+    Left =64
+    Top =50
+    Right =1476
+    Bottom =827
     Left =-1
     Top =-1
     Right =1388
-    Bottom =288
+    Bottom =271
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =320
         Top =36
-        Right =464
-        Bottom =180
+        Right =570
+        Bottom =253
         Top =0
         Name ="Integration_comm_customer_rebate_Staging"
         Name =""

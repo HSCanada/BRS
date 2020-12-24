@@ -8,6 +8,7 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="Integration_comm_customer_rebate_Staging.FiscalMonth"
+    Expression ="Integration_comm_customer_rebate_Staging.original_line_number"
     Expression ="Integration_comm_customer_rebate_Staging.ShipTo"
     Expression ="Integration_comm_customer_rebate_Staging.fsc_code"
     Expression ="BRS_Customer.ShipTo"
@@ -55,17 +56,21 @@ Begin
         dbText "Name" ="BRS_FSC_Rollup.TerritoryCd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_customer_rebate_Staging.original_line_number"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
-    Left =-330
+    Left =6
     Top =40
-    Right =1082
+    Right =1418
     Bottom =937
     Left =-1
     Top =-1
     Right =1388
-    Bottom =337
+    Bottom =320
     Left =0
     Top =0
     ColumnsShown =539
@@ -81,8 +86,8 @@ Begin
     Begin
         Left =53
         Top =4
-        Right =197
-        Bottom =148
+        Right =234
+        Bottom =208
         Top =0
         Name ="Integration_comm_customer_rebate_Staging"
         Name =""

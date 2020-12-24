@@ -31,16 +31,22 @@ Begin OutputColumns
     Alias ="File_TAG_COST_ADJ"
     Expression ="Integration_comm_adjustment_Staging.[WS$UNC_sales_order_cost_markup]"
     Expression ="Integration_comm_adjustment_Staging.WSDCTO_order_type"
+    Expression ="Integration_comm_adjustment_Staging.status_code"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[CCB70_adj_stage_load].[transaction_date], [CCB70_adj_stage_load].[Shipto], [CCB"
+    "70_adj_stage_load].[Sales order], [CCB70_adj_stage_load].[item_id], [CCB70_adj_s"
+    "tage_load].[ess_code], [CCB70_adj_stage_load].[fsc_comm_group_cd] DESC, [CCB70_a"
+    "dj_stage_load].[fsc_code], [CCB70_adj_stage_load].[WSOGNO_original_line_number] "
+    "DESC"
 Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.ess_code"
@@ -122,17 +128,21 @@ Begin
         dbInteger "ColumnWidth" ="2280"
         dbBoolean "ColumnHidden" ="0"
     End
+    Begin
+        dbText "Name" ="Integration_comm_adjustment_Staging.status_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =2
     Left =-8
     Top =-31
     Right =1549
-    Bottom =555
+    Bottom =945
     Left =-1
     Top =-1
-    Right =1383
-    Bottom =256
+    Right =937
+    Bottom =328
     Left =0
     Top =0
     ColumnsShown =539
