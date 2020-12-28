@@ -39,7 +39,10 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA42_territory_map].[comm_salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA42_territory_map_new].[comm_salesperson_key_id], [CCA42_territory_map_new].["
+    "salesperson_key_id] DESC"
+dbMemo "Filter" ="((([CCA42_territory_map_new].[group_type]=\"AAES\"))) AND ([CCA42_territory_map_"
+    "new].[comm_salesperson_key_id]=\"HouseNCZEESS\")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -87,12 +90,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =987
+    Right =1317
     Bottom =555
     Left =-1
     Top =-1
-    Right =963
-    Bottom =255
+    Right =1267
+    Bottom =221
     Left =0
     Top =0
     ColumnsShown =539

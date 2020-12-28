@@ -7,7 +7,7 @@ Where ="(((Integration_comm_adjustment_Staging.fsc_code)<>\".\") AND ((BRS_FSC_R
     "n_comm_adjustment_Staging.WSDOC__document_number)>0) AND ((BRS_TransactionDW_Ext"
     ".SalesOrderNumber) Is Null)) OR (((Integration_comm_adjustment_Staging.WSLITM_it"
     "em_number)<>\".\") AND ((BRS_Item.Item) Is Null)) OR (((comm_group.comm_group_cd"
-    ") Is Null))"
+    ") Is Null)) OR (((Integration_comm_adjustment_Staging.status_code)<>0))"
 Begin InputTables
     Name ="Integration_comm_adjustment_Staging"
     Name ="BRS_FSC_Rollup"
@@ -50,6 +50,7 @@ Begin OutputColumns
     Expression ="Integration_comm_adjustment_Staging.transaction_amt"
     Expression ="Integration_comm_adjustment_Staging.fsc_comm_group_cd"
     Expression ="comm_group.comm_group_cd"
+    Expression ="Integration_comm_adjustment_Staging.status_code"
 End
 Begin Joins
     LeftTable ="Integration_comm_adjustment_Staging"
@@ -177,17 +178,21 @@ Begin
         dbText "Name" ="comm_group.comm_group_cd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_adjustment_Staging.status_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1193
-    Bottom =795
+    State =0
+    Left =0
+    Top =40
+    Right =1391
+    Bottom =937
     Left =-1
     Top =-1
-    Right =1169
-    Bottom =464
+    Right =1367
+    Bottom =447
     Left =0
     Top =0
     ColumnsShown =539

@@ -8,7 +8,7 @@ Param(
 Begin {
 
     if($env:BRS_MODE -eq "PROD") {
-        $param_calmonth = 202010
+        $param_calmonth = 202011
         $File_in = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\BusinessReviewSubstituation_Data-20201114.xlsm'
         $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Test\'
     } 

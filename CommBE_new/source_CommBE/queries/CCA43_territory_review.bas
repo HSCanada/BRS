@@ -22,8 +22,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA43_territory_review].[comm_salesperson_key_id], [CCA43_territory_review].[Br"
-    "anch], [CCA43_territory_review].[group_type]"
+dbMemo "OrderBy" ="[CCA43_territory_review].[FSCName], [CCA43_territory_review].[comm_salesperson_k"
+    "ey_id], [CCA43_territory_review].[Branch], [CCA43_territory_review].[group_type]"
 dbMemo "Filter" ="([CCA43_territory_review].[group_type]=\"DEPS\")"
 Begin
     Begin
@@ -64,7 +64,7 @@ Begin
     Left =-1
     Top =-1
     Right =937
-    Bottom =170
+    Bottom =153
     Left =0
     Top =0
     ColumnsShown =539

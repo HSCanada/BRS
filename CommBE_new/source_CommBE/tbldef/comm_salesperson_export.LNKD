@@ -1,0 +1,3 @@
+﻿comm_salesperson_export
+ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+comm.salesperson_export

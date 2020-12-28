@@ -20,14 +20,12 @@ Begin OutputColumns
     Expression ="Integration_comm_adjustment_Staging.WSLITM_item_number"
     Alias ="Additional_Notes"
     Expression ="Integration_comm_adjustment_Staging.WSDSC1_description"
-    Alias ="transaction_date"
-    Expression ="Integration_comm_adjustment_Staging.WSDGL__gl_date"
     Expression ="Integration_comm_adjustment_Staging.transaction_amt"
     Alias ="Adj Type Actual"
     Expression ="Integration_comm_adjustment_Staging.WSSRP6_manufacturer"
     Expression ="Integration_comm_adjustment_Staging.fsc_comm_group_cd"
+    Expression ="Integration_comm_adjustment_Staging.gp_code"
     Expression ="Integration_comm_adjustment_Staging.gp_ext_amt"
-    Expression ="Integration_comm_adjustment_Staging.fsc_comm_amt"
     Alias ="File_TAG_COST_ADJ"
     Expression ="Integration_comm_adjustment_Staging.[WS$UNC_sales_order_cost_markup]"
     Expression ="Integration_comm_adjustment_Staging.WSDCTO_order_type"
@@ -36,17 +34,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCB70_adj_stage_load].[transaction_date], [CCB70_adj_stage_load].[Shipto], [CCB"
-    "70_adj_stage_load].[Sales order], [CCB70_adj_stage_load].[item_id], [CCB70_adj_s"
-    "tage_load].[ess_code], [CCB70_adj_stage_load].[fsc_comm_group_cd] DESC, [CCB70_a"
-    "dj_stage_load].[fsc_code], [CCB70_adj_stage_load].[WSOGNO_original_line_number] "
-    "DESC"
 Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.ess_code"
@@ -67,14 +60,10 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="Integration_comm_adjustment_Staging.fsc_comm_amt"
-        dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1815"
-        dbBoolean "ColumnHidden" ="0"
-    End
-    Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.WSOGNO_original_line_number"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3420"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.WSDCTO_order_type"
@@ -99,10 +88,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="transaction_date"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="Adj Type Actual"
         dbLong "AggregateType" ="-1"
     End
@@ -113,10 +98,14 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.transaction_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1920"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Additional_Notes"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2055"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.gp_ext_amt"
@@ -132,17 +121,21 @@ Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.status_code"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_adjustment_Staging.gp_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1549
-    Bottom =945
+    State =0
+    Left =0
+    Top =40
+    Right =1391
+    Bottom =937
     Left =-1
     Top =-1
-    Right =937
-    Bottom =328
+    Right =1367
+    Bottom =294
     Left =0
     Top =0
     ColumnsShown =539

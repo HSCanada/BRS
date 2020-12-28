@@ -22,8 +22,8 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 	-- Fiscal mo
 	,[FiscalMonth] [int] NOT NULL
 
-	-- transaction_dt
-	,[WSDGL__gl_date] [datetime] NOT NULL
+	-- transaction_dt (based on FiscalMonth, last day)
+	,[WSDGL__gl_date] [datetime]  NULL
 
 	-- Owner
 	,[WSVR01_reference] [varchar](25) NOT NULL
@@ -43,6 +43,12 @@ CREATE TABLE [Integration].[comm_adjustment_Staging](
 
 	-- customer_nm
 	,[WSVR02_reference_2] [varchar](25) NOT NULL
+
+	-- user to indicate valid GP source when loading:
+	-- Gross Profit (GP)
+	-- File Cost (CF)
+	-- Commissionable Cost (CC)
+	,[gp_code] [char](2) NOT NULL
 
 	-- following may be defaulted
 
@@ -260,6 +266,11 @@ CREATE TABLE [Integration].[comm_freegoods_Staging](
 	[ess_comm_group_cd] [char](6) NOT NULL Default(''),
 	[eps_comm_group_cd] [char](6) NOT NULL Default(''),
 	[isr_comm_group_cd] [char](6) NOT NULL Default(''),
+
+	[fsc_code] [char](5) NOT NULL Default(''),
+	[ess_code] [char](5) NOT NULL Default(''),
+	[eps_code] [char](5) NOT NULL Default(''),
+	[isr_code] [char](5) NOT NULL Default(''),
 
 	[status_code] [smallint] NOT NULL Default(-1)
 
@@ -1108,4 +1119,6 @@ FROM
 	(BRS_ItemHistory.FiscalMonth >= 201901) AND 
 	(BRS_ItemHistory.Item > '') 
 GO
+
+--
 

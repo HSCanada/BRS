@@ -2,7 +2,7 @@
 dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;UID=TCrowley;Trusted_Connection=Y"
     "es;DATABASE=DEV_BRSales;Network=DBMSSOCN"
 dbBoolean "ReturnsRecords" ="0"
-dbInteger "ODBCTimeout" ="60"
+dbInteger "ODBCTimeout" ="500"
 dbByte "RecordsetType" ="0"
 dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"

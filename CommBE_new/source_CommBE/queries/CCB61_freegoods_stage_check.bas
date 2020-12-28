@@ -2,7 +2,7 @@
 Option =0
 Where ="(((BRS_TransactionDW_Ext.SalesOrderNumber) Is Null)) OR (((BRS_Customer.ShipTo) "
     "Is Null)) OR (((BRS_Item.Item) Is Null)) OR (((BRS_ItemSupplier.Supplier) Is Nul"
-    "l))"
+    "l)) OR (((Integration_comm_freegoods_Staging.status_code)<>0))"
 Begin InputTables
     Name ="Integration_comm_freegoods_Staging"
     Name ="BRS_TransactionDW_Ext"
@@ -23,6 +23,7 @@ Begin OutputColumns
     Expression ="BRS_Customer.ShipTo"
     Expression ="BRS_Item.Item"
     Expression ="BRS_ItemSupplier.Supplier"
+    Expression ="Integration_comm_freegoods_Staging.status_code"
 End
 Begin Joins
     LeftTable ="Integration_comm_freegoods_Staging"
@@ -109,6 +110,10 @@ Begin
         dbText "Name" ="BRS_ItemSupplier.Supplier"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.status_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
@@ -119,7 +124,7 @@ Begin
     Left =-1
     Top =-1
     Right =1143
-    Bottom =233
+    Bottom =371
     Left =0
     Top =0
     ColumnsShown =539

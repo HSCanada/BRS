@@ -380,9 +380,15 @@ Begin
 		, fsc_code = [HIST_TerritoryCd]
 		-- future
 		, isr_salesperson_key_id = [HIST_isr_salesperson_key_id]
-		, isr_comm_group_cd = [HIST_TerritoryCd]
+		, isr_comm_group_cd = [HIST_cust_comm_group_cd]
 		, isr_code = [HIST_TsTerritoryCd]
-		, teeth_share_rt = ISNULL( [teeth_month_sales_amt]/ NULLIF(([merch_month_sales_amt]+[teeth_month_sales_amt]),0),0)
+		, teeth_share_rt = 
+			CASE 
+				WHEN [merch_month_sales_amt] > 0 AND [teeth_month_sales_amt] > 0
+				THEN [teeth_month_sales_amt]/([merch_month_sales_amt]+[teeth_month_sales_amt])
+				ELSE 0.0
+			END
+--		ISNULL( [teeth_month_sales_amt]/ NULLIF(([merch_month_sales_amt]+[teeth_month_sales_amt]),0),0)
 		, status_code = 0
 	FROM
 		Integration.comm_customer_rebate_Staging 
@@ -407,7 +413,17 @@ Begin
 		, isr_salesperson_key_id = ch.[HIST_isr_salesperson_key_id]
 		, cust_comm_group_cd = ch.[HIST_cust_comm_group_cd]
 
+		, fsc_code = ch.[HIST_TerritoryCd]
+		, eps_code = ch.[HIST_eps_code]
+		, isr_code = ch.[HIST_TsTerritoryCd]
+		, fsc_comm_plan_id = ch.[HIST_fsc_comm_plan_id]
+		, eps_comm_plan_id = ch.[HIST_eps_comm_plan_id]
+		, isr_comm_plan_id = ch.[HIST_isr_comm_plan_id]
+
 		, ess_salesperson_key_id = doc.[HIST_ess_salesperson_key_id]
+
+		, ess_code = doc.[HIST_ess_code]
+		, ess_comm_plan_id = doc.HIST_ess_comm_plan_id
 
 		, fsc_comm_group_cd = ih.[HIST_comm_group_cd]
 		, eps_comm_group_cd = ih.[HIST_comm_group_eps_cd]
@@ -416,7 +432,10 @@ Begin
 		, item_comm_group_cd = ih.[HIST_comm_group_cd]
 
 		, ma_estimate_factor = cat.ma_estimate_factor
-		, status_code = 0
+
+
+		-- set to temp value for next step
+		, status_code = 100
 	FROM
 		BRS_ItemSalesCategory AS cat 
 
@@ -439,6 +458,55 @@ Begin
 	
 		ON i.Item = Integration.comm_freegoods_Staging.Item
 	
+	Set @nErrorCode = @@Error
+End
+
+--
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '10b. update support fields for [Integration].[comm_freegoods_Staging] - FG mapping'
+
+	UPDATE
+		Integration.comm_freegoods_Staging
+	SET
+		fg_fsc_comm_group_cd = fsc.[fg_comm_group_cd]
+		, fg_eps_comm_group_cd = eps.[fg_comm_group_cd]
+		, fg_ess_comm_group_cd = ess.[fg_comm_group_cd]
+		, fg_isr_comm_group_cd = isr.[fg_comm_group_cd]
+
+		, status_code = 0
+	FROM
+		[comm].[plan_group_rate] fsc
+		, [comm].[plan_group_rate] eps
+		, [comm].[plan_group_rate] ess
+		, [comm].[plan_group_rate] isr
+	WHERE
+		(status_code = 100) AND
+
+		(fsc.[comm_plan_id] = Integration.comm_freegoods_Staging.fsc_comm_plan_id) AND
+		(fsc.[item_comm_group_cd] = Integration.comm_freegoods_Staging.item_comm_group_cd) AND
+		(fsc.[cust_comm_group_cd] = Integration.comm_freegoods_Staging.cust_comm_group_cd) AND
+		(fsc.[source_cd] = 'JDE') AND
+
+		(eps.[comm_plan_id] = Integration.comm_freegoods_Staging.eps_comm_plan_id) AND
+		(eps.[item_comm_group_cd] = Integration.comm_freegoods_Staging.item_comm_group_cd) AND
+		(eps.[cust_comm_group_cd] = Integration.comm_freegoods_Staging.cust_comm_group_cd) AND
+		(eps.[source_cd] = 'JDE') AND
+
+		(ess.[comm_plan_id] = Integration.comm_freegoods_Staging.ess_comm_plan_id) AND
+		(ess.[item_comm_group_cd] = Integration.comm_freegoods_Staging.item_comm_group_cd) AND
+		(ess.[cust_comm_group_cd] = Integration.comm_freegoods_Staging.cust_comm_group_cd) AND
+		(ess.[source_cd] = 'JDE') AND
+
+		(isr.[comm_plan_id] = Integration.comm_freegoods_Staging.isr_comm_plan_id) AND
+		(isr.[item_comm_group_cd] = Integration.comm_freegoods_Staging.item_comm_group_cd) AND
+		(isr.[cust_comm_group_cd] = Integration.comm_freegoods_Staging.cust_comm_group_cd) AND
+		(isr.[source_cd] = 'JDE') AND
+
+		(1=1)
+
 	Set @nErrorCode = @@Error
 End
 

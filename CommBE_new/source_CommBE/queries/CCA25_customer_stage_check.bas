@@ -4,18 +4,23 @@ Where ="(((BRS_Customer.ShipTo) Is Null))"
 Begin InputTables
     Name ="Integration_comm_customer_Staging"
     Name ="BRS_Customer"
+    Name ="BRS_CustomerBT"
 End
 Begin OutputColumns
     Expression ="Integration_comm_customer_Staging.ShipTo"
     Expression ="Integration_comm_customer_Staging.merch_comm_cd"
     Expression ="Integration_comm_customer_Staging.equip_comm_cd"
     Expression ="Integration_comm_customer_Staging.comm_note_txt"
-    Expression ="BRS_Customer.ShipTo"
+    Expression ="BRS_CustomerBT.ShipToPrimary"
 End
 Begin Joins
     LeftTable ="Integration_comm_customer_Staging"
     RightTable ="BRS_Customer"
     Expression ="Integration_comm_customer_Staging.ShipTo = BRS_Customer.ShipTo"
+    Flag =2
+    LeftTable ="Integration_comm_customer_Staging"
+    RightTable ="BRS_CustomerBT"
+    Expression ="Integration_comm_customer_Staging.ShipTo = BRS_CustomerBT.BillTo"
     Flag =2
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -30,10 +35,6 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
 Begin
-    Begin
-        dbText "Name" ="BRS_Customer.ShipTo"
-        dbLong "AggregateType" ="-1"
-    End
     Begin
         dbText "Name" ="Integration_comm_customer_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
@@ -51,18 +52,24 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_customer_Staging.ShipTo"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1050"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="BRS_CustomerBT.ShipToPrimary"
+        dbLong "AggregateType" ="-1"
     End
 End
 Begin
-    State =0
-    Left =-520
-    Top =41
-    Right =892
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1234
+    Bottom =555
     Left =-1
     Top =-1
-    Right =1388
-    Bottom =354
+    Right =1210
+    Bottom =337
     Left =0
     Top =0
     ColumnsShown =539
@@ -82,6 +89,15 @@ Begin
         Bottom =192
         Top =0
         Name ="BRS_Customer"
+        Name =""
+    End
+    Begin
+        Left =443
+        Top =206
+        Right =587
+        Bottom =350
+        Top =0
+        Name ="BRS_CustomerBT"
         Name =""
     End
 End
