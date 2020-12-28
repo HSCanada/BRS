@@ -1,5 +1,6 @@
 -- freegoods mapping, tmc, 27 Dec 20
---
+
+--> move to prod 17 Dec 20 - BEGIN
 --drop TABLE [Integration].[comm_adjustment_Staging]
 CREATE TABLE [Integration].[comm_adjustment_Staging](
 
@@ -131,8 +132,95 @@ GO
 COMMIT
 
 --
--- post prod add, 24 Dec 20
+--
+-- drop TABLE [Integration].[comm_freegoods_Staging]
+CREATE TABLE [Integration].[comm_freegoods_Staging](
+	[FiscalMonth] [int] NOT NULL,
+	[SalesOrderNumber] [int] NOT NULL,
+	[original_line_number] [int] NOT NULL,
+	[SourceCode] [char](3) NOT NULL,
 
+	[ShipTo] [int] NOT NULL,
+	[PracticeName] [varchar](40) NULL,
+	[Item] [char](10) NOT NULL,
+	[ItemDescription] [varchar](40) NULL,
+	[Supplier] [char](6) NOT NULL,
+	[ExtFileCostCadAmt] [money] NOT NULL,
+
+	ID [integer] NOT NULL Identity(1,1),
+	[comm_note_txt] [varchar](50) NOT NULL DEFAULT (''),
+	[ma_estimate_factor] [float] NOT NULL DEFAULT(1),
+
+	[DocType] [char](2) NOT NULL Default('AA'),
+	[cust_comm_group_cd] [char](6) NULL,
+	[item_comm_group_cd] [char](6) NULL,
+
+	[fsc_salesperson_key_id] [varchar](30) NULL,
+	[ess_salesperson_key_id] [varchar](30) NULL,
+	[eps_salesperson_key_id] [varchar](30) NULL,
+	[isr_salesperson_key_id] [varchar](30) NULL,
+
+	[fsc_comm_group_cd] [char](6) NOT NULL Default(''),
+	[ess_comm_group_cd] [char](6) NOT NULL Default(''),
+	[eps_comm_group_cd] [char](6) NOT NULL Default(''),
+	[isr_comm_group_cd] [char](6) NOT NULL Default(''),
+
+	[fsc_code] [char](5) NOT NULL Default(''),
+	[ess_code] [char](5) NOT NULL Default(''),
+	[eps_code] [char](5) NOT NULL Default(''),
+	[isr_code] [char](5) NOT NULL Default(''),
+
+	[status_code] [smallint] NOT NULL Default(-1)
+
+ CONSTRAINT [comm_freegoods_stage_pk] PRIMARY KEY CLUSTERED 
+(
+	[SalesOrderNumber] ASC,
+	[DocType] ASC,
+	[original_line_number] ASC,
+	[FiscalMonth] ASC,
+	[SourceCode] ASC
+
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX comm_freegoods_Staging_u_idx_01 ON Integration.comm_freegoods_Staging
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.comm_freegoods_Staging ADD
+	fg_fsc_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_fsc_comm_group_cd DEFAULT (''),
+	fg_ess_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_ess_comm_group_cd DEFAULT (''),
+	fg_eps_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_eps_comm_group_cd DEFAULT (''),
+	fg_isr_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_isr_comm_group_cd DEFAULT ('')
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.comm_freegoods_Staging ADD
+	fsc_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fsc_comm_plan_id DEFAULT '',
+	ess_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_ess_comm_plan_id DEFAULT '',
+	eps_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_eps_comm_plan_id DEFAULT '',
+	isr_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_isr_comm_plan_id DEFAULT ''
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
 BEGIN TRANSACTION
 GO
 ALTER TABLE comm.freegoods ADD
@@ -211,18 +299,6 @@ ALTER TABLE comm.plan_group_rate SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
---
-BEGIN TRANSACTION
-GO
-ALTER TABLE Integration.comm_freegoods_Staging ADD
-	fg_fsc_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_fsc_comm_group_cd DEFAULT (''),
-	fg_ess_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_ess_comm_group_cd DEFAULT (''),
-	fg_eps_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_eps_comm_group_cd DEFAULT (''),
-	fg_isr_comm_group_cd char(6) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_isr_comm_group_cd DEFAULT ('')
-GO
-ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 --
 
@@ -289,17 +365,6 @@ ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 --
-BEGIN TRANSACTION
-GO
-ALTER TABLE Integration.comm_freegoods_Staging ADD
-	fsc_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fsc_comm_plan_id DEFAULT '',
-	ess_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_ess_comm_plan_id DEFAULT '',
-	eps_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_eps_comm_plan_id DEFAULT '',
-	isr_comm_plan_id char(10) NOT NULL CONSTRAINT DF_comm_freegoods_Staging_isr_comm_plan_id DEFAULT ''
-GO
-ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 -- reset
 UPDATE [comm].[plan_group_rate] SET [fg_comm_group_cd] = ''
@@ -358,5 +423,5 @@ UPDATE [comm].[plan_group_rate]
 	[disp_comm_group_cd] in('ITMFO1','ITMFO2','ITMFO3','ITMPAR','ITMEQ0')
 GO
 
-
+--< move to prod 17 Dec 20 - BEGIN
 

@@ -150,7 +150,7 @@ SELECT  * FROM [comm].[customer_rebate_export] where [teeth_share_rt] > 1.0 or [
 */
 
 -- test details
-SELECT  top 10      * FROM comm.[salesperson_export]
+--SELECT  top 10      * FROM comm.[salesperson_export]
 --SELECT  * FROM comm.[salesperson_export] order by comm_plan_id
 --SELECT  * FROM comm.[salesperson_export] order by master_salesperson_cd
 
