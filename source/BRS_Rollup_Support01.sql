@@ -105,3 +105,25 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT * FROM BRS_Rollup_Support01
+
+
+-- figure out / fix offset days for Year-over-year analysis
+/*
+Select 
+[OffsetDaySeq_Yoy_Fiscal]
+,OffsetDaySeq_Yoy_Fiscal_SameDay
+from [dbo].[BRS_Config]
+
+UPDATE 
+[dbo].[BRS_Config]
+   SET 
+      [SalesDate] = '2021-01-04'
+      ,[FiscalMonth] = 202101
+      ,[PriorFiscalMonth] = 202012
+	  ,[OffsetDaySeq_Yoy_Fiscal] = 364
+
+-- ensure day offset is null so that globals are used
+UPDATE       BRS_SalesDay
+SET                OffsetDaySeq_Yoy_Fiscal_Override = NULL
+WHERE        (OffsetDaySeq_Yoy_Fiscal_Override = 0)
+*/

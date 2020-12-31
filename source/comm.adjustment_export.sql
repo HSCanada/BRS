@@ -76,7 +76,7 @@ SELECT
 	,[est_comm_group_cd]
 	,[cps_code]
 	,[cps_comm_group_cd]
-
+	,[WSDOCO_salesorder_number]
 	,[status_code]
  FROM 
 	[Integration].[comm_adjustment_Staging] 

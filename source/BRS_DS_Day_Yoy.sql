@@ -84,11 +84,9 @@ FROM
 
     CROSS JOIN BRS_Config AS c
 
+--    LEFT JOIN BRS_SalesDay doffset_ly
     INNER JOIN BRS_SalesDay doffset_ly
-
     ON doffset_ly.DaySeq = ISNULL(d.OffsetDaySeq_Yoy_Fiscal_Override, d.DaySeq - (c.OffsetDaySeq_Yoy_Fiscal + c.OffsetDaySeq_Yoy_Fiscal_SameDay))
-
---    ON d.DaySeq = doffset_ly.DaySeq + (c.OffsetDaySeq_Yoy_Fiscal + c.OffsetDaySeq_Yoy_Fiscal_SameDay)
 
 
 
@@ -103,4 +101,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT * FROM BRS_DS_Day_Yoy where FiscalMonth between 201612 AND 201801
+-- SELECT * FROM BRS_DS_Day_Yoy where FiscalMonth in(202001, 202101)
