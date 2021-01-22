@@ -176,4 +176,12 @@ GO
 
 -- SELECT top 10 * FROM nes.order_open_prorepr_current order by sales_date desc
 
+/*
+SELECT  * FROM nes.order_open_prorepr_current
+where 
+--bench_tech like '%DO NOT%' AND
+user_name In ('51924','41724','41725') AND
+(1=1)
+*/
+
 

@@ -395,7 +395,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202011') AND
+	(fiscal_yearmo_num ='202012') AND
 	(1=1)
 GO
 
@@ -406,13 +406,13 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202011') AND
+	(FiscalMonth =  '202012') AND
 	(1=1)
 GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
--- delete from comm.transaction_F555115 where FiscalMonth = '202008' AND source_cd NOT in('JDE')
+-- delete from comm.transaction_F555115 where FiscalMonth = '202012' AND source_cd NOT in('JDE')
 -- delete from comm.transaction_F555115 where FiscalMonth between 201901 and 202009 AND source_cd NOT in('JDE')
 
 -- first set month below; 2m per month
@@ -512,7 +512,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num between  '202011' and '202011') AND
+	(fiscal_yearmo_num between  '202012' and '202012') AND
 --	load only adj? (comment out next line for all)
 	source_cd NOT in('JDE') AND
 --	test
@@ -633,5 +633,5 @@ Exec comm.transaction_commission_calc_proc @bDebug=1, @bLegacy=1
 
 */
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202012
 -- Exec comm.transaction_commission_calc_proc @bDebug=0

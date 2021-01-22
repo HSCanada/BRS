@@ -33,6 +33,7 @@ AS
 **	25 Nov 20	tmc		exclude zero Freight items (internal codes)
 **	05 Jan 21	tmc		add economy teeth logic
 **  08 Jan 21	tmc		update to add new import format  1.025 = 2.5
+**	11 Jan 21	tmc		add PPE exclude with where ME < 1
 **    
 *******************************************************************************/
 
@@ -99,6 +100,9 @@ WHERE
 
 	ABS(CorporateMarketAdjustmentPct - ROUND(([ma_base_factor]+[ma_stocking_factor]+[ma_supplier_factor])/FreightAdjPct,4)) > 0.001 AND
 
+	-- exclude PPE overrides
+	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+
 	(1=1) 
 
 UNION ALL
@@ -161,8 +165,11 @@ WHERE
 	-- light items
 	FreightAdjPct > cfg.ma_heavy_thresh AND
 
-	ABS(CorporateMarketAdjustmentPct - ROUND(([ma_base_factor]+[ma_stocking_factor]+[ma_supplier_factor]-ma_heavy_factor),4)) > 0.001 
+	ABS(CorporateMarketAdjustmentPct - ROUND(([ma_base_factor]+[ma_stocking_factor]+[ma_supplier_factor]-ma_heavy_factor),4)) > 0.001 AND
 
+	-- exclude PPE overrides
+	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+	(1=1)
 
 UNION ALL
 
@@ -232,7 +239,9 @@ WHERE
                          '5834239', '5835974', '5838393', '5838638', '5838699', '5839986', '5848192', '5848500', '5850813', '5852333', '5855411', '5855412', '5855417', '5855418', '5855419', '5855420', '5855421', '5855422', '5855423', '5855424', 
                          '5855467', '5855468', '5855469', '5855470', '5855471', '5855479', '6528956', '6528959', '8096775', '8099123', '9490170', '9496591', '9496592', '9497429', '9497430', '9497466', '9497467', '9498526', '9498529', '9498881', 
                          '9498887')) AND 
-	(1=1) 
+	-- exclude PPE overrides
+	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+	(1=1)
 
 UNION ALL
 
@@ -303,7 +312,10 @@ WHERE
                          '5834239', '5835974', '5838393', '5838638', '5838699', '5839986', '5848192', '5848500', '5850813', '5852333', '5855411', '5855412', '5855417', '5855418', '5855419', '5855420', '5855421', '5855422', '5855423', '5855424', 
                          '5855467', '5855468', '5855469', '5855470', '5855471', '5855479', '6528956', '6528959', '8096775', '8099123', '9490170', '9496591', '9496592', '9497429', '9497430', '9497466', '9497467', '9498526', '9498529', '9498881', 
                          '9498887')) AND 
-	(1=1) 
+	-- exclude PPE overrides
+	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+	(1=1)
+
 GO
 
 
@@ -320,3 +332,4 @@ GO
 --where SalesCategory = 'TEETH'
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
+-- ORG 76206, with EXLUDE 76165
