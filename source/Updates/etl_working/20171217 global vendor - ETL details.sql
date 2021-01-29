@@ -92,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN 202001 AND 202012
 GO
 
 
@@ -104,20 +104,38 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN 202001 AND 202012
 GO
 
 /*
--- remove 202007
-UPDATE       hfm.exclusive_product_rule 
-SET                StatusCd = 0
-WHERE        (Excl_Code_TargKey = 'CAO_LASER')
 
--- remove 202012
-UPDATE       hfm.exclusive_product_rule 
-SET                StatusCd = 0
-WHERE        (Excl_Code_TargKey in('COMPUDENT', 'MILESTONE' ))
+SELECT Excl_Code, BrandEquityCategory,[EffectivePeriod],[ExpiredPeriod]
+FROM [hfm].[exclusive_product]
+WHERE        [Excl_Code] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX')
+GO
 
+SELECT [Excl_Code_TargKey], [StatusCd]
+FROM [hfm].[exclusive_product_rule]
+WHERE        [Excl_Code_TargKey] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX')
+GO
+
+-- Branded
+-- Owned
+-- Exclusive
+-- CorporateBrand
+
+            
+-- move from Excl to Brand after 202007
+UPDATE       [hfm].[exclusive_product]
+SET                [BrandEquityCategory] = 'Exclusive'
+--SET                [BrandEquityCategory] = 'Branded'
+WHERE        ([Excl_Code] = 'CAO_LASER')
+
+-- move from Excl to Brand after 202012
+UPDATE       [hfm].[exclusive_product]
+SET                [BrandEquityCategory] = 'Exclusive'
+--SET                [BrandEquityCategory] = 'Branded'
+WHERE        (Excl_Code in('COMPUDENT', 'MILESTONE' ))
 
 */
 
@@ -138,7 +156,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN  202001 AND 202012
 GO
 
 
@@ -157,7 +175,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN  202001 AND 202012
 GO
 
 
@@ -170,7 +188,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN  202001 AND 202012
 GO
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level

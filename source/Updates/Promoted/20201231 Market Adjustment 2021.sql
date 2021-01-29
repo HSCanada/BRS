@@ -1,4 +1,5 @@
 -- Market Adjustment 2021, tmc, 31 Dec 20
+-- update rules as per execs, tmc 27 Jan 21
 
 select  [Supplier], [ma_supplier_factor] from BRS_ItemSupplier where [ma_supplier_factor] > 0
 
@@ -27,6 +28,14 @@ UPDATE [dbo].[BRS_ItemSupplier]
  WHERE [Supplier] in( 'DECMAT', 'ZYRISI')
 GO
 
+-- update to 10%, 27 Jan 21
+UPDATE [dbo].[BRS_ItemSupplier]
+   SET 
+      [ma_supplier_factor] = 0.10
+ WHERE [Supplier] in( 'USENDO', 'ORTHOT')
+GO
+
+
 /*
 2	Increase Merchandise Branded Marketing Adjustment from 8.5% to 9.2%
 3	Increase Merchandise Private Label Marketing Adjustment from 11.5% to 12.2%
@@ -34,9 +43,10 @@ GO
 
 select  [Label], [ma_base_factor] from [BRS_ItemLabel]
 
+-- update rate 27 Jan 21
 UPDATE [dbo].[BRS_ItemLabel]
    SET 
-      [ma_base_factor] = 1.122
+      [ma_base_factor] = 1.123
  WHERE [Label] = 'P'
 GO
 

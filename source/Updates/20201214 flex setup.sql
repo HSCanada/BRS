@@ -29,8 +29,8 @@ CREATE TABLE [Integration].[flex_order_lines_Staging](
 	[UPC] [varchar](50) NULL,
 	[PRICE] [money] NULL,
 	[FREEGDS] [char](1) NULL,
-	[DATE] [varchar](50) NULL,
-	[DUEDATE] [varchar](50) NULL,
+	[DATE] [datetime] NULL,
+	[DUEDATE] [datetime] NULL,
 	[REF2] [varchar](50) NULL,
 	[COMPANY] [varchar](50) NULL,
 	[FIRSTLAST] [varchar](50) NULL,
@@ -272,9 +272,6 @@ CREATE TABLE [flex].[batch_template](
 	[flex_import_prefix] [varchar](10) NOT NULL Default(''),
 	[flex_export_prefix] [varchar](10) NOT NULL Default(''),
 	[flex_po_prefix] [varchar](10) NOT NULL Default(''),
-	[flex_po_num] [int] NOT NULL Default(0),
-
-	[default_pend_status] [smallint] NOT NULL Default(0),
 
 	[need_customer_xref_ind] [smallint] NOT NULL Default (1),
 	[need_item_xref_ind] [smallint] NOT NULL Default (1),
@@ -307,6 +304,55 @@ ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE flex.batch_template ADD
+	LineTypeOrder char(2) NOT NULL CONSTRAINT DF_batch_template_LineTypeOrder DEFAULT '',
+	DocType char(2) NOT NULL CONSTRAINT DF_batch_template_DocType DEFAULT '',
+	OrderSourceCode char(1) NOT NULL CONSTRAINT DF_batch_template_OrderSourceCode DEFAULT '',
+	OrderTakenBy char(10) NOT NULL CONSTRAINT DF_batch_template_OrderTakenBy DEFAULT '',
+	refer_order char(2) NOT NULL CONSTRAINT DF_batch_template_refer_order DEFAULT ''
+
+GO
+ALTER TABLE flex.batch_template ADD CONSTRAINT
+	FK_batch_template_BRS_LineTypeOrder FOREIGN KEY
+	(
+	LineTypeOrder
+	) REFERENCES dbo.BRS_LineTypeOrder
+	(
+	LineTypeOrder
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE flex.batch_template ADD CONSTRAINT
+	FK_batch_template_BRS_DocType FOREIGN KEY
+	(
+	DocType
+	) REFERENCES dbo.BRS_DocType
+	(
+	DocType
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE flex.batch_template ADD CONSTRAINT
+	FK_batch_template_BRS_OrderSource FOREIGN KEY
+	(
+	OrderSourceCode
+	) REFERENCES dbo.BRS_OrderSource
+	(
+	OrderSourceCode
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
 
 -- drop TABLE [flex].[batch]
 CREATE TABLE [flex].[batch](
@@ -315,10 +361,10 @@ CREATE TABLE [flex].[batch](
 	[flex_code] [char](6) NOT NULL,
 	[status_code] [smallint] NOT NULL Default (-1),
 
-	[flex_user] [varchar](50) NULL,
 	[export_date] [date] NULL,
-	[import_date] [date] NULL,
+	[import_batch_id] [int] NULL,
 	[note] [varchar](50) NULL,
+
 ) ON [USERDATA]
 GO
 
@@ -618,4 +664,10 @@ GO
 ALTER TABLE Integration.flex_order_lines_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
---
+
+-- clear
+
+truncate table [flex].[order_detail]
+delete from [flex].[order_header]
+delete from [flex].[order_file]
+delete from [flex].[customer_xref]
