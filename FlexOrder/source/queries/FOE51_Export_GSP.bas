@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_order_file.flex_code)=\"PG_GSP\"))"
+Where ="(((flex_order_file.flex_code)=\"PG_GSP\") AND ((flex_order_file.status_code)=0))"
 Begin InputTables
     Name ="flex_order_header"
     Name ="flex_order_detail"
@@ -10,27 +10,21 @@ End
 Begin OutputColumns
     Alias ="A_Ship_To"
     Expression ="flex_order_header.ShipTo"
-    Alias ="B_Customer_PO"
-    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO]"
-    Alias ="C_Item_number"
+    Alias ="B_Item_number"
     Expression ="flex_order_detail.Item"
-    Alias ="D_Qty"
+    Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
-    Alias ="E_Mark_for_line_1"
+    Alias ="D_UOM"
     Expression ="\"\""
-    Alias ="F_Header_Promo_1"
+    Alias ="E_Customer_PO"
+    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO]"
+    Alias ="F_Order_Route"
     Expression ="\"\""
     Alias ="G_Line_price_Override"
-    Expression ="flex_order_detail.PRICE"
-    Alias ="G_Order_Pend"
-    Expression ="\"\""
-    Alias ="H_Order_Route"
-    Expression ="\"\""
-    Alias ="I_Primary_Warehouse"
-    Expression ="\"\""
-    Alias ="J_Ship_Warehouse"
-    Expression ="\"\""
-    Alias ="K_Refer_order"
+    Expression ="1"
+    Alias ="H_Unit_Price"
+    Expression ="CLng([PRICE]*10000)"
+    Alias ="I_Refer_order"
     Expression ="flex_order_header.ORDERNO"
 End
 Begin Joins
@@ -56,6 +50,8 @@ Begin OrderBy
     Flag =0
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO]"
     Flag =0
+    Expression ="flex_order_header.ORDERNO"
+    Flag =0
     Expression ="flex_order_detail.line_id"
     Flag =0
 End
@@ -70,70 +66,62 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="D_Qty"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="A_Ship_To"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1395"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="B_Customer_PO"
-        dbInteger "ColumnWidth" ="1920"
-        dbBoolean "ColumnHidden" ="0"
+        dbText "Name" ="G_Line_price_Override"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="C_Item_number"
-        dbInteger "ColumnWidth" ="1920"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="E_Mark_for_line_1"
+        dbText "Name" ="F_Order_Route"
         dbInteger "ColumnWidth" ="2145"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="F_Header_Promo_1"
+        dbText "Name" ="B_Item_number"
+        dbInteger "ColumnWidth" ="1920"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="G_Order_Pend"
+        dbText "Name" ="C_Qty"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="H_Order_Route"
+        dbText "Name" ="D_UOM"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="I_Primary_warehouse"
+        dbText "Name" ="E_Customer_PO"
+        dbInteger "ColumnWidth" ="1920"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="K_Refer_order"
+        dbText "Name" ="H_Unit_Price"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="J_Ship_Warehouse"
+        dbText "Name" ="I_Refer_order"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="G_Line_price_Override"
-        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1710"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1616
-    Bottom =917
+    Right =1346
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1600
-    Bottom =305
+    Right =1330
+    Bottom =203
     Left =0
     Top =0
     ColumnsShown =539

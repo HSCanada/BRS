@@ -3,17 +3,17 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="GSP_CN-SCHN_B_20201127080101" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="SRC_CN-SCHN_S_20201210080015" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="GSP_CN-SCHN_B_20201127080101">
+<xsd:element name="SRC_CN-SCHN_S_20201210080015">
 <xsd:annotation>
 <xsd:appinfo>
-<od:index index-name="BUNDLE_CODE" index-key="BUNDLE_CODE " primary="no" unique="no" clustered="no" order="asc"/>
 <od:index index-name="POSTALCODE" index-key="POSTALCODE " primary="no" unique="no" clustered="no" order="asc"/>
-<od:index index-name="PROMO_CODE" index-key="PROMO_CODE " primary="no" unique="no" clustered="no" order="asc"/>
+<od:index index-name="PROGRAMCODE" index-key="PROGRAMCODE " primary="no" unique="no" clustered="no" order="asc"/>
+<od:index index-name="PROMOCODE" index-key="PROMOCODE " primary="no" unique="no" clustered="no" order="asc"/>
 </xsd:appinfo>
 </xsd:annotation>
 <xsd:complexType>
@@ -62,27 +62,7 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="DATE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
-<xsd:simpleType>
-<xsd:restriction base="xsd:string">
-<xsd:maxLength value="255"/>
-</xsd:restriction>
-</xsd:simpleType>
-</xsd:element>
-<xsd:element name="BILL_XREF" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
-<xsd:simpleType>
-<xsd:restriction base="xsd:string">
-<xsd:maxLength value="255"/>
-</xsd:restriction>
-</xsd:simpleType>
-</xsd:element>
-<xsd:element name="REF2" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
-<xsd:simpleType>
-<xsd:restriction base="xsd:string">
-<xsd:maxLength value="255"/>
-</xsd:restriction>
-</xsd:simpleType>
-</xsd:element>
+<xsd:element name="DATE" minOccurs="0" od:jetType="datetime" od:sqlSType="datetime" type="xsd:dateTime"/>
 <xsd:element name="ACCOUNT" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
@@ -153,34 +133,28 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="CTR" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:element name="COUNTRY" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="255"/>
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="PROMO_CODE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:element name="PROGRAMCODE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="255"/>
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="BUNDLE_CODE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:element name="PROMOCODE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="255"/>
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="ORGINAL_INVOICE" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
-<xsd:simpleType>
-<xsd:restriction base="xsd:string">
-<xsd:maxLength value="255"/>
-</xsd:restriction>
-</xsd:simpleType>
-</xsd:element>
+<xsd:element name="line" minOccurs="1" od:jetType="autonumber" od:sqlSType="int" od:autoUnique="yes" od:nonNullable="yes" type="xsd:int"/>
 </xsd:sequence>
 </xsd:complexType>
 </xsd:element>
