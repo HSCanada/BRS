@@ -92,7 +92,17 @@ GO
 
 -- SELECT  * FROM eps.Item where Supplier = 'DENMAT'
 -- SELECT  * FROM eps.Item where Supplier = 'ZYRISI'
-              
+-- SELECT  distinct Supplier FROM eps.Item
+/*
+Corporate Brand (Non PPE)
+Edge - EDGE_ENDO
+BA - BAINTE
+Reveal - REVEAL
+Ortho Tech - ORTHO_TECHNOLOGIES
+Lasers - DENMAT
+*/
+
+		  
 
 /*
 -- dup test

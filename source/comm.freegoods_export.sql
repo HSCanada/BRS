@@ -9,7 +9,7 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: [comm].[freeoods_export]
+**	Name: [comm].[freegoods_export]
 **	Desc:  
 **		
 **
@@ -29,59 +29,64 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	31 Jan 21	tmc		update field order to match adjustment    
 *******************************************************************************/
 -- keep at lowest level
 SELECT
-	[FiscalMonth]
+	[ID]
+	,s.[FiscalMonth]
 	,'BR'			AS owner_code
 	,[original_line_number] AS [original_line_number]	
-	,ISNULL(NULLIF([fsc_code],'.'),'') AS fsc_code
-	,ISNULL(NULLIF([ess_code],'.'),'') AS ess_code
-	,[ShipTo]			AS [ShipTo]
-	,LEFT([PracticeName],25)	AS customer_name
-	,[SalesOrderNumber]	AS salesorder_num
-	,[Item] AS item_id
-	,LEFT([ItemDescription],30)	AS details
-	,0							AS [transaction_amt] 
-	,[SourceCode]				AS adj_type_code
-	,[fg_fsc_comm_group_cd]
-	,[fg_ess_comm_group_cd]
-	-- calc
-	,(-[ExtFileCostCadAmt])		AS gp_ext_amt
-/*
-	,CASE [gp_code]
-		WHEN 'CC' THEN (-[ExtFileCostCadAmt])
-		WHEN 'CF' THEN (-[ExtFileCostCadAmt] * [ma_estimate_factor])
-		-- error
-		ELSE NULL
-	END							AS gp_ext_amt
-*/
+	,fsc_code
+	,fg_fsc_comm_group_cd		AS [fsc_comm_group_cd]
+	,[fsc_salesperson_key_id]
 
-	,0							AS [fsc_comm_amt]
-	,[ExtFileCostCadAmt]			AS file_cost_amt
-	,[DocType]		AS order_type
+	,ess_code
+	,fg_ess_comm_group_cd		AS [ess_comm_group_cd]
+	,[ess_salesperson_key_id]
+
+	,[ShipTo]					AS [ShipTo]
+	,LEFT([PracticeName],25)	AS customer_name
+	,[SalesOrderNumber]			AS salesorder_num
+	,[DocType]					AS order_type
+
+	,[Item]						AS item_id
+	,LEFT([ItemDescription],30)	AS details
+	,m.EndDt					AS transaction_date
+	,0							AS [transaction_amt] 
+	-- new GP method (use CommCost for GP), effective Jan 2021
+	,(-[ExtFileCostCadAmt] * [ma_estimate_factor]) AS gp_ext_amt
+	-- legacy GP method (use File Cost CAD)
+	-- ,(-[ExtFileCostCadAmt])		AS gp_ext_amtOLD
+
+	,[ExtFileCostCadAmt]		AS file_cost_amt
+	,0.0						AS fsc_comm_amt
 	--
-	,[ID]
+	,[status_code]
+	,'IMP'						AS [source_cd]
+	,[SourceCode]				AS adj_type_code
 	,[cust_comm_group_cd]
 	,[item_comm_group_cd]
+	,'GP'						AS gp_code
 	,[ma_estimate_factor]
 	,[comm_note_txt]
 
-	,[fsc_comm_group_cd]
-	,[ess_comm_group_cd]
 	,[isr_code]
-	,[isr_comm_group_cd]
-	,[fg_isr_comm_group_cd]
-	,[eps_code]
-	,[eps_comm_group_cd]
-	,[fg_eps_comm_group_cd]
+	,[fg_isr_comm_group_cd]		AS [isr_comm_group_cd]
+	,[isr_salesperson_key_id]
 
-	,[status_code]
+	,[eps_code]
+	,[fg_eps_comm_group_cd]		AS [eps_comm_group_cd]
+	,[eps_salesperson_key_id]
+
  FROM 
-	[comm].[freegoods]
+	[comm].[freegoods] s
+
+	INNER JOIN [dbo].[BRS_FiscalMonth] m
+	ON m.FiscalMonth = s.FiscalMonth
+
  WHERE 
-	FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
+	s.FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
 
 
 GO
@@ -97,7 +102,7 @@ SELECT  * FROM  [comm].[freegoods_export] where status_code <> 0
 */
 
 -- test details
---SELECT  top 10      * FROM [comm].[freegoods_export]
+SELECT  top 10      * FROM [comm].[freegoods_export]
 --SELECT  * FROM [comm].[freegoods_export]  order by transaction_amt asc         
 
 

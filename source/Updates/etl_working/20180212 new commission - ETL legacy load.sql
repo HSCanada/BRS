@@ -385,9 +385,6 @@ WHERE
 -- load Prod
 ------------------------------------------------------------------------------------------------------
 
--- delete  from [comm].[transaction_F555115] where FiscalMonth = 202010 and source_cd NOT in('JDE')
--- truncate table [comm].[transaction_F555115]
-
 print 'manual check src linecount'
 SELECT
 	count(*) src_count 
@@ -395,7 +392,7 @@ FROM
 	CommBE.dbo.comm_transaction
 WHERE        
 	(hsi_shipto_div_cd NOT IN ('AZA','AZE')) AND 
-	(fiscal_yearmo_num ='202012') AND
+	(fiscal_yearmo_num ='202002') AND
 	(1=1)
 GO
 
@@ -406,14 +403,14 @@ FROM
 	comm.transaction_F555115
 WHERE        
 	(WSAC10_division_code NOT IN ('AZA','AZE')) AND 
-	(FiscalMonth =  '202012') AND
+	(FiscalMonth =  '202002') AND
 	(1=1)
 GO
 
 -- Set to DEV?  (assuming DEV in synch with PROD)
 -- truncate table comm.transaction_F555115
 -- delete from comm.transaction_F555115 where FiscalMonth = '202012' AND source_cd NOT in('JDE')
--- delete from comm.transaction_F555115 where FiscalMonth between 201901 and 202009 AND source_cd NOT in('JDE')
+-- delete from comm.transaction_F555115 where FiscalMonth between 202001 and 202012 AND source_cd NOT in('JDE')
 
 -- first set month below; 2m per month
 print '100. load prod data'
@@ -465,17 +462,20 @@ INSERT INTO comm.transaction_F555115
 SELECT
 	-- test       
 --	TOP (10) 
-	fiscal_yearmo_num
-	,LEFT(salesperson_cd,5)
-	,LEFT(source_cd,3)
+	-- temp Dec -> Jan
+	202101 as fiscal_yearmo_num
+	,LEFT(salesperson_cd,5) salesperson_cd
+	,LEFT(source_cd,3) source_cd
 	,transaction_dt
 	,transaction_amt
-	,line_id
+	-- temp Dec -> Jan
+	,record_id*2 as line_id
+--	,line_id
 	,doc_id as salesorder
 	,doc_id
-	,ISNULL(reference_order_txt,'')
+	,ISNULL(reference_order_txt,'') reference_order_txt
 	,order_source_cd
-	,LEFT(item_id,10)
+	,LEFT(item_id,10) item_id
 	,shipped_qty
 	,price_override_ind
 	,transaction_txt
@@ -498,10 +498,10 @@ SELECT
 	,IMCLSJ
 	,IMCLMC
 	,IMCLSM
-	,LEFT(ess_salesperson_cd,5)
+	,LEFT(ess_salesperson_cd,5) ess_salesperson_cd
 	-- dup ESS ok
-	,LEFT(ess_salesperson_cd,5)
-	,LEFT(pmts_salesperson_cd,5)
+	,LEFT(ess_salesperson_cd,5) ess_salesperson_cd
+	,LEFT(pmts_salesperson_cd,5) pmts_salesperson_cd
 	,hsi_billto_id
 	,hsi_shipto_div_cd
 	,vpa_cd

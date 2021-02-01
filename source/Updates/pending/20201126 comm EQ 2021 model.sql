@@ -92,6 +92,16 @@ print 202010
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
+print 202011
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202011
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+
+print 202012
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202012
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+
 
 -- update model from DEV next
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912

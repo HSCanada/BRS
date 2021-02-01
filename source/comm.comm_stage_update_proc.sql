@@ -380,7 +380,7 @@ Begin
 		, fsc_code = [HIST_TerritoryCd]
 		-- future
 		, isr_salesperson_key_id = [HIST_isr_salesperson_key_id]
-		, isr_comm_group_cd = [HIST_cust_comm_group_cd]
+		, isr_comm_group_cd = '.'
 		, isr_code = [HIST_TsTerritoryCd]
 		, teeth_share_rt = 
 			CASE 
@@ -510,11 +510,13 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
---
+-- note:  
+--	the adjustment table is used by the FreeGoods, Rebates, and Payrole tables
+--	avoid re-processing by using the owner codes HR & BR
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '11. update support fields for [Integration].[comm_adjustment_Staging] - FSC (required)'
+		print '11. update support fields for [Integration].[comm_adjustment_Staging] - 1 of 3, FSC (required)'
 
 	UPDATE
 		Integration.comm_adjustment_Staging
@@ -524,7 +526,7 @@ Begin
 		, ess_salesperson_key_id = ISNULL(e.comm_salesperson_key_id,'')
 		-- note:  does for missing primary required, space for missing derived
 		, item_comm_group_cd = ISNULL(ih.[HIST_comm_group_cd],'.')
-		-- set missing to item-based default
+		-- set missing to item-based default, set ess futher down stream
 		,[fsc_comm_group_cd] = ISNULL(NULLIF([fsc_comm_group_cd],'.'),ISNULL(ih.[HIST_comm_group_cd],'.'))
 	FROM
 		BRS_FiscalMonth AS m 
@@ -541,6 +543,9 @@ Begin
 	
 		LEFT OUTER JOIN BRS_FSC_Rollup AS f 
 		ON Integration.comm_adjustment_Staging.fsc_code = NULLIF(f.TerritoryCd, '.')
+
+	-- avoid re-processing FreeGoods, Rebates, and Payrole tables
+	WHERE [WSVR01_reference] not in ('BR', 'HR')
 	
 	Set @nErrorCode = @@Error
 End
@@ -549,7 +554,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '12. update support fields for [Integration].[comm_adjustment_Staging] - Non FSC/ESS (experimental)'
+		print '12. update support fields for [Integration].[comm_adjustment_Staging] - 2 of 3, Non FSC/ESS (experimental)'
 
 	UPDATE
 		Integration.comm_adjustment_Staging
@@ -587,8 +592,10 @@ Begin
 	WHERE
 		(Integration.comm_adjustment_Staging.WSSHAN_shipto > 0) AND 
 		-- set customer specific plan for FSC, non  duplidated ESS adj
-		(NOT (Integration.comm_adjustment_Staging.fsc_code IN ('', '.')))	  
+		(NOT (Integration.comm_adjustment_Staging.fsc_code IN ('', '.'))) AND	  
 
+		-- avoid re-processing FreeGoods, Rebates, and Payrole tables
+		[WSVR01_reference] not in ('BR', 'HR')
 	
 	Set @nErrorCode = @@Error
 End
@@ -597,7 +604,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '13. update support fields for [Integration].[comm_adjustment_Staging] - set complete'
+		print '13. update support fields for [Integration].[comm_adjustment_Staging] - 3 of 3, check order, set ess code, set complete'
 
 	UPDATE
 		Integration.comm_adjustment_Staging
@@ -606,8 +613,28 @@ Begin
 		WSDOC__document_number = ISNULL(doc.SalesOrderNumber,0)
 		, WSDOCO_salesorder_number = WSDOC__document_number
 
+		-- close fsc code to ess if valid ESS and original adjustment only
+		,[ess_comm_group_cd] = CASE 
+									WHEN
+										-- avoid re-processing FreeGoods, Rebates, and Payrole tables
+										([WSVR01_reference] not in ('BR', 'HR')) AND 
+										-- valid ESS?
+										([ess_salesperson_key_id] <> '') AND
+										([ess_comm_group_cd] = '')
+									THEN [fsc_comm_group_cd]
+									-- no change
+									ELSE [ess_comm_group_cd]
+								END
+
+
 		-- used to calc GP from costs
-		, ma_estimate_factor = cat.ma_estimate_factor
+		-- avoid re-processing FreeGoods, Rebates, and Payrole tables
+		, ma_estimate_factor =	CASE 
+									WHEN [WSVR01_reference] not in ('BR', 'HR') 
+									THEN cat.ma_estimate_factor 
+									-- no change
+									ELSE Integration.comm_adjustment_Staging.ma_estimate_factor 
+								END
 		, status_code = 0
 	FROM
 		Integration.comm_adjustment_Staging 
@@ -628,7 +655,6 @@ Begin
 		fsc_code <> '.' OR
 		ess_code <> '.' 
 
-	
 	Set @nErrorCode = @@Error
 End
 

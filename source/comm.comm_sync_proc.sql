@@ -28,7 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**	29 Jan 21	tmc		add Private Label logic for 2021 plan    
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -94,20 +94,35 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '2. update comm_group_cd based on eps'
+		print '2. revert eps back to merch comm_group_cd (removed from 2021 plan)'
 
 	UPDATE
 		[dbo].[BRS_item]
 	SET
-		comm_group_cd = 'ITMEPS'
-	-- select top 10 item,Supplier, comm_group_cd, comm_group_eps_cd
+		comm_group_cd = 'ITMSND'
 	FROM
 		[dbo].[BRS_item]
 	WHERE
-		(comm_group_eps_cd like 'EPS%') AND
-		(comm_group_cd <> 'ITMEPS') AND
-		-- business exception where handpiece NOT synched to FSC
-		NOT (supplier = 'BAINTE' and comm_group_cd='ITMFO2') AND
+		(comm_group_cd = 'ITMEPS') AND
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '2b. map merch private label comm_group_cd '
+
+	UPDATE
+		[dbo].[BRS_item]
+	SET
+		comm_group_cd = 'ITMPVT'
+	FROM
+		[dbo].[BRS_item]
+	WHERE
+		(comm_group_cd = 'ITMSND') AND
+		([Label]='P') AND
 		(1=1)
 
 	Set @nErrorCode = @@Error
