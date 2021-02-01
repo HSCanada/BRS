@@ -36,7 +36,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[salesperson_key_id], [CCA44_salesperson_stage_"
+    "review].[comm_plan_id]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -100,15 +101,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1549
-    Bottom =945
+    State =0
+    Left =0
+    Top =40
+    Right =1561
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1525
-    Bottom =229
+    Right =1537
+    Bottom =195
     Left =0
     Top =0
     ColumnsShown =539

@@ -45,14 +45,16 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([RC031-FSC-Salesperson-CommGroup-ZeroNet].[fsc_salesperson_key_id]=\"TYLER.MCCL"
-    "ENDON               \")"
+dbMemo "Filter" ="([RC031-FSC-Salesperson-CommGroup-ZeroNet].[fsc_salesperson_key_id]=\"dmcchesney"
+    "                    \")"
+dbMemo "OrderBy" ="[RC031-FSC-Salesperson-CommGroup-ZeroNet].[SumOftransaction_amt] DESC, [RC031-FS"
+    "C-Salesperson-CommGroup-ZeroNet].[disp_fsc_comm_group_cd]"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -86,13 +88,15 @@ Begin
     End
     Begin
         dbText "Name" ="MinOfID_legacy"
-        dbInteger "ColumnWidth" ="2610"
+        dbInteger "ColumnWidth" ="1890"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
         dbText "Name" ="MaxOfID_legacy"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1920"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.fsc_salesperson_key_id"
@@ -109,20 +113,20 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1559
-    Bottom =945
+    Right =1587
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1344
-    Bottom =78
+    Right =1537
+    Bottom =61
     Left =0
     Top =0
     ColumnsShown =543
     Begin
         Left =95
-        Top =-16
+        Top =0
         Right =467
-        Bottom =286
+        Bottom =302
         Top =0
         Name ="comm_test_detail"
         Name =""

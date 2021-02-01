@@ -47,7 +47,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "Filter" ="([RC051-ESS-Salesperson-CommGroup-ZeroNet].[ess_salesperson_key_id]=\"jheckbert "
+dbMemo "Filter" ="([RC051-ESS-Salesperson-CommGroup-ZeroNet].[ess_salesperson_key_id]=\"RWong     "
     "                    \")"
 dbMemo "OrderBy" ="[RC051-ESS-Salesperson-CommGroup-ZeroNet].[SumOftransaction_amt] DESC"
 Begin
@@ -103,15 +103,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =-62
-    Top =172
-    Right =1471
-    Bottom =1069
+    State =2
+    Left =-8
+    Top =-31
+    Right =1587
+    Bottom =946
     Left =-1
     Top =-1
     Right =1509
-    Bottom =172
+    Bottom =155
     Left =0
     Top =0
     ColumnsShown =543

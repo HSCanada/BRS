@@ -1,7 +1,8 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.doc_id)=13796657) AND ((comm_test_detail.ess_comm_plan_id) L"
-    "ike \"ess*\" Or (comm_test_detail.ess_comm_plan_id) Like \"ccs*\"))"
+Where ="(((comm_test_detail.fiscal_yearmo_num)=202010) AND ((comm_test_detail.doc_id)=13"
+    "700422) AND ((comm_test_detail.ess_comm_plan_id) Like \"ess*\" Or (comm_test_det"
+    "ail.ess_comm_plan_id) Like \"ccs*\"))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -141,14 +142,14 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1559
-    Bottom =945
+    State =0
+    Left =76
+    Top =227
+    Right =1400
+    Bottom =707
     Left =-1
     Top =-1
-    Right =1509
+    Right =1300
     Bottom =-1
     Left =0
     Top =0

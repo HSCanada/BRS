@@ -81,10 +81,12 @@ Begin
     Begin
         dbText "Name" ="MinOfID_legacy"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1890"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_test_detail.disp_ess_comm_group_cd"
-        dbInteger "ColumnWidth" ="2310"
+        dbInteger "ColumnWidth" ="2850"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -97,6 +99,8 @@ Begin
     Begin
         dbText "Name" ="comm_test_detail.ess_salesperson_key_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2775"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="MaxOfitem_comm_group_cd"
@@ -105,14 +109,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1533
-    Bottom =937
+    Left =-68
+    Top =204
+    Right =1465
+    Bottom =1101
     Left =-1
     Top =-1
     Right =1509
-    Bottom =240
+    Bottom =223
     Left =0
     Top =0
     ColumnsShown =543

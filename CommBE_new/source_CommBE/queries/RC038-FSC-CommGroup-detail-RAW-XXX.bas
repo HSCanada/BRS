@@ -1,7 +1,8 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_test_detail.fsc_code)=\"AZ1CM\") AND ((comm_test_detail.disp_fsc_comm_gr"
-    "oup_cd)=\"itmeq0\"))"
+Where ="(((comm_test_detail.fiscal_yearmo_num)=202010) AND ((comm_test_detail.fsc_salesp"
+    "erson_key_id)=\"LSylvester\") AND ((comm_test_detail.fsc_comm_group_cd)=\"itmeps"
+    "\"))"
 Begin InputTables
     Name ="comm_test_detail"
 End
@@ -178,15 +179,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =176
-    Top =252
-    Right =1533
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1587
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1535
-    Bottom =391
+    Right =1563
+    Bottom =374
     Left =0
     Top =0
     ColumnsShown =539

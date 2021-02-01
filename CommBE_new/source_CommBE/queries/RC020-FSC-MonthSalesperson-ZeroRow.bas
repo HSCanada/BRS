@@ -52,7 +52,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[RC020-FSC-MonthSalesperson-ZeroRow].[SumOfgp_ext_amt] DESC"
+dbMemo "OrderBy" ="[RC020-FSC-MonthSalesperson-ZeroRow].[SumOftransaction_amt] DESC, [RC020-FSC-Mon"
+    "thSalesperson-ZeroRow].[SumOfgp_ext_amt] DESC"
 Begin
     Begin
         dbText "Name" ="comm_test_detail.fsc_salesperson_key_id"
@@ -110,15 +111,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1533
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1587
+    Bottom =946
     Left =-1
     Top =-1
     Right =1509
-    Bottom =338
+    Bottom =321
     Left =0
     Top =0
     ColumnsShown =543

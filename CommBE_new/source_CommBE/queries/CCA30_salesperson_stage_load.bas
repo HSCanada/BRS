@@ -25,8 +25,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[employee_num], [CCA30_salesperson_stage_load].[s"
-    "alesperson_key_id], [CCA30_salesperson_stage_load].[salesperson_nm], [CCA30_sale"
+dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[salesperson_nm], [CCA30_salesperson_stage_load]."
+    "[employee_num], [CCA30_salesperson_stage_load].[salesperson_key_id], [CCA30_sale"
     "sperson_stage_load].[CostCenter]"
 Begin
     Begin
@@ -81,15 +81,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =961
-    Bottom =547
+    State =2
+    Left =-8
+    Top =-31
+    Right =1587
+    Bottom =946
     Left =-1
     Top =-1
     Right =937
-    Bottom =315
+    Bottom =298
     Left =0
     Top =0
     ColumnsShown =539

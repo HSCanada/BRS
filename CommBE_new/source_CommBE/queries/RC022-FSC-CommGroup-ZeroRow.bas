@@ -58,6 +58,8 @@ Begin
     Begin
         dbText "Name" ="SumOfgp_ext_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2145"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="SumOffsc_comm_amt"
@@ -88,6 +90,8 @@ Begin
     Begin
         dbText "Name" ="MinOfID_legacy"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1890"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="MaxOfitem_comm_group_cd"
@@ -95,15 +99,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1438
-    Bottom =825
+    State =0
+    Left =87
+    Top =51
+    Right =1499
+    Bottom =637
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =301
+    Right =1388
+    Bottom =284
     Left =0
     Top =0
     ColumnsShown =543

@@ -11,7 +11,6 @@ Begin OutputColumns
     Expression ="comm_transfer_rule.DocType"
     Expression ="comm_transfer_rule.fsc_code"
     Expression ="comm_transfer_rule.ess_code"
-    Expression ="comm_transfer_rule.xfer_key"
     Expression ="comm_transfer_rule.xfer_type"
     Expression ="comm_transfer_rule.new_fsc_code"
     Expression ="comm_transfer_rule.new_ess_code"
@@ -19,6 +18,7 @@ Begin OutputColumns
     Expression ="comm_transfer_rule.ShipTo"
     Expression ="comm_transfer_rule.xfer_branch_ind"
     Expression ="comm_transfer_rule.comment"
+    Expression ="comm_transfer_rule.xfer_key"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -89,15 +89,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =44
-    Top =93
-    Right =1167
-    Bottom =770
+    State =2
+    Left =-8
+    Top =-31
+    Right =1438
+    Bottom =651
     Left =-1
     Top =-1
-    Right =1099
-    Bottom =84
+    Right =1414
+    Bottom =67
     Left =0
     Top =0
     ColumnsShown =539

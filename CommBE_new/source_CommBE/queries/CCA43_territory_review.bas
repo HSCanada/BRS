@@ -1,7 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\",\"DDTS\",\"DEST\",\"AAES\",\""
-    "DEPS\")))"
+Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\",\"DEPS\")))"
 Begin InputTables
     Name ="BRS_FSC_Rollup"
 End
@@ -16,15 +15,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA43_territory_review].[FSCName], [CCA43_territory_review].[comm_salesperson_k"
-    "ey_id], [CCA43_territory_review].[Branch], [CCA43_territory_review].[group_type]"
-dbMemo "Filter" ="([CCA43_territory_review].[group_type]=\"DEPS\")"
+dbMemo "OrderBy" ="[CCA43_territory_review].[comm_salesperson_key_id]"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -59,12 +56,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =961
-    Bottom =547
+    Right =1561
+    Bottom =938
     Left =-1
     Top =-1
-    Right =937
-    Bottom =153
+    Right =1537
+    Bottom =119
     Left =0
     Top =0
     ColumnsShown =539
