@@ -98,7 +98,7 @@ GO
 SELECT HIST_MarketClassKey, count (*) 
 FROM [Fact].[SaleVendor] 
 WHERE        
-	(FiscalMonth BETWEEN 201701 AND 201712) AND 
+	(FiscalMonth BETWEEN 202101 AND 202101) AND 
 --	(FreeGoodsEstInd = 0) AND 
 	(1 = 1)
 GROUP BY HIST_MarketClassKey

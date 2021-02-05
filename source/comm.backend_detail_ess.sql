@@ -60,7 +60,7 @@ SELECT
 	t.[WSDGL__gl_date]				AS transaction_dt, 
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
-	ISNULL(cust.PracticeName, 'na')	AS customer_nm, 
+	LEFT(ISNULL(cust.PracticeName, t.[WSVR02_reference_2]), 25)	AS customer_nm, 
 	pr.disp_comm_group_cd			AS item_comm_group_cd,
 
 	g.comm_group_desc,
@@ -123,6 +123,6 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM [comm].[backend_detail_ess] where source_cd = 'JDE'
+SELECT top 10 * FROM [comm].[backend_detail_ess] where source_cd = 'IMP' 
 -- 6s
 

@@ -152,7 +152,7 @@ SELECT  * FROM [comm].[customer_rebate_export] where [teeth_share_rt] > 1.0 or [
 
 -- test details
 
-SELECT  top 10 * FROM [comm].[customer_rebate_export] order by ID
+-- SELECT  top 10 * FROM [comm].[customer_rebate_export] order by ID
 
 -- SELECT  * FROM [comm].[customer_rebate_export]  order by transaction_amt asc         
 

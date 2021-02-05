@@ -28,7 +28,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	23 Dec 20	tmc		add new commission mapping    
+**	23 Dec 20	tmc		add new commission mapping
+**	01 Feb 21	tmc		small rebate default fix to remove Ref Integrity issue
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -380,7 +381,8 @@ Begin
 		, fsc_code = [HIST_TerritoryCd]
 		-- future
 		, isr_salesperson_key_id = [HIST_isr_salesperson_key_id]
-		, isr_comm_group_cd = '.'
+		-- space, not dot as rebate_export is used to load to adjustment direct (RI)
+		, isr_comm_group_cd = ''
 		, isr_code = [HIST_TsTerritoryCd]
 		, teeth_share_rt = 
 			CASE 

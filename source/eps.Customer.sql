@@ -37,6 +37,7 @@ AS
 --  29 Nov 19	tmc		Added BC
 --	13 Jan 20	tmc		Added Tortonto rule
 --	27 Feb 20	tmc		moved filter business logic to flags
+--	01 Feb 21	tmc		remove territory exception for 2021 plan
 **    
 *******************************************************************************/
 
@@ -69,6 +70,8 @@ SELECT
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
 	'.'						AS Field_Level_3_Description,
+	RTRIM(b.EPS_code)		AS Eps_Code
+/*
 	CASE 
 		WHEN 
 			f.[TerritoryCd] in ('CZ107', 'CZ1AD', 'CZ1B8', 'CZ1SD', 'CZ1UU', 'CZ2BG', 'CZ2NM')
@@ -77,7 +80,7 @@ SELECT
 		ELSE
 			RTRIM(b.EPS_code)
 	END						AS Eps_Code
-
+*/
 	
 
 FROM
@@ -97,7 +100,7 @@ FROM
 
 WHERE
 	(c.ShipTo > 0) AND
-	(c.SalesDivision = 'AAD') AND 
+	(c.SalesDivision IN ('AAD', 'AAL')) AND 
 	(s.PrivateLabelScopeInd = 1) AND
 	(b.PrivateLabelScopeInd = 1) AND
 	(1=1)

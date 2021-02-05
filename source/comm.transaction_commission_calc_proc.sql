@@ -469,7 +469,7 @@ Begin
 			comm.transaction_F555115
 		SET
 			fsc_comm_group_cd = s.HIST_comm_group_cd
-		-- SELECT t.* 
+		-- SELECT d.* 
 		FROM
 			[dbo].[BRS_ItemHistory] AS s 
 
@@ -477,6 +477,14 @@ Begin
 			ON (d.WSLITM_item_number = s.Item) AND
 			(d.FiscalMonth = s.FiscalMonth)
 		WHERE        
+/*
+			(d.FiscalMonth = 202101 ) AND
+			(d.source_cd = 'IMP') AND
+			(s.HIST_comm_group_cd <> '') AND
+			(d.WSLITM_item_number <> '') AND
+--			(ISNULL(d.fsc_comm_group_cd,'') = '') AND
+			(1 = 1)
+*/
 			(d.fsc_comm_plan_id <> '') AND
 			(d.source_cd = 'IMP') AND
 			(s.HIST_comm_group_cd <> '') AND
@@ -491,7 +499,7 @@ Begin
 
 	-- at this point, (a) ISR = FSC for JDE source, but (b) IMP is special case
 	-- copy allows us to leverage prior FSC logic
-	-- note that we my copy over codes that are not applicable to plan
+	-- note that we may copy over codes that are not applicable to plan
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)

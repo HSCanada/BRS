@@ -114,7 +114,7 @@ SELECT  * FROM [comm].[adjustment_export] where [gp_ext_amt] is null
 */
 
 -- test details
-SELECT  top 10      * FROM [comm].[adjustment_export]
+-- SELECT  top 10      * FROM [comm].[adjustment_export]
 --SELECT  * FROM [comm].[adjustment_export]  order by transaction_amt asc         
 
 

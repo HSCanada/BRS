@@ -92,6 +92,8 @@ GO
 
 -- SELECT  * FROM eps.Item where Supplier = 'DENMAT'
 -- SELECT  * FROM eps.Item where Supplier = 'ZYRISI'
+-- SELECT  * FROM eps.Item where Supplier = 'CAO_LASER'
+
 -- SELECT  distinct Supplier FROM eps.Item
 /*
 Corporate Brand (Non PPE)

@@ -340,6 +340,7 @@ Begin
 			,[cps_comm_group_cd]
 			,[cps_salesperson_key_id]
 			,[WSDOCO_salesorder_number]
+			--- TBD add plans...
 		)
 		SELECT        
 			-- TOP (10) 
@@ -495,6 +496,7 @@ GO
 
 -- Prod
 -- EXEC comm.adjustment_load_proc @bDebug=0, @bClearStage=0
+-- EXEC comm.adjustment_load_proc @bDebug=0, @bClearStage=1
 
 -- Debug, 6m
 -- EXEC comm.adjustment_load_proc @bDebug=1, @bClearStage=0

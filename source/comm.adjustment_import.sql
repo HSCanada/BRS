@@ -101,7 +101,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- test details
-SELECT  top 10      * FROM [comm].[adjustment_import]
+-- SELECT  top 10      * FROM [comm].[adjustment_import]
 
 
 

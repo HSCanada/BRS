@@ -54,10 +54,10 @@ SELECT
 	,LEFT([ItemDescription],30)	AS details
 	,m.EndDt					AS transaction_date
 	,0							AS [transaction_amt] 
-	-- new GP method (use CommCost for GP), effective Jan 2021
-	,(-[ExtFileCostCadAmt] * [ma_estimate_factor]) AS gp_ext_amt
+	-- new GP method (use CommCost for GP), effective Jan 2021, assume GP +ive
+	,([ExtFileCostCadAmt] * [ma_estimate_factor]) AS gp_ext_amt
 	-- legacy GP method (use File Cost CAD)
-	-- ,(-[ExtFileCostCadAmt])		AS gp_ext_amtOLD
+	-- ,([ExtFileCostCadAmt])		AS gp_ext_amtOLD
 
 	,[ExtFileCostCadAmt]		AS file_cost_amt
 	,0.0						AS fsc_comm_amt
@@ -102,7 +102,7 @@ SELECT  * FROM  [comm].[freegoods_export] where status_code <> 0
 */
 
 -- test details
-SELECT  top 10      * FROM [comm].[freegoods_export]
+--SELECT  top 10      * FROM [comm].[freegoods_export]
 --SELECT  * FROM [comm].[freegoods_export]  order by transaction_amt asc         
 
 

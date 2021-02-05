@@ -66,4 +66,4 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
--- SELECT  * FROM Dimension.Period
+-- SELECT  * FROM Dimension.Period order by 1 desc
