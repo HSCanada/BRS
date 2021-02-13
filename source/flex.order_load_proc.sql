@@ -138,7 +138,7 @@ Begin
 	(
 	ACCOUNT
 	, Supplier
-	, [note]
+	, ShipTo_Suggest
 
 	, COMPANY
 	, FIRSTLAST

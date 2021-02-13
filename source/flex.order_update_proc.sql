@@ -136,6 +136,7 @@ Begin
 			(
 				SELECT
 					f.order_file_name
+					, COUNT(distinct h.ORDERNO) AS bad_order
 					, COUNT(*) AS bad_lines
 				FROM
 					flex.order_file AS f
@@ -152,8 +153,9 @@ Begin
 					f.order_file_name
 			) chk
 			WHERE
-				flex.order_file.order_file_name = chk.order_file_name AND
-				chk.bad_lines > 0
+				(flex.order_file.order_file_name = chk.order_file_name) AND
+				(chk.bad_lines > 0) AND
+				(1=1)
 		)
 
 		Set @nErrorCode = @@Error

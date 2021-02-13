@@ -499,7 +499,7 @@ Begin
 
 	-- at this point, (a) ISR = FSC for JDE source, but (b) IMP is special case
 	-- copy allows us to leverage prior FSC logic
-	-- note that we may copy over codes that are not applicable to plan
+	-- note that we copy over fsc codes that are applicable to isr plan
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -510,9 +510,23 @@ Begin
 		SET
 			isr_comm_group_cd = fsc_comm_group_cd
 		-- SELECT t.* 
-		WHERE        
-			(isr_comm_plan_id <> '') AND
-			(source_cd = 'JDE') AND
+---- XXX
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.isr_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				t.[cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+----
+		WHERE 
+			-- active isr plan and rate
+			(t.isr_comm_plan_id <> '') AND
+			(r.active_ind = 1) AND
+			-- fsc code is avail (assume isr subset of fsc)
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd = 'JDE') AND
 			(FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
@@ -1304,3 +1318,7 @@ GO
 -- Debug, 2m
 -- Exec comm.transaction_commission_calc_proc @bDebug=1
 
+-- test, 6m
+--8a. ISR clone FSC commgroup - JDE
+--(95073 rows affected)
+--(63431 rows affected)

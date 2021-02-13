@@ -221,3 +221,38 @@ FROM            BRS_ItemHistory INNER JOIN
                          BRS_Item AS i ON BRS_ItemHistory.Item = i.Item
 WHERE BRS_ItemHistory.FiscalMonth = 202101 and HIST_comm_group_eps_cd <> i.[comm_group_eps_cd]
 
+-- isr code cleanup
+
+UPDATE       comm.transaction_F555115
+SET                isr_comm_group_cd = ''
+WHERE        (isr_comm_group_cd <> '') AND (FiscalMonth = 202101)
+
+-- pay reload
+delete FROM [comm].[transaction_F555115] where source_cd = 'PAY' and FiscalMonth = 202101
+
+-- fix RI for ISR
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115
+	DROP CONSTRAINT FK_transaction_F555115_group6
+GO
+ALTER TABLE comm.[group] SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.transaction_F555115 ADD CONSTRAINT
+	FK_transaction_F555115_group6 FOREIGN KEY
+	(
+	isr_comm_group_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE comm.transaction_F555115 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

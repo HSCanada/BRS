@@ -30,6 +30,8 @@ GO
 **	7 Dec 17	tmc		Convert to new backend
 **	28 Oct 19	tmc		Fix filter discrepancy with prod, comm_ess_statement_detail
 **	19 Dec 19	tmc		Fix mapped rate & hist custinfo
+**	08 Feb 21	tmc	Add Doctype
+**  09 Feb 21	tmc replace FSC with master code
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_ess]
@@ -45,7 +47,9 @@ SELECT
 	t.ess_comm_plan_id				AS comm_plan_id,
 	p.comm_plan_nm, 
 
-	t.fsc_code						AS fsc_salesperson_cd,
+	m2.[master_salesperson_cd]		AS fsc_salesperson_cd,
+--	t.fsc_code						AS fsc_salesperson_cd,
+
 	t.fsc_salesperson_key_id		AS fsc_salesperson_key_id,
 
 	t.FiscalMonth					AS fiscal_yearmo_num, 
@@ -53,6 +57,7 @@ SELECT
 	c.EndDt							AS fiscal_end_dt, 
 
 	t.WSDOCO_salesorder_number		AS doc_key_id, 
+	t.WSDCTO_order_type				AS doc_type,
 	t.[WSLNID_line_number]			AS line_id, 
 	t.WSDOCO_salesorder_number		AS doc_id, 
 	t.[WSDOC__document_number]		AS order_id, 
@@ -89,6 +94,9 @@ FROM
 	INNER JOIN [comm].[salesperson_master] m
 	ON t.ess_salesperson_key_id = m.salesperson_key_id
 
+	INNER JOIN [comm].[salesperson_master] m2
+	ON t.fsc_salesperson_key_id = m2.salesperson_key_id
+
 	INNER JOIN [comm].[plan] p
 	ON m.comm_plan_id = p.comm_plan_id
 
@@ -123,6 +131,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-SELECT top 10 * FROM [comm].[backend_detail_ess] where source_cd = 'IMP' 
+--SELECT top 10 * FROM [comm].[backend_detail_ess] where source_cd = 'IMP' 
+--SELECT * FROM [comm].[backend_detail_ess] where fsc_salesperson_cd <>  fsc_salesperson_cd_new
 -- 6s
 

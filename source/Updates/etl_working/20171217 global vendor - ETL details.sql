@@ -92,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202001 AND 202012
+	FiscalMonth BETWEEN 202001 AND 202101
 GO
 
 
@@ -104,7 +104,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202001 AND 202012
+	FiscalMonth BETWEEN 202001 AND 202101
 GO
 
 /*
@@ -127,14 +127,14 @@ GO
             
 -- move from Excl to Brand after 202007
 UPDATE       [hfm].[exclusive_product]
-SET                [BrandEquityCategory] = 'Exclusive'
---SET                [BrandEquityCategory] = 'Branded'
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
 WHERE        ([Excl_Code] = 'CAO_LASER')
 
 -- move from Excl to Brand after 202012
 UPDATE       [hfm].[exclusive_product]
-SET                [BrandEquityCategory] = 'Exclusive'
---SET                [BrandEquityCategory] = 'Branded'
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
 WHERE        (Excl_Code in('COMPUDENT', 'MILESTONE' ))
 
 */
@@ -156,7 +156,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN  202001 AND 202012
+	FiscalMonth BETWEEN 202001 AND 202101
 GO
 
 
@@ -175,7 +175,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN  202001 AND 202012
+	FiscalMonth BETWEEN  202001 AND 202101
 GO
 
 
@@ -188,7 +188,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN  202001 AND 202012
+	FiscalMonth BETWEEN  202001 AND 202101
 GO
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level
@@ -201,7 +201,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN 202001 AND 202012
 GO
 
 --2 min
@@ -227,7 +227,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 202012 and 202012)
+	(BRS_Transaction.FiscalMonth between 202101 and 202101)
 GO
 
 -- 1 min
@@ -259,7 +259,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202012 and 202012)
+	(BRS_Transaction.FiscalMonth between 202101 and 202101)
 GO
 
 -- 30s
@@ -291,7 +291,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202012 and 202012)
+	(BRS_Transaction.FiscalMonth between 202101 and 202101)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -300,7 +300,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202012 AND 202012
+	FiscalMonth BETWEEN 202101 AND 202101
 GO
 
 -- update BRS_ItemCategory!global for new codes first
@@ -309,7 +309,7 @@ UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN 201901 AND 202101
 GO
 
 
@@ -323,7 +323,7 @@ FROM
 WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 201901 AND 201912
+	FiscalMonth BETWEEN 201901 AND 202101
 GO
 
 print '17. set Financial services dummy code - Transaction'
@@ -335,18 +335,17 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 201901 AND 201912) AND
+	(FiscalMonth BETWEEN 201901 AND 202101) AND
 	(1=1)
 GO
-
 
 
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Dec-19_RA.csv
+-- a_CAN_Jan-21_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  201912, 201912
+-- [hfm].global_cube_proc  202101, 202101
 
 -- stop @ month 7 for 2020

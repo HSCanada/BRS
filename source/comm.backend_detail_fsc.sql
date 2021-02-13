@@ -34,6 +34,8 @@ GO
 --	7 Dec 17	tmc	Convert to new backend
 **	19 Dec 19	tmc		Fix mapped rate & hist custinfo
 **	21 Aug 20	tmc	Fix missing name & ref custinfo in detail (new)
+**	08 Feb 21	tmc	Add Doctype
+**  09 Feb 21	tmc replace ESS with master code
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -49,7 +51,9 @@ SELECT
 	t.fsc_comm_plan_id				AS comm_plan_id,
 	p.comm_plan_nm, 
 
-	t.ess_code						AS ess_salesperson_cd,
+	m2.[master_salesperson_cd]		AS ess_salesperson_cd,
+--	t.ess_code						AS ess_salesperson_cd,
+
 	t.ess_salesperson_key_id		AS ess_salesperson_key_id,
 
 	t.FiscalMonth					AS fiscal_yearmo_num, 
@@ -57,6 +61,7 @@ SELECT
 	c.EndDt							AS fiscal_end_dt, 
 
 	t.WSDOCO_salesorder_number		AS doc_key_id, 
+	t.WSDCTO_order_type				AS doc_type,
 	t.[WSLNID_line_number]			AS line_id, 
 	t.WSDOCO_salesorder_number		AS doc_id, 
 	t.[WSDOC__document_number]		AS order_id, 
@@ -65,7 +70,6 @@ SELECT
 
 	t.[WSSHAN_shipto]				AS hsi_shipto_id, 
 	LEFT(ISNULL(cust.PracticeName, t.[WSVR02_reference_2]),25)	AS customer_nm, 
---	cust.ShipTo,
 	pr.disp_comm_group_cd			AS item_comm_group_cd,
 
 	g.comm_group_desc,
@@ -95,6 +99,9 @@ FROM
 	INNER JOIN [comm].[salesperson_master] m
 	ON t.fsc_salesperson_key_id = m.salesperson_key_id
 
+	INNER JOIN [comm].[salesperson_master] m2
+	ON t.ess_salesperson_key_id = m2.salesperson_key_id
+
 	INNER JOIN [comm].[plan] p
 	ON m.comm_plan_id = p.comm_plan_id
 
@@ -109,11 +116,6 @@ FROM
 
 	LEFT JOIN [dbo].[BRS_Customer] cust
 	ON t.WSSHAN_shipto = cust.ShipTo
-/*
-	INNER JOIN [dbo].[BRS_CustomerFSC_History] as cust
-	ON cust.[Shipto] = t.[WSSHAN_shipto] AND
-		cust.[FiscalMonth] = t.FiscalMonth
-*/
 
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
@@ -127,5 +129,12 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-SELECT top 10 * FROM [comm].[backend_detail_fsc] where source_cd = 'JDE'
--- 10rows, 6s
+-- SELECT top 10 * FROM [comm].[backend_detail_fsc] where source_cd = 'JDE'
+
+--SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new
+--SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'RPoch' AND ess_salesperson_cd <>  ess_salesperson_cd_new
+
+--SELECT top 10 * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'ESS32'
+--SELECT top 10 * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd = 'ESS47'
+
+-- ORG 3868

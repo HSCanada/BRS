@@ -72,6 +72,10 @@ CREATE TABLE [flex].[order_file](
 
 	[status_code] [smallint] NOT NULL Default (-1),
 	[batch_id] [int] NULL,
+	order_count	[int] NULL,
+	line_count [int] NULL,
+	order_error_count	[int] NULL,
+	line_error_count [int] NULL,
 
 	[note] [varchar](50) NULL,
 ) ON [USERDATA]
@@ -190,6 +194,7 @@ CREATE TABLE [flex].[customer_xref](
 
 	[status_code] [smallint] NOT NULL Default (-1),
 	[ShipTo] [int] NOT NULL Default(0), 
+	[ShipTo_Suggest] [varchar](50) NULL,
 	[note] [varchar](50) NULL,
 	[create_date] [date] NOT NULL Default(GETDATE()),
 
@@ -232,6 +237,7 @@ CREATE TABLE [flex].[item_xref](
 
 	[status_code] [smallint] NOT NULL Default (-1),
 	[Item] [char](10) NOT NULL Default(''), 
+	[Item_Suggest] [varchar](50) NULL,
 	[note] [varchar](50) NULL,
 	[create_date] [date] NOT NULL Default(GETDATE()),
 
@@ -298,6 +304,15 @@ COMMIT
 BEGIN TRANSACTION
 GO
 ALTER TABLE flex.batch_template ADD
+	order_pend char(2) NOT NULL CONSTRAINT DF_batch_template_order_pend DEFAULT ''
+GO
+ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE flex.batch_template ADD
 	dealer_code char(10) NOT NULL CONSTRAINT DF_batch_template_dealer_code DEFAULT ''
 GO
 ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
@@ -353,7 +368,7 @@ GO
 COMMIT
 
 --
-
+/*
 -- drop TABLE [flex].[batch]
 CREATE TABLE [flex].[batch](
 	[batch_id] [int] NOT NULL IDENTITY(1,1),
@@ -380,6 +395,7 @@ GO
 ALTER TABLE flex.batch SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+*/
 
 -- RI
 
@@ -407,6 +423,7 @@ ALTER TABLE flex.order_file ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+/*
 ALTER TABLE flex.order_file ADD CONSTRAINT
 	FK_order_file_batch FOREIGN KEY
 	(
@@ -420,6 +437,7 @@ ALTER TABLE flex.order_file ADD CONSTRAINT
 GO
 ALTER TABLE flex.order_file SET (LOCK_ESCALATION = TABLE)
 GO
+*/
 COMMIT
 
 --
@@ -484,6 +502,7 @@ ALTER TABLE flex.order_header ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+/*
 ALTER TABLE flex.order_header ADD CONSTRAINT
 	FK_order_header_batch FOREIGN KEY
 	(
@@ -497,6 +516,7 @@ ALTER TABLE flex.order_header ADD CONSTRAINT
 GO
 ALTER TABLE flex.order_header SET (LOCK_ESCALATION = TABLE)
 GO
+*/
 COMMIT
 
 --
@@ -539,6 +559,7 @@ ALTER TABLE flex.order_detail ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+/*
 ALTER TABLE flex.order_detail ADD CONSTRAINT
 	FK_order_detail_batch FOREIGN KEY
 	(
@@ -552,6 +573,7 @@ ALTER TABLE flex.order_detail ADD CONSTRAINT
 GO
 ALTER TABLE flex.order_detail SET (LOCK_ESCALATION = TABLE)
 GO
+*/
 COMMIT
 
 --
@@ -630,7 +652,7 @@ ALTER TABLE flex.batch_template SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 --
-
+/*
 BEGIN TRANSACTION
 GO
 ALTER TABLE flex.batch ADD CONSTRAINT
@@ -647,6 +669,7 @@ GO
 ALTER TABLE flex.batch SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+*/
 --
 BEGIN TRANSACTION
 GO
@@ -666,6 +689,7 @@ GO
 COMMIT
 
 -- clear
+truncate table [Integration].[flex_order_lines_Staging]
 
 truncate table [flex].[order_detail]
 delete from [flex].[order_header]
