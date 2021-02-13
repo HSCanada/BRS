@@ -15,7 +15,7 @@ Begin OutputColumns
     Expression ="Integration_flex_order_lines_Staging.UPC"
     Expression ="Integration_flex_order_lines_Staging.PRICE"
     Expression ="Integration_flex_order_lines_Staging.FREEGDS"
-    Expression ="Integration_flex_order_lines_Staging.DATE"
+    Expression ="Integration_flex_order_lines_Staging.Date"
     Expression ="Integration_flex_order_lines_Staging.DUEDATE"
     Expression ="Integration_flex_order_lines_Staging.REF2"
     Expression ="Integration_flex_order_lines_Staging.COMPANY"
@@ -159,8 +159,8 @@ Begin
     Bottom =918
     Left =-1
     Top =-1
-    Right =1330
-    Bottom =673
+    Right =1600
+    Bottom =656
     Left =0
     Top =0
     ColumnsShown =539

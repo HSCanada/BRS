@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_order_file.flex_code)=\"PG_IMP\") AND ((flex_order_file.status_code)=0))"
+Where ="(((flex_order_file.status_code)=0) AND ((flex_order_file.batch_id) Is Null) AND "
+    "((flex_order_file.flex_code)=\"PG_IMP\"))"
 Begin InputTables
     Name ="flex_order_header"
     Name ="flex_order_detail"
@@ -35,7 +36,6 @@ Begin OutputColumns
     Expression ="flex_batch_template.OrderTakenBy"
     Alias ="M_Refer_Order"
     Expression ="flex_batch_template.refer_order"
-    Expression ="flex_order_file.status_code"
 End
 Begin Joins
     LeftTable ="flex_order_header"
@@ -85,6 +85,8 @@ Begin
     Begin
         dbText "Name" ="B_Document_Type"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2160"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="E_Line_Type"
@@ -93,6 +95,8 @@ Begin
     Begin
         dbText "Name" ="C_Source_of_Order"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2220"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="D_Item_number"
@@ -134,21 +138,17 @@ Begin
         dbText "Name" ="M_Refer_Order"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="flex_order_file.status_code"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1346
+    Right =1616
     Bottom =918
     Left =-1
     Top =-1
-    Right =1330
-    Bottom =359
+    Right =1600
+    Bottom =308
     Left =0
     Top =0
     ColumnsShown =539

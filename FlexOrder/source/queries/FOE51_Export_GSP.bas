@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_order_file.flex_code)=\"PG_GSP\") AND ((flex_order_file.status_code)=0))"
+Where ="(((flex_order_file.status_code)=0) AND ((flex_order_file.batch_id) Is Null) AND "
+    "((flex_order_file.flex_code)=\"PG_GSP\"))"
 Begin InputTables
     Name ="flex_order_header"
     Name ="flex_order_detail"
@@ -14,18 +15,23 @@ Begin OutputColumns
     Expression ="flex_order_detail.Item"
     Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
-    Alias ="D_UOM"
-    Expression ="\"\""
-    Alias ="E_Customer_PO"
-    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO]"
-    Alias ="F_Order_Route"
-    Expression ="\"\""
-    Alias ="G_Line_price_Override"
-    Expression ="1"
-    Alias ="H_Unit_Price"
+    Alias ="D_Unit_Price"
     Expression ="CLng([PRICE]*10000)"
-    Alias ="I_Refer_order"
+    Alias ="E_Line_price_Override"
+    Expression ="1"
+    Alias ="F_Customer_PO"
+    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
+        "ACCOUNT]"
+    Alias ="G_Refer_order"
     Expression ="flex_order_header.ORDERNO"
+    Alias ="H_Order_Taken_By"
+    Expression ="flex_batch_template.OrderTakenBy"
+    Alias ="I_Ordered_By"
+    Expression ="flex_batch_template.OrderTakenBy"
+    Alias ="J_Refer_Order"
+    Expression ="flex_batch_template.refer_order"
+    Alias ="K_Order_Pend"
+    Expression ="flex_batch_template.order_pend"
 End
 Begin Joins
     LeftTable ="flex_order_header"
@@ -48,7 +54,8 @@ End
 Begin OrderBy
     Expression ="flex_order_header.ShipTo"
     Flag =0
-    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO]"
+    Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
+        "ACCOUNT]"
     Flag =0
     Expression ="flex_order_header.ORDERNO"
     Flag =0
@@ -72,12 +79,20 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="G_Line_price_Override"
+        dbText "Name" ="J_Refer_order"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1755"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="F_Order_Route"
-        dbInteger "ColumnWidth" ="2145"
+        dbText "Name" ="K_Order_Pend"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1770"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="F_Customer_PO"
+        dbInteger "ColumnWidth" ="2850"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -88,27 +103,39 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
+        dbText "Name" ="I_Ordered_By"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1695"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
         dbText "Name" ="C_Qty"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="975"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="D_UOM"
+        dbText "Name" ="D_Unit_Price"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1620"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="E_Customer_PO"
-        dbInteger "ColumnWidth" ="1920"
+        dbText "Name" ="E_Line_price_Override"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2520"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="G_Refer_order"
+        dbInteger "ColumnWidth" ="1785"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="H_Unit_Price"
+        dbText "Name" ="H_Order_Taken_By"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="I_Refer_order"
-        dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1710"
+        dbInteger "ColumnWidth" ="2190"
         dbBoolean "ColumnHidden" ="0"
     End
 End
@@ -116,12 +143,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1346
+    Right =1616
     Bottom =918
     Left =-1
     Top =-1
-    Right =1330
-    Bottom =203
+    Right =1600
+    Bottom =391
     Left =0
     Top =0
     ColumnsShown =539
@@ -135,10 +162,10 @@ Begin
         Name =""
     End
     Begin
-        Left =853
-        Top =2
-        Right =1273
-        Bottom =369
+        Left =881
+        Top =0
+        Right =1301
+        Bottom =367
         Top =0
         Name ="flex_order_detail"
         Name =""
@@ -146,8 +173,8 @@ Begin
     Begin
         Left =102
         Top =13
-        Right =246
-        Bottom =157
+        Right =285
+        Bottom =311
         Top =0
         Name ="flex_order_file"
         Name =""
@@ -155,7 +182,7 @@ Begin
     Begin
         Left =548
         Top =11
-        Right =887
+        Right =885
         Bottom =218
         Top =0
         Name ="flex_batch_template"

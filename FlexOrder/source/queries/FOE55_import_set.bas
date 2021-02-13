@@ -8,6 +8,7 @@ Begin OutputColumns
     Expression ="flex_order_file.order_file_name"
     Expression ="flex_order_file.flex_code"
     Expression ="flex_order_file.Supplier"
+    Expression ="flex_order_file.batch_id"
     Expression ="flex_order_file.note"
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -40,10 +41,6 @@ Begin
         dbText "Name" ="flex_order_file.batch_id"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="flex_order_file.status_code"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
@@ -54,7 +51,7 @@ Begin
     Left =-1
     Top =-1
     Right =907
-    Bottom =622
+    Bottom =605
     Left =0
     Top =0
     ColumnsShown =539
