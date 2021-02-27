@@ -119,23 +119,23 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =-591
-    Top =126
-    Right =1265
-    Bottom =633
+    State =2
+    Left =-8
+    Top =-31
+    Right =1550
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1097
-    Bottom =186
+    Right =1832
+    Bottom =316
     Left =0
     Top =0
     ColumnsShown =651
     Begin
         Left =46
         Top =25
-        Right =287
-        Bottom =221
+        Right =457
+        Bottom =317
         Top =0
         Name ="Integration_comm_customer_rebate_Staging"
         Name =""

@@ -7,7 +7,8 @@ Where ="(((BRS_FSC_Rollup.group_type)=\"AAFS\") AND ((BRS_FSC_Rollup.comm_salesp
     "TerritoryCd) Like \"CCS*\") AND ((BRS_FSC_Rollup.comm_salesperson_key_id) Is Nul"
     "l Or (BRS_FSC_Rollup.comm_salesperson_key_id)=\"\")) OR (((BRS_FSC_Rollup.Territ"
     "oryCd)<>\"\") AND ((BRS_FSC_Rollup.group_type)=\"\")) OR (((BRS_FSC_Rollup.group"
-    "_type)=\"DEPS\")) OR (((BRS_FSC_Rollup.group_type)=\"AAES\"))"
+    "_type)=\"DEPS\")) OR (((BRS_FSC_Rollup.group_type)=\"AAES\")) OR (((BRS_FSC_Roll"
+    "up.group_type)=\"DDTS\"))"
 Begin InputTables
     Name ="BRS_FSC_Rollup"
     Name ="Integration_comm_salesperson_master_Staging"
@@ -83,15 +84,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1561
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1550
+    Bottom =946
     Left =-1
     Top =-1
     Right =1537
-    Bottom =187
+    Bottom =136
     Left =0
     Top =0
     ColumnsShown =539

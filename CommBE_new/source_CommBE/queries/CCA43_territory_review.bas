@@ -1,12 +1,13 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\",\"DEPS\")))"
+Where ="(((BRS_FSC_Rollup.group_type) In (\"AAES\",\"AAFS\",\"DEPS\",\"DDTS\")))"
 Begin InputTables
     Name ="BRS_FSC_Rollup"
 End
 Begin OutputColumns
     Expression ="BRS_FSC_Rollup.TerritoryCd"
     Expression ="BRS_FSC_Rollup.FSCName"
+    Expression ="BRS_FSC_Rollup.FSCStatusCode"
     Expression ="BRS_FSC_Rollup.Branch"
     Expression ="BRS_FSC_Rollup.group_type"
     Expression ="BRS_FSC_Rollup.order_taken_by"
@@ -15,13 +16,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA43_territory_review].[comm_salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA43_territory_review].[TerritoryCd], [CCA43_territory_review].[FSCStatusCode]"
+dbMemo "Filter" ="([CCA43_territory_review].[group_type]=\"DDTS\")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -51,17 +53,21 @@ Begin
         dbText "Name" ="BRS_FSC_Rollup.group_type"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_FSC_Rollup.FSCStatusCode"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =40
-    Right =1561
-    Bottom =938
+    Right =1255
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1537
-    Bottom =119
+    Right =1231
+    Bottom =251
     Left =0
     Top =0
     ColumnsShown =539

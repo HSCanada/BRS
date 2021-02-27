@@ -21,7 +21,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "UseTransaction" ="-1"
@@ -29,6 +29,10 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
+dbMemo "OrderBy" ="[CCB60_freegoods_stage_load].[original_line_number], [CCB60_freegoods_stage_load"
+    "].[ExtFileCostCadAmt], [CCB60_freegoods_stage_load].[ItemDescription], [CCB60_fr"
+    "eegoods_stage_load].[PracticeName], [CCB60_freegoods_stage_load].[SalesOrderNumb"
+    "er]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.SalesOrderNumber"
@@ -61,6 +65,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ItemDescription"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1920"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.SourceCode"
@@ -87,12 +93,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =987
-    Bottom =555
+    Right =1699
+    Bottom =946
     Left =-1
     Top =-1
-    Right =963
-    Bottom =264
+    Right =1649
+    Bottom =247
     Left =0
     Top =0
     ColumnsShown =539

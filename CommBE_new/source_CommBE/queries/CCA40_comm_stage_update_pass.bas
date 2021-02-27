@@ -1,6 +1,6 @@
 ﻿dbMemo "SQL" ="EXEC comm.comm_stage_update_proc @bDebug=0"
-dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;UID=TCrowley;Trusted_Connection=Y"
-    "es;DATABASE=DEV_BRSales;Network=DBMSSOCN"
+dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;DATABASE=D"
+    "EV_BRSales;Network=DBMSSOCN"
 dbBoolean "ReturnsRecords" ="0"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"

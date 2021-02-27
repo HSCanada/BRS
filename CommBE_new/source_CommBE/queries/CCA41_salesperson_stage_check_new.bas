@@ -44,7 +44,7 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.salesperson_nm"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1935"
+        dbInteger "ColumnWidth" ="3135"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -85,7 +85,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =382
+    Bottom =365
     Left =0
     Top =0
     ColumnsShown =539

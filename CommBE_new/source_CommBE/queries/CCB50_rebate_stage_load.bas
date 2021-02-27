@@ -17,7 +17,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "UseTransaction" ="-1"
@@ -25,14 +25,19 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
+dbMemo "OrderBy" ="[CCB50_rebate_stage_load].[original_line_number]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3075"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.PracticeName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1710"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.fsc_code"
@@ -72,7 +77,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =271
+    Bottom =237
     Left =0
     Top =0
     ColumnsShown =539
