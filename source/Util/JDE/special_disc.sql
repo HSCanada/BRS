@@ -550,6 +550,7 @@ FROM
 -- DROP TABLE STAGE_JDE_F5830
 
 SELECT 
+	top 10
 
 	"VA$CN2" AS contract_number,
 	"VAKCOO" AS order_company,
@@ -636,7 +637,7 @@ SELECT
 	"VAUPMJ" AS date_updated,
 	"VATDAY" AS time_of_day 
 
-INTO STAGE_JDE_F5830
+-- INTO STAGE_JDE_F5830
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -740,6 +741,7 @@ FROM
 -- DROP TABLE STAGE_JDE_F5831
 
 SELECT 
+	top 10
 
     "VB$CN2" AS contract_number,
 	"VBKCOO" AS order_company,
@@ -793,7 +795,7 @@ SELECT
 	"VBUPMJ" AS date_updated,
 	"VBTDAY" AS time_of_day 
 
-INTO STAGE_JDE_F5831
+-- INTO STAGE_JDE_F5831
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -854,6 +856,7 @@ FROM
 
 	FROM
 		ARCPDTA71.F5831
+	order by VBUPMJ desc
 ')
 
 
@@ -864,6 +867,7 @@ FROM
 -- DROP TABLE STAGE_JDE_F5832
 
 SELECT 
+	top 10
 
 	"VE$CN2" AS contract_number,
 	"VE$EON" AS manufacturers_external_contract_number,
@@ -908,7 +912,7 @@ SELECT
 	"VEUPMJ" AS date_updated,
 	"VETDAY" AS time_of_day 
 
-INTO STAGE_JDE_F5832
+-- INTO STAGE_JDE_F5832
 
 FROM 
     OPENQUERY (ESYS_PROD, '

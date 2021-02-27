@@ -116,7 +116,7 @@ GO
 
 SELECT [Excl_Code_TargKey], [StatusCd]
 FROM [hfm].[exclusive_product_rule]
-WHERE        [Excl_Code_TargKey] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX')
+WHERE        [Excl_Code_TargKey] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX') and StatusCd = 0
 GO
 
 -- Branded
@@ -133,8 +133,8 @@ WHERE        ([Excl_Code] = 'CAO_LASER')
 
 -- move from Excl to Brand after 202012
 UPDATE       [hfm].[exclusive_product]
-SET                [BrandEquityCategory] = 'Exclusive'
---SET                [BrandEquityCategory] = 'Branded'
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
 WHERE        (Excl_Code in('COMPUDENT', 'MILESTONE' ))
 
 */
@@ -348,4 +348,10 @@ GO
 -- 3. select & run below
 -- [hfm].global_cube_proc  202012, 202012
 
+/*
 -- stop @ month 7 for 2020
+CAO_LASER           	Branded	201601	202007
+COMPUDENT           	Exclusive	201601	202012
+MILESTONE           	Exclusive	201601	202012
+ZIRLUX              	CorporateBrand	NULL	204012
+*/
