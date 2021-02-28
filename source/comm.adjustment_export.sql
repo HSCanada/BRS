@@ -29,21 +29,23 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	31 Jan 21	tmc		update field order to match adjustment    
+**	31 Jan 21	tmc		update field order to match adjustment  
+**	27 Feb 21	tmc		map fsc_code = . to space for post adjustment logic
+**							add current plans to adj, needed for calc logic
 **    
 *******************************************************************************/
 
 SELECT
 	[ID]
-	,[FiscalMonth]
+	,s.[FiscalMonth]
 	,[WSVR01_reference]				AS owner_code
 	,[WSOGNO_original_line_number]	AS [original_line_number]	
 
-	,fsc_code
+	,ISNULL(NULLIF([fsc_code],'.'),'') AS fsc_code
+--	,fsc_code
 	,[fsc_comm_group_cd]
 	,[fsc_salesperson_key_id]
 
---	,ISNULL(NULLIF([fsc_code],'.'),'') AS fsc_code
 
 	,ISNULL(NULLIF([ess_code],'.'),'') AS ess_code
 	,ISNULL(NULLIF([ess_comm_group_cd],'.'),'') AS [ess_comm_group_cd]
@@ -96,10 +98,38 @@ SELECT
 	,[WSDOCO_salesorder_number]
 	,ID_legacy
 
+	,fsc.comm_plan_id							AS [fsc_comm_plan_id]
+	,ess.comm_plan_id							AS [ess_comm_plan_id]
+	,isr.comm_plan_id							AS [isr_comm_plan_id]
+	,eps.comm_plan_id							AS [eps_comm_plan_id]
+	,est.comm_plan_id							AS [est_comm_plan_id]
+	,cps.comm_plan_id							AS [cps_comm_plan_id]
+
+
  FROM 
-	[Integration].[comm_adjustment_Staging] 
+	[Integration].[comm_adjustment_Staging] s
+
+	LEFT JOIN [comm].[salesperson_master] fsc
+	on s.fsc_salesperson_key_id = fsc.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] ess
+	on s.ess_salesperson_key_id = ess.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] isr
+	on s.isr_salesperson_key_id = isr.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] eps
+	on s.eps_salesperson_key_id = eps.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] est
+	on s.est_salesperson_key_id = est.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] cps
+	on s.cps_salesperson_key_id = cps.salesperson_key_id
+
+
  WHERE 
-	FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
+	s.FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
 
 GO
 
@@ -116,6 +146,6 @@ SELECT  * FROM [comm].[adjustment_export] where [gp_ext_amt] is null
 -- test details
 -- SELECT  top 10      * FROM [comm].[adjustment_export]
 --SELECT  * FROM [comm].[adjustment_export]  order by transaction_amt asc         
-
+-- 141
 
 

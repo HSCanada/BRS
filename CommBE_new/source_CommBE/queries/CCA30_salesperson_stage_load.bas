@@ -14,6 +14,7 @@ Begin OutputColumns
     Expression ="Integration_comm_salesperson_master_Staging.salary_draw_amt"
     Expression ="Integration_comm_salesperson_master_Staging.deficit_amt"
     Expression ="Integration_comm_salesperson_master_Staging.email_ind"
+    Expression ="Integration_comm_salesperson_master_Staging.comm_note_txt"
     Expression ="Integration_comm_salesperson_master_Staging.salesperson_key_id"
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -94,17 +95,21 @@ Begin
         dbInteger "ColumnWidth" ="1350"
         dbBoolean "ColumnHidden" ="0"
     End
+    Begin
+        dbText "Name" ="Integration_comm_salesperson_master_Staging.comm_note_txt"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1550
-    Bottom =946
+    State =0
+    Left =-202
+    Top =32
+    Right =1322
+    Bottom =930
     Left =-1
     Top =-1
-    Right =1398
-    Bottom =281
+    Right =1500
+    Bottom =340
     Left =0
     Top =0
     ColumnsShown =539

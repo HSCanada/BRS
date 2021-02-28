@@ -236,7 +236,7 @@ Begin
 		WHERE NOT EXISTS
 		(
 			SELECT * FROM [dbo].[BRS_FSC_Rollup] s
-			WHERE t.[fsc_code] = s.[TerritoryCd]
+			WHERE ISNULL(NULLIF(t.[fsc_code],'.'),'') = s.[TerritoryCd]
 		)
 
 		Set @nErrorCode = @@Error
@@ -340,7 +340,13 @@ Begin
 			,[cps_comm_group_cd]
 			,[cps_salesperson_key_id]
 			,[WSDOCO_salesorder_number]
-			--- TBD add plans...
+			-- add plans
+			,[fsc_comm_plan_id]
+			,[ess_comm_plan_id]
+			,[isr_comm_plan_id]
+			,[eps_comm_plan_id]
+			,[est_comm_plan_id]
+			,[cps_comm_plan_id]
 		)
 		SELECT        
 			-- TOP (10) 
@@ -387,6 +393,15 @@ Begin
 			,[cps_comm_group_cd]
 			,[cps_salesperson_key_id]
 			,[WSDOCO_salesorder_number]
+
+			-- add plans
+			,[fsc_comm_plan_id]
+			,[ess_comm_plan_id]
+			,[isr_comm_plan_id]
+			,[eps_comm_plan_id]
+			,[est_comm_plan_id]
+			,[cps_comm_plan_id]
+
 		FROM
 			[comm].[adjustment_export] s 
 

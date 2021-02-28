@@ -53,6 +53,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.PracticeName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3510"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ShipTo"
@@ -65,7 +67,7 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ItemDescription"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1920"
+        dbInteger "ColumnWidth" ="3120"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -90,15 +92,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1699
-    Bottom =946
+    State =0
+    Left =0
+    Top =40
+    Right =1465
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1649
-    Bottom =247
+    Right =1441
+    Bottom =230
     Left =0
     Top =0
     ColumnsShown =539

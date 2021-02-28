@@ -127,6 +127,8 @@ Begin
     Begin
         dbText "Name" ="customer_nm"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2565"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Sales order"
@@ -177,6 +179,8 @@ Begin
     Begin
         dbText "Name" ="comm_group.comm_group_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1950"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.status_code"
@@ -184,15 +188,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1391
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1280
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1367
-    Bottom =447
+    Right =1256
+    Bottom =430
     Left =0
     Top =0
     ColumnsShown =539

@@ -39,7 +39,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA42_territory_map_new].[comm_salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA42_territory_map_new].[Branch], [CCA42_territory_map_new].[AddedDt] DESC, [C"
+    "CA42_territory_map_new].[comm_salesperson_key_id]"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -91,8 +92,8 @@ Begin
     Bottom =946
     Left =-1
     Top =-1
-    Right =1537
-    Bottom =136
+    Right =1428
+    Bottom =85
     Left =0
     Top =0
     ColumnsShown =539

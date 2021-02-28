@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	29 Jan 21	tmc		add Private Label logic for 2021 plan    
+**	27 Feb 21	tmc		add Private Label exclusion logic
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -76,7 +77,7 @@ Else
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '1. sync item comm_group_eps_cd'
+		print '1. EPS, sync item comm_group_eps_cd (exclusive)'
 	UPDATE
 		[dbo].[BRS_item]
 	SET
@@ -94,7 +95,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '2. revert eps back to merch comm_group_cd (removed from 2021 plan)'
+		print '2. FSC, revert eps back to merch comm_group_cd (removed from 2021 plan)'
 
 	UPDATE
 		[dbo].[BRS_item]
@@ -112,7 +113,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '2b. map merch private label comm_group_cd '
+		print '2b. FSC, map merch private label comm_group_cd '
 
 	UPDATE
 		[dbo].[BRS_item]
@@ -123,6 +124,55 @@ Begin
 	WHERE
 		(comm_group_cd = 'ITMSND') AND
 		([Label]='P') AND
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '2c. EPS, synce private label, with exclusions  '
+
+	UPDATE
+		[dbo].[BRS_item]
+	SET
+		comm_group_eps_cd = comm_group_cd
+	WHERE
+		(comm_group_cd = 'ITMPVT') AND
+		([comm_group_eps_cd] <> comm_group_cd) AND
+		-- eps PPE exclusion
+		([SubMajorProdClass]  NOT IN(
+			'008-01'
+			,'008-02'
+			,'008-03'
+			,'008-04'
+			,'008-06'
+			,'008-08'
+			,'008-99'
+			,'013-03'
+			,'013-04'
+			,'013-05'
+			,'013-06'
+			,'013-08'
+			,'013-10'
+			,'013-11'
+			,'013-20'
+			,'013-30'
+			,'013-99'
+			,'054-01'
+			,'054-02'
+			,'054-03'
+			,'054-04'
+			,'054-11'
+			,'054-99'
+			,'084-01'
+			,'084-02'
+			,'084-03'
+			,'203-50'
+			,'203-52'
+			)
+		) AND
 		(1=1)
 
 	Set @nErrorCode = @@Error
