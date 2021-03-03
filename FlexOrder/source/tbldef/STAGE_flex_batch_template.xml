@@ -63,8 +63,6 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="flex_po_num" minOccurs="0" od:jetType="longinteger" od:sqlSType="int" type="xsd:int"/>
-<xsd:element name="default_pend_status" minOccurs="0" od:jetType="integer" od:sqlSType="smallint" type="xsd:short"/>
 <xsd:element name="need_customer_x005F_xref_ind" minOccurs="0" od:jetType="integer" od:sqlSType="smallint" type="xsd:short"/>
 <xsd:element name="need_item_x005F_xref_ind" minOccurs="0" od:jetType="integer" od:sqlSType="smallint" type="xsd:short"/>
 <xsd:element name="need_price_ind" minOccurs="0" od:jetType="integer" od:sqlSType="smallint" type="xsd:short"/>
@@ -104,13 +102,6 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="entered_by_code" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
-<xsd:simpleType>
-<xsd:restriction base="xsd:string">
-<xsd:maxLength value="10"/>
-</xsd:restriction>
-</xsd:simpleType>
-</xsd:element>
 <xsd:element name="OrderTakenBy" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
@@ -119,6 +110,13 @@
 </xsd:simpleType>
 </xsd:element>
 <xsd:element name="refer_order" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="2"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="order_pend" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="2"/>

@@ -224,8 +224,9 @@ SELECT
 	, CAST(MIN(s.ACCOUNT) as int) AS minACCOUNT
 
 	, MIN(ISNULL((s.REFERENCE),'')) AS minREFERENCE
+--	, MIN(CAST (s.DATE as date)) AS minDATE
 	, MIN(CONVERT(date, s.DATE)) AS minDATE
---	, MIN(s.DUEDATE) AS minDUEDATE
+--	, MIN(CONVERT(date, s.DATE, 112)) AS minDATE
 	, MIN(ISNULL((s.REF2),''))  AS minREF2
 
 	, MIN(ISNULL((s.COMPANY),'')) AS minCOMPANY

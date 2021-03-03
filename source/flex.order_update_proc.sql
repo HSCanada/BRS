@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	02 Mar 21	tmc		Add logic to identify item / customer with bad xref
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -122,7 +123,57 @@ Begin
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3. integration.flex_order_lines_Staging - test flex_code'
+		print '3. flag bad cust xref'
+
+	UPDATE
+		[flex].[customer_xref]
+	SET 
+		[status_code] = 1
+	WHERE
+		([status_code] <> 0) AND
+		EXISTS 
+		(
+			SELECT * FROM
+					flex.order_header AS h 
+			WHERE
+				(h.status_code <> 0) AND
+				(h.[Supplier] = [flex].[customer_xref].Supplier) AND
+				(h.[ACCOUNT] = [flex].[customer_xref].[ACCOUNT]) 
+		)
+
+		Set @nErrorCode = @@Error
+
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '4. flag bad Item xref'
+
+	UPDATE
+		[flex].[item_xref]
+	SET 
+		[status_code] = 1
+	WHERE
+		([status_code] <> 0) AND
+		EXISTS 
+		(
+			SELECT * FROM
+					flex.order_detail AS d 
+			WHERE
+				(d.status_code <> 0) AND
+				(d.[Supplier] = [flex].[item_xref].Supplier) AND
+				(d.[ITEMNO] = [flex].[item_xref].[ITEMNO]) 
+		)
+
+		Set @nErrorCode = @@Error
+
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5. integration.flex_order_lines_Staging - test flex_code'
 
 	UPDATE
 		flex.order_file

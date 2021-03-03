@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_item_xref.status_code)<>0))"
+Where ="(((flex_item_xref.status_code)=1))"
 Begin InputTables
     Name ="flex_item_xref"
 End
@@ -75,7 +75,7 @@ Begin
     Left =-1
     Top =-1
     Right =1330
-    Bottom =673
+    Bottom =639
     Left =0
     Top =0
     ColumnsShown =539

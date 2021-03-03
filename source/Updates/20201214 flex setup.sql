@@ -13,7 +13,7 @@ GO
 -- drop TABLE [Integration].[flex_order_lines_Staging]
 CREATE TABLE [Integration].[flex_order_lines_Staging](
 	[order_file_name] [varchar](50) NOT NULL,
-	[line_id] [int] IDENTITY(1,1) NOT NULL,
+	[line_id] [int] NOT NULL,
 
 	[flex_code] [char](6) NULL,
 
@@ -21,6 +21,7 @@ CREATE TABLE [Integration].[flex_order_lines_Staging](
 
 	[ORDERNO] [varchar](50)  NULL,
 	[ACCOUNT] [varchar](50)  NULL,
+	[BILL_XREF] [varchar](50)  NULL,
 	[ITEMNO] [varchar](50)  NULL,
 	[QTY] [smallint]  NULL,
 
@@ -28,9 +29,9 @@ CREATE TABLE [Integration].[flex_order_lines_Staging](
 	[ITEMDESC] [varchar](50) NULL,
 	[UPC] [varchar](50) NULL,
 	[PRICE] [money] NULL,
-	[FREEGDS] [char](1) NULL,
-	[DATE] [datetime] NULL,
-	[DUEDATE] [datetime] NULL,
+	[FREEGDS] [varchar](50) NULL,
+	[DATE] datetime NULL,
+	[DUEDATE] datetime NULL,
 	[REF2] [varchar](50) NULL,
 	[COMPANY] [varchar](50) NULL,
 	[FIRSTLAST] [varchar](50) NULL,
@@ -123,7 +124,7 @@ CREATE TABLE [flex].[order_header](
 	[ADDRESS1] [varchar](50) NULL,
 	[ADDRESS2] [varchar](50) NULL,
 	[ADDRESS3] [varchar](50) NULL,
-	[CITY] [varchar](10) NULL,
+	[CITY] [varchar](30) NULL,
 	[ST] [char](2) NULL,
 	[POSTALCODE] [char](10) NULL,
 	[PHONE] [varchar](15) NULL,
@@ -203,7 +204,7 @@ CREATE TABLE [flex].[customer_xref](
 	[ADDRESS1] [varchar](50) NULL,
 	[ADDRESS2] [varchar](50) NULL,
 	[ADDRESS3] [varchar](50) NULL,
-	[CITY] [varchar](10) NULL,
+	[CITY] [varchar](30) NULL,
 	[ST] [char](2) NULL,
 	[POSTALCODE] [char](10) NULL,
 	[PHONE] [varchar](15) NULL,
@@ -423,21 +424,7 @@ ALTER TABLE flex.order_file ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-/*
-ALTER TABLE flex.order_file ADD CONSTRAINT
-	FK_order_file_batch FOREIGN KEY
-	(
-	batch_id
-	) REFERENCES flex.batch
-	(
-	batch_id
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
 ALTER TABLE flex.order_file SET (LOCK_ESCALATION = TABLE)
-GO
-*/
 COMMIT
 
 --
@@ -502,21 +489,6 @@ ALTER TABLE flex.order_header ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-/*
-ALTER TABLE flex.order_header ADD CONSTRAINT
-	FK_order_header_batch FOREIGN KEY
-	(
-	batch_id
-	) REFERENCES flex.batch
-	(
-	batch_id
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE flex.order_header SET (LOCK_ESCALATION = TABLE)
-GO
-*/
 COMMIT
 
 --
@@ -687,7 +659,7 @@ GO
 ALTER TABLE Integration.flex_order_lines_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
-
+/*
 -- clear
 truncate table [Integration].[flex_order_lines_Staging]
 
@@ -695,3 +667,4 @@ truncate table [flex].[order_detail]
 delete from [flex].[order_header]
 delete from [flex].[order_file]
 delete from [flex].[customer_xref]
+*/

@@ -7,17 +7,17 @@ Begin OutputColumns
     Expression ="Integration_flex_order_lines_Staging.order_file_name"
     Expression ="Integration_flex_order_lines_Staging.line_id"
     Expression ="Integration_flex_order_lines_Staging.ORDERNO"
-    Expression ="Integration_flex_order_lines_Staging.ACCOUNT"
-    Expression ="Integration_flex_order_lines_Staging.ITEMNO"
-    Expression ="Integration_flex_order_lines_Staging.QTY"
     Expression ="Integration_flex_order_lines_Staging.REFERENCE"
+    Expression ="Integration_flex_order_lines_Staging.ITEMNO"
     Expression ="Integration_flex_order_lines_Staging.ITEMDESC"
     Expression ="Integration_flex_order_lines_Staging.UPC"
+    Expression ="Integration_flex_order_lines_Staging.QTY"
     Expression ="Integration_flex_order_lines_Staging.PRICE"
     Expression ="Integration_flex_order_lines_Staging.FREEGDS"
     Expression ="Integration_flex_order_lines_Staging.Date"
-    Expression ="Integration_flex_order_lines_Staging.DUEDATE"
+    Expression ="Integration_flex_order_lines_Staging.BILL_XREF"
     Expression ="Integration_flex_order_lines_Staging.REF2"
+    Expression ="Integration_flex_order_lines_Staging.ACCOUNT"
     Expression ="Integration_flex_order_lines_Staging.COMPANY"
     Expression ="Integration_flex_order_lines_Staging.FIRSTLAST"
     Expression ="Integration_flex_order_lines_Staging.ADDRESS1"
@@ -89,10 +89,14 @@ Begin
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.ITEMDESC"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4035"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.UPC"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1650"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.PRICE"
@@ -104,10 +108,6 @@ Begin
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.DATE"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_flex_order_lines_Staging.DUEDATE"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -150,6 +150,10 @@ Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.PROGRAMCODE"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_flex_order_lines_Staging.BILL_XREF"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
@@ -160,15 +164,15 @@ Begin
     Left =-1
     Top =-1
     Right =1600
-    Bottom =656
+    Bottom =284
     Left =0
     Top =0
     ColumnsShown =539
     Begin
-        Left =95
-        Top =109
-        Right =616
-        Bottom =657
+        Left =151
+        Top =1
+        Right =672
+        Bottom =598
         Top =0
         Name ="Integration_flex_order_lines_Staging"
         Name =""

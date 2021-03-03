@@ -36,14 +36,6 @@ Begin
         dbText "Name" ="flex_order_file.flex_code"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="flex_order_file.batch_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="flex_order_file.status_code"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
