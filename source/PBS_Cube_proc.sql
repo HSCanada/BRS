@@ -124,6 +124,8 @@ FROM
     INNER JOIN BRS_SalesDay AS d 
     ON t.Date = d.SalesDate 
 
+	-- ***Tevor TODO.  include ONLY shows 'Show Special', *blank* if not.  see type
+	-- use promore tracker header
     INNER JOIN BRS_Promotion AS p 
     ON t.OrderPromotionCode = p.PromotionCode
 
@@ -186,7 +188,7 @@ GRANT EXECUTE ON [dbo].[PBS_Cube_proc] TO [CAHSI\kansell]
 GO
 
 
--- Exec [PBS_Cube_proc] 201612, 201612
+-- Exec [PBS_Cube_proc] 202001, 202003
 
 
 

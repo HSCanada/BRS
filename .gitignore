@@ -8,6 +8,7 @@
 *.xlsx
 *.xlsm
 *.db
+*.txt
 publish/
 working/
 Upload/
