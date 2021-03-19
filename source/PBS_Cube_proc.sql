@@ -37,7 +37,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
---  26 Jan 17   tmc     Finalize dicount logic
+**	26 Jan 17   tmc     Finalize dicount logic
+**	17 Mar 21	tmc		use promo tracker process so sales tie to standards
 **    
 *******************************************************************************/
 BEGIN
@@ -104,7 +105,11 @@ SELECT
     t.OrderTakenBy, 
     t.FreeGoodsInvoicedInd, 
 
-    p.PromotionTrackingCode                             AS PromotionTrackingCode, 
+	CASE 
+		WHEN MIN(promo.PromotionType) = 'SHOW'
+		THEN ext.PromotionTrackingCode  
+		ELSE ''
+	END													AS PromotionTrackingCode, 
 
     SUM(t.ShippedQty)                                   AS ShippedQty, 
     SUM(t.NetSalesAmt)                                  AS NetSalesAmt, 
@@ -124,15 +129,21 @@ FROM
     INNER JOIN BRS_SalesDay AS d 
     ON t.Date = d.SalesDate 
 
-	-- ***Tevor TODO.  include ONLY shows 'Show Special', *blank* if not.  see type
-	-- use promore tracker header
-    INNER JOIN BRS_Promotion AS p 
-    ON t.OrderPromotionCode = p.PromotionCode
+	INNER JOIN  [BRS_TransactionDW_Ext] AS ext
+	ON t.SalesOrderNumber = ext.SalesOrderNumber AND
+	t.DocType = ext.DocType
+
+	INNER JOIN [dbo].[BRS_Promotion] promo
+	ON ext.PromotionTrackingCode = promo.PromotionCode
+
+
 
 WHERE     
 
     (d.FiscalMonth between  @dtFrom and @dtTo) AND
---    (t.SalesOrderNumber = 9531088) AND
+	-- test
+    -- (ext.PromotionTrackingCode <> '') AND
+	--
     (1=1)
 
 GROUP BY 
@@ -142,7 +153,7 @@ GROUP BY
     t.OrderSourceCode, 
     t.OrderTakenBy, 
     t.FreeGoodsInvoicedInd,
-    p.PromotionTrackingCode
+    ext.PromotionTrackingCode
 
 	Set @nErrorCode = @@Error
 End
@@ -188,8 +199,9 @@ GRANT EXECUTE ON [dbo].[PBS_Cube_proc] TO [CAHSI\kansell]
 GO
 
 
--- Exec [PBS_Cube_proc] 202001, 202003
-
+-- Exec [PBS_Cube_proc] 202003, 202003
+-- ORG 233 421 @ 4s
+-- NEW 233 393 @ 5s
 
 
 

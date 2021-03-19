@@ -49,6 +49,7 @@ AS
 --	22 Apr 20	tmc		set unassigned group to "other" for better rollups
 --						fix segment name, based on seg not specialty rollup
 --	15 Dec 20	tmc		Add new 2021 MarketClass logic
+--	17 Mar 21	tmc		Add MarketClassNew to help with Commission mapping
 **    
 *******************************************************************************/
 
@@ -196,6 +197,8 @@ SELECT
 	END							AS PrivateLabelScope_Cust
 	,c.sm_focus_code			AS SmFocusCode
 	,[Est12MoMerch]
+	,RTRIM(c.MarketClass_New)							AS MarketClassNewCode
+
 
 FROM
 	BRS_Customer AS c 
@@ -298,7 +301,4 @@ SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo
 */
 
 -- test details
--- SELECT  top 10      * FROM            Dimension.Customer where SegmentCode <> 'PDS'
-
-
-
+-- SELECT  top 10 * FROM Dimension.Customer where SegmentCode <> 'PDS'

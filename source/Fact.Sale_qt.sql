@@ -34,6 +34,7 @@ AS
 **	31 Oct 19	tmc		Add Historical Market Segment
 **	12 Dec 19	tmc		add return codes lookup and original doctype
 **	16 Aug 20	tmc		add Exclusives 
+**	18 Mar 21	tmc		add promo tracking sales
 **    
 *******************************************************************************/
 
@@ -91,6 +92,7 @@ SELECT
 	,t.[OrderTakenBy]
 	,pm.PriceMethod
 	,i.SalesCategory
+	,hdr.PromotionTrackingCode
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -142,7 +144,8 @@ FROM
 	(
 		SELECT
 			h.SalesOrderNumber, 
-			MIN(d.ID) AS IDMin
+			MIN(d.ID) AS IDMin,
+			MIN(h.[PromotionTrackingCode]) AS PromotionTrackingCode
 		FROM
 			BRS_TransactionDW_Ext AS h INNER JOIN
 

@@ -35,6 +35,7 @@ AS
 **	14 Apr 20	tmc		fixed negative Return logic and improved buckets
 **	30 Apr 20	tmc		remove (move) price method line-level dimension
 **						(price method at line level, not order)
+**	18 Mar 21	tmc		improve the convention order tracking using new process
 *******************************************************************************/
 
 SELECT
@@ -63,18 +64,18 @@ SELECT
 	 as ReturnRange
 	,OriginalSalesOrderNumber
 
-/*
-	,pm.[PriceMethodDescr]						AS PriceMethod
-	,pm2.[PriceMethodDescr]						AS PriceMethodRollup
-	,pm.PriceMethod								AS PriceMethodCode
-	,pm2.PriceMethod							AS PriceMethodRollupCode
-*/
-
 	,os.OrderSourceCode + ' | ' 
 	+ os.OrderSourceCodeDescr					AS OrderSource
-	,pr.PromotionType							
-	,RTRIM(pr.PromotionDescription) + ' | ' + pr.PromotionCode	AS Promotion
-	,ISNULL(p2.PromotionDescription,'Other')	AS PromotionConvention
+
+	-- 
+	,pr.[PromotionTypeTracking]					AS PromotionType							
+
+	,RTRIM(pr.[PromoNameTracking]) + ' | ' 
+	+ pr.PromotionCode							AS Promotion
+
+	--
+	,RTRIM(pr.[PromoNameTracking]) 
+	+ ' | ' + pr.[PromotionTrackingCode]		AS PromotionConvention
 
 	,f.DocType + ' | ' + dt.DocTypeDescr		AS DocType
 
@@ -88,24 +89,17 @@ FROM
 	ON f.DocType = dt.DocType 
 
 	INNER JOIN BRS_Promotion AS pr 
-	ON f.OrderPromotionCode = pr.PromotionCode 
+	ON f.PromotionTrackingCode = pr.PromotionCode 
 
 	INNER JOIN BRS_OrderSource AS os 
 	ON f.OrderSourceCode = os.OrderSourceCode
-/*
-	INNER JOIN [BRS_PriceMethod] AS pm
-	ON f.[PriceMethod] = pm.[PriceMethod]
-
-	INNER JOIN [BRS_PriceMethod] AS pm2
-	ON pm.[PriceMethodRollup] = pm2.[PriceMethod]
-*/
-
-	LEFT JOIN BRS_Promotion p2 
-	ON pr.PromotionTrackingCode = p2.PromotionCode AND
-		pr.PromotionTrackingCode <>''
 
 WHERE        
-	(f.FactKey = f.FactKeyFirst)
+	(f.FactKey = f.FactKeyFirst) AND
+	-- test
+	-- (f.SalesOrderNumber = 13086442) AND
+	--
+	(1=1)
 
 GO
 
@@ -114,9 +108,10 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM Dimension.Salesorder_qt where SalesOrderNumber = 11016807 
+-- SELECT  * FROM Dimension.Salesorder_qt where SalesOrderNumber = 13086442 
 -- SELECT top 10 * FROM Dimension.Salesorder_qt where ReturnMonths = 8
 
 
 
 --ReturnMonths < 0 and DocType like 'CM%'
+
