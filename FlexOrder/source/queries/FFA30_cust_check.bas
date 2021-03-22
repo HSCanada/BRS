@@ -7,10 +7,10 @@ End
 Begin OutputColumns
     Expression ="flex_customer_xref.Supplier"
     Expression ="flex_customer_xref.ACCOUNT"
-    Expression ="flex_customer_xref.ShipTo_Suggest"
     Expression ="flex_customer_xref.ShipTo"
-    Expression ="flex_customer_xref.note"
+    Expression ="flex_customer_xref.ShipTo_Suggest"
     Expression ="flex_customer_xref.status_code"
+    Expression ="flex_customer_xref.note"
     Expression ="flex_customer_xref.create_date"
     Expression ="flex_customer_xref.COMPANY"
     Expression ="flex_customer_xref.FIRSTLAST"
@@ -68,6 +68,8 @@ Begin
     Begin
         dbText "Name" ="flex_customer_xref.ShipTo"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1785"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_customer_xref.FIRSTLAST"
@@ -106,18 +108,20 @@ Begin
     Begin
         dbText "Name" ="flex_customer_xref.ShipTo_Suggest"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1875"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1616
+    Right =1474
     Bottom =918
     Left =-1
     Top =-1
-    Right =1330
-    Bottom =605
+    Right =1188
+    Bottom =588
     Left =0
     Top =0
     ColumnsShown =539

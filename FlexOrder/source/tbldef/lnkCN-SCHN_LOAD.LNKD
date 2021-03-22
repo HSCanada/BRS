@@ -1,0 +1,3 @@
+﻿lnkCN-SCHN_LOAD
+Text;DSN=CN-SCHN_LOAD Link Specification;FMT=Delimited;HDR=NO;IMEX=2;CharacterSet=850;ACCDB=YES;DATABASE=.\working\load
+CN-SCHN_LOAD.csv

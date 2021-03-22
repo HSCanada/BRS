@@ -31,7 +31,7 @@ CREATE TABLE [Integration].[flex_order_lines_Staging](
 	[PRICE] [money] NULL,
 	[FREEGDS] [varchar](50) NULL,
 	[DATE] datetime NULL,
-	[DUEDATE] datetime NULL,
+	[DATE_TEXT] [varchar](50) NULL,
 	[REF2] [varchar](50) NULL,
 	[COMPANY] [varchar](50) NULL,
 	[FIRSTLAST] [varchar](50) NULL,
@@ -727,3 +727,5 @@ truncate table [flex].[order_detail]
 delete from [flex].[order_header]
 delete from [flex].[order_file]
 */
+
+

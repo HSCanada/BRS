@@ -106,7 +106,7 @@ SELECT
     t.FreeGoodsInvoicedInd, 
 
 	CASE 
-		WHEN MIN(promo.PromotionType) = 'SHOW'
+		WHEN MIN(promo.PromotionTypeTracking) = 'SHOW'
 		THEN ext.PromotionTrackingCode  
 		ELSE ''
 	END													AS PromotionTrackingCode, 
@@ -142,7 +142,7 @@ WHERE
 
     (d.FiscalMonth between  @dtFrom and @dtTo) AND
 	-- test
-    -- (ext.PromotionTrackingCode <> '') AND
+    -- (ext.PromotionTrackingCode = 'PD') AND
 	--
     (1=1)
 

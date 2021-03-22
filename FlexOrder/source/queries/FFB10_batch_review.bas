@@ -27,6 +27,8 @@ Begin
     Begin
         dbText "Name" ="flex_order_file.order_file_name"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3555"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_order_file.Supplier"
@@ -45,8 +47,8 @@ Begin
     Bottom =918
     Left =-1
     Top =-1
-    Right =907
-    Bottom =622
+    Right =1600
+    Bottom =605
     Left =0
     Top =0
     ColumnsShown =539

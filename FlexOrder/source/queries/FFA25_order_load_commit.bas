@@ -1,4 +1,5 @@
-﻿dbMemo "SQL" ="EXEC flex.order_load_proc @bDebug=0"
+﻿dbMemo "SQL" ="EXEC flex.order_load_proc @bDebug=0\015\012EXEC flex.order_update_proc @bDebug=0"
+    "\015\012\015\012"
 dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;DATABASE=D"
     "EV_BRSales;Network=DBMSSOCN"
 dbBoolean "ReturnsRecords" ="0"

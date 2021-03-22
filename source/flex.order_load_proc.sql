@@ -197,11 +197,9 @@ INSERT INTO flex.order_header
 	, order_file_key
 	, ACCOUNT
 -- ok
-
 	, REFERENCE
+
 	, DATE
---	, DUEDATE
-	, REF2
 
 	, COMPANY
 	, FIRSTLAST
@@ -223,11 +221,13 @@ SELECT
 	, MIN(ford.order_file_key) AS minorder_file_key
 	, CAST(MIN(s.ACCOUNT) as int) AS minACCOUNT
 
-	, MIN(ISNULL((s.REFERENCE),'')) AS minREFERENCE
+
+	, MIN( LEFT(ISNULL((s.REFERENCE),''),30) ) AS minREFERENCE
+
+
 --	, MIN(CAST (s.DATE as date)) AS minDATE
-	, MIN(CONVERT(date, s.DATE)) AS minDATE
---	, MIN(CONVERT(date, s.DATE, 112)) AS minDATE
-	, MIN(ISNULL((s.REF2),''))  AS minREF2
+--	, MIN(CONVERT(date, s.DATE)) AS minDATE
+	, MIN(CONVERT(DATE,s.date_text)) AS minDATE
 
 	, MIN(ISNULL((s.COMPANY),'')) AS minCOMPANY
 	, MIN(ISNULL((s.FIRSTLAST),'')) AS minFIRSTLAST
@@ -241,6 +241,7 @@ SELECT
 	, MIN(ISNULL((s.PHONE),'')) AS minPHONE
 	, MIN(ISNULL((s.COUNTRY),'')) AS minCOUNTRY
 	, MIN(ISNULL(s.ORIGINAL_INVOICE,0)) AS minORIGINAL_INVOICE
+
 
 FROM
 	Integration.flex_order_lines_Staging AS s 
