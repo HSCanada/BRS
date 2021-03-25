@@ -152,7 +152,7 @@ COMMIT
 CREATE TABLE [flex].[order_detail](
 	[Supplier] [char](6) NOT NULL,
 	[ORDERNO] [char](10) NOT NULL,
-	[line_id] [smallint] NOT NULL,
+	[line_id] [int] NOT NULL,
 
 	[ITEMNO] [char](15) NOT NULL,
 	[QTY] [smallint] NOT NULL,
@@ -673,8 +673,6 @@ GRANT UPDATE ON [flex].[customer_xref] TO [flex_operator]
 GO
 use [DEV_BRSales]
 GO
-GRANT EXECUTE ON [flex].[order_update_proc] TO [flex_operator]
-GO
 use [DEV_BRSales]
 GO
 GRANT SELECT ON [flex].[order_header] TO [flex_operator]
@@ -697,8 +695,6 @@ GRANT UPDATE ON [flex].[item_xref] TO [flex_operator]
 GO
 use [DEV_BRSales]
 GO
-GRANT EXECUTE ON [flex].[order_load_proc] TO [flex_operator]
-GO
 use [DEV_BRSales]
 GO
 GRANT SELECT ON [flex].[order_file] TO [flex_operator]
@@ -716,13 +712,18 @@ GO
 GRANT SELECT ON [flex].[order_detail] TO [flex_operator]
 GO
 
---
+-- create 2 procs
 
+GRANT EXECUTE ON [flex].[order_update_proc] TO [flex_operator]
+GO
+GRANT EXECUTE ON [flex].[order_load_proc] TO [flex_operator]
+GO
+
+-- add users to flex role, manual
 
 /*
 -- clear
 truncate table [Integration].[flex_order_lines_Staging]
-
 truncate table [flex].[order_detail]
 delete from [flex].[order_header]
 delete from [flex].[order_file]

@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	24 Mar 21	tmc		add logic to avoid loading duplicate files
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -85,7 +86,8 @@ Begin
 	FROM
 		[flex].[batch_template] template
 	WHERE
-		Integration.flex_order_lines_Staging.order_file_name Like template.[flex_import_prefix] 
+		(Integration.flex_order_lines_Staging.order_file_name Like template.[flex_import_prefix]) AND
+		NOT EXISTS (SELECT * from [flex].[order_file] d WHERE d.order_file_name = Integration.flex_order_lines_Staging.order_file_name)
 
 	Set @nErrorCode = @@Error
 End
@@ -100,7 +102,8 @@ Begin
 	FROM
 		[Integration].[flex_order_lines_Staging]
 	WHERE
-		flex_code is null
+		(status_code = 5) AND
+		(flex_code is null)
 
 	if (@bDebug <> 0)
 		print @nRowCount
@@ -122,7 +125,9 @@ Begin
 	FROM
 		Integration.flex_order_lines_Staging AS s 
 		INNER JOIN flex.batch_template AS template 
-		ON s.flex_code = template.flex_code
+		ON s.flex_code = template.flex_code AND
+		s.status_code = 5
+
 	GROUP BY 
 		s.order_file_name, s.flex_code, template.Supplier
 
@@ -247,7 +252,8 @@ FROM
 	Integration.flex_order_lines_Staging AS s 
 
 	INNER JOIN flex.order_file AS ford 
-	ON s.order_file_name = ford.order_file_name
+	ON s.order_file_name = ford.order_file_name AND
+	s.status_code = 5
 
 GROUP BY s.ORDERNO
 
@@ -327,7 +333,8 @@ FROM
 	Integration.flex_order_lines_Staging AS s 
 	
 	INNER JOIN flex.batch_template 
-	ON s.flex_code = flex.batch_template.flex_code
+	ON s.flex_code = flex.batch_template.flex_code AND
+	s.status_code = 5
 
 	Set @nErrorCode = @@Error
 End

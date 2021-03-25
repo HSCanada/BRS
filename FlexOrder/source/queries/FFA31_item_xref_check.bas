@@ -8,9 +8,8 @@ Begin OutputColumns
     Expression ="flex_item_xref.Supplier"
     Expression ="flex_item_xref.ITEMNO"
     Expression ="flex_item_xref.ITEMDESC"
-    Expression ="flex_item_xref.UPC"
-    Expression ="flex_item_xref.status_code"
     Expression ="flex_item_xref.Item"
+    Expression ="flex_item_xref.status_code"
     Expression ="flex_item_xref.note"
     Expression ="flex_item_xref.create_date"
     Expression ="flex_item_xref.product_type"
@@ -38,10 +37,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="flex_item_xref.UPC"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="flex_item_xref.ITEMDESC"
         dbInteger "ColumnWidth" ="4095"
         dbBoolean "ColumnHidden" ="0"
@@ -56,6 +51,8 @@ Begin
     Begin
         dbText "Name" ="flex_item_xref.note"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1815"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_item_xref.Item"
@@ -70,12 +67,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1616
-    Bottom =918
+    Right =1169
+    Bottom =554
     Left =-1
     Top =-1
-    Right =1330
-    Bottom =639
+    Right =1153
+    Bottom =249
     Left =0
     Top =0
     ColumnsShown =539

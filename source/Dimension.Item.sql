@@ -45,6 +45,7 @@ AS
 --	03 Mar 20	tmc		add current FileCost & base
 --	02 Jun 20	tmc		remove customgroup 1 - 3.  not needed.  
 --	08 Oct 20	tmc		Add CategoryRollupPPE for covid analysis
+--	23 Mar 21	tmc		Add MELP_code for Cost to Serve project, top 30 Vendor
 **    
 *******************************************************************************/
 
@@ -140,7 +141,8 @@ SELECT
 	,i.[CurrentCorporatePrice]
 	,CASE WHEN c.CategoryRollupPPE <> '' THEN c.CategoryRollupPPE ELSE 'NON_PPE' END as ppe_code
 
-
+	,s.CountryGroup						AS SupplierGlobal
+	,s.MELP_code
 
 FROM            
 	BRS_Item AS i 

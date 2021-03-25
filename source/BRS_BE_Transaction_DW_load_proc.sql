@@ -95,7 +95,7 @@ BEGIN
 	if (@bClearStage <> 0)
 	Begin
 		if (@bDebug <> 0)
-			Print 'Clear tables.'
+			Print '0. Clear tables.'
 
 		TRUNCATE TABLE STAGE_BRS_Promotion
 		TRUNCATE TABLE STAGE_BRS_TransactionDW
@@ -111,7 +111,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Promo...'
+				Print '1. Add new Promo...'
 
 			INSERT INTO BRS_Promotion
 				(PromotionCode)
@@ -126,7 +126,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Updated Changed Promo...'
+				Print '2. Updated Changed Promo...'
 
 			UPDATE    
 				BRS_Promotion
@@ -166,7 +166,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new BU...'
+				Print '3. Add new BU...'
 
 				INSERT INTO BRS_BusinessUnit
 									  (BusinessUnit)
@@ -184,7 +184,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new ESS...'
+				Print '4. Add new ESS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [ESSCD], ''
@@ -200,7 +200,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new CCS...'
+				Print '5. Add new CCS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [CCSCD], ''
@@ -216,7 +216,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new TSS...'
+				Print '6. Add new TSS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [TSSCD], ''
@@ -232,7 +232,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new DTX...'
+				Print '7. Add new DTX...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [CAGREPCD], ''
@@ -248,7 +248,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new entered_by...'
+				Print '8. Add new entered_by...'
 
 			INSERT INTO [Pricing].[entered_by] ([entered_by_code])
 			SELECT DISTINCT [ENBYNA]
@@ -263,7 +263,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Sales Orders to BRS_TransactionDW_Ext...'
+				Print '9. Add new Sales Orders to BRS_TransactionDW_Ext...'
 
 			INSERT INTO 
 				BRS_TransactionDW_Ext (
@@ -299,7 +299,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Update PO Text ...'
+				Print '10. Update PO Text ...'
 
 			UPDATE    
 				BRS_TransactionDW_Ext
@@ -340,7 +340,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Map Promo tagged TS to Order-level TS Code...'
+				Print '11. Map Promo tagged TS to Order-level TS Code...'
 
 			UPDATE    
 				BRS_TransactionDW_Ext
@@ -369,7 +369,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Update Credit lookup table'
+				Print '12. Update Credit lookup table'
 
 		INSERT INTO 
 			[dbo].[BRS_Creditinfo]
@@ -396,7 +396,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'LOAD BRS_TransactionDW'
+				Print '13. LOAD BRS_TransactionDW'
 
 
 			INSERT INTO BRS_TransactionDW
@@ -665,7 +665,7 @@ BEGIN
 			If (@bDebug <> 0)
 			Begin
 				Print '------------------------------------------------------------------------------------------------------------'
-				Print 'Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
+				Print '14. Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
 				Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
 				Print '------------------------------------------------------------------------------------------------------------'
 				Print ''
@@ -706,7 +706,7 @@ BEGIN
 		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Update SalesDateLastWeekly'	
+				Print '15. Update SalesDateLastWeekly'	
 
 			UPDATE    
 				BRS_Config
@@ -722,7 +722,7 @@ BEGIN
 			If (@bDebug <> 0)
 			Begin
 				Print '--------------------------------------------------------------------------------'
-				Print 'add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 '
+				Print '16. add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 '
 				Print '--------------------------------------------------------------------------------'
 				Print ''
 			End
@@ -767,7 +767,7 @@ BEGIN
 		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Update Credit Info'
+				Print '17. Update Credit Info'
 
 			UPDATE
 				BRS_TransactionDW
@@ -790,7 +790,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Clear STAGE_BRS_TransactionDW'	
+				Print '18. Clear STAGE_BRS_TransactionDW'	
 
 			Delete FROM STAGE_BRS_TransactionDW
 
@@ -836,7 +836,12 @@ END
 GO
 
 
--- Test logic
+-- Fixes
+/*
+-- Chargeback fix of last resort (2m, QA)
+SELECT top 10 * FROM [BRS_TransactionDW] where date = '2021-03-23'
+DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
+*/
 
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
