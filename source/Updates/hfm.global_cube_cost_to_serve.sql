@@ -11,8 +11,8 @@
 --		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)		AS BRAND_EQUITY
 		,RTRIM(excl.Excl_Code_Public)			AS BRAND_LINE
-		,RTRIM(ch.HIST_MarketClass)				AS CUSTOMER
-		,CASE WHEN HIST_MarketClass = 'ELITE' THEN MIN(ch.hist_vpa) ELSE '' END	AS CUSTOMER_GROUP
+		,RTRIM(MIN(ch.HIST_MarketClass))				AS CUSTOMER
+		,CASE WHEN ch.HIST_MarketClass = 'ELITE' THEN cust.CustGrpWrk ELSE '' END	AS CUSTOMER_GROUP
 		,CASE WHEN sup.MELP_code = '' THEN '' ELSE ih.Supplier END AS SUPPLIER
 		,CASE WHEN sup.MELP_code = '' THEN '' ELSE sup.CountryGroup END AS SUPPLIER_GLOBAL
 		,MIN(sup.MELP_code)						AS MELP
@@ -51,10 +51,10 @@
 		INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
 		ON t.Shipto = ch.[Shipto] AND
 			t.[FiscalMonth] = ch.[FiscalMonth]
-/*
-		INNER JOIN [dbo].[BRS_CustomerVPA] vpa
-		on ch.HIST_VPA = vpa.VPA
-*/
+
+		INNER JOIN [dbo].[BRS_Customer] cust
+		on t.Shipto = cust.ShipTo
+
 		INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
 		ON ch.HIST_TerritoryCd = fsc.TerritoryCd
 
@@ -89,6 +89,7 @@
 			(sup.MELP_code <> '')
 		) AND
 --		test
+		glru.ReportingClass = 'NSA' AND
 --		t.SalesOrderNumber = 1109883 AND
 --		(t.AdjCode = 'XXXFGE') AND
 		(1=1)
@@ -104,7 +105,8 @@
 		,CASE WHEN sup.MELP_code = '' THEN '' ELSE sup.CountryGroup END
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
-		,ch.HIST_MarketClass
+--		,ch.HIST_MarketClass
+		,CASE WHEN ch.HIST_MarketClass = 'ELITE' THEN cust.CustGrpWrk ELSE '' END
 --		,br.Branch
 		,doct.SourceCd
 
