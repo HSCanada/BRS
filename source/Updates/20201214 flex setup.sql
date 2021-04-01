@@ -712,6 +712,16 @@ GO
 GRANT SELECT ON [flex].[order_detail] TO [flex_operator]
 GO
 
+GRANT SELECT ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
+GO
+
+GRANT INSERT ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
+GO
+
+GO
+GRANT UPDATE ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
+GO
+
 -- create 2 procs
 
 GRANT EXECUTE ON [flex].[order_update_proc] TO [flex_operator]

@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	31 Mar 20	tmc		setup dynamic date filter
+**	30 Mar 21	tmc		Fix to remove non-open orders
 *******************************************************************************/
 
 SELECT
@@ -77,6 +78,7 @@ FROM
 
 WHERE
 	t.SalesDate = config.[PY_SalesDateLastWeekly] AND
+	t.item_status not in ('CANCELLED', 'CLOSED') AND
 --	[SalesDate] = (SELECT [PY_SalesDateLastWeekly] FROM [dbo].[BRS_Config])
 	(1=1)
 

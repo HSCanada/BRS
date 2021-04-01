@@ -2047,9 +2047,11 @@ Else
 		  ,[QPJOBN_work_station_id]
 		FROM 
 			[Integration].[F5527_price_adjustment_history_Staging] s,
-			[Pricing].[item_master_F4101] i
+			[Pricing].[item_master_F4101] i,
+			[BRS_Item]
 		WHERE
 			(s.QPITM__item_number_short = i.IMITM__item_number_short) AND
+			(BRS_Item.item = i.IMLITM_item_number) AND
 			NOT EXISTS 
 			(
 				SELECT *
@@ -2059,6 +2061,8 @@ Else
 					(d.[QPTDAY_time_of_day] = s.[QPTDAY_time_of_day]) AND
 					(1=1)
 			)
+			-- test 
+			order by i.IMLITM_item_number
 
 
 		Set @nErrorCode = @@Error

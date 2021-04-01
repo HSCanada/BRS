@@ -29,10 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-** updated to add GP, tmc, 27 Jan 20
-** updated to add py and date logic, hack, 6 Feb 20
-** maint 26 Mar 20
-** automated 7 Apr 20
+**	30 Mar 21	tmc		add OrderSource to seperate CY from PY pipeline
 *******************************************************************************/
 
 
@@ -48,7 +45,7 @@ SELECT
 	t.ItemKey, 
 	t.DateKey, 
 	t.SourceKey, 
-
+	'' AS OrderSource,
 	i.comm_group_cd,
 	f.Branch,
 	sm.master_salesperson_cd,
@@ -85,6 +82,8 @@ WHERE
 		(sm.master_salesperson_cd like 'ESS%') AND
 		(i.comm_group_cd IN ('ITMCPU', 'ITMFO1', 'ITMFO2', 'ITMFO3', 'ITMISC')) 
 	) AND
+	-- harcode, yuck
+	(t.FiscalMonth >= 202001) AND
 	-- test
 	-- Branch = 'TORNT' AND
 	-- 17 516 @ 11s
@@ -108,6 +107,7 @@ SELECT
 	t.[InstallDate],
 
 	1 AS [OrderSource],
+	t.OrderSource,
 
 	i.comm_group_cd,
 	f.Branch,

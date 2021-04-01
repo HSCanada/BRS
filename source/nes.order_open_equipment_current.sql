@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **  27 Jan 20	tmc		added GP & date param based on config
 **	31 Mar 20	tmc		setup dynamic date filter
+**	30 Mar 21	tmc		Fix to remove non-open orders
 *******************************************************************************/
 
 SELECT
@@ -78,6 +79,7 @@ FROM
 
 WHERE
 	t.SalesDate = config.[SalesDateLastWeekly] AND
+	t.item_status NOT in ('CANCELLED', 'CLOSED') AND
 --	[SalesDate] = (SELECT [PY_SalesDateLastWeekly] FROM [dbo].[BRS_Config])
 	(1=1)
 

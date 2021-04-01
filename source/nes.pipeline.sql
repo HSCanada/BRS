@@ -53,7 +53,7 @@ SELECT
 	t.install_date						AS InstallDate,
 	t.sales_date						AS SalesDate,
 
-	'' 									AS OrderSource,
+	'CY' 								AS OrderSource,
 	t.workorder							AS Workorder,
 	t.order_status						AS OrderStatus,
 	ISNULL(f.[comm_salesperson_key_id],'')	AS FSC_SalespersonKeyID,
@@ -111,7 +111,7 @@ SELECT
 	t.install_date						AS InstallDate,
 	t.sales_date						AS SalesDate,
 
-	'' 									AS OrderSource,
+	'PY' 								AS OrderSource,
 	t.workorder							AS Workorder,
 	t.order_status						AS OrderStatus,
 	ISNULL(f.[comm_salesperson_key_id],'')	AS FSC_SalespersonKeyID,
@@ -154,6 +154,11 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM nes.pipeline
 -- SELECT * FROM nes.pipeline
+-- SELECT sum(SalesAmt) FROM nes.pipeline where FiscalMonthInstall between 202001 and 202012
+-- ORG 30 537 393.8314
+-- NEW 30 409 619.3017
+
+-- add Branch?
+
 -- 4173
