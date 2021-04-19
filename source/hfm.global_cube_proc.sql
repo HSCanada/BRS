@@ -67,6 +67,7 @@ BEGIN
 			BRS_Rollup_Support01
 	END
 
+
 	-- Sales 1 of 3
 	SELECT   
 --		top 10  
@@ -170,6 +171,7 @@ BEGIN
 
 	UNION ALL
 
+
 	-- Cost 2 of 3
 	SELECT     
 --		top 10
@@ -196,16 +198,17 @@ BEGIN
 		,t.FiscalMonth						AS Period
 		,@sVersion							AS Version
 		,SUM(t.[ExtendedCostAmt])			AS ValueAmt
-
+/*
 -- test
-
---		,t.GL_BusinessUnit
---		,t.GL_Object_Cost
---		,t.SalesDivision
---		,t.GLBU_Class						AS TEST_GLBU_Class
---		,t.AdjCode							AS TEST_AdjCode
-
-
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+		,t.GLBU_Class						AS TEST_GLBU_Class
+		,t.AdjCode							AS TEST_AdjCode
+		,t.AdjNum
+		,min(t.id) id_min
+		,max(t.id) id_max
+*/
 	FROM         
 
 		[dbo].[BRS_Transaction] AS t 
@@ -244,6 +247,8 @@ BEGIN
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 
 --		test
+--		([HFM_Account]='CgsAdjBaseSchdA') AND
+--		(cc.[Entity] is null) AND	
 --		t.SalesOrderNumber = 1109883 AND
 
 		(1=1)
@@ -263,19 +268,21 @@ BEGIN
 		,ch.HIST_Specialty
 		,ch.HIST_MarketClass
 		,doct.SourceCd
+/*
 -- test
-
---		,t.GL_BusinessUnit
---		,t.GL_Object_Cost
---		,t.SalesDivision
---		,t.GLBU_Class
---		,t.AdjCode
-
+		,t.GL_BusinessUnit
+		,t.GL_Object_Cost
+		,t.SalesDivision
+		,t.GLBU_Class
+		,t.AdjCode
+		,t.AdjNum
+*/
 
 	HAVING 
 		SUM(t.[ExtendedCostAmt])<>0
 
 	UNION ALL
+
 
 	-- Chargeback 3 of 3
 	SELECT     
@@ -384,6 +391,7 @@ BEGIN
 	HAVING
 		(SUM(t.[ExtChargebackAmt])<> 0)
 
+
 END
 
 
@@ -392,86 +400,11 @@ GO
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
-
---a_CAN_Jan-18_RA.csv
--- [hfm].global_cube_proc  201801, 201801
-
---a_CAN_Feb-18_RA.csv
--- [hfm].global_cube_proc  201802, 201802
-
---a_CAN_Mar-18_RA.csv
--- [hfm].global_cube_proc  201803, 201803
-
---a_CAN_Apr-18_RA.csv
--- [hfm].global_cube_proc  201804, 201804
-
---a_CAN_May-18_RA.csv
--- [hfm].global_cube_proc  201805, 201805
-
---a_CAN_Jun-18_RA.csv
--- [hfm].global_cube_proc  201806, 201806
-
---a_CAN_Jul-18_RA.csv
--- [hfm].global_cube_proc  201807, 201807
-
---a_CAN_Aug-18_RA.csv
--- [hfm].global_cube_proc  201808, 201808
-
---a_CAN_Sep-18_RA.csv
--- [hfm].global_cube_proc  201809, 201809
-
---a_CAN_Oct-18_RA.csv
--- [hfm].global_cube_proc  201810, 201810
-
---a_CAN_Nov-18_RA.csv
--- [hfm].global_cube_proc  201811, 201811
-
---a_CAN_Dec-18_RA.csv
--- [hfm].global_cube_proc  201812, 201812
-
---
-
---a_CAN_Jan-19_RA.csv
--- [hfm].global_cube_proc  201901, 201901
-
---a_CAN_Feb-19_RA.csv
--- [hfm].global_cube_proc  201902, 201902
-
---a_CAN_Mar-19_RA.csv
--- [hfm].global_cube_proc  201903, 201903
-
---a_CAN_Apr-19_RA.csv
--- [hfm].global_cube_proc  201904, 201904
-
---a_CAN_May-19_RA.csv
--- [hfm].global_cube_proc  201905, 201905
-
---a_CAN_Jun-19_RA.csv
--- [hfm].global_cube_proc  201906, 201906
-
---a_CAN_Jul-19_RA.csv
--- [hfm].global_cube_proc  201907, 201907
-
---a_CAN_Aug-19_RA.csv
--- [hfm].global_cube_proc  201908, 201908
--- 
-
---a_CAN_Sep-19_RA.csv
--- [hfm].global_cube_proc  201909, 201909
--- 
-
---a_CAN_Oct-19_RA.csv
--- [hfm].global_cube_proc  201910, 201910
--- 
-
---a_CAN_Nov-19_RA.csv
--- [hfm].global_cube_proc  201911, 201911
--- 
+-- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
 --a_CAN_Dec-19_RA.csv
--- [hfm].global_cube_proc  201912, 201912
+-- [hfm].global_cube_proc  202103, 202103
 -- 
 
--- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
 

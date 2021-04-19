@@ -332,4 +332,7 @@ GO
 --where SalesCategory = 'TEETH'
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
+-- SELECT * FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
+-- SELECT * FROM BRS_ItemMarketAdjustFix where item = '5854180'
+
 -- ORG 76206, with EXLUDE 76165

@@ -740,3 +740,10 @@ delete from [flex].[order_file]
 */
 
 
+/*
+-- dev only reset
+delete from [flex].[customer_xref]
+delete from [flex].[item_xref]
+/*
+
+

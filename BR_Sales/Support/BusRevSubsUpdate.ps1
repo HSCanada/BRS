@@ -8,14 +8,14 @@ Param(
 Begin {
 
     if($env:BRS_MODE -eq "PROD") {
-        $param_calmonth = 202011
+        $param_calmonth = 202012
         $File_in = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\BusinessReviewSubstituation_Data-20201114.xlsm'
-        $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Test\'
+        $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Publish\'
     } 
     else {
-        $param_calmonth = 202010
+        $param_calmonth = 202012
         $File_in = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\BusinessReviewSubstituation_Data-20201114.xlsm'
-        $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Test\'
+        $file_out_path = 'S:\BR\RegularReports\Weekly\Business_Reviews_PAT\Publish\'
     }
 
     # Part 1 - Open template file and load data

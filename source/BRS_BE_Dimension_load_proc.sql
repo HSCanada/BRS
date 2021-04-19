@@ -45,6 +45,7 @@ AS
 --	05 Oct 18	tmc		Add Brand to supplier load for RI
 **	9 Jun 19	tmc		add subminorcode
 --	16 Dec 20	tmc		add EST
+--	06 Apr 21	tmc		teeth stocking MA fix 
  
 *******************************************************************************/
 
@@ -82,7 +83,7 @@ BEGIN
 	if (@bClearStage <> 0)
 	Begin
 		if (@bDebug <> 0)
-			Print 'Clear tables.'
+			Print '0. Clear tables.'
 
 		TRUNCATE TABLE STAGE_BRS_CustomerFull
 		TRUNCATE TABLE STAGE_BRS_ItemFull
@@ -96,7 +97,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new VPA ...'
+				Print '1. Add new VPA ...'
 
 				INSERT INTO BRS_CustomerVPA
 									  (VPA)
@@ -112,7 +113,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new FSC (from Cust FULL)...'
+				Print '2. Add new FSC (from Cust FULL)...'
 
 				INSERT INTO BRS_FSC_Rollup
 									  (TerritoryCd, FSCRollup, Branch)
@@ -130,7 +131,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new TS (from Cust FULL)...'
+				Print '3. Add new TS (from Cust FULL)...'
 
 				INSERT INTO BRS_FSC_Rollup
 					  (TerritoryCd, FSCRollup, Branch)
@@ -148,7 +149,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new EST (from Cust FULL)...'
+				Print '4. Add new EST (from Cust FULL)...'
 
 				INSERT INTO BRS_FSC_Rollup
 					  (TerritoryCd, FSCRollup, Branch, group_type)
@@ -167,7 +168,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new BT (from Stage)...'
+				Print '5. Add new BT (from Stage)...'
 
 				INSERT INTO BRS_CustomerBT
 									  (BillTo, ShipToPrimary)
@@ -188,7 +189,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new FSA (from Stage)...'
+				Print '6. Add new FSA (from Stage)...'
 
 				INSERT INTO BRS_Customer_FSA
 									  (FSA)
@@ -209,7 +210,7 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'UPDATE BRS_Customer changes'
+				Print '7. UPDATE BRS_Customer changes'
 
 			UPDATE    BRS_Customer
 			SET              
@@ -285,7 +286,7 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'ADD BRS_Customer NEW'
+				Print '8. ADD BRS_Customer NEW'
 
 			INSERT INTO BRS_Customer (
 				s.ShipTo, 
@@ -361,7 +362,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new MPC (ItemFull) ...'
+				Print '9. Add new MPC (ItemFull) ...'
 
 				INSERT INTO BRS_ItemMPC
 									  (MajorProductClass)
@@ -379,7 +380,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new MinorProductClass (ItemFull) ...'
+				Print '10. Add new MinorProductClass (ItemFull) ...'
 
 				INSERT INTO dbo.BRS_ItemCategory
 									  (MinorProductClass)
@@ -397,7 +398,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Supplier (ItemFull) ...'
+				Print '11. Add new Supplier (ItemFull) ...'
 
 				INSERT INTO BRS_ItemSupplier
 									  (Supplier)
@@ -413,7 +414,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Brand (ItemFull) ...'
+				Print '12. Add new Brand (ItemFull) ...'
 
 				INSERT INTO BRS_ItemSupplier
 									  (Supplier)
@@ -433,7 +434,7 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'UPDATE BRS_Item changes'
+				Print '13. UPDATE BRS_Item changes'
 
 			UPDATE    BRS_Item
 			SET 
@@ -503,7 +504,7 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'ADD BRS_Item NEW'
+				Print '14. ADD BRS_Item NEW'
 
 			INSERT INTO BRS_Item (
 
@@ -570,6 +571,25 @@ BEGIN
 		End
 
 	End -- not clear stage
+
+	-- note that this is set to non-stock from system (#13) then overridden to stocking for MA reason (#15)
+	If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '15. set teeth to stocking (correct bad DNA work-around for MA)'
+
+			UPDATE
+				BRS_Item
+			SET
+				StockingType = 'S'
+			WHERE
+				(SalesCategory = 'TEETH') AND 
+				(StockingType <> 'S')
+
+			Set @nErrorCode = @@Error
+		End
+
+
 
 
 	------------------------------------------------------------------------------------------------------------

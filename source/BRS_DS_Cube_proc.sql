@@ -1216,3 +1216,7 @@ GO
 -- select top 10 * from BRS_AGG_CDBGAD_Sales
 
 -- Exec BRS_DS_Cube_proc 0
+
+--
+-- Exec BRS_DS_Cube_proc @month_factor=2
+-- Exec BRS_DS_Cube_proc @month_factor=1
