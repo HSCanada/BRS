@@ -30,8 +30,9 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	08 May 19	tmc		added scorecard rollup
-** 04 Jul 19	tmc		added 3 rollups for FSC, ESS, CSS
+**  04 Jul 19	tmc		added 3 rollups for FSC, ESS, CSS
 **	02 Jun 20	tmc		remove legacy fields. not needed
+**  19 Apr 21	tmc		add rollup for analysis: Merch, HSB, EQ
 *******************************************************************************/
 
 SELECT 
@@ -39,6 +40,7 @@ SELECT
 	,[comm_group_cd]	+ ' | ' + [comm_group_desc]	AS CommGroup
 	,[comm_group_cd]								AS CommGroupCode
 	,comm_group_scorecard_cd
+	,SalesCategory									AS CommGroupRollup
 FROM 
 	[comm].[group]
 WHERE
@@ -48,6 +50,6 @@ WHERE
 GO
 
 
--- SELECT top 10 * FROM [Dimension].[CommissionGroup]
+-- SELECT * FROM [Dimension].[CommissionGroup]
 -- SELECT Count(*) FROM [Dimension].[CommissionGroup]
 

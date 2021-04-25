@@ -108,6 +108,9 @@ Remove-Variable wb,x1
 $file_out = 'S:\Pro-Repair\Corporate\update\ProRepair-All.xlsm'
 Copy-Item $file_out -destination S:\Pro-Repair\Corporate
 
+# temp pause, added tmc, 21 Apr 21
+Read-Host 'pause...'
+# temp pause, end
 
 # MNTRL	Montreal
 $file_out = 'S:\Pro-Repair\Montreal\update\ProRepair-Montreal.xlsm'
