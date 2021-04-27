@@ -114,6 +114,8 @@ Begin
     Begin
         dbText "Name" ="BRS_Customer.PracticeName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3960"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.PostalCode"
@@ -178,12 +180,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1169
-    Bottom =554
+    Right =1474
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1153
-    Bottom =528
+    Right =1458
+    Bottom =511
     Left =0
     Top =0
     ColumnsShown =539

@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_order_file.status_code)=0) AND ((flex_order_file.batch_id) Is Null))"
+Where ="(((flex_order_file.batch_id) Is Null) AND ((flex_order_file.status_code)=0))"
 Begin InputTables
     Name ="flex_order_file"
 End
@@ -24,10 +24,14 @@ Begin
     Begin
         dbText "Name" ="flex_order_file.note"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1725"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_order_file.order_file_name"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3180"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_order_file.Supplier"
@@ -40,18 +44,20 @@ Begin
     Begin
         dbText "Name" ="flex_order_file.batch_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1215"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1616
+    Right =1474
     Bottom =918
     Left =-1
     Top =-1
-    Right =907
-    Bottom =605
+    Right =1458
+    Bottom =588
     Left =0
     Top =0
     ColumnsShown =539
