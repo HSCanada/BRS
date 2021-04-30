@@ -28,7 +28,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
---	29 Dec 16	tmc		moved from prior monthend to current month (weekly upd)
+**	29 Dec 16	tmc		moved from prior monthend to current month (weekly upd)
+**	28 Apr 21	tmc		added covid correction to start at 2019
 **    
 *******************************************************************************/
 
@@ -52,8 +53,8 @@ FROM
 	dbo.BRS_FiscalMonth m 
 
 WHERE     
-
-	(m.FiscalMonth BETWEEN (SELECT FirstFiscalMonth_LY FROM BRS_TS_Config) AND 
+	-- temp start 201901 for covid
+	(m.FiscalMonth BETWEEN (SELECT FirstFiscalMonth_LY - 100 FROM BRS_TS_Config) AND 
 							(SELECT FiscalMonth FROM BRS_TS_Config) )
 
 

@@ -8,9 +8,9 @@ Begin OutputColumns
     Expression ="flex_customer_xref.Supplier"
     Expression ="flex_customer_xref.ACCOUNT"
     Expression ="flex_customer_xref.ShipTo"
-    Expression ="flex_customer_xref.ShipTo_Suggest"
     Expression ="flex_customer_xref.status_code"
     Expression ="flex_customer_xref.note"
+    Expression ="flex_customer_xref.ShipTo_Suggest"
     Expression ="flex_customer_xref.create_date"
     Expression ="flex_customer_xref.COMPANY"
     Expression ="flex_customer_xref.FIRSTLAST"
@@ -81,6 +81,8 @@ Begin
     Begin
         dbText "Name" ="flex_customer_xref.ADDRESS1"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2475"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_customer_xref.ADDRESS2"
@@ -117,12 +119,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1474
+    Right =1697
     Bottom =918
     Left =-1
     Top =-1
-    Right =1188
-    Bottom =554
+    Right =1681
+    Bottom =520
     Left =0
     Top =0
     ColumnsShown =539
