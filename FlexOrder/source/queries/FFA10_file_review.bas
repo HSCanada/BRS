@@ -58,6 +58,8 @@ Begin
     Begin
         dbText "Name" ="[lnkCN-SCHN_LOAD].FILE_NAME"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4380"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="[lnkCN-SCHN_LOAD].FILE_LINE"
@@ -140,12 +142,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1169
-    Bottom =664
+    Right =1215
+    Bottom =565
     Left =-1
     Top =-1
-    Right =1153
-    Bottom =446
+    Right =1199
+    Bottom =429
     Left =0
     Top =0
     ColumnsShown =539

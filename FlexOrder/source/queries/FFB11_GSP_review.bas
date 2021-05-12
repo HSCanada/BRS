@@ -7,6 +7,7 @@ Begin InputTables
     Name ="flex_order_detail"
     Name ="flex_order_file"
     Name ="flex_batch_template"
+    Name ="BRS_Customer"
 End
 Begin OutputColumns
     Alias ="A_Ship_To"
@@ -18,7 +19,7 @@ Begin OutputColumns
     Alias ="D_Unit_Price"
     Expression ="CLng([PRICE]*10000)"
     Alias ="E_Line_price_Override"
-    Expression ="1"
+    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,0)"
     Alias ="F_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
@@ -49,6 +50,14 @@ Begin Joins
     LeftTable ="flex_order_file"
     RightTable ="flex_batch_template"
     Expression ="flex_order_file.flex_code = flex_batch_template.flex_code"
+    Flag =1
+    LeftTable ="flex_order_header"
+    RightTable ="BRS_Customer"
+    Expression ="flex_order_header.ShipTo = BRS_Customer.ShipTo"
+    Flag =1
+    LeftTable ="flex_order_header"
+    RightTable ="BRS_Customer"
+    Expression ="flex_order_header.ShipTo = BRS_Customer.ShipTo"
     Flag =1
 End
 Begin OrderBy
@@ -143,12 +152,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1169
-    Bottom =664
+    Right =1608
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1153
-    Bottom =374
+    Right =1592
+    Bottom =357
     Left =0
     Top =0
     ColumnsShown =539
@@ -186,6 +195,15 @@ Begin
         Bottom =218
         Top =0
         Name ="flex_batch_template"
+        Name =""
+    End
+    Begin
+        Left =607
+        Top =254
+        Right =751
+        Bottom =398
+        Top =0
+        Name ="BRS_Customer"
         Name =""
     End
 End

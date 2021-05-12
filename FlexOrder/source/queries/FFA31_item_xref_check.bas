@@ -51,7 +51,7 @@ Begin
     Begin
         dbText "Name" ="flex_item_xref.note"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1815"
+        dbInteger "ColumnWidth" ="2070"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -67,12 +67,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1169
-    Bottom =554
+    Right =1608
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1153
-    Bottom =249
+    Right =1592
+    Bottom =232
     Left =0
     Top =0
     ColumnsShown =539

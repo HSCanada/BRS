@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	24 Mar 21	tmc		add logic to avoid loading duplicate files
+**	11 Apr 21	tmc		add logic to avoid loading duplicate orders (P&G bug)
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -87,7 +88,12 @@ Begin
 		[flex].[batch_template] template
 	WHERE
 		(Integration.flex_order_lines_Staging.order_file_name Like template.[flex_import_prefix]) AND
-		NOT EXISTS (SELECT * from [flex].[order_file] d WHERE d.order_file_name = Integration.flex_order_lines_Staging.order_file_name)
+		NOT EXISTS (SELECT * from [flex].[order_file] d WHERE d.order_file_name = Integration.flex_order_lines_Staging.order_file_name) AND
+		NOT EXISTS (SELECT * FROM [flex].[order_header] d 
+						WHERE (d.[ORDERNO] = Integration.flex_order_lines_Staging.[ORDERNO]) AND 
+							-- (template.flex_code = Integration.flex_order_lines_Staging.[flex_code]) AND
+							(1=1)
+					)
 
 	Set @nErrorCode = @@Error
 End
