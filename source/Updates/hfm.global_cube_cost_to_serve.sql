@@ -82,14 +82,14 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202001 AND 202012)  AND
+		(t.FiscalMonth between 201901 AND 201912)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(
 			(ch.HIST_MarketClass = 'ELITE') OR
 			(sup.MELP_code <> '')
 		) AND
 --		test
-		glru.ReportingClass = 'NSA' AND
+--		glru.ReportingClass = 'NSA' AND
 --		t.SalesOrderNumber = 1109883 AND
 --		(t.AdjCode = 'XXXFGE') AND
 		(1=1)
@@ -111,7 +111,7 @@
 		,doct.SourceCd
 
 -- 1. set date
--- 2. seto to tab text
+-- 2. set to tab text
 -- 3. run script
 
 

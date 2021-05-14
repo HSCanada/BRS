@@ -722,6 +722,10 @@ GO
 GRANT UPDATE ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
 GO
 
+-- added 13 May 21
+GRANT DELETE ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
+GO
+
 -- create 2 procs
 
 GRANT EXECUTE ON [flex].[order_update_proc] TO [flex_operator]
