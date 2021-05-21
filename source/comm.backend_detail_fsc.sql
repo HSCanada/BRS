@@ -132,9 +132,32 @@ GO
 -- SELECT top 10 * FROM [comm].[backend_detail_fsc] where source_cd = 'JDE'
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new
---SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'RPoch' AND ess_salesperson_cd <>  ess_salesperson_cd_new
 
 --SELECT top 10 * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'ESS32'
 --SELECT top 10 * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd = 'ESS47'
 
 -- ORG 3868
+
+--SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'JACK.FREEBORN'
+
+SELECT
+[comm_plan_id]
+,[item_comm_group_cd]
+,[cust_comm_group_cd]
+,[source_cd]
+,[disp_comm_group_cd]
+,[active_ind]
+,[show_ind]
+,[show_ind]^1 as flip
+FROM [comm].[plan_group_rate]
+WHERE 
+[comm_plan_id] like 'FSC%' AND
+[active_ind] = 1 AND
+[item_comm_group_cd] in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')
+
+UPDATE [comm].[plan_group_rate]
+SET [show_ind] = [show_ind]^1
+WHERE 
+[comm_plan_id] like 'FSC%' AND
+[active_ind] = 1 AND
+[item_comm_group_cd] in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')
