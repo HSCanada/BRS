@@ -663,61 +663,31 @@ COMMIT
 --
 GRANT SELECT ON [dbo].[BRS_Customer] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
 GRANT SELECT ON [flex].[customer_xref] TO [flex_operator]
-GO
-use [DEV_BRSales]
 GO
 GRANT UPDATE ON [flex].[customer_xref] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
-use [DEV_BRSales]
-GO
 GRANT SELECT ON [flex].[order_header] TO [flex_operator]
-GO
-use [DEV_BRSales]
 GO
 GRANT SELECT ON [flex].[batch_template] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
 GRANT UPDATE ON [flex].[batch_template] TO [flex_operator]
-GO
-use [DEV_BRSales]
 GO
 GRANT SELECT ON [flex].[item_xref] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
 GRANT UPDATE ON [flex].[item_xref] TO [flex_operator]
-GO
-use [DEV_BRSales]
-GO
-use [DEV_BRSales]
 GO
 GRANT SELECT ON [flex].[order_file] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
 GRANT UPDATE ON [flex].[order_file] TO [flex_operator]
-GO
-use [DEV_BRSales]
 GO
 GRANT SELECT ON [dbo].[BRS_Item] TO [flex_operator]
 GO
-use [DEV_BRSales]
-GO
 GRANT SELECT ON [flex].[order_detail] TO [flex_operator]
 GO
-
 GRANT SELECT ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
 GO
-
 GRANT INSERT ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
-GO
-
 GO
 GRANT UPDATE ON [Integration].[flex_order_lines_Staging] TO [flex_operator]
 GO
