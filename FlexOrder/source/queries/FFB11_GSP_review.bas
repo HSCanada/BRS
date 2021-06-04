@@ -17,9 +17,9 @@ Begin OutputColumns
     Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
     Alias ="D_Unit_Price"
-    Expression ="CLng([PRICE]*10000)"
+    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,CLng([PRICE]*10000),\"\")"
     Alias ="E_Line_price_Override"
-    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,0)"
+    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,\"\")"
     Alias ="F_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
@@ -152,12 +152,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1608
+    Right =1518
     Bottom =918
     Left =-1
     Top =-1
-    Right =1592
-    Bottom =357
+    Right =1502
+    Bottom =340
     Left =0
     Top =0
     ColumnsShown =539

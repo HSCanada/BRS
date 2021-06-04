@@ -1,0 +1,4 @@
+﻿Pricing_item_price_dcc
+ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+Pricing.item_price_dcc
+Item

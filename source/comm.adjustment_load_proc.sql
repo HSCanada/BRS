@@ -404,6 +404,8 @@ Begin
 
 		FROM
 			[comm].[adjustment_export] s 
+--		WHERE [gp_ext_amt] is null
+			
 
 		Set @nErrorCode = @@Error
 	End

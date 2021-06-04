@@ -215,7 +215,7 @@ WHERE
 	(1=1)
 GO
 
--- b) Move Focus 2
+-- b) Move Focus 2, less small EQ
 UPDATE       BRS_Item
 SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model2021'
 WHERE
@@ -246,7 +246,7 @@ WHERE
 	(1=1)
 GO
 
--- b) Move Focus 3
+-- b) Move rest to Focus 3, less small EQ
 UPDATE       BRS_Item
 SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'model2021'
 WHERE

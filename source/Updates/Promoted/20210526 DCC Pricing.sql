@@ -1,7 +1,5 @@
 -- DCC Pricing, tmc, 26 May 21
 
-USE [DEV_BRSales]
-GO
 
 /****** Object:  Table [Pricing].[item_price_dcc]    Script Date: 2021/05/26 5:44:40 PM ******/
 
@@ -34,6 +32,8 @@ GO
 -- append from integration -> pricing table
 INSERT INTO [Pricing].[item_price_dcc]
 ([Item],[CurrentPrice],[UnitChargeback], [note_txt] )
-SELECT        item, Price, cb, note
+SELECT        item, Price, 0, note
 FROM            Integration.stage_dcc_price
 GO
+
+--<< done. 3 Jun 21 

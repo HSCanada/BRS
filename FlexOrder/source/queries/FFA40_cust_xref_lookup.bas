@@ -90,10 +90,14 @@ Begin
     Begin
         dbText "Name" ="BRS_Customer.CustGrpWrkNote"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3555"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.CustGrpWrk"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2805"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.Specialty"
@@ -162,6 +166,8 @@ Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.FSCName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3585"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.SalesDivision"
@@ -180,12 +186,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1474
+    Right =1721
     Bottom =918
     Left =-1
     Top =-1
-    Right =1458
-    Bottom =511
+    Right =1705
+    Bottom =494
     Left =0
     Top =0
     ColumnsShown =539
