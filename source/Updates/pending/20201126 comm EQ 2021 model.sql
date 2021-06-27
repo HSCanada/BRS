@@ -130,14 +130,16 @@ Focus 1:
 Adec
 Dentsply Sirona
 DCI
-
-Focus 2:
-Planmeca/Triangle
-Belmont
+-- 7 Jun
 Midmark
 Air Techniques
-SciCan
 Kavo Kerr Group
+Planmeca/Triangle
+
+Focus 2:
+
+Belmont
+SciCan
 MCC
 
 Focus 3:
@@ -146,7 +148,11 @@ EVERYTHING ELSE
 -No changes to small equipment
 -Keep Pelton removed from the analysis
 
+-- Bev update, 7 Jun 21
+Focus 1 vendors:Adec, Sirona, DCI, Planmeca (Triangle), Kavo family (don’t forget ARIBEX which I don’t see below), AirTech, Midmark, Radic8
 
+Focus 2 vendors:  Belmont, MCC, SciCan, Redl, Enerplace, PuraAir, Quattro (the last four in red are odd ducks so I understand why you might miss them)
+Focus 3:   everyone else
 */
 
 -- test
@@ -181,13 +187,21 @@ WHERE
  ,'INSTRM'
  ,'PELCRA'
  ,'PELTON'
-
+ -- 7 Jun 21
+-- foc1
+ ,'RADIC8'
+ ,'ARIBEX'
+-- foc2
+ ,'REDLCA'
+ ,'ENERPL'
+ ,'PURAIR'
+ ,'QUATRO'
  
 )) AND 
 	(comm_group_cd like 'ITMFO%' ) AND
 	(SalesCategory <> 'SMEQU') AND
 	--
-	(comm_group_cd <> 'ITMFO2') AND
+--	(comm_group_cd <> 'ITMFO2') AND
 	(1=1)
 --	(SalesCategory not in('EQUIPM','HITECH','SMEQU')) AND
 -- ORDER BY [SubMajorProdClass] desc
@@ -197,17 +211,43 @@ ORDER BY Est12MoSales desc
 
 -- a) Move Focus 1, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO1', comm_note_txt = 'model2021'
+SET                comm_group_cd = 'ITMFO1', comm_note_txt = 'model20210607'
 WHERE
 (Supplier IN (
 
  'ADEC'
  ,'SIRONC'
  ,'DENTZA'
- ,'DCI'
  ,'DENSCH'
  ,'SIRONG'
  ,'SDSINY'
+ ,'DCI'
+
+ ,'MIDMAK'
+ ,'AIRTEC'
+ ,'CAIRTE'
+
+ ,'KAVOCA'
+ ,'KAVODC'
+ ,'KAVODG'
+ ,'GENDEN'
+ ,'GENDEX'
+ ,'DEXISL'
+ ,'INSTRM'
+
+ ,'IMASCI'  -- wf Bev confirmed Foc1 with Bill, 7 Jun
+
+ ,'D4DTEC'
+ ,'PLANME'
+ ,'TRIAFS'
+
+ -- foc1
+ ,'RADIC8'
+ ,'ARIBEX'
+
+ ,'PELCRA'
+ ,'PELTON'
+
 
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
@@ -217,28 +257,19 @@ GO
 
 -- b) Move Focus 2, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model2021'
+SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model20210607'
 WHERE
 (Supplier IN (
- 'D4DTEC'
- ,'PLANME'
- ,'TRIAFS'
- ,'BELTAK'
- ,'MIDMAK'
- ,'AIRTEC'
- ,'CAIRTE'
- ,'SCICAN'
+ 'BELTAK'
  ,'MCC'
- ,'DEXISL'
- ,'GENDEN'
- ,'GENDEX'
- ,'IMASCI'
- ,'KAVOCA'
- ,'KAVODC'
- ,'KAVODG'
- ,'INSTRM'
- ,'PELCRA'
- ,'PELTON'
+ ,'SCICAN'
+ 
+-- foc2
+ ,'REDLCA'
+ ,'ENERPL'
+ ,'PURAIR'
+ ,'QUATRO'
+
 
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
@@ -248,7 +279,7 @@ GO
 
 -- b) Move rest to Focus 3, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'model2021'
+SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'model20210607'
 WHERE
 (Supplier NOT IN (
  'ADEC'
@@ -276,6 +307,18 @@ WHERE
  ,'KAVODC'
  ,'KAVODG'
  ,'INSTRM'
+ ,'PELCRA'
+ ,'PELTON'
+
+  -- foc1
+ ,'RADIC8'
+ ,'ARIBEX'
+-- foc2
+ ,'REDLCA'
+ ,'ENERPL'
+ ,'PURAIR'
+ ,'QUATRO'
+
  ,'PELCRA'
  ,'PELTON'
 

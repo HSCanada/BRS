@@ -1,0 +1,8 @@
+BEGIN TRANSACTION
+GO
+ALTER TABLE comm.freegoods ADD
+	ID_redeem_xref int NULL
+GO
+ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	30 Mar 21	tmc		add OrderSource to seperate CY from PY pipeline
+**	23 Jun 21	tmc		removed invoice date harcode so covid 2021 vs 2019 works	 
 *******************************************************************************/
 
 
@@ -83,7 +84,7 @@ WHERE
 		(i.comm_group_cd IN ('ITMCPU', 'ITMFO1', 'ITMFO2', 'ITMFO3', 'ITMISC')) 
 	) AND
 	-- harcode, yuck
-	(t.FiscalMonth >= 202001) AND
+	--(t.FiscalMonth >= 201901) AND
 	-- test
 	-- Branch = 'TORNT' AND
 	-- 17 516 @ 11s
@@ -158,7 +159,9 @@ GO
 
 -- SELECT top 10 * FROM nes.order_open_equipment_pipeline
 -- SELECT * FROM nes.order_open_equipment_pipeline where Branch = 'TORNT'
-
+-- SELECT count(*) FROM nes.order_open_equipment_pipeline where Branch = 'TORNT'
+-- ORG 9256
+-- NEW 15456
 
 
 

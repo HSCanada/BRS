@@ -121,7 +121,8 @@ order by est12mosales desc
 */
 
 -- output
--- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where DivisionalMarketAdjustmentPct <> new_divisional_adj
+-- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where DivisionalMarketAdjustmentPct <> new_divisional_adj AND CorporateMarketAdjustmentPct >= 1
+
 
 
 
