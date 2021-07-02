@@ -602,7 +602,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
---
+-- do we need to worry about back order -> line 0 colisions?   28 Jun 21
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)

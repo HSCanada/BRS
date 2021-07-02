@@ -841,6 +841,26 @@ GO
 -- Chargeback fix of last resort (2m, QA)
 SELECT top 10 * FROM [BRS_TransactionDW] where date = '2021-03-23'
 DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
+
+-- ISR fix
+			UPDATE    
+				BRS_TransactionDW_Ext
+			SET              
+				TsTerritoryOrgCd =	r.[TerritoryCd],
+				TsTerritoryCd=		r.[TerritoryCd]
+
+--			select SalesOrderNumber, r.[TerritoryCd], CustomerPOText1
+			FROM         
+				BRS_TransactionDW_Ext 
+
+				INNER JOIN [dbo].[BRS_FSC_Rollup]  r
+				ON BRS_TransactionDW_Ext.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
+					r.Rule_WhereClauseLike <>''
+			WHERE   
+				(TsTerritoryCd <> r.[TerritoryCd]) AND
+				(ID between 19139663 and 21577839) AND
+				(1=1)
+
 */
 
 -- prod run 
@@ -848,4 +868,5 @@ DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
 
 -- Dev run (5.45m)
 -- BRS_BE_Transaction_DW_load_proc @bDebug=1
+
 

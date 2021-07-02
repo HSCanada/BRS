@@ -208,10 +208,10 @@ WHERE
 --ORDER BY comm_group_cd desc
 ORDER BY Est12MoSales desc
 
-
+--> move to prod 28 Jun 21
 -- a) Move Focus 1, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO1', comm_note_txt = 'model20210607'
+SET                comm_group_cd = 'ITMFO1', comm_note_txt = 'BD20210628'
 WHERE
 (Supplier IN (
 
@@ -235,7 +235,7 @@ WHERE
  ,'DEXISL'
  ,'INSTRM'
 
- ,'IMASCI'  -- wf Bev confirmed Foc1 with Bill, 7 Jun
+ ,'IMASCI'  -- wf Bev confirmed Foc1 with Bill, 7 Jun, Bev confirmed 28 Jun 21
 
  ,'D4DTEC'
  ,'PLANME'
@@ -252,12 +252,15 @@ WHERE
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
 	(SalesCategory <> 'SMEQU') AND
+	(comm_group_cd <> 'ITMFO1') AND
 	(1=1)
 GO
+-- 748 Dev
+-- 829 Prod
 
 -- b) Move Focus 2, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'model20210607'
+SET                comm_group_cd = 'ITMFO2', comm_note_txt = 'BD20210628'
 WHERE
 (Supplier IN (
  'BELTAK'
@@ -274,12 +277,15 @@ WHERE
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
 	(SalesCategory <> 'SMEQU') AND
+	(comm_group_cd <> 'ITMFO2') AND
 	(1=1)
 GO
+-- 368 dev
+-- 380 prod
 
 -- b) Move rest to Focus 3, less small EQ
 UPDATE       BRS_Item
-SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'model20210607'
+SET                comm_group_cd = 'ITMFO3', comm_note_txt = 'BD20210628'
 WHERE
 (Supplier NOT IN (
  'ADEC'
@@ -325,9 +331,13 @@ WHERE
 )) AND 
 	(comm_group_cd in ('ITMFO1', 'ITMFO2', 'ITMFO3') ) AND
 	(SalesCategory <> 'SMEQU') AND
+	(comm_group_cd <> 'ITMFO3') AND
+
 	(1=1)
 GO
-
+-- 4484 dev
+-- 4493 prod
+--< move to prod 28 Jun 21
  
 -- update 2019 item history - test
 SELECT
