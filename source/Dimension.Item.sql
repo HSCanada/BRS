@@ -46,6 +46,7 @@ AS
 --	02 Jun 20	tmc		remove customgroup 1 - 3.  not needed.  
 --	08 Oct 20	tmc		Add CategoryRollupPPE for covid analysis
 --	23 Mar 21	tmc		Add MELP_code for Cost to Serve project, top 30 Vendor
+--	05 Jul 21	tmc		Add Minor to help with 3M marketshare modelling
 **    
 *******************************************************************************/
 
@@ -143,6 +144,9 @@ SELECT
 
 	,s.CountryGroup						AS SupplierGlobal
 	,s.MELP_code
+
+	,RTRIM(c.MinorProductClass)			AS MinorCode
+
 
 FROM            
 	BRS_Item AS i 
