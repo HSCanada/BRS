@@ -45,8 +45,8 @@ WHERE
 --	(t.SalesCategory = 'TEETH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 202101 and 202105) OR
-		(t.FiscalMonth BETWEEN 201901 and 201905)
+		(t.FiscalMonth BETWEEN 202101 and 202106) OR
+		(t.FiscalMonth BETWEEN 201901 and 201906)
 	) AND
 	-- test with quote exclude
 --	(t.OrderSourceCode IN ('A', 'L')) AND 

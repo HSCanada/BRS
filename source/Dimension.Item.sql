@@ -47,6 +47,7 @@ AS
 --	08 Oct 20	tmc		Add CategoryRollupPPE for covid analysis
 --	23 Mar 21	tmc		Add MELP_code for Cost to Serve project, top 30 Vendor
 --	05 Jul 21	tmc		Add Minor to help with 3M marketshare modelling
+--	09 Jul 21	tmc		Add Brand Equity data (prior month to current)
 **    
 *******************************************************************************/
 
@@ -147,6 +148,10 @@ SELECT
 
 	,RTRIM(c.MinorProductClass)			AS MinorCode
 
+	-- equity graft on last month results
+	,equity.BrandEquityCategory			AS BrandEquityCategory
+	,equity.Excl_Code					AS BrandEquityCode
+
 
 FROM            
 	BRS_Item AS i 
@@ -192,6 +197,21 @@ FROM
 
 	LEFT JOIN [Pricing].[item_wcs_unique_fields_file_F5656] wcs
 	ON i.Item =wcs.QVLITM_item_number
+
+	-- equity graft on last month results
+	LEFT JOIN 
+	(
+		SELECT [Item]
+			,excl.BrandEquityCategory
+			,excl.Excl_Code
+		FROM [dbo].[BRS_ItemHistory] ih
+			INNER JOIN [hfm].[exclusive_product] excl
+			ON ih.Excl_key = excl.Excl_Key
+		WHERE 
+			FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
+	) equity
+	ON i.Item = equity.Item
+
 
 WHERE
 -- test case

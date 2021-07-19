@@ -36,6 +36,7 @@ AS
 **	01 Jul 20	tmc		add adjustments
 **	22 Oct 20	tmc		add Inside Sales Rep (ISR)
 **	21 Dec 20	tmc		add Equipment Service Tech (EST)
+**	09 Jul 21	tmc		add HS Branded Baseline flag
 **    
 *******************************************************************************/
 
@@ -106,6 +107,8 @@ SELECT
 	,ISNULL([WSVR01_reference], '')					AS CustomerPOText1
 	,ISNULL([WSORD__equipment_order], '')			AS EquipmentOrderNumber
 
+	,bu.hs_branded_baseline_ind
+
 
 FROM            
 	[comm].[transaction_F555115] AS t 
@@ -121,6 +124,10 @@ FROM
 
 	INNER JOIN [dbo].[BRS_DocType] as doct
 	ON doct.DocType = t.[WSDCTO_order_type]
+
+	-- HSB baseline
+	INNER JOIN [dbo].[BRS_BusinessUnit] as bu
+	ON t.WSEMCU_header_business_unit = bu.BusinessUnit
 
 	-- Dim Customer
 	LEFT JOIN [comm].[salesperson_master] as fsc
@@ -218,6 +225,9 @@ WHERE
 GO
 
 -- SELECT top 10 * FROM Fact.Commission where adjKey is null
+-- SELECT top 10 * FROM Fact.Commission where hs_branded_baseline_ind = 0
+
+
 -- 30s
 
 -- SELECT * FROM Fact.Commission where FiscalMonth = 201812

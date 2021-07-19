@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	02 Jul 20		tmc	added master code to name for easier excel mapping, post
 **	03 Feb 21		tmc	fixed salesperson name to remove code for legal reasons
+**  19 Jul 21		tmc	add salesforce adoption and opportunity for playbook
 **    
 *******************************************************************************/
 
@@ -50,6 +51,24 @@ SELECT
 	,b.BranchName
 	,b.ZoneName
 	,tracker_ind
+
+	-- tmc	add salesforce adoption and opportunity for playbook, 19 Jul 21
+	,sf_adpt_login_score 
+	,sf_adpt_created_opps_score 
+	,sf_adpt_activity_score 
+	,sf_adpt_pastdue_opps_score 
+	,sf_adpt_closed_opps_score 
+
+	,sf_opps_equipment_technology_cnt
+	,sf_opps_cadcam_digitial_imaging_cnt
+	,sf_opps_merchandise_cnt
+	,sf_opps_other_cnt
+
+	,sf_opps_equipment_technology_amt
+	,sf_opps_cadcam_digitial_imaging_amt
+	,sf_opps_merchandise_amt
+	,sf_opps_other_amt
+
 
   FROM 
 	[comm].[salesperson_master] s

@@ -50,6 +50,7 @@ AS
 --						fix segment name, based on seg not specialty rollup
 --	15 Dec 20	tmc		Add new 2021 MarketClass logic
 --	17 Mar 21	tmc		Add MarketClassNew to help with Commission mapping
+--	09 Jul 21	tmc		Add Wheel data (prior month to current)
 **    
 *******************************************************************************/
 
@@ -146,7 +147,7 @@ SELECT
 				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE RTRIM(c.FocusCd) End
 			END
 	END AS FocusCd
-
+	,c.FocusCd											AS playbook_focus_code
 
 	,[DSO_ParentShipTo]
 	,[PrivilegesCode]
@@ -186,6 +187,7 @@ SELECT
 	,coupa_start_date			AS CoupaStartDate
 	,v.FocusCd					AS SalesplanFocusCode
 
+	-- deprecated code
 	,CASE 
 		WHEN s.PrivateLabelScopeInd = 1 AND 
 			mclass.PrivateLabelScopeInd = 1 AND 
@@ -198,6 +200,16 @@ SELECT
 	,c.sm_focus_code			AS SmFocusCode
 	,[Est12MoMerch]
 	,RTRIM(c.MarketClass_New)							AS MarketClassNewCode
+
+	-- wheel graft on last month results
+	,[wheel_active_ind]
+	,[wheel_seg1_merchandise_ind]
+	,[wheel_seg2_hs_branded_ind]
+	,[wheel_seg3_equip_hitech_ind]
+	,[wheel_seg4_digital_restoration_ind]
+	,[wheel_seg5_henry_schein_one_ind]
+	,[wheel_seg6_equipment_services_ind]
+	,[wheel_seg7_business_solutions_ind]
 
 
 FROM
@@ -272,6 +284,24 @@ FROM
 	)  padj
 	ON c.BillTo = padj.BillTo
 
+	-- wheel graft on last month results
+	LEFT JOIN 
+	(
+		SELECT [Shipto]
+		  ,[wheel_active_ind]
+		  ,[wheel_seg1_merchandise_ind]
+		  ,[wheel_seg2_hs_branded_ind]
+		  ,[wheel_seg3_equip_hitech_ind]
+		  ,[wheel_seg4_digital_restoration_ind]
+		  ,[wheel_seg5_henry_schein_one_ind]
+		  ,[wheel_seg6_equipment_services_ind]
+		  ,[wheel_seg7_business_solutions_ind]
+	  FROM [dbo].[BRS_CustomerFSC_History]
+	  WHERE FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
+	) cwheel
+	ON c.ShipTo = cwheel.Shipto
+
+
 --	CROSS JOIN BRS_Customer_Spend_Category AS spend
 
 
@@ -301,4 +331,4 @@ SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo
 */
 
 -- test details
--- SELECT  top 10 * FROM Dimension.Customer where SegmentCode <> 'PDS'
+-- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 1
