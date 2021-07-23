@@ -82,7 +82,7 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202105 AND 202105)  AND
+		(t.FiscalMonth between 202106 AND 202106)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(
 			(ch.HIST_MarketClass = 'ELITE') OR

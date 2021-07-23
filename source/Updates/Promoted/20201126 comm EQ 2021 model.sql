@@ -103,6 +103,32 @@ Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
 
 
+print 202101
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202101
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202102
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202102
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202103
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202103
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202104
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202104
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202105
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202105
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+
+print 202106
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202106
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+
 -- update model from DEV next
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 201912
 
@@ -127,9 +153,9 @@ GO
 
 /*
 Focus 1:
-Adec
-Dentsply Sirona
-DCI
+-Adec
+-Dentsply Sirona
+-DCI
 -- 7 Jun
 Midmark
 Air Techniques
@@ -346,7 +372,8 @@ d.Item, d.FiscalMonth, d.HIST_comm_group_cd, s.comm_group_cd
 FROM            BRS_ItemHistory AS d INNER JOIN
                          BRS_Item AS s ON d.Item = s.Item
 WHERE
-(d.FiscalMonth >= 201901) AND 
+(d.FiscalMonth >= 202106) AND 
+--(d.FiscalMonth >= 201901) AND 
 (d.Item > '') AND
 (s.comm_group_cd<>'') AND
 (s.comm_group_cd <> d.HIST_comm_group_cd) and
@@ -354,12 +381,17 @@ WHERE
 --d.HIST_comm_group_cd = 'ITMTEE'
 (1=1)
 
--- update 2019 item history
+-- update 2019 item history (30s)
 UPDATE       BRS_ItemHistory
 SET                HIST_comm_group_cd = s.comm_group_cd
 FROM            BRS_ItemHistory INNER JOIN
                          BRS_Item AS s ON BRS_ItemHistory.Item = s.Item AND BRS_ItemHistory.HIST_comm_group_cd <> s.comm_group_cd
-WHERE        (BRS_ItemHistory.FiscalMonth >= 201901) AND (BRS_ItemHistory.Item > '') AND (s.comm_group_cd <> '') AND (1 = 1)
+WHERE
+	(BRS_ItemHistory.FiscalMonth between 202106 AND 202106) AND 
+--	(BRS_ItemHistory.FiscalMonth between 201901 AND 202105) AND 
+	(BRS_ItemHistory.Item > '') AND 
+	(s.comm_group_cd <> '') AND 
+	(1 = 1)
 GO
 
 -- set rates, WIP as of 14 Dec 20

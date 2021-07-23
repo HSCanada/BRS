@@ -51,6 +51,7 @@ AS
 --	15 Dec 20	tmc		Add new 2021 MarketClass logic
 --	17 Mar 21	tmc		Add MarketClassNew to help with Commission mapping
 --	09 Jul 21	tmc		Add Wheel data (prior month to current)
+--	21 Jul 21	tmc		Add CommMasterCode & ServiceBonus exempt for playbook
 **    
 *******************************************************************************/
 
@@ -211,6 +212,10 @@ SELECT
 	,[wheel_seg6_equipment_services_ind]
 	,[wheel_seg7_business_solutions_ind]
 
+	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
+	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
+
+
 
 FROM
 	BRS_Customer AS c 
@@ -240,6 +245,9 @@ FROM
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
 
+	INNER JOIN [comm].[salesperson_master] fsc_master
+	ON terr.comm_salesperson_key_id = fsc_master.salesperson_key_id
+	
 	INNER JOIN BRS_FSC_Rollup AS terr_ess
 	ON c.est_code = terr_ess.[TerritoryCd]
 
@@ -328,7 +336,15 @@ SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer wh
 
 print '2. dup check?'
 SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
+
+SELECT * from Dimension.Customer where wheel_service_include_ind is null
+
+SELECT * from Dimension.Customer where CommMasterCode_Current is null 
 */
 
 -- test details
 -- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 1
+
+-- SELECT  count(*) FROM Dimension.Customer
+-- ORG=NEW 70318
+

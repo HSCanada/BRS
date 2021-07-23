@@ -48,6 +48,7 @@ AS
 --	23 Mar 21	tmc		Add MELP_code for Cost to Serve project, top 30 Vendor
 --	05 Jul 21	tmc		Add Minor to help with 3M marketshare modelling
 --	09 Jul 21	tmc		Add Brand Equity data (prior month to current)
+--	21 Jul 21	tmc		Add Merch Key vendor category for playbook
 **    
 *******************************************************************************/
 
@@ -152,6 +153,16 @@ SELECT
 	,equity.BrandEquityCategory			AS BrandEquityCategory
 	,equity.Excl_Code					AS BrandEquityCode
 
+--	21 Jul 21	tmc		Add Merch Key vendor category for playbook
+	,CASE 
+		WHEN 
+			c.MinorProductClass like '004-01%' OR 
+			c.MinorProductClass like '004-04%' OR 
+			c.MinorProductClass like '012-45%' OR 
+			c.MinorProductClass = '003-01-10' 
+		THEN 1
+		ELSE 0
+	END									AS KeySupplierMerchInd
 
 FROM            
 	BRS_Item AS i 
@@ -249,7 +260,7 @@ WHERE SalesCategory <> ''
 
 -- SELECT top 10 * FROM Dimension.Item where ManufPartNumber = '' 
 -- SELECT count(*) FROM Dimension.Item 
--- ORG 228467
--- NEW228467
+-- ORG 235840
+
 
 

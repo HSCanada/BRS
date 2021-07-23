@@ -101,5 +101,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT  top 10 * FROM Dimension.SalespersonCommission where branchcode = 'NWFLD'
+-- SELECT  top 10 * FROM Dimension.SalespersonCommission where branchcode = 'NWFLD'
 
