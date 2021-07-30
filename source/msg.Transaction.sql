@@ -1,0 +1,89 @@
+﻿
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER VIEW [msg].[Transaction]
+AS
+
+/******************************************************************************
+**	File: 
+**	Name: 
+**	Desc: based on Fact.Sales_qt 
+**		
+**
+**              
+**	Return values:  
+**
+**	Called by:   SSAS
+**             
+**	Parameters:
+**	Input					Output
+**	----------				-----------
+**
+**	Auth: tmc
+**	Date: 28 Jul 21
+*******************************************************************************
+**	Change History
+*******************************************************************************
+**	Date:	Author:		Description:
+**	-----	----------	--------------------------------------------
+**    
+*******************************************************************************/
+
+SELECT
+	t.SalesOrderNumber
+	,t.[DocType]
+	,t.LineNumber
+	,t.OriginalSalesOrderNumber
+	,t.OriginalOrderLineNumber
+	,d.FiscalMonth									AS FISCAL_MONTH	
+	,CAST(t.[OrderFirstShipDate] AS date)			AS ORDER_DATE
+	,CAST(t.Date AS date)							AS POSTED_DATE
+
+	,c.CUST_NUMBER
+	,i.ITEM_NUMBER
+	
+	,(t.ShippedQty)									AS QUANTITY
+	,(t.NetSalesAmt)								AS SALES
+	,(t.GPAtCommCostAmt)							AS GPAtCommCostAmt
+
+	,t.FreeGoodsInvoicedInd
+	,t.ID											AS AuditKey
+
+	,t.[OrderSourceCode]
+	,t.[EnteredBy]
+	,t.[OrderTakenBy]
+
+FROM            
+	BRS_TransactionDW AS t 
+
+	INNER JOIN BRS_SalesDay AS d 
+	ON d.SalesDate = t.Date 
+
+	INNER JOIN msg.item AS i 
+	ON t.Item  = i.ITEM_NUMBER 
+
+	INNER JOIN msg.customer AS c 
+	ON t.Shipto = c.CUST_NUMBER 
+
+	INNER JOIN [dbo].[BRS_BusinessUnit] bu
+	ON t.GLBusinessUnit = bu.BusinessUnit
+
+WHERE  
+	(bu.hs_branded_baseline_ind = 1) AND
+	(t.CalMonth = 202107) AND
+	-- test
+	(1 = 1)
+
+GO
+
+-- SELECT top 10 * FROM msg.[Transaction]
+-- SELECT count (*) FROM msg.[Transaction] 
+
+--1708 @ 1m27s
+
+-- export
+-- camsg_Transaction_20210728.txt
+-- SELECT * FROM msg.[Transaction]

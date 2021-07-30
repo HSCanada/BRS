@@ -149,9 +149,9 @@ SELECT
 
 	,RTRIM(c.MinorProductClass)			AS MinorCode
 
-	-- equity graft on last month results
-	,equity.BrandEquityCategory			AS BrandEquityCategory
-	,equity.Excl_Code					AS BrandEquityCode
+	-- equity graft on last month results, Branded default should have minor sales
+	,ISNULL(equity.BrandEquityCategory, 'Branded')			AS BrandEquityCategory
+	,ISNULL(equity.Excl_Code, 'BRANDED') 					AS BrandEquityCode
 
 --	21 Jul 21	tmc		Add Merch Key vendor category for playbook
 	,CASE 
@@ -163,6 +163,7 @@ SELECT
 		THEN 1
 		ELSE 0
 	END									AS KeySupplierMerchInd
+	,i.comm_group_eps_cd				AS CommGroupEpsCode
 
 FROM            
 	BRS_Item AS i 
@@ -262,5 +263,11 @@ WHERE SalesCategory <> ''
 -- SELECT count(*) FROM Dimension.Item 
 -- ORG 235840
 
+/*
+-- finance vs opts vs comm consistency check
+SELECT        CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label, COUNT(*) AS Expr1
+FROM            Dimension.Item
+GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
+*/
 
-
+SELECT * FROM Dimension.Item where itemKey  = 9
