@@ -1,5 +1,42 @@
 -- Playbook backend, tmc, 8 Jul 21
 
+--> moved to Prod 6 Aug 21
+------------------------------------------------------------
+-- HSB consistency fix
+------------------------------------------------------------
+select [PrivateLabelScopeInd] from [dbo].[BRS_ItemMPC] where MajorProductClass in('018', '073', '122')
+
+UPDATE       BRS_ItemMPC
+SET                PrivateLabelScopeInd = 1
+WHERE        (MajorProductClass IN ('018', '073', '122'))
+GO
+
+------------------------------------------------------------
+-- MSG setup
+------------------------------------------------------------
+/*
+Item: Global Vendor, Label, BRAND_EQUITY, BRAND_LINE, PPE code
+Corp, Owned exclusive
+Cust: MarketClass, ISRName, ISRCode, FSC Rollup
+Dental, Lab, SM
+Trans: DocType, Order Source, GP = Commissionable
+*/
+
+CREATE SCHEMA [msg] AUTHORIZATION [dbo]
+GO
+
+
+------------------------------------------------------------
+-- speedup via index
+------------------------------------------------------------
+
+CREATE NONCLUSTERED INDEX [BRS_ItemBaseHistoryDAT_idx_02]
+ON [dbo].[BRS_ItemBaseHistoryDAT] ([Currency])
+INCLUDE ([PriceID],[SupplierCost],[CorporatePrice])
+GO
+
+--< moved to Prod 6 Aug 21
+
 ------------------------------------------------------------
 -- set rollups - START
 ------------------------------------------------------------
@@ -178,38 +215,5 @@ GO
 ALTER TABLE comm.salesperson_master SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
-
-------------------------------------------------------------
--- speedup via index
-------------------------------------------------------------
-
-CREATE NONCLUSTERED INDEX [BRS_ItemBaseHistoryDAT_idx_02]
-ON [dbo].[BRS_ItemBaseHistoryDAT] ([Currency])
-INCLUDE ([PriceID],[SupplierCost],[CorporatePrice])
-GO
-
-------------------------------------------------------------
--- HSB consistency fix
-------------------------------------------------------------
-select [PrivateLabelScopeInd] from [dbo].[BRS_ItemMPC] where MajorProductClass in('018', '073', '122')
-
-UPDATE       BRS_ItemMPC
-SET                PrivateLabelScopeInd = 1
-WHERE        (MajorProductClass IN ('018', '073', '122'))
-GO
-
-------------------------------------------------------------
--- MSG setup
-------------------------------------------------------------
-/*
-Item: Global Vendor, Label, BRAND_EQUITY, BRAND_LINE, PPE code
-Corp, Owned exclusive
-Cust: MarketClass, ISRName, ISRCode, FSC Rollup
-Dental, Lab, SM
-Trans: DocType, Order Source, GP = Commissionable
-*/
-
-CREATE SCHEMA [msg] AUTHORIZATION [dbo]
-GO
 
 
