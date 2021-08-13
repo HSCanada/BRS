@@ -73,17 +73,28 @@ FROM
 
 WHERE  
 	(bu.hs_branded_baseline_ind = 1) AND
-	(t.CalMonth = 202107) AND
+	-- test
+	--	(t.CalMonth = 202107) AND
+	--	(d.FiscalMonth = 202106) AND
 	-- test
 	(1 = 1)
 
 GO
 
--- SELECT top 10 * FROM msg.[Transaction]
+-- SELECT top 10 * FROM msg.[Transaction] where FISCAL_MONTH = 202106
 -- SELECT count (*) FROM msg.[Transaction] 
 
 --1708 @ 1m27s
 
--- export
--- camsg_Transaction_20210728.txt
--- SELECT * FROM msg.[Transaction]
+-- export item
+-- camsg_Item_20210806.txt
+-- select  * from msg.item 	
+
+-- export customer
+-- camsg_Customer_20210806.txt
+-- SELECT * FROM msg.Customer
+
+-- export sales
+-- camsg_Transaction_20210806.txt
+-- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 201901 and 202106
+

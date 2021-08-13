@@ -9,7 +9,7 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: Sale
+**	Name: Sales for Commission model
 **	Desc:  
 **		
 **
@@ -37,6 +37,8 @@ AS
 **	22 Oct 20	tmc		add Inside Sales Rep (ISR)
 **	21 Dec 20	tmc		add Equipment Service Tech (EST)
 **	09 Jul 21	tmc		add HS Branded Baseline flag
+**	09 Aug 21	tmc		disable HS Branded Baseline flag (set to 0)
+**							Commisssion GLBU is not accurate at line level
 **    
 *******************************************************************************/
 
@@ -107,7 +109,12 @@ SELECT
 	,ISNULL([WSVR01_reference], '')					AS CustomerPOText1
 	,ISNULL([WSORD__equipment_order], '')			AS EquipmentOrderNumber
 
-	,bu.hs_branded_baseline_ind
+	
+	-- Disable this, as the Commisssion GLBU is not accurate at the line level, tmc, 9 Aug 21
+	,0 AS hs_branded_baseline_ind
+	-- ,bu.hs_branded_baseline_ind
+
+	,WSEMCU_header_business_unit
 
 
 FROM            
@@ -226,9 +233,9 @@ GO
 
 -- SELECT top 10 * FROM Fact.Commission where adjKey is null
 -- SELECT top 10 * FROM Fact.Commission where hs_branded_baseline_ind = 0
-
+-- SELECT * FROM Fact.Commission where SalesOrderNumber = 1131213
 
 -- 30s
 
--- SELECT * FROM Fact.Commission where FiscalMonth = 201812
+-- SELECT * FROM Fact.Commission where FiscalMonth = 201901
 

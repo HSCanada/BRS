@@ -52,6 +52,7 @@ AS
 --	17 Mar 21	tmc		Add MarketClassNew to help with Commission mapping
 --	09 Jul 21	tmc		Add Wheel data (prior month to current)
 --	21 Jul 21	tmc		Add CommMasterCode & ServiceBonus exempt for playbook
+--	09 Aug 21	tmc		Add Account Create date for Playbook drop-off filter
 **    
 *******************************************************************************/
 
@@ -214,6 +215,7 @@ SELECT
 
 	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
 	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
+	,c.CreateDate
 
 
 

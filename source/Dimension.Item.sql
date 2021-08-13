@@ -270,4 +270,4 @@ FROM            Dimension.Item
 GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 */
 
-SELECT * FROM Dimension.Item where itemKey  = 9
+-- SELECT * FROM Dimension.Item where itemKey  = 9

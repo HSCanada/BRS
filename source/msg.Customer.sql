@@ -120,6 +120,6 @@ GO
 -- SELECT * FROM msg.Customer order by FIELD_LEVEL4, FIELD_LEVEL4_code
 
 -- export
--- camsg_Customer_20210728.txt
+-- camsg_Customer_20210806.txt
 -- SELECT * FROM msg.Customer
 

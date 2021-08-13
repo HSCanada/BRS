@@ -9,7 +9,7 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: Sale
+**	Name: Sales for Business Solutions model
 **	Desc:  
 **		
 **
@@ -33,6 +33,7 @@ AS
 -- 21 Jan 19	tmc		Add Brand Key for Business Review
 -- 15 Feb 19	tmc		Add Price Method Key for PAR
 -- 08 Jun 20	tmc		Make CalMonth logic table driven so fails 100% no maint
+-- 09 Aug 21	tmc		Add hs_branded_baseline_ind for HSB reporting 
 **    
 *******************************************************************************/
 
@@ -77,6 +78,9 @@ SELECT
 	,[OrderSourceCode]
 	,[EnteredBy]
 	,[OrderTakenBy]
+
+	,t.GLBusinessUnit
+	,bu.hs_branded_baseline_ind
 	
 
 FROM            
@@ -109,6 +113,11 @@ FROM
 
 	INNER JOIN [dbo].[BRS_SalesDay] AS dday
 	ON t.[Date] = dday.SalesDate
+
+	-- HSB baseline
+	INNER JOIN [dbo].[BRS_BusinessUnit] as bu
+	ON t.GLBusinessUnit = bu.BusinessUnit
+
 
 	-- identify first sales order (for sales order dimension)
 	INNER JOIN 
@@ -152,7 +161,11 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM Fact.Sale_brs
--- SELECT * FROM Fact.Sale_brs where SalesOrderNumber = 13178603
+-- SELECT * FROM Fact.Sale_brs where SalesOrderNumber = 1131213
+ -- SELECT SalesOrderNumber, GLBusinessUnit, sum(SalesAmt) FROM Fact.Sale_brs where SalesOrderNumber = 1131213 group by SalesOrderNumber, GLBusinessUnit-- 
+
+ -- SELECT count(*) FROM Fact.Sale_brs
+ -- ORG=NEW 7 451 208
 
 -- 1 month test
 -- 1.03; 2 259 017 RAW

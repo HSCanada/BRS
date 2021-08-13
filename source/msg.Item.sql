@@ -114,10 +114,10 @@ FROM            Dimension.Item
 GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 */
 
---select top 10 * from msg.item
+-- select top 10 * from msg.item
 -- select  * from msg.item 	where SalesCategoryCode not in('MERCH','SMEQU','TEETH') order by SalesCategoryCode
 
 -- export
--- camsg_Item_20210728.txt
+-- camsg_Item_20210806.txt
 -- select  * from msg.item 	
 
