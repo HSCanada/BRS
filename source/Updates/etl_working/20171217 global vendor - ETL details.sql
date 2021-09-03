@@ -7,7 +7,7 @@
 --- update F0901 from ETL - run package to update F0901, F0909
 
 -------------------------------------------------------------------------------
--- Part 1
+-- Part 1 - run any time
 -------------------------------------------------------------------------------
 
 --> START to STOP *** Manually ****
@@ -80,11 +80,9 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 --> Part 1: STOP
 
 -------------------------------------------------------------------------------
--- Part 2a
+-- Part 2a - run after ME snapshot
 -------------------------------------------------------------------------------
 
--- Excl update 1 & 2 -- wait for ME complete (post adj load)
----
 
 print '6. test Excl_key - should be 0 null records'
 select count(*)
@@ -92,7 +90,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 
@@ -104,7 +102,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 /*
@@ -168,7 +166,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 
@@ -187,7 +185,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN  202107 AND 202107
+	FiscalMonth BETWEEN  202108 AND 202108
 GO
 
 
@@ -200,13 +198,13 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN  202107 AND 202107
+	FiscalMonth BETWEEN  202108 AND 202108
 GO
 
 --> Part 2a: STOP
 
 -------------------------------------------------------------------------------
--- Part 2b
+-- Part 2b - run after ME adjustment loaded
 -------------------------------------------------------------------------------
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level

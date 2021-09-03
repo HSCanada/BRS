@@ -219,3 +219,24 @@ SELECT distinct comm_group_scorecard_cd FROM  comm.[group]
 -- set rollups - STOP
 ------------------------------------------------------------
 
+-- add 19 Aug 21
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Item ADD
+	comm_group_legacy_cd char(6) NOT NULL CONSTRAINT DF_BRS_Item_comm_group_cd1_1 DEFAULT ('')
+GO
+ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
+	FK_BRS_Item_group3 FOREIGN KEY
+	(
+	comm_group_legacy_cd
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

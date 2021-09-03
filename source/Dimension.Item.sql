@@ -49,6 +49,8 @@ AS
 --	05 Jul 21	tmc		Add Minor to help with 3M marketshare modelling
 --	09 Jul 21	tmc		Add Brand Equity data (prior month to current)
 --	21 Jul 21	tmc		Add Merch Key vendor category for playbook
+--	17 Aug 21	tmc		Add Top15 User version
+--	19 Aug 21	tmc		Add comm_group_legacy_cd to help with change analysis
 **    
 *******************************************************************************/
 
@@ -133,13 +135,7 @@ SELECT
 	,mpc.PrivateLabelScopeInd
 	,RTRIM(ISNULL(wcs.QV$CLC_classification_code,''))	AS ClassificationCode
 
-	,CASE 
-		WHEN mpc.PrivateLabelScopeInd = 1 
-		THEN
-			'Include_Item'
-		ELSE
-			'Exclude_Item'
-	END									AS PrivateLabelScope_Item
+	,0									AS PrivateLabelScope_Item
 	,i.CurrentFileCost
 	,i.[CurrentCorporatePrice]
 	,CASE WHEN c.CategoryRollupPPE <> '' THEN c.CategoryRollupPPE ELSE 'NON_PPE' END as ppe_code
@@ -164,6 +160,9 @@ SELECT
 		ELSE 0
 	END									AS KeySupplierMerchInd
 	,i.comm_group_eps_cd				AS CommGroupEpsCode
+	,mpc.top15_desc
+	,i.comm_group_legacy_cd
+
 
 FROM            
 	BRS_Item AS i 

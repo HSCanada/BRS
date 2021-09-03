@@ -32,6 +32,8 @@ AS
 -- 16 Nov 16	tmc		replace Sales Division code with description
 -- 17 Nov 16	tmc	    Updated Sales Channel wording based on feedback
 -- 03 Jan 18	tmc		sunset BRS_TS_Rollup
+-- 31 Aug 21	tmc		Roll A25k code into AAA for ISR
+
 **    
 *******************************************************************************/
 
@@ -98,7 +100,8 @@ SELECT
 		ELSE
 			CASE WHEN MarketRollup_L1 like 'SP%'
 				THEN 'SPC'
-				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE c.FocusCd End
+				ELSE CASE WHEN c.FocusCd in ('','A25K') THEN 'AAA' ELSE RTRIM(c.FocusCd) End
+--				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE c.FocusCd End
 			END
 	END AS FocusCd
 
@@ -135,6 +138,7 @@ GO
 -- SELECT top 10 * FROM BRS_TS_Customer 
 
 -- SELECT distinct TsName FROM BRS_TS_Customer 
+-- SELECT distinct FocusCd FROM BRS_TS_Customer 
 
 
 -- SELECT * FROM BRS_TS_Customer WHERE VPA = 'DENCORP'

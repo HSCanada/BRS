@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	17 Aug 21	tmc		Add top15 and eps commission code
 **    
 *******************************************************************************/
 
@@ -64,6 +65,8 @@ SELECT
 	-- equity graft on last month results, Branded default should have minor sales
 	,ISNULL(equity.BrandEquityCategory, 'Branded')			AS BrandEquityCategory
 	,ISNULL(equity.Excl_Code, 'BRANDED') 					AS BrandEquityCode
+	,i.comm_group_eps_cd
+	,mpc.top15_desc
 
 FROM            
 	BRS_Item AS i 

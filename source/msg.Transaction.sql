@@ -86,15 +86,15 @@ GO
 
 --1708 @ 1m27s
 
--- export item
--- camsg_Item_20210806.txt
+-- 1. export item
+-- 20210831_camsg_Item.txt
 -- select  * from msg.item 	
 
--- export customer
--- camsg_Customer_20210806.txt
+-- 2. export customer
+-- 20210831_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
--- export sales
--- camsg_Transaction_20210806.txt
--- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 201901 and 202106
+-- 3. export sales
+-- 20210831_camsg_Transaction_20901_202108.txt
+-- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 201901 and 202108
 

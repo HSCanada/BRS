@@ -53,6 +53,7 @@ AS
 --	09 Jul 21	tmc		Add Wheel data (prior month to current)
 --	21 Jul 21	tmc		Add CommMasterCode & ServiceBonus exempt for playbook
 --	09 Aug 21	tmc		Add Account Create date for Playbook drop-off filter
+--	17 Aug 21	tmc		Roll A25k code into AAA for ISR
 **    
 *******************************************************************************/
 
@@ -146,7 +147,7 @@ SELECT
 		ELSE
 			CASE WHEN mcroll.MarketRollup_L1 like 'SP%'
 				THEN 'SPC'
-				ELSE CASE WHEN c.FocusCd = '' THEN 'AAA' ELSE RTRIM(c.FocusCd) End
+				ELSE CASE WHEN c.FocusCd in ('','A25K') THEN 'AAA' ELSE RTRIM(c.FocusCd) End
 			END
 	END AS FocusCd
 	,c.FocusCd											AS playbook_focus_code
@@ -349,4 +350,6 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG=NEW 70318
+
+SELECT  distinct FocusCd FROM Dimension.Customer
 
