@@ -217,7 +217,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 --2 min
@@ -243,7 +243,7 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
-	(BRS_Transaction.FiscalMonth between 202107 AND 202107)
+	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
 GO
 
 -- 1 min
@@ -275,7 +275,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202107 AND 202107)
+	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
 GO
 
 -- 30s
@@ -307,7 +307,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202107 AND 202107)
+	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -316,7 +316,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 -- update BRS_ItemCategory!global for new codes first
@@ -325,7 +325,7 @@ UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 -- update BRS_ItemCategory!global for new codes first
@@ -338,7 +338,7 @@ FROM
 WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202107 AND 202107
+	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
 print '17. set Financial services dummy code - Transaction'
@@ -350,7 +350,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202107 AND 202107) AND
+	(FiscalMonth BETWEEN 202108 AND 202108) AND
 	(1=1)
 GO
 
@@ -358,8 +358,8 @@ GO
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Jul-21_RA.csv
+-- a_CAN_Aug-21_RA.csv
 
 -- 3. select & run below
--- [hfm].global_cube_proc  202107, 202107
+-- [hfm].global_cube_proc  202108, 202108
 
