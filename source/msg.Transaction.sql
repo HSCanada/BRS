@@ -83,18 +83,21 @@ GO
 
 -- SELECT top 10 * FROM msg.[Transaction] where FISCAL_MONTH = 202106
 -- SELECT count (*) FROM msg.[Transaction] 
-
 --1708 @ 1m27s
 
+-- export tab delimited
+
 -- 1. export item
--- 20210831_camsg_Item.txt
+-- 20210917_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20210831_camsg_Customer.txt
+-- 20210917_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20210831_camsg_Transaction_20901_202108.txt
--- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 201901 and 202108
+-- 20210917_camsg_Transaction.txt
+-- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 202109 and 202109 AND POSTED_DATE <= '2021-09-17' ORDER BY POSTED_DATE
+
+
 

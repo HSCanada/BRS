@@ -221,30 +221,17 @@ WHERE
 GO
 
 --2 min
+/*
 print '12. OPTIONAL clear GpsKey, if needed'
 UPDATE
 	BRS_Transaction
 SET
 	GpsKey = NULL
-FROM
-	BRS_ItemHistory AS h 
-	INNER JOIN BRS_Transaction 
-	ON h.Item = BRS_Transaction.Item AND 
-	h.FiscalMonth = BRS_Transaction.FiscalMonth 
-
-	INNER JOIN hfm.gps_code_rule AS r 
-	ON BRS_Transaction.GLBU_Class LIKE RTRIM(r.GLBU_Class_WhereClauseLike) AND 
-	BRS_Transaction.GL_BusinessUnit LIKE RTRIM(r.BusinessUnit_WhereClauseLike) AND 
-	h.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
-	h.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
-	BRS_Transaction.SalesDivision LIKE RTRIM(r.SalesDivision_WhereClauseLike) AND
-	1 = 1 
-
-	INNER JOIN hfm.gps_code AS g 
-	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
+	(not GpsKey is NULL) AND
 	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
 GO
+*/
 
 -- 1 min
 print '13. set GpsKey 1 of 2'
@@ -340,6 +327,9 @@ WHERE
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
 	FiscalMonth BETWEEN 202108 AND 202108
 GO
+
+-- add the GL vs Global consistence rules here...
+
 
 print '17. set Financial services dummy code - Transaction'
 UPDATE       [dbo].[BRS_Transaction]
