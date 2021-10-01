@@ -74,7 +74,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
---  SELECT   * FROM Dimension.SalespersonCodeCommission order by 1
+--  SELECT   * FROM Dimension.SalespersonCodeCommission order by 2
 --select count(*) from Dimension.SalespersonCodeCommission
 --ORG 496
 --  SELECT  * FROM Dimension.SalespersonCodeCommission 

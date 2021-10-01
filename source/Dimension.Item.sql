@@ -51,6 +51,7 @@ AS
 --	21 Jul 21	tmc		Add Merch Key vendor category for playbook
 --	17 Aug 21	tmc		Add Top15 User version
 --	19 Aug 21	tmc		Add comm_group_legacy_cd to help with change analysis
+--	29 Sep 21	tmc		Add FamilySet code for analysis
 **    
 *******************************************************************************/
 
@@ -162,6 +163,8 @@ SELECT
 	,i.comm_group_eps_cd				AS CommGroupEpsCode
 	,mpc.top15_desc
 	,i.comm_group_legacy_cd
+
+	,i.FamilySetLeader				AS FamilySetCode
 
 
 FROM            

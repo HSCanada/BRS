@@ -88,16 +88,16 @@ GO
 -- export tab delimited
 
 -- 1. export item
--- 20210917_camsg_Item.txt
+-- 20210925_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20210917_camsg_Customer.txt
+-- 20210925_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20210917_camsg_Transaction.txt
--- SELECT * FROM msg.[Transaction] where FISCAL_MONTH between 202109 and 202109 AND POSTED_DATE <= '2021-09-17' ORDER BY POSTED_DATE
+-- 20210925_camsg_Transaction.txt
+SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-09-18' and '2021-09-25'
 
 
 

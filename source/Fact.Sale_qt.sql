@@ -35,6 +35,7 @@ AS
 **	12 Dec 19	tmc		add return codes lookup and original doctype
 **	16 Aug 20	tmc		add Exclusives 
 **	18 Mar 21	tmc		add promo tracking sales
+**	29 Sep 21	tmc		add backorder for show analyis
 **    
 *******************************************************************************/
 
@@ -93,6 +94,12 @@ SELECT
 	,pm.PriceMethod
 	,i.SalesCategory
 	,hdr.PromotionTrackingCode
+	-- add backorder for show analyis
+
+--	,CASE WHEN  t.Date = t.OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
+	,CASE WHEN  NOT t.DocType like 'S%' OR t.Date = t.OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
+	,CAST(t.OrderFirstShipDate AS date)							AS OrderFirstShipDateKey
+
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -215,6 +222,7 @@ WHERE
 
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
 	-- test
+	--t.SalesOrderNumber = 1113586 AND
 	(1 = 1)
 
 GO
@@ -310,8 +318,21 @@ FROM
 
 */
 
--- SELECT count(*) FROM Fact.Sale_qt
--- 7670103, 12s
+/*
+-- backorder test
+select top 100 SalesOrderNumber, DocType, LineNumber,  CalMonth,   Date, OrderFirstShipDate,
+CASE WHEN  NOT DocType like 'S%' OR Date = OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
+from BRS_TransactionDW where CalMonth = 202109 and DocType like 'S%'
+*/
+
+
+-- SELECT count(*) FROM Fact.Sale_qt where fiscalmonth = 202109
+-- 218196 @ 1m54
+-- 7 670 103, 12s
 
 -- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 and doctype = 'CM' and ReturnValidInd =0
+-- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 
+
+-- why do we care about first ship date on credit? what problems? just just the order date.  full stop.
+
 
