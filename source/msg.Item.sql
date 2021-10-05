@@ -119,6 +119,7 @@ GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 
 --select top 10 * from msg.item where ITEM_NUMBER in('1900426', '9393754')
 
+
 -- select  * from msg.item 	where SalesCategoryCode not in('MERCH','SMEQU','TEETH') order by SalesCategoryCode
 
 -- export

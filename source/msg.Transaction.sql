@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	04 Oct 21	tmc		Add 2 DenMat laser codes to history as exception 2021
 **    
 *******************************************************************************/
 
@@ -72,7 +73,7 @@ FROM
 	ON t.GLBusinessUnit = bu.BusinessUnit
 
 WHERE  
-	(bu.hs_branded_baseline_ind = 1) AND
+	((bu.hs_branded_baseline_ind = 1) OR (t.Item in ('1900426', '9393754'))) AND
 	-- test
 	--	(t.CalMonth = 202107) AND
 	--	(d.FiscalMonth = 202106) AND
@@ -82,22 +83,27 @@ WHERE
 GO
 
 -- SELECT top 10 * FROM msg.[Transaction] where FISCAL_MONTH = 202106
+-- SELECT top 10 * FROM msg.[Transaction] where ITEM_NUMBER in ('1900426', '9393754')
+--SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2018-12-30' and '2021-09-25' and ITEM_NUMBER in ('1900426', '9393754')
+
 -- SELECT count (*) FROM msg.[Transaction] 
 --1708 @ 1m27s
 
 -- export tab delimited
 
 -- 1. export item
--- 20210925_camsg_Item.txt
+-- 20211001_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20210925_camsg_Customer.txt
+-- 20211001_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20210925_camsg_Transaction.txt
-SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-09-18' and '2021-09-25'
+-- 20211001_camsg_Transaction.txt
+
+SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-09-26' and '2021-10-01'
+-- 20181230_20210925_pickup_camsg_Transaction.txt
 
 
 
