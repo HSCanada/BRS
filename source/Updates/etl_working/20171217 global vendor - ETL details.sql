@@ -7,7 +7,7 @@
 --- update F0901 from ETL - run package to update F0901, F0909
 
 -------------------------------------------------------------------------------
--- Part 1 - run any time
+-- Part 1 - HFM update, run any time
 -------------------------------------------------------------------------------
 
 --> START to STOP *** Manually ****
@@ -80,9 +80,8 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 --> Part 1: STOP
 
 -------------------------------------------------------------------------------
--- Part 2a - run after ME snapshot
+-- Part 2 - HSB update, run after ME snapshot
 -------------------------------------------------------------------------------
-
 
 print '6. test Excl_key - should be 0 null records'
 select count(*)
@@ -201,10 +200,214 @@ WHERE
 	FiscalMonth BETWEEN  202109 AND 202109
 GO
 
---> Part 2a: STOP
+--> STOP
 
 -------------------------------------------------------------------------------
--- Part 2b - run after ME adjustment loaded
+-- Part 3 - Global update that is consistent with finacial
+--				run after ME adjustment loaded
+-------------------------------------------------------------------------------
+
+-- Global 
+
+--> tests here - manual 
+-- (see print ('T01: missing ENTITY_sales'), etc)
+
+SELECT
+GLBU_Class, GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, GL_Subsidiary_Sales, GL_Subsidiary_Cost, GL_Subsidiary_ChargeBack, GL_Object_ChargeBack
+FROM            BRS_Transaction
+where 
+	GLBU_Class = 'LEASE' AND
+	GL_BusinessUnit ='' AND
+	(1=1)
+GO
+
+UPDATE       BRS_Transaction
+SET
+	GL_BusinessUnit = '020019000000'
+	,GL_Object_Sales = '4130'
+	,GL_Subsidiary_Sales = ''
+	,GL_Object_Cost = ''
+	,GL_Subsidiary_Cost = ''
+	,GL_Subsidiary_ChargeBack = ''
+	,GL_Object_ChargeBack = ''
+WHERE
+	(GLBU_Class = 'LEASE') AND 
+	(GL_BusinessUnit = '')
+GO
+
+
+-- SetGLBU 
+
+print ('sales update')
+UPDATE
+	BRS_Transaction
+SET
+	[gl_account_sales_key] = a.[gl_account_key]
+FROM
+	hfm.account_master_F0901 AS a 
+	INNER JOIN BRS_Transaction 
+	ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+		a.GMOBJ__object_account = BRS_Transaction.GL_Object_Sales AND 
+		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
+WHERE
+	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+GO
+
+print('sales test')
+SELECT
+[FiscalMonth], [SalesOrderNumberKEY], [DocType], GLBU_Class, [NetSalesAmt], GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, GL_Subsidiary_Sales, GL_Subsidiary_Cost, GL_Subsidiary_ChargeBack, GL_Object_ChargeBack
+FROM            BRS_Transaction
+where 
+	([gl_account_sales_key] is null) AND
+	([NetSalesAmt] <> 0.0) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(1=1)
+GO
+
+print ('cost update')
+UPDATE
+	BRS_Transaction
+SET
+	[gl_account_cost_key] = a.[gl_account_key]
+FROM
+	hfm.account_master_F0901 AS a 
+	INNER JOIN BRS_Transaction 
+	ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+		a.GMOBJ__object_account = BRS_Transaction.GL_Object_Cost AND 
+		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
+WHERE
+	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+GO
+
+print ('cost test')
+SELECT
+[FiscalMonth], [SalesOrderNumberKEY], [DocType], GLBU_Class, [ExtendedCostAmt], GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, GL_Subsidiary_Sales, GL_Subsidiary_Cost, GL_Subsidiary_ChargeBack, GL_Object_ChargeBack
+FROM            BRS_Transaction
+where 
+	([gl_account_cost_key] is null) AND
+	([ExtendedCostAmt] <> 0.0) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(1=1)
+GO
+
+print ('chargeback update')
+UPDATE
+	BRS_Transaction
+SET
+	[gl_account_chargeback_key] = a.[gl_account_key]
+FROM
+	hfm.account_master_F0901 AS a 
+	INNER JOIN BRS_Transaction 
+	ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+		a.GMOBJ__object_account = BRS_Transaction.GL_Object_ChargeBack AND 
+		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
+WHERE
+	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+GO
+
+print ('chargeback test')
+SELECT
+[FiscalMonth], [SalesDivision], [SalesOrderNumberKEY], [DocType], GLBU_Class, [ExtChargebackAmt], GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, GL_Object_ChargeBack, GL_Subsidiary_Sales, GL_Subsidiary_Cost, GL_Subsidiary_ChargeBack 
+FROM            BRS_Transaction
+where 
+	([gl_account_chargeback_key] is null) AND
+	([ExtChargebackAmt] <> 0.0) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(1=1)
+order by GL_BusinessUnit
+GO
+
+-- update BRS_ItemCategory!global for new codes first
+print '15b. set Global Item Group - except'
+UPDATE       BRS_ItemHistory
+	SET [MinorProductClass] = '701-**-**'
+WHERE
+	(BRS_ItemHistory.Item = '105ZZZZ') AND 
+	FiscalMonth BETWEEN 202108 AND 202108
+GO
+
+-- update BRS_ItemCategory!global for new codes first
+print '16. set Global Item Group - AFTER manual maint'
+UPDATE       BRS_ItemHistory
+	SET global_product_class = BRS_ItemCategory.global_product_class
+FROM
+	BRS_ItemHistory  INNER JOIN
+    BRS_ItemCategory  ON BRS_ItemHistory.MinorProductClass = BRS_ItemCategory.MinorProductClass
+WHERE
+	(BRS_ItemHistory.Item > '') AND 
+	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
+	FiscalMonth BETWEEN 201901 AND 202108
+GO
+
+-- add the GL vs Global consistence rules here...
+
+print '17b. set global - Transaction level'
+
+-- set trans & adj
+-- set def / corr
+print ('global JDE - set')
+UPDATE
+	BRS_Transaction
+SET
+	global_product_class_key = ig.global_product_class_key
+FROM
+	BRS_Transaction 
+
+	INNER JOIN 	BRS_ItemHistory AS ih 
+	ON BRS_Transaction.Item = ih.Item AND 
+		BRS_Transaction.FiscalMonth = ih.FiscalMonth 
+		
+	INNER JOIN hfm.global_product AS ig 
+	ON ih.global_product_class = ig.global_product_class
+WHERE
+	(BRS_Transaction.Item > '') AND 
+	(ISNULL(BRS_Transaction.global_product_class_key,0) <> ig.global_product_class_key) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+GO
+
+print ('global JDE - test')
+SELECT 
+	global_product_class_key 
+FROM
+	BRS_Transaction 
+WHERE
+	(BRS_Transaction.Item > '') AND 
+	(BRS_Transaction.global_product_class_key =1) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+GO
+
+
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 202108 AND 202108) AND
+	(1=1)
+GO
+
+
+print '17. set Financial services dummy code - Transaction'
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 202108 AND 202108) AND
+	(1=1)
+GO
+
+-------------------------------------------------------------------------------
+-- Part 4 - GPS update, run after ME adjustment loaded
 -------------------------------------------------------------------------------
 
 -- Set GPS rules at the BRS_Transaction.GpsKey level
@@ -306,44 +509,9 @@ WHERE
 	FiscalMonth BETWEEN 202108 AND 202108
 GO
 
--- update BRS_ItemCategory!global for new codes first
-print '15b. set Global Item Group - except'
-UPDATE       BRS_ItemHistory
-	SET [MinorProductClass] = '701-**-**'
-WHERE
-	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202108 AND 202108
-GO
-
--- update BRS_ItemCategory!global for new codes first
-print '16. set Global Item Group - AFTER manual maint'
-UPDATE       BRS_ItemHistory
-	SET global_product_class = BRS_ItemCategory.global_product_class
-FROM
-	BRS_ItemHistory  INNER JOIN
-    BRS_ItemCategory  ON BRS_ItemHistory.MinorProductClass = BRS_ItemCategory.MinorProductClass
-WHERE
-	(BRS_ItemHistory.Item > '') AND 
-	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202108 AND 202108
-GO
-
--- add the GL vs Global consistence rules here...
-
-
-print '17. set Financial services dummy code - Transaction'
-UPDATE       [dbo].[BRS_Transaction]
-	SET Item = '105ZZZZ'
--- SELECT *
-FROM
-    [dbo].[BRS_Transaction]
-WHERE
-	([GLBU_Class]=  'LEASE') AND 
-	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202108 AND 202108) AND
-	(1=1)
-GO
-
+-------------------------------------------------------------------------------
+-- Part 5 - export file
+-------------------------------------------------------------------------------
 
 --
 -- 1. set results to file, CSV format
