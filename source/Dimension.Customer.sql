@@ -217,6 +217,7 @@ SELECT
 	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
 	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
 	,c.CreateDate
+	,c.adhoc_model_code
 
 
 
