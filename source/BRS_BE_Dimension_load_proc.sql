@@ -45,7 +45,8 @@ AS
 --	05 Oct 18	tmc		Add Brand to supplier load for RI
 **	9 Jun 19	tmc		add subminorcode
 --	16 Dec 20	tmc		add EST
---	06 Apr 21	tmc		teeth stocking MA fix 
+--	06 Apr 21	tmc		teeth stocking MA fix
+--	14 Oct 21	tmc		add pma and freight ind for commission modelling
  
 *******************************************************************************/
 
@@ -241,6 +242,10 @@ BEGIN
 				est_code = ISNULL(s.EstTerritoryCd, 0),
 
 				FSA = LEFT(ISNULL(s.PostalCode, ''), 3)
+				,[PrivilegesCode] = LEFT(ISNULL(s.[PrivilegesCode], ''), 5)
+				,[ApplyFreightInd] = ISNULL(s.[ApplyFreightInd], '')
+				,[ApplySmallOrderChargesInd] = ISNULL(s.[ApplySmallOrderChargesInd], '')
+				
 
 
 			FROM         
@@ -276,7 +281,12 @@ BEGIN
 
 				BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  OR
 				BRS_Customer.est_code <> ISNULL(s.EstTerritoryCd, 0)  OR
-				BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3)
+				BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3) OR
+
+				BRS_Customer.[PrivilegesCode] = LEFT(ISNULL(s.[PrivilegesCode], ''), 5) OR
+				BRS_Customer.[ApplyFreightInd] = ISNULL(s.[ApplyFreightInd], '') OR
+				BRS_Customer.[ApplySmallOrderChargesInd] = ISNULL(s.[ApplySmallOrderChargesInd], '')
+
 
 			Set @nErrorCode = @@Error
 		End
@@ -315,6 +325,9 @@ BEGIN
 				TsTerritoryCd,
 				est_code,
 				FSA
+				,PrivilegesCode
+				,[ApplyFreightInd]
+				,[ApplySmallOrderChargesInd]
 
 			)
 
@@ -346,6 +359,11 @@ BEGIN
 				ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd,
 				ISNULL(s.EstTerritoryCd, 0)  AS EstTerritoryCd,
 				LEFT(ISNULL(s.PostalCode, ''), 3) AS FSA
+
+				,LEFT(ISNULL(s.[PrivilegesCode], ''), 5)	AS PrivilegesCode
+				,ISNULL(s.[ApplyFreightInd], '')			AS [ApplyFreightInd]
+				,ISNULL(s.[ApplySmallOrderChargesInd], '')	AS [ApplySmallOrderChargesInd]
+
 
 			FROM         
 				STAGE_BRS_CustomerFull AS s

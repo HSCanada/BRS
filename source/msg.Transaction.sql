@@ -88,22 +88,22 @@ GO
 
 -- SELECT count (*) FROM msg.[Transaction] 
 --1708 @ 1m27s
+-- 20181230_20210925_pickup_camsg_Transaction.txt
 
--- export tab delimited
+-- export file, tab delimited
 
 -- 1. export item
--- 20211001_camsg_Item.txt
+-- 20211008_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20211001_camsg_Customer.txt
+-- 20211008_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20211001_camsg_Transaction.txt
+-- 20211008_camsg_Transaction.txt
 
-SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-09-26' and '2021-10-01'
--- 20181230_20210925_pickup_camsg_Transaction.txt
+SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-10-02' and '2021-10-08'
 
 
 

@@ -3,6 +3,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 ALTER PROCEDURE [hfm].global_cube_new_proc 
+	@FiscalMonth int
+
 AS
 
 /******************************************************************************
@@ -59,6 +61,7 @@ BEGIN
 		[hfm].global_cube AS t 
 
 	WHERE
+		(PERIOD = @FiscalMonth) AND
 --		test
 --		t.SalesOrderNumber = 1109883 AND
 		(1=1)
@@ -106,6 +109,7 @@ BEGIN
 
 	WHERE
 		(ReportingClass <> 'NSA') AND
+		(PERIOD = @FiscalMonth) AND
 		(1=1)
 
 	GROUP BY 
@@ -151,6 +155,7 @@ BEGIN
 	WHERE
 		(t.ext_chargeback is NOT NULL) AND
 		(ReportingClass <> 'NSA') AND
+		(PERIOD = @FiscalMonth) AND
 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
@@ -181,9 +186,8 @@ GO
 
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
---a_CAN_Dec-19_RA.csv
--- [hfm].global_cube_new_proc
--- [hfm].global_cube_proc 202108, 202108
+--a_CAN_Sep-21_RA.csv
+-- [hfm].global_cube_new_proc 202109
 
 -- 46 452 rows @ 6s
 -- 

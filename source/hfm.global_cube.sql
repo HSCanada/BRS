@@ -40,15 +40,45 @@ AS
 		,hfm_cost.[HFM_Account]						AS ACCOUNT_cost
 		,hfm_cb.[HFM_Account]						AS ACCOUNT_cb
 
-		,RTRIM(LEFT(ih.[global_product_class],9))	AS PRODUCT
-		,RTRIM(excl.BrandEquityCategory)			AS BRAND_EQUITY
-		,RTRIM(excl.Excl_Code_Public)				AS BRAND_LINE
+		-- break out Dentrix from other software using special codes
+		,CASE
+			WHEN t.GLBU_Class ='DTXSP'
+			THEN 
+				CASE 
+					WHEN ih.[global_product_class] = '870-20-20'	THEN 'ProductSW'
+					ELSE											'Other_Technology'
+--					WHEN ih.[global_product_class] = ''				THEN 'Other_Technology'
+--					ELSE RTRIM(LEFT(ih.[global_product_class],9))
+				END
+			ELSE RTRIM(LEFT(ISNULL(iglob.[global_product_class],''),9))
+--			ELSE RTRIM(LEFT(ih.[global_product_class],9))
+			
+
+		END											AS PRODUCT
+
+		-- set adjustment drive owned product
+		,CASE 
+			WHEN t.GLBU_Class in ('BSOLN', 'DTXSP', 'LEASE') 
+			THEN 'Owned' 
+			ELSE RTRIM(excl.BrandEquityCategory)
+		END											AS BRAND_EQUITY
+
+		,CASE 
+			WHEN t.GLBU_Class in ('BSOLN', 'DTXSP', 'LEASE') 
+			THEN '' 
+			ELSE RTRIM(ISNULL(excl.Excl_Code_Public,''))
+		END											AS BRAND_LINE
+
 		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
 		,'LOC'										AS CURRENCY
 		,RTRIM(ISNULL(gps.GpsCode, 'NoAnalysis'))	AS ANALYSIS
 
-		-- new
-		,RTRIM(ih.Supplier)							AS SUPPLIER
+		-- break out wand supplier
+		,CASE 
+			WHEN excl.Excl_Code_Public = 'COMPUDENT' 
+			THEN 'COMP'
+			ELSE RTRIM(ISNULL(ih.Supplier,''))
+		END											AS SUPPLIER
 		,RTRIM(ch.HIST_Specialty)					AS CUSTOMER_SPECIALTY
 
 		,doc_source.source_global_desc				AS REPORTING_SOURCE
@@ -104,6 +134,7 @@ AS
 		,ih.MinorProductClass
 		,t.Shipto
 		,ch.HIST_MarketClass
+		,t.FiscalMonth / 100	AS fiscal_year
 
 
 	FROM         
@@ -189,13 +220,14 @@ AS
 
 
 	WHERE
+		(t.FiscalMonth between 201901 and (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]))  AND
 --		(t.FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]))  AND
-		(t.FiscalMonth between 202108 and 202108)  AND
+--		(t.FiscalMonth between 202108 and 202108)  AND
 
 		-- exclude non-sales
 		(t.SalesDivision < 'AZA') AND 
---		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		(gl_bu.[GLBU_ClassUS_L1] < 'ZZZZZ') AND
+--		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		--
 --		test
 --		(t.DocType <> 'AA') AND
@@ -239,7 +271,7 @@ SELECT * FROM [hfm].global_cube where ACCOUNT_cb is null and ext_chargeback <> 0
 -- ok
 
 print ('T07: missing PRODUCT')
-SELECT * FROM [hfm].global_cube where PRODUCT = '' and MinorProductClass <> ''
+SELECT distinct Item, MinorProductClass FROM [hfm].global_cube where PRODUCT = '' and MinorProductClass <> ''
 -- check global mapping by product / defaults
 
 print ('T08: missing SUPPLIER')
@@ -256,11 +288,11 @@ SELECT * FROM [hfm].global_cube where BRAND_LINE = ''
 
 print ('T11: missing CUSTOMER')
 SELECT * FROM [hfm].global_cube where CUSTOMER = ''
--- add marketclass to 201909: 3855064, 3855329
+-- ok
 
 print ('T12: missing CUSTOMER_SPECIALTY')
 SELECT * FROM [hfm].global_cube where CUSTOMER_SPECIALTY = '' 
--- add specialty to 201909: 3855064, 3855329
+-- ok
 
 print ('T13: missing ANALYSIS')
 SELECT distinct ANALYSIS FROM [hfm].global_cube
@@ -276,6 +308,8 @@ SELECT * FROM [hfm].global_cube WHERE SourceCd is null
 
 -- TO DO GL conflict / 
 
--- SELECT top 100 * from [hfm].global_cube order by PERIOD
+-- SELECT top 100 * from [hfm].global_cube order by PERIOD desc
 
-SELECT  * from [hfm].global_cube order by PERIOD
+--SELECT  * from [hfm].global_cube order by PERIOD
+
+--SELECT  count(*) from [hfm].global_cube 

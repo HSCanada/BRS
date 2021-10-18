@@ -106,45 +106,30 @@ GO
 
 /*
 
+-- restate rules 201901 - 2021; 
 SELECT Excl_Code, BrandEquityCategory,[EffectivePeriod],[ExpiredPeriod]
 FROM [hfm].[exclusive_product]
-WHERE        [Excl_Code] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX', 'ZYRISI')
+WHERE        [Excl_Code] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX', 'ZYRISI', 'DENMAT')
 GO
 
-SELECT [Excl_Code_TargKey], [StatusCd]
-FROM [hfm].[exclusive_product_rule]
-WHERE        [Excl_Code_TargKey] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX') and StatusCd = 0
-GO
-
--- Branded
--- Owned
--- Exclusive
--- CorporateBrand
-
--- move from Excl to Brand after 202101
+-- move from Excl to Brand after 202103
 UPDATE       [hfm].[exclusive_product]
 --SET                [BrandEquityCategory] = 'Exclusive'
-SET                [BrandEquityCategory] = 'Branded', ExpiredPeriod = '202101'
-WHERE        ([Excl_Code] = 'ZYRISI')
+SET                [BrandEquityCategory] = 'Branded'
+WHERE        (Excl_Code in('MILESTONE' ))
 
-            
 -- move from Excl to Brand after 202007
 UPDATE       [hfm].[exclusive_product]
 --SET                [BrandEquityCategory] = 'Exclusive'
 SET                [BrandEquityCategory] = 'Branded'
 WHERE        ([Excl_Code] = 'CAO_LASER')
 
--- move from Excl to Brand after 202012
+-- move from Brand to from Exclafter 202001
 UPDATE       [hfm].[exclusive_product]
 --SET                [BrandEquityCategory] = 'Exclusive'
 SET                [BrandEquityCategory] = 'Branded'
-WHERE        (Excl_Code in('COMPUDENT', 'MILESTONE' ))
+WHERE        ([Excl_Code] = 'DENMAT')
 
--- move from Brand to Excl 202104
-UPDATE       [hfm].[exclusive_product]
-SET                [BrandEquityCategory] = 'Exclusive'
---SET                [BrandEquityCategory] = 'Branded'
-WHERE        (Excl_Code in('COMPUDENT' ))
 
 */
 
@@ -200,6 +185,9 @@ WHERE
 	FiscalMonth BETWEEN  202109 AND 202109
 GO
 
+print '11. set owned based on GL'
+
+
 --> STOP
 
 -------------------------------------------------------------------------------
@@ -251,7 +239,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 WHERE
 	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
 GO
 
 print('sales test')
@@ -261,7 +249,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_sales_key] is null) AND
 	([NetSalesAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
 	(1=1)
 GO
 
@@ -278,7 +266,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 WHERE
 	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
 GO
 
 print ('cost test')
@@ -288,7 +276,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_cost_key] is null) AND
 	([ExtendedCostAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
 	(1=1)
 GO
 
@@ -305,7 +293,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
 GO
 
 print ('chargeback test')
@@ -315,19 +303,50 @@ FROM            BRS_Transaction
 where 
 	([gl_account_chargeback_key] is null) AND
 	([ExtChargebackAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
 	(1=1)
 order by GL_BusinessUnit
 GO
 
 -- update BRS_ItemCategory!global for new codes first
+
+print ('leasing fix')
+
 print '15b. set Global Item Group - except'
 UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202108 AND 202108
+	FiscalMonth BETWEEN 202108 AND 202109
 GO
+
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 202109 AND 202109) AND
+	(1=1)
+GO
+
+
+print '17. set Financial services dummy code - Transaction'
+UPDATE       [dbo].[BRS_Transaction]
+	SET Item = '105ZZZZ'
+-- SELECT *
+FROM
+    [dbo].[BRS_Transaction]
+WHERE
+	([GLBU_Class]=  'LEASE') AND 
+	-- ([GL_BusinessUnit] ='020019000000') AND
+	(FiscalMonth BETWEEN 202109 AND 202109) AND
+	(1=1)
+GO
+
+-------------------------------------------------------------------------------
 
 -- update BRS_ItemCategory!global for new codes first
 print '16. set Global Item Group - AFTER manual maint'
@@ -338,16 +357,16 @@ FROM
     BRS_ItemCategory  ON BRS_ItemHistory.MinorProductClass = BRS_ItemCategory.MinorProductClass
 WHERE
 	(BRS_ItemHistory.Item > '') AND 
+	-- null filter not needed below
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 201901 AND 202108
+	FiscalMonth BETWEEN 201901 AND 202109
 GO
 
--- add the GL vs Global consistence rules here...
+-- add the GL vs Global consistence rules corections here...
+-- TBD
 
 print '17b. set global - Transaction level'
 
--- set trans & adj
--- set def / corr
 print ('global JDE - set')
 UPDATE
 	BRS_Transaction
@@ -365,9 +384,125 @@ FROM
 WHERE
 	(BRS_Transaction.Item > '') AND 
 	(ISNULL(BRS_Transaction.global_product_class_key,0) <> ig.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
 GO
 
+-- 50s in dev
+print ('global JDE - fix')
+UPDATE
+	BRS_Transaction
+SET
+	global_product_class_key = iglob_def.global_product_class_key
+FROM
+	BRS_Transaction 
+
+	INNER JOIN BRS_BusinessUnitClass AS bu_trans 
+	ON BRS_Transaction.GLBU_Class = bu_trans.GLBU_Class 
+
+	INNER JOIN hfm.global_product AS iglob 
+	ON BRS_Transaction.global_product_class_key = iglob.global_product_class_key 
+
+	INNER JOIN BRS_BusinessUnitClass AS iglob_bu 
+	ON iglob.GLBU_Class_map = iglob_bu.GLBU_Class AND 
+	bu_trans.GLBU_Class_map <> iglob_bu.GLBU_Class_map 
+
+	INNER JOIN hfm.global_product AS iglob_def 
+	ON bu_trans.global_product_class_default = iglob_def.global_product_class
+
+WHERE
+--	(BRS_Transaction.DocType <> 'AA') AND 
+	(BRS_Transaction.SalesDivision < 'AZA') AND 
+	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
+	(bu_trans.global_product_class_default <> '') AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND 
+	(BRS_Transaction.global_product_class_key <> iglob_def.global_product_class_key) AND
+	(1 = 1)
+GO
+
+-- set HiCAD to 850-99, if missing
+print ('global - set HiCAD to 850-99, if missing')
+
+UPDATE       BRS_Transaction
+SET                global_product_class_key = 3310
+FROM            BRS_Transaction INNER JOIN
+                         BRS_BusinessUnitClass AS bu_trans ON BRS_Transaction.GLBU_Class = bu_trans.GLBU_Class
+WHERE        (BRS_Transaction.SalesDivision < 'AZA') AND (BRS_Transaction.GLBU_Class IN ('EQDIG', 'HICAD')) AND (bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND (BRS_Transaction.global_product_class_key IS NULL) AND 
+                         (BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND (1 = 1)
+						 
+GO
+
+/*
+SELECT
+	t.FiscalMonth
+	, t.SalesOrderNumberKEY
+	, t.DocType
+	, t.LineNumber
+	, t.GLBU_Class
+	, t.Item
+	, t.global_product_class_key
+	, bu_trans.GLBU_Class_map
+	, bu_trans.global_product_class_default
+	, bu_trans.GLBU_Class_map AS trans_map
+
+FROM
+	BRS_Transaction AS t 
+
+	INNER JOIN BRS_BusinessUnitClass AS bu_trans 
+	ON t.GLBU_Class = bu_trans.GLBU_Class 
+	
+WHERE
+--	(t.DocType <> 'AA') AND 
+	(t.SalesDivision < 'AZA') AND 
+	(t.GLBU_Class in ('EQDIG', 'HICAD')) AND
+	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
+	(t.global_product_class_key is null) AND
+--	(t.id = 21950555) AND
+	(t.FiscalMonth BETWEEN 201901 AND 202109) AND 
+	(1 = 1)
+GO
+
+-- test
+SELECT
+	t.FiscalMonth
+	, t.SalesOrderNumberKEY
+	, t.DocType
+	, t.LineNumber
+	, t.GLBU_Class
+	, t.Item
+	, t.global_product_class_key
+	, bu_trans.GLBU_Class_map
+	, bu_trans.global_product_class_default
+	, bu_trans.GLBU_Class_map AS trans_map
+	, iglob_bu.GLBU_Class_map AS global_map
+	, iglob_def.global_product_class_key AS global_product_class_key_def
+
+FROM
+	BRS_Transaction AS t 
+
+	INNER JOIN BRS_BusinessUnitClass AS bu_trans 
+	ON t.GLBU_Class = bu_trans.GLBU_Class 
+	
+	INNER JOIN hfm.global_product AS iglob 
+	ON t.global_product_class_key = iglob.global_product_class_key 
+	
+	INNER JOIN BRS_BusinessUnitClass AS iglob_bu 
+	ON iglob.GLBU_Class_map = iglob_bu.GLBU_Class AND 
+		bu_trans.GLBU_Class_map <> iglob_bu.GLBU_Class_map 
+		
+	INNER JOIN hfm.global_product AS iglob_def 
+	ON bu_trans.global_product_class_default = iglob_def.global_product_class
+
+WHERE
+	(t.DocType <> 'AA') AND 
+	(t.SalesDivision < 'AZA') AND 
+	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
+	(bu_trans.global_product_class_default <> '') AND 
+	(t.FiscalMonth BETWEEN 201901 AND 202109) AND 
+	(1 = 1)
+ORDER BY bu_trans.global_product_class_default
+*/
+
+-------------------------------------------------------------------------------
 print ('global JDE - test')
 SELECT 
 	global_product_class_key 
@@ -376,35 +511,10 @@ FROM
 WHERE
 	(BRS_Transaction.Item > '') AND 
 	(BRS_Transaction.global_product_class_key =1) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202108)
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
 GO
 
 
-UPDATE       [dbo].[BRS_Transaction]
-	SET Item = '105ZZZZ'
--- SELECT *
-FROM
-    [dbo].[BRS_Transaction]
-WHERE
-	([GLBU_Class]=  'LEASE') AND 
-	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202108 AND 202108) AND
-	(1=1)
-GO
-
-
-print '17. set Financial services dummy code - Transaction'
-UPDATE       [dbo].[BRS_Transaction]
-	SET Item = '105ZZZZ'
--- SELECT *
-FROM
-    [dbo].[BRS_Transaction]
-WHERE
-	([GLBU_Class]=  'LEASE') AND 
-	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202108 AND 202108) AND
-	(1=1)
-GO
 
 -------------------------------------------------------------------------------
 -- Part 4 - GPS update, run after ME adjustment loaded
@@ -420,7 +530,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202108 AND 202108
+	FiscalMonth BETWEEN 202109 AND 202109
 GO
 
 --2 min
@@ -465,7 +575,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
+	(BRS_Transaction.FiscalMonth between 202109 AND 202109)
 GO
 
 -- 30s
@@ -497,7 +607,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
+	(BRS_Transaction.FiscalMonth between 202109 AND 202109)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -506,18 +616,27 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202108 AND 202108
+	FiscalMonth BETWEEN 202109 AND 202109
 GO
 
 -------------------------------------------------------------------------------
 -- Part 5 - export file
 -------------------------------------------------------------------------------
 
+--old
+-- [hfm].global_cube_proc  202109, 202109
+
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Aug-21_RA.csv
-
+-- a_CAN_Sep-21_RA.csv
 -- 3. select & run below
--- [hfm].global_cube_proc  202108, 202108
+-- [hfm].global_cube_new_proc  202109
 
+-------------------------------------------------------------------------------
+
+-- a_CAN_Dec-20_RA.csv
+-- [hfm].global_cube_new_proc 202012
+
+
+-- STOP 202012

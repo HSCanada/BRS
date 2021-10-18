@@ -54,6 +54,8 @@ AS
 --	21 Jul 21	tmc		Add CommMasterCode & ServiceBonus exempt for playbook
 --	09 Aug 21	tmc		Add Account Create date for Playbook drop-off filter
 --	17 Aug 21	tmc		Roll A25k code into AAA for ISR
+--	14 Oct 21	tmc		add freight ind for commission modelling
+
 **    
 *******************************************************************************/
 
@@ -218,6 +220,8 @@ SELECT
 	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
 	,c.CreateDate
 	,c.adhoc_model_code
+	,CASE WHEN c.ApplyFreightInd = 'Y' THEN 1 ELSE 0 END			As ApplyFreightInd
+	,CASE WHEN c.ApplySmallOrderChargesInd = 'Y' THEN 1 ELSE 0 END	As ApplySmallOrderChargesInd
 
 
 
@@ -352,5 +356,6 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG=NEW 70318
 
-SELECT  distinct FocusCd FROM Dimension.Customer
-
+-- test
+-- SELECT  distinct FocusCd FROM Dimension.Customer
+-- SELECT  distinct ApplyFreightInd, ApplySmallOrderChargesInd FROM Dimension.Customer

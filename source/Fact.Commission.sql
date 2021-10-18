@@ -39,7 +39,7 @@ AS
 **	09 Jul 21	tmc		add HS Branded Baseline flag
 **	09 Aug 21	tmc		disable HS Branded Baseline flag (set to 0)
 **							Commisssion GLBU is not accurate at line level
-**    
+**	14 Oct 21	tmc		add backorder for small order analysis
 *******************************************************************************/
 
 SELECT        
@@ -115,6 +115,15 @@ SELECT
 	-- ,bu.hs_branded_baseline_ind
 
 	,WSEMCU_header_business_unit
+
+	,CAST([WSTRDJ_order_date] AS date)				AS OrderDateKey
+	,CASE 
+		WHEN  NOT [WSDCTO_order_type] like 'S%' OR 
+			[WSDGL__gl_date] = [WSTRDJ_order_date] 
+		THEN 0 
+		ELSE 1 
+	END												AS backorder_ind
+
 
 
 FROM            

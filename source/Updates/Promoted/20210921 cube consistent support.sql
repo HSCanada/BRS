@@ -7,11 +7,6 @@
 
 BEGIN TRANSACTION
 GO
-ALTER TABLE dbo.BRS_BusinessUnitClass SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-BEGIN TRANSACTION
-GO
 ALTER TABLE hfm.gps_code ADD
 	GLBU_Class_map char(5) NOT NULL CONSTRAINT DF_gps_code_GLBU_Class_map DEFAULT ('')
 GO
@@ -135,6 +130,11 @@ GO
 UPDATE       BRS_Transaction
 SET                GpsKey = 23
 WHERE        (GpsKey = 10)
+GO
+
+UPDATE       BRS_Transaction
+SET                GpsKey = 23
+WHERE        (GpsKey = 20)
 GO
 
 --
@@ -393,12 +393,28 @@ COMMIT
 
 UPDATE BRS_BusinessUnitClass
 set [GLBU_Class_map] = 'MERCH'
-WHERE [GLBU_Class] in ('MERCH', 'SMEQU', 'VETER', 'MEDIC')
+WHERE [GLBU_Class] in ('MERCH', 'SMEQU', 'VETER', 'MEDIC','', 'FREIG', 'MECAD', 'MECAZ')
 GO
+
+UPDATE BRS_BusinessUnitClass
+set [GLBU_Class_map] = 'TEETH'
+WHERE [GLBU_Class] in ('TEETH')
+GO
+
 
 UPDATE BRS_BusinessUnitClass
 set [GLBU_Class_map] = 'EQUIP'
 WHERE [GLBU_Class] in ('EQUIP', 'HITEC', 'FRTEQ')
+GO
+
+UPDATE BRS_BusinessUnitClass
+set [GLBU_Class_map] = 'HICAD'
+WHERE [GLBU_Class] in ('HICAD', 'EQDIG')
+GO
+
+UPDATE BRS_BusinessUnitClass
+set [GLBU_Class_map] = 'DTXSP'
+WHERE [GLBU_Class] in ('DTXSP', 'DTXHW', 'DTXSW')
 GO
 
 UPDATE BRS_BusinessUnitClass
@@ -412,47 +428,13 @@ WHERE [GLBU_Class] in ('LABOU')
 GO
 
 UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'HICAD'
-WHERE [GLBU_Class] in ('HICAD', 'EQDIG')
-GO
-
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'TEETH'
-WHERE [GLBU_Class] in ('TEETH')
-GO
-
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'MECAD'
-WHERE [GLBU_Class] in ('MECAD', 'MECAZ')
-GO
-
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'DTXSP'
-WHERE [GLBU_Class] in ('DTXSP', 'DTXHW', 'DTXSW')
-GO
-
-UPDATE BRS_BusinessUnitClass
 set [GLBU_Class_map] = 'BSOLN'
-WHERE [GLBU_Class] in ('BSOLN')
-GO
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'LEASE'
-WHERE [GLBU_Class] in ('LEASE')
-GO
-
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'FREIG'
-WHERE [GLBU_Class] in ('FREIG')
-GO
-
-UPDATE BRS_BusinessUnitClass
-set [GLBU_Class_map] = 'FREIG'
-WHERE [GLBU_Class] in ('FREIG')
+WHERE [GLBU_Class] in ('BSOLN', 'LEASE')
 GO
 
 UPDATE BRS_BusinessUnitClass
 set [GLBU_Class_map] = 'ZZZZZ'
-WHERE [GLBU_Class] in ('ZZZZZ', 'PROMX', 'PROMC', 'ALLOE', 'ALLOM', 'ALLOT','','CAMLG','EXNSW')
+WHERE [GLBU_Class] in ('ZZZZZ', 'PROMX', 'PROMC', 'ALLOE', 'ALLOM', 'ALLOT','CAMLG','EXNSW')
 GO
 
 
@@ -478,3 +460,27 @@ GO
 ALTER TABLE dbo.BRS_BusinessUnitClass SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+-- global defaults, based on MPC
+
+-- add dummy comp vendor
+
+INSERT INTO BRS_ItemSupplier
+                         (Supplier, supplier_nm, SupplierFamily, added_dt, note_txt, CountryGroup, LabelPrimary, Supplier_Category, RebateRollup, RebateRollupNote, ma_supplier_factor, FreeGoodsEstInd, MELP_code)
+SELECT        'COMP' AS Supplier, 'COMP' as supplier_nm, SupplierFamily, added_dt, note_txt, CountryGroup, LabelPrimary, Supplier_Category, RebateRollup, RebateRollupNote, ma_supplier_factor, FreeGoodsEstInd, MELP_code
+FROM            BRS_ItemSupplier AS BRS_ItemSupplier_1
+WHERE        (Supplier = 'WAND')
+GO
+
+-- add dummy 850-99 
+
+INSERT INTO hfm.global_product
+                         (global_product_class, global_product_class_descr, parent, level_num, active_ind, note, GLBU_Class_map)
+SELECT        '850-99' AS global_product_class, 'misc adj' AS global_product_class_descr, parent, level_num, active_ind, note, GLBU_Class_map
+FROM            hfm.global_product AS global_product_1
+WHERE        (global_product_class LIKE '850-90')
+GO
+
+SELECT        * 
+FROM            hfm.global_product 
+WHERE        (global_product_class LIKE '850-99')
