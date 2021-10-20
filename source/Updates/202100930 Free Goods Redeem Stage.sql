@@ -56,11 +56,13 @@ FROM
 --drop table [Integration].[F5554240_fg_redeem_Staging]
 
 CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
+	[order_file_name] varchar(50) not null,
+	[line_id] int not null,
+
 	[CalMonth] [int] NOT NULL,
-	[WKTEXT2_run_period] [char](20)  NULL,
-	[WKROW__totaled_by] [char](20)  NULL,
+	[status_code] smallint not null default (-1),
+
 	[WKKEY__key] [char](20)  NULL,
-	[WKDSC__um_description] [char](20)  NULL,
 	[WKAC10_division_code] [char](3)  NULL,
 	[WK$SPC_supplier_code] [char](6)  NULL,
 	[WKLITM_item_number] [char](25)  NULL,
@@ -91,3 +93,16 @@ CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 ) ON [USERDATA]
 GO
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
+	F5554240_fg_redeem_Staging_c_pk PRIMARY KEY CLUSTERED 
+	(
+	order_file_name,
+	line_id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

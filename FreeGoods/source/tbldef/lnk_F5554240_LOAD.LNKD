@@ -1,0 +1,3 @@
+﻿lnk_F5554240_LOAD
+Text;DSN=F5554240_LOAD Link Specification;FMT=Delimited;HDR=NO;IMEX=2;CharacterSet=850;ACCDB=YES;DATABASE=.\upload\load
+F5554240_LOAD.csv

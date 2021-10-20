@@ -38,6 +38,9 @@ Const msApplicationVersionNum As String = "2.01"
 Const mnODBCTimeout As Integer = 120
 
 Const bCONFIG_MODE_DEV = True
+Const bCONFIG_MODE_EXPORT_ESS = False
+Const bCONFIG_MODE_EXPORT_FSC = True
+Const bCONFIG_MODE_EXPORT_BRANCH = False
 
 ' Ensure that connection string below is the same ODBC source used to link tables
 'Development
@@ -73,7 +76,7 @@ Public Function GetCurrentFSC() As String
     
 ' Test
     If bCONFIG_MODE_DEV Then
-        GetCurrentFSC = "GMaves"
+'        GetCurrentFSC = "GMaves"
 '        GetCurrentFSC = "GMaves"
 '        GetCurrentFSC = "RWong"
 
@@ -92,7 +95,7 @@ Public Function GetCurrentBranch() As String
 
 ' Test
     If bCONFIG_MODE_DEV Then
-        GetCurrentBranch = "TORNT"
+'        GetCurrentBranch = "TORNT"
 '        GetCurrentBranch = "HALFX"
     End If
 
@@ -407,14 +410,22 @@ End Function
 
 Private Function ExportDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
     Dim bSuccess
+    Dim strFileName As String
+    Debug.Print "sSalespersonKeyId=" & Trim(sSalespersonKeyId) & " sReportId=" & Trim(sReportId)
     
     bSuccess = False
+    strFileName = "CommissionDetail"
+    
+    If bCONFIG_MODE_DEV Then strFileName = strFileName & "-DEV"
 ' work on pdf later
-        If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommStatementDetailReport", "CommissionDetail")) Then
-            If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommStatementDetailExport", "CommissionDetail")) Then
-                bSuccess = True
-            End If
+
+    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommStatementDetailReport", strFileName)) Then
+        If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommStatementDetailExport", strFileName)) Then
+            bSuccess = True
+        ExportExcel sSalespersonKeyId, sReportId, "qryCommStatementDetailExport-FreeGoods", strFileName & "-FreeGoods"
+        
         End If
+    End If
   
                 
     ExportDocuments = bSuccess
@@ -423,12 +434,18 @@ End Function
 
 Private Function ExportDocumentsESS(sSalespersonKeyId As String, sReportId As String) As Boolean
     Dim bSuccess
-    
+    Dim strFileName As String
+    Debug.Print "sSalespersonKeyId=" & Trim(sSalespersonKeyId) & " sReportId=" & Trim(sReportId)
+     
     bSuccess = False
+    strFileName = "CommissionDetail"
+    
+    If bCONFIG_MODE_DEV Then strFileName = strFileName & "-DEV"
+
         
 ' work on pdf later
-    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSStatementDetailReport", "CommissionDetail")) Then
-        If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommESSStatementDetailExport", "CommissionDetail")) Then
+    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSStatementDetailReport", strFileName)) Then
+        If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommESSStatementDetailExport", strFileName)) Then
             bSuccess = True
         End If
     End If
@@ -606,16 +623,32 @@ Sub Test()
 End Sub
 
 
-'   Export reports
+'   Export reports - can be run manually
 Public Function ExportFSCCommBatch()
+    Dim sMsg
+    
     InitParams
+    sMsg = ""
     
-    ExportBatchESS
-    ExportBatchESS_Summary
+    If bCONFIG_MODE_EXPORT_FSC Then
+        ExportBatch
+        sMsg = sMsg + " FSC"
+    End If
 
-''    MsgBox "ESS Details exported!"
+    If bCONFIG_MODE_EXPORT_ESS Then
+        ExportBatchESS
+        sMsg = sMsg + " ESS"
+    End If
     
-    ExportBatch
-    MsgBox "FSC Details exported!"
+    If bCONFIG_MODE_EXPORT_BRANCH Then
+        ExportBatchESS_Summary
+        sMsg = sMsg + " ESS_Summary"
+    End If
+    
+    If sMsg = "" Then
+        MsgBox "Nothing Happend -- set export flags"
+    Else
+        MsgBox "Exported: " & sMsg
+    End If
     
 End Function

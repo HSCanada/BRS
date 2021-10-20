@@ -1,29 +1,12 @@
-﻿Operation =1
-Option =0
-Begin InputTables
-    Name ="qsubCommStatementDetailReportSummary"
-    Name ="zqryCommStatementDetailReport-Summary"
-End
-Begin OutputColumns
-    Alias ="salesperson_key_id"
-    Expression ="GetCurrentFSC()"
-    Expression ="qsubCommStatementDetailReportSummary.comm_group_cd"
-    Expression ="qsubCommStatementDetailReportSummary.comm_group_desc"
-    Alias ="total_transaction_amt"
-    Expression ="CDbl(Nz([pre_total_transaction_amt],0))"
-    Alias ="total_gp_ext_amt"
-    Expression ="CDbl(Nz([pre_total_gp_ext_amt],0))"
-    Alias ="total_comm_amt"
-    Expression ="CDbl(Nz([pre_total_comm_amt],0))"
-    Expression ="qsubCommStatementDetailReportSummary.sort_id"
-End
-Begin Joins
-    LeftTable ="qsubCommStatementDetailReportSummary"
-    RightTable ="zqryCommStatementDetailReport-Summary"
-    Expression ="qsubCommStatementDetailReportSummary.comm_group_cd=[zqryCommStatementDetailRepor"
-        "t-Summary].item_comm_group_cd"
-    Flag =2
-End
+﻿dbMemo "SQL" ="SELECT GetCurrentFSC() AS salesperson_key_id, qsubCommStatementDetailReportSumma"
+    "ry.comm_group_cd, qsubCommStatementDetailReportSummary.comm_group_desc, CDbl(Nz("
+    "[pre_total_transaction_amt],0)) AS total_transaction_amt, CDbl(Nz([pre_total_gp_"
+    "ext_amt],0)) AS total_gp_ext_amt, CDbl(Nz([pre_total_comm_amt],0)) AS total_comm"
+    "_amt, qsubCommStatementDetailReportSummary.sort_id\015\012FROM qsubCommStatement"
+    "DetailReportSummary LEFT JOIN [qryCommStatementDetailReport-Summary] ON qsubComm"
+    "StatementDetailReportSummary.comm_group_cd=[qryCommStatementDetailReport-Summary"
+    "].item_comm_group_cd;\015\012"
+dbMemo "Connect" =""
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="2"
@@ -61,37 +44,5 @@ Begin
     Begin
         dbText "Name" ="qsubCommStatementDetailReportSummary.sort_id"
         dbLong "AggregateType" ="-1"
-    End
-End
-Begin
-    State =0
-    Left =0
-    Top =0
-    Right =1343
-    Bottom =797
-    Left =-1
-    Top =-1
-    Right =1327
-    Bottom =229
-    Left =0
-    Top =0
-    ColumnsShown =539
-    Begin
-        Left =514
-        Top =10
-        Right =817
-        Bottom =154
-        Top =0
-        Name ="qryCommStatementDetailReport-Summary"
-        Name =""
-    End
-    Begin
-        Left =40
-        Top =23
-        Right =325
-        Bottom =213
-        Top =0
-        Name ="qsubCommStatementDetailReportSummary"
-        Name =""
     End
 End
