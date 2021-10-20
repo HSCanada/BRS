@@ -36,6 +36,7 @@ GO
 **	21 Aug 20	tmc	Fix missing name & ref custinfo in detail (new)
 **	08 Feb 21	tmc	Add Doctype
 **  09 Feb 21	tmc replace ESS with master code
+--	20 Oct 21	tmc	add Free goods to details with opt out for back compatible
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -91,6 +92,7 @@ SELECT
 	t.[WSVR01_reference]			AS customer_po_num,
 	t.[cust_comm_group_cd]			AS SPM_StatusCd,
 	t.ID_legacy
+	,pr.show_ind					AS show_ind
 
 
 FROM         
@@ -120,7 +122,10 @@ FROM
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
-	(pr.show_ind = 1) AND
+	-- the free goods exception is to allow two reports from the same source
+	((pr.show_ind = 1) OR pr.disp_comm_group_cd in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')) AND
+	-- test
+	-- t.ID = 8211296 AND
 	1=1
 GO
 
@@ -129,7 +134,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM [comm].[backend_detail_fsc] where source_cd = 'JDE'
+SELECT top 10 * FROM [comm].[backend_detail_fsc]
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new
 
@@ -140,6 +145,7 @@ GO
 
 --SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'JACK.FREEBORN'
 
+/*  test
 SELECT
 [comm_plan_id]
 ,[item_comm_group_cd]
@@ -161,3 +167,4 @@ WHERE
 [comm_plan_id] like 'FSC%' AND
 [active_ind] = 1 AND
 [item_comm_group_cd] in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')
+*/
