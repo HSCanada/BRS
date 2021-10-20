@@ -13,18 +13,25 @@ Begin OutputColumns
     Expression ="comm_ess_statement_detail.customer_nm"
     Expression ="comm_ess_statement_detail.transaction_dt"
     Expression ="comm_ess_statement_detail.doc_key_id"
+    Expression ="comm_ess_statement_detail.doc_type"
     Expression ="comm_ess_statement_detail.item_id"
     Expression ="comm_ess_statement_detail.transaction_txt"
     Expression ="comm_ess_statement_detail.item_comm_group_cd"
+    Expression ="comm_ess_statement_detail.comm_group_desc"
     Expression ="comm_ess_statement_detail.transaction_amt"
     Expression ="comm_ess_statement_detail.gp_ext_amt"
     Expression ="comm_ess_statement_detail.shipped_qty"
     Expression ="comm_ess_statement_detail.IMCLMJ"
-    Expression ="comm_ess_statement_detail.item_label_cd"
-    Expression ="comm_ess_statement_detail.manufact_cd"
+    Expression ="comm_ess_statement_detail.item_comm_rt"
     Expression ="comm_ess_statement_detail.comm_amt"
-    Expression ="comm_ess_statement_detail.fsc_salesperson_key_id"
+    Expression ="comm_ess_statement_detail.fsc_salesperson_cd"
+    Expression ="comm_ess_statement_detail.SPM_StatusCd"
+    Expression ="comm_ess_statement_detail.customer_po_num"
+    Alias ="ID"
+    Expression ="comm_ess_statement_detail.record_id"
+    Expression ="comm_ess_statement_detail.item_label_cd"
     Expression ="comm_ess_statement_detail.source_cd"
+    Expression ="comm_ess_statement_detail.order_source_cd"
 End
 Begin Joins
     LeftTable ="comm_ess_statement_detail"
@@ -67,6 +74,7 @@ Begin
     Begin
         dbText "Name" ="comm_ess_statement_detail.transaction_amt"
         dbLong "AggregateType" ="-1"
+        dbText "Format" ="Standard"
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.doc_key_id"
@@ -83,16 +91,12 @@ Begin
     Begin
         dbText "Name" ="comm_ess_statement_detail.gp_ext_amt"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_ess_statement_detail.fsc_salesperson_key_id"
-        dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="2025"
-        dbBoolean "ColumnHidden" ="0"
+        dbText "Format" ="Standard"
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.comm_amt"
         dbLong "AggregateType" ="-1"
+        dbText "Format" ="Standard"
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.shipped_qty"
@@ -109,6 +113,8 @@ Begin
     Begin
         dbText "Name" ="comm_ess_statement_detail.manufact_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1605"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.item_id"
@@ -126,17 +132,69 @@ Begin
         dbText "Name" ="comm_ess_statement_detail.source_cd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.item_comm_rt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.comm_group_desc"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3000"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fsc_salesperson_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.order_source_cd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.customer_po_num"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.ID_legacy"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.doc_type"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.fsc_salesperson_key_id"
+        dbInteger "ColumnWidth" ="2025"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.SPM_StatusCd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.record_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_ess_statement_detail.salesperson_key_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="ID"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1599
-    Bottom =917
+    Right =1018
+    Bottom =549
     Left =-1
     Top =-1
-    Right =1583
-    Bottom =408
+    Right =1002
+    Bottom =370
     Left =0
     Top =0
     ColumnsShown =539

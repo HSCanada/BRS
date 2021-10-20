@@ -1,8 +1,8 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_statement_detail.salesperson_key_id)=GetCurrentFSC()))"
 Begin InputTables
     Name ="comm_statement_detail"
+    Name ="comm_customer_master_retire"
 End
 Begin OutputColumns
     Expression ="comm_statement_detail.fiscal_yearmo_num"
@@ -31,6 +31,15 @@ Begin OutputColumns
     Expression ="comm_statement_detail.item_label_cd"
     Expression ="comm_statement_detail.source_cd"
     Expression ="comm_statement_detail.order_source_cd"
+    Expression ="comm_customer_master_retire.Retiree"
+    Expression ="comm_customer_master_retire.TerritoryCd_New"
+    Expression ="comm_customer_master_retire.Territory_New"
+End
+Begin Joins
+    LeftTable ="comm_statement_detail"
+    RightTable ="comm_customer_master_retire"
+    Expression ="comm_statement_detail.hsi_shipto_id = comm_customer_master_retire.ShipTo"
+    Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -158,17 +167,29 @@ Begin
         dbText "Name" ="comm_statement_detail.SPM_StatusCd"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="comm_customer_master_retire.Retiree"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_customer_master_retire.TerritoryCd_New"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="comm_customer_master_retire.Territory_New"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1546
+    Right =1516
     Bottom =918
     Left =-1
     Top =-1
-    Right =1530
-    Bottom =334
+    Right =1500
+    Bottom =546
     Left =0
     Top =0
     ColumnsShown =539
@@ -179,6 +200,15 @@ Begin
         Bottom =391
         Top =0
         Name ="comm_statement_detail"
+        Name =""
+    End
+    Begin
+        Left =711
+        Top =37
+        Right =855
+        Bottom =181
+        Top =0
+        Name ="comm_customer_master_retire"
         Name =""
     End
 End

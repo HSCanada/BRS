@@ -25,6 +25,7 @@ Option Explicit
 ' **  -----   ----------  --------------------------------------------
 '       25 Oct 19   tmc     swapped out new tables for old with a few cosmetic reductions
 '                               CommBE -> DEV_BRSales
+'       20 Oct 21   tmc     build in DEV and Testing modes
 ' **
 ' ***************************************************************************
 
@@ -32,16 +33,17 @@ Option Explicit
 ' ** User adjustable parameters
 ' ***************************************************************************
 
+Const msApplicationName As String = "CommissionAdmin"
+Const msApplicationVersionNum As String = "2.01"
+Const mnODBCTimeout As Integer = 120
+
+Const bCONFIG_MODE_DEV = True
 
 ' Ensure that connection string below is the same ODBC source used to link tables
 'Development
-'Const gCONNECTIONSTRING As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLD3092\SQL2005;DATABASE=comm_dev"
+Const gCONNECTIONSTRING_DEV As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLSQL1;DATABASE=DEV_BRSales"
 'Production
-Const gCONNECTIONSTRING As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLSQL1;DATABASE=DEV_BRSales"
-
-Const msApplicationName As String = "CommissionAdmin"
-Const msApplicationVersionNum As String = "2.00"
-Const mnODBCTimeout As Integer = 120
+Const gCONNECTIONSTRING_PROD As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLSQL1;DATABASE=BRSales"
 
 
 ' ***************************************************************************
@@ -57,8 +59,6 @@ Dim msCurrentBranchCd As String
 Dim msCurrentReportID As String
 Dim msCurrentFSC As String
 
-Dim mbDebug As Boolean
-
 
 ' Invoice Batch record type
 Type CommBatch
@@ -66,25 +66,48 @@ Type CommBatch
     sReportId As String * 8
 End Type
 
+
+
 Public Function GetCurrentFSC() As String
     GetCurrentFSC = IIf(msCurrentFSC <> "", msCurrentFSC, "*")
-'GetCurrentFSC = "TYLER.MCCLENDON "
-'GetCurrentFSC = "CDynes"
-'GetCurrentFSC = "JAIME.SULLIVAN"
-'GetCurrentFSC = "dmonette"
-'GetCurrentFSC = "RWong"
-'GetCurrentFSC = "RPoch"
+    
 ' Test
-'GetCurrentFSC = "Chris.Murray"
+    If bCONFIG_MODE_DEV Then
+        GetCurrentFSC = "GMaves"
+'        GetCurrentFSC = "GMaves"
+'        GetCurrentFSC = "RWong"
+
+'        GetCurrentFSC = "RPoch"
+'        GetCurrentFSC = "RUSSELL.BURTON"
+'        GetCurrentFSC = "JENNA.AZARKO.CCS"
+'        GetCurrentFSC = "MARTIN.KUREK"
+    End If
+    
+
+
 End Function
 
 Public Function GetCurrentBranch() As String
     GetCurrentBranch = IIf(msCurrentBranchCd = "", "*", msCurrentBranchCd)
+
 ' Test
-'GetCurrentBranch = "TORNT"
-' GetCurrentBranch = "HALFX"
+    If bCONFIG_MODE_DEV Then
+        GetCurrentBranch = "TORNT"
+'        GetCurrentBranch = "HALFX"
+    End If
+
 
 End Function
+
+
+Function GetConnectionStr() As String
+    If bCONFIG_MODE_DEV Then
+        GetConnectionStr = gCONNECTIONSTRING_DEV
+    Else
+        GetConnectionStr = gCONNECTIONSTRING_PROD
+    End If
+End Function
+
 
 Function GetCurrentFiscalPeriod() As String
     GetCurrentFiscalPeriod = msCurrentFiscalNum
@@ -108,14 +131,10 @@ On Error GoTo eh:
     
     bSuccess = False
     
-    '
     ' Determine connection string
-    '
-    msConnectionString = gCONNECTIONSTRING
+    msConnectionString = GetConnectionStr()
 
-    '
     ' Load params from SQL Backend
-    '
     Set Db = CurrentDb
     Set qd = Db.CreateQueryDef("")
   
@@ -124,7 +143,7 @@ On Error GoTo eh:
     qd.ODBCTimeout = mnODBCTimeout
     
     qd.sql = "SELECT PriorFiscalMonth AS current_fiscal_yearmo_num, comm_output_path_txt AS output_path_txt, comm_log_filepath_txt AS log_filepath_txt FROM dbo.BRS_Config"
-'    qd.sql = "SELECT current_fiscal_yearmo_num, output_path_txt, log_filepath_txt FROM comm_configure"
+
     Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenForwardOnly, dbSQLPassThrough)
     
@@ -132,12 +151,10 @@ On Error GoTo eh:
         msEventFile = rs("log_filepath_txt")
         msOutputPath = rs("output_path_txt")
         msCurrentFiscalNum = rs("current_fiscal_yearmo_num")
-        
-       
+           
         ' Init vars
         msCurrentFSC = ""
         msCurrentReportID = ""
-        mbDebug = False
         
         bSuccess = True
     End If
@@ -155,7 +172,6 @@ err_cleanup:
     Set Db = Nothing
     
     InitParams = bSuccess
-    
       
     Exit Function
     
@@ -163,59 +179,6 @@ eh:
     Dim sError As String
     sError = "Error " & Err.Number & ":  " & Err.Description
     MsgBox sError, , "InitParams()"
-    Resume err_cleanup
-    
-End Function
-
-Public Function UpdateSummary() As Boolean
-On Error GoTo eh:
-
-    Dim bSuccess
-    Dim Db As Database, qd As QueryDef, rs As Recordset
-    Dim sLogMsg As String
-    
-    bSuccess = False
-    
-    '
-    ' Determine connection string
-    '
-    msConnectionString = gCONNECTIONSTRING
-
-    '
-    ' Load params from SQL Backend
-    '
-    Set Db = CurrentDb
-    Set qd = Db.CreateQueryDef("")
-  
-    qd.connect = msConnectionString
-    qd.ReturnsRecords = False
-    qd.ODBCTimeout = mnODBCTimeout
-    
-    qd.sql = "EXECUTE comm_summary_update_proc 0"
-    Debug.Print qd.sql
-    qd.Execute
-    
-    
-    qd.Close
-    Db.Close
-
-    sLogMsg = Now() & ":  Execute UpdateSummary" & CurrentUser() & vbCrLf
-    LogEventToFile (sLogMsg)
-
-err_cleanup:
-    Set qd = Nothing
-    Set Db = Nothing
-    
-    UpdateSummary = bSuccess
-    
-      
-    Exit Function
-    
-eh:
-    Dim sError As String
-    sError = "Error " & Err.Number & ":  " & Err.Description
-    MsgBox sError, , "UpdateSummary()"
-    bSuccess = False
     Resume err_cleanup
     
 End Function
@@ -239,9 +202,7 @@ On Error GoTo eh:
     
     qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
     qd.sql = qd.sql & " FROM comm.salesperson_master WHERE (flag_ind = 1) and comm_plan_id Like 'FSC%' ORDER BY salesperson_key_id"
-    
-'    qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
-'    qd.sql = qd.sql & " FROM comm_salesperson_master WHERE (select_ind = 1) and comm_plan_id Like 'FSC%'ORDER BY salesperson_key_id"
+   
     Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenSnapshot, dbSQLPassThrough)
     
@@ -299,14 +260,7 @@ On Error GoTo eh:
     
     qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
     qd.sql = qd.sql & " FROM comm.salesperson_master WHERE ([flag_ind] = 1) and ((comm_plan_id Like 'ESS%') or (comm_plan_id Like 'CCS%')) ORDER BY salesperson_key_id"
-    
-'    qd.sql = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
-'    qd.sql = qd.sql & " FROM comm_salesperson_master WHERE (select_ind = 1) and ((comm_plan_id Like 'ESS%') or (comm_plan_id Like 'CCS%')) ORDER BY salesperson_key_id"
-    
-'    qd.SQL = "SELECT salesperson_key_id, RTRIM(master_salesperson_cd) AS report_id_txt"
-'    qd.SQL = qd.SQL & " FROM comm_salesperson_master WHERE (select_ind = 1) and comm_plan_id Like 'ESS%' ORDER BY salesperson_key_id"
-    
-
+   
     Debug.Print qd.sql
     Set rs = qd.OpenRecordset(dbOpenSnapshot, dbSQLPassThrough)
     
@@ -449,113 +403,15 @@ Public Function ExportBatchESS() As Boolean
 End Function
 
 
-Public Function ExportFSCAgingBatch() As Boolean
 
-    Dim bSuccess As Boolean
-    Dim nBatchSize As Integer, nGoodPrintCount As Integer
-    Dim i As Integer, sLogMsg As String
-    Dim recBatch() As CommBatch
-    
-    bSuccess = True
-    
-        
-    ' Load Batch
-    nBatchSize = LoadBatch(recBatch)
-
-    ' Process Batch
-    If nBatchSize > 0 Then
-   
-        sLogMsg = Now() & ":  Batch Begin. "
-        LogEventToFile (sLogMsg)
-        ' Print Invoice documents
-        For i = 1 To nBatchSize
-            sLogMsg = Now() & ":  #" & i & ", " & recBatch(i).sSalespersonKeyId & vbTab & " - " & recBatch(i).sReportId
-           
-                If ExportFSCAgingDocuments(recBatch(i).sSalespersonKeyId, recBatch(i).sReportId) Then
-                    nGoodPrintCount = nGoodPrintCount + 1
-                Else
-                    ' note that error occurred
-                    sLogMsg = sLogMsg & " EXPORT ERROR!!!"
-                End If
-            
-            LogEventToFile (sLogMsg)
-            
-        Next i
-        
-        ' Log end of batch
-        sLogMsg = Now() & ":  Batch End. "
-        If nGoodPrintCount = nBatchSize Then
-            sLogMsg = sLogMsg & "COMPLETE"
-        Else
-            sLogMsg = sLogMsg & "INCOMPLETE"
-            bSuccess = False
-        End If
-        sLogMsg = sLogMsg & vbCrLf
-        LogEventToFile (sLogMsg)
-    End If
-    
-    
-    ExportFSCAgingBatch = bSuccess
-    
-End Function
-
-Public Function ExportESSAgingBatch() As Boolean
-
-    Dim bSuccess As Boolean
-    Dim nBatchSize As Integer, nGoodPrintCount As Integer
-    Dim i As Integer, sLogMsg As String
-    Dim recBatch() As CommBatch
-    
-    bSuccess = True
-    
-        
-    ' Load Batch
-    nBatchSize = LoadESSBatch(recBatch)
-
-    ' Process Batch
-    If nBatchSize > 0 Then
-   
-        sLogMsg = Now() & ":  Batch Begin. "
-        LogEventToFile (sLogMsg)
-        ' Print Invoice documents
-        For i = 1 To nBatchSize
-            sLogMsg = Now() & ":  #" & i & ", " & recBatch(i).sSalespersonKeyId & vbTab & " - " & recBatch(i).sReportId
-           
-                If ExportESSAgingDocuments(recBatch(i).sSalespersonKeyId, recBatch(i).sReportId) Then
-                    nGoodPrintCount = nGoodPrintCount + 1
-                Else
-                    ' note that error occurred
-                    sLogMsg = sLogMsg & " EXPORT ERROR!!!"
-                End If
-            
-            LogEventToFile (sLogMsg)
-            
-        Next i
-        
-        ' Log end of batch
-        sLogMsg = Now() & ":  Batch End. "
-        If nGoodPrintCount = nBatchSize Then
-            sLogMsg = sLogMsg & "COMPLETE"
-        Else
-            sLogMsg = sLogMsg & "INCOMPLETE"
-            bSuccess = False
-        End If
-        sLogMsg = sLogMsg & vbCrLf
-        LogEventToFile (sLogMsg)
-    End If
-    
-    
-    ExportESSAgingBatch = bSuccess
-    
-End Function
 
 Private Function ExportDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
     Dim bSuccess
     
     bSuccess = False
 ' work on pdf later
-        If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommStatementDetailReport", "CommissionDetail_NEW")) Then
-            If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommStatementDetailExport", "CommissionDetail_NEW")) Then
+        If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommStatementDetailReport", "CommissionDetail")) Then
+            If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommStatementDetailExport", "CommissionDetail")) Then
                 bSuccess = True
             End If
         End If
@@ -571,8 +427,8 @@ Private Function ExportDocumentsESS(sSalespersonKeyId As String, sReportId As St
     bSuccess = False
         
 ' work on pdf later
-    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSStatementDetailReport", "CommissionDetail_NEW")) Then
-        If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommESSStatementDetailExport", "CommissionDetail_NEW")) Then
+    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSStatementDetailReport", "CommissionDetail")) Then
+        If (ExportExcel(sSalespersonKeyId, sReportId, "qryCommESSStatementDetailExport", "CommissionDetail")) Then
             bSuccess = True
         End If
     End If
@@ -582,33 +438,6 @@ Private Function ExportDocumentsESS(sSalespersonKeyId As String, sReportId As St
     
 End Function
 
-Private Function ExportFSCAgingDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
-    Dim bSuccess
-    
-    bSuccess = False
-    ' rptCommFSCSummary
-    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommFSCAging", "CustomerAging")) Then
-        bSuccess = True
-    End If
-    
-                
-    ExportFSCAgingDocuments = bSuccess
-    
-End Function
-
-Private Function ExportESSAgingDocuments(sSalespersonKeyId As String, sReportId As String) As Boolean
-    Dim bSuccess
-    
-    bSuccess = False
-    ' rptCommFSCSummary
-    If (ExportReport(sSalespersonKeyId, "", sReportId, "rptCommESSAging", "CustomerAging")) Then
-        bSuccess = True
-    End If
-    
-                
-    ExportESSAgingDocuments = bSuccess
-    
-End Function
 
 
 Private Function ExportReport(sSalespersonKeyId As String, sBranchCd As String, sReportId As String, sReportName As String, sReportExtension As String) As Boolean
@@ -690,10 +519,7 @@ On Error GoTo eh:
     
     Debug.Print sOutputFilePath
     
-'    Call DoCmd.TransferSpreadsheet(acExport, acSpreadsheetTypeExcel3, sReportName, sOutputFilePath, True)
     Call DoCmd.TransferSpreadsheet(acExport, , sReportName, sOutputFilePath, True)
-    
-'    .OutputTo(acOutputQuery, sReportName, "Snapshot Format", sOutputFilePath)
     
 
 err_cleanup:
@@ -720,13 +546,18 @@ Private Sub LogEventToFile(sEventMsg As String)
     
     Debug.Print sEventMsg
     
+    
     Open msEventFile For Append Access Write Lock Write As #1
     
-    Print #1, sEventMsg  ' Print text to file.
+    If bCONFIG_MODE_DEV Then
+        Print #1, "DEV - " & sEventMsg  ' Print text to file.
+    Else
+        Print #1, sEventMsg  ' Print text to file.
+    End If
+    
     Close #1
 
 End Sub
-
 
 
 
@@ -748,57 +579,6 @@ Function SmartPercent(vNew, vOld) As Variant
 
 End Function
 
-Sub DoExportFSCAgingBatch()
-    InitParams
-    
-    ExportReport "", "NAZA", "NAZA", "rptCommFSCAging", "CustomerAging"
-    ExportReport "", "NAZM", "NAZM", "rptCommFSCAging", "CustomerAging"
-
-    ExportReport "", "NCZD", "NCZD", "rptCommFSCAging", "CustomerAging"
-    ExportReport "", "NCZE", "NCZE", "rptCommFSCAging", "CustomerAging"
-    ExportReport "", "NCZF", "NCZF", "rptCommFSCAging", "CustomerAging"
-    ExportReport "", "NCZH", "NCZH", "rptCommFSCAging", "CustomerAging"
-
-    ExportReport "", "NQZB", "NQZB", "rptCommFSCAging", "CustomerAging"
-    ExportReport "", "NQZC", "NQZC", "rptCommFSCAging", "CustomerAging"
-
-'    ExportReport "", "NWZK", "NWZK", "rptCommFSCAging", "CustomerAging"
-'    ExportReport "", "NWZO", "NWZO", "rptCommFSCAging", "CustomerAging"
-'    ExportReport "", "NDZK", "NDZK", "rptCommFSCAging", "CustomerAging"
-    
-    ExportFSCAgingBatch
-    MsgBox "Done!"
-    
-End Sub
-
-Sub DoExportESSAgingBatch()
-    InitParams
-    
-    ExportESSAgingBatch
-    MsgBox "Done!"
-    
-End Sub
-
-
-'   Export ESS reports
-Sub ExportESSCommBatch()
-    InitParams
-    UpdateSummary
-    
-    ExportBatchESS
-    
-    MsgBox "ESS Details exported!"
-    
-End Sub
-
-
-
-Sub test2()
-Dim recBatch() As CommBatch
-
-LoadESSBatch recBatch
-
-End Sub
 
 Sub ExportBatchESS_Summary()
 
@@ -819,10 +599,16 @@ Sub ExportBatchESS_Summary()
 End Sub
 
 
-'   Export FSC reports
+Sub Test()
+    InitParams
+    
+    MsgBox "Done!"
+End Sub
+
+
+'   Export reports
 Public Function ExportFSCCommBatch()
     InitParams
-''    UpdateSummary
     
     ExportBatchESS
     ExportBatchESS_Summary
@@ -833,10 +619,3 @@ Public Function ExportFSCCommBatch()
     MsgBox "FSC Details exported!"
     
 End Function
-
-Sub Test()
-    InitParams
-   
-    
-    MsgBox "Done!"
-End Sub

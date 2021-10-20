@@ -29,7 +29,8 @@ Begin OutputColumns
     Expression ="comm_ess_statement_detail.transaction_amt"
     Expression ="comm_ess_statement_detail.comm_amt"
     Expression ="comm_ess_statement_detail.gp_ext_amt"
-    Expression ="comm_ess_statement_detail.manufact_cd"
+    Alias ="manufact_cd_"
+    Expression ="IIf([source_cd]=\"JDE\",[manufact_cd],\".\")"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -143,9 +144,23 @@ Begin
     Begin
         dbText "Name" ="comm_ess_statement_detail.manufact_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1605"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_ess_statement_detail.comm_group_desc"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="manufact_cd"
+        dbInteger "ColumnWidth" ="1605"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="manufact_cd_"
+        dbInteger "ColumnWidth" ="1605"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -153,12 +168,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1343
-    Bottom =797
+    Right =1546
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1327
-    Bottom =276
+    Right =1530
+    Bottom =259
     Left =0
     Top =0
     ColumnsShown =539

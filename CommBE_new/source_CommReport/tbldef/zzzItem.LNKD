@@ -1,4 +1,4 @@
-﻿comm_customer_master
+﻿zzzItem
 ODBC;DSN=DEV_BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2013;DATABASE=DEV_BRSales;Network=DBMSSOCN
-dbo.BRS_Customer
-ShipTo
+dbo.zzzItem
+Item

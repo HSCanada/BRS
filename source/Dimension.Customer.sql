@@ -55,6 +55,7 @@ AS
 --	09 Aug 21	tmc		Add Account Create date for Playbook drop-off filter
 --	17 Aug 21	tmc		Roll A25k code into AAA for ISR
 --	14 Oct 21	tmc		add freight ind for commission modelling
+--	19 Oct 21	tmc		break wheel active into 2 parts for more flex analysis
 
 **    
 *******************************************************************************/
@@ -207,14 +208,21 @@ SELECT
 	,RTRIM(c.MarketClass_New)							AS MarketClassNewCode
 
 	-- wheel graft on last month results
-	,[wheel_active_ind]
-	,[wheel_seg1_merchandise_ind]
-	,[wheel_seg2_hs_branded_ind]
-	,[wheel_seg3_equip_hitech_ind]
-	,[wheel_seg4_digital_restoration_ind]
-	,[wheel_seg5_henry_schein_one_ind]
-	,[wheel_seg6_equipment_services_ind]
-	,[wheel_seg7_business_solutions_ind]
+	,CASE 
+		WHEN wheel_thresh1_sales_ind = 1 AND wheel_thresh2_recent_order_ind = 1 
+		THEN 1 
+		ELSE 0 
+	END													AS wheel_active_ind
+	,ISNULL(wheel_thresh1_sales_ind, 0)					AS wheel_thresh1_sales_ind
+	,ISNULL(wheel_thresh2_recent_order_ind, 0)			AS wheel_thresh2_recent_order_ind
+
+	,ISNULL([wheel_seg1_merchandise_ind], 0)			AS wheel_seg1_merchandise_ind
+	,ISNULL([wheel_seg2_hs_branded_ind], 0)				AS wheel_seg2_hs_branded_ind
+	,ISNULL([wheel_seg3_equip_hitech_ind], 0)			AS wheel_seg3_equip_hitech_ind
+	,ISNULL([wheel_seg4_digital_restoration_ind], 0)	AS wheel_seg4_digital_restoration_ind
+	,ISNULL([wheel_seg5_henry_schein_one_ind], 0)		AS wheel_seg5_henry_schein_one_ind
+	,ISNULL([wheel_seg6_equipment_services_ind], 0)		AS wheel_seg6_equipment_services_ind
+	,ISNULL([wheel_seg7_business_solutions_ind], 0)		AS wheel_seg7_business_solutions_ind
 
 	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
 	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
@@ -304,7 +312,10 @@ FROM
 	LEFT JOIN 
 	(
 		SELECT [Shipto]
-		  ,[wheel_active_ind]
+		  --,[wheel_active_ind]
+		  ,wheel_thresh1_sales_ind
+		  ,wheel_thresh2_recent_order_ind
+
 		  ,[wheel_seg1_merchandise_ind]
 		  ,[wheel_seg2_hs_branded_ind]
 		  ,[wheel_seg3_equip_hitech_ind]
@@ -351,7 +362,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 */
 
 -- test details
--- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 1
+-- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG=NEW 70318

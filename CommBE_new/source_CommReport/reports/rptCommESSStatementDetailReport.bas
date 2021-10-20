@@ -1,4 +1,4 @@
-﻿Version =20
+﻿Version =21
 VersionRequired =20
 Begin Report
     LayoutForPrint = NotDefault
@@ -504,7 +504,7 @@ Begin Report
                     FontWeight =700
                     ForeColor =11830108
                     Name ="Text222"
-                    ControlSource ="=IIf([source_cd]=\"IMP\",\"Additional GP$ Adjustments\",\"\")"
+                    ControlSource ="=IIf([source_cd]=\"IMP\",\"Additional Adjustments\",\"\")"
 
                     LayoutCachedWidth =11460
                     LayoutCachedHeight =480
@@ -560,7 +560,6 @@ Begin Report
             AlternateBackColor =16777215
             Begin
                 Begin TextBox
-                    OverlapFlags =12
                     TextAlign =1
                     IMESentenceMode =3
                     Left =2340
@@ -677,7 +676,7 @@ Begin Report
                     Height =270
                     TabIndex =5
                     Name ="Text210"
-                    ControlSource ="manufact_cd"
+                    ControlSource ="manufact_cd_"
 
                     LayoutCachedLeft =2340
                     LayoutCachedWidth =3360

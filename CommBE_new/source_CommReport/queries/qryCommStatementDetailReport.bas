@@ -32,7 +32,8 @@ Begin OutputColumns
     Expression ="comm_statement_detail.transaction_amt"
     Expression ="comm_statement_detail.comm_amt"
     Expression ="comm_statement_detail.gp_ext_amt"
-    Expression ="comm_statement_detail.manufact_cd"
+    Alias ="manufact_cd_"
+    Expression ="IIf([source_cd]=\"JDE\",[manufact_cd],\".\")"
     Expression ="comm_statement_detail.order_source_cd"
     Expression ="comm_statement_detail.item_label_cd"
     Expression ="comm_statement_detail.IMCLMJ"
@@ -172,17 +173,21 @@ Begin
         dbText "Name" ="comm_statement_detail.item_comm_rt"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="manufact_cd_"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1599
-    Bottom =861
+    Right =1546
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1583
-    Bottom =297
+    Right =1530
+    Bottom =280
     Left =0
     Top =0
     ColumnsShown =539
