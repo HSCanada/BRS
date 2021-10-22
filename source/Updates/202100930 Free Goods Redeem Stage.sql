@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- DROP TABLE Integration.ARCPDTA71_F5554240_<instert_friendly_name_here>
 --------------------------------------------------------------------------------
-
+/*
 SELECT
 
     Top 5 
@@ -50,10 +50,11 @@ FROM
 --    ORDER BY
 --        <insert custom code here>
 ')
+*/
 
 --------------------------------------------------------------------------------
 
---drop table [Integration].[F5554240_fg_redeem_Staging]
+-- drop table [Integration].[F5554240_fg_redeem_Staging]
 
 CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 	[order_file_name] varchar(50) not null,
@@ -61,6 +62,7 @@ CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 
 	[CalMonth] [int] NOT NULL,
 	[status_code] smallint not null default (-1),
+	[fg_exempt_cd] char(6) null,
 
 	[WKKEY__key] [char](20)  NULL,
 	[WKAC10_division_code] [char](3)  NULL,
@@ -88,6 +90,8 @@ CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 	[WKPSN__invoice_number] [numeric](8, 0)  NULL,
 	[WK$ODN_free_goods_contract_number] [char](12)  NULL,
 	[WKDL01_promo_description] [char](30)  NULL,
+	[WKPMID_promo_code] [char] (2) NULL,
+	[WKLNNO_line_number] [float] NULL,
 
 	ID int identity(1,1) NOT NULL
 ) ON [USERDATA]
@@ -106,3 +110,211 @@ GO
 ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
+	FK_F5554240_fg_redeem_Staging_exempt_code FOREIGN KEY
+	(
+	fg_exempt_cd
+	) REFERENCES fg.exempt_code
+	(
+	fg_exempt_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+-- exclude / except flags
+
+-- add freegoods_exempt_cd to tables
+
+-- [BRS_SalesDivision]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_SalesDivision ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_SalesDivision_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_DocType]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_DocType ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_DocType_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_ItemSupplier]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemSupplier ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_ItemSupplier_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_ItemMPC]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_ItemMPC_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_CustomerVPA]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerVPA ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_CustomerVPA_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_CustomerSpecialty]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerSpecialty ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_CustomerSpecialty_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_TransactionDW_Ext] (3min)
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [BRS_Promotion]
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Promotion ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_Promotion_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- [hfm].[exclusive_product]
+BEGIN TRANSACTION
+GO
+ALTER TABLE [hfm].[exclusive_product] ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_hfm_exclusive_product_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- set freegoods_exempt_cd values
+
+-- [BRS_SalesDivision]
+UPDATE dbo.BRS_SalesDivision 
+	Set freegoods_exempt_cd = 1
+WHERE SalesDivision = 'AZA'
+GO
+
+
+-- [BRS_DocType]
+UPDATE dbo.BRS_DocType
+	Set freegoods_exempt_cd = 1
+WHERE DocType in ('CO', 'SX')
+GO
+
+-- [BRS_ItemSupplier]
+UPDATE dbo.BRS_ItemSupplier
+	SET freegoods_exempt_cd = 1
+WHERE Supplier in('HENSCH', 'HENGLB', 'HSCAT', 'HSDENT', 'DELL', 'CDWCA')
+GO
+
+-- [BRS_ItemMPC]
+UPDATE dbo.BRS_ItemMPC
+	SET freegoods_exempt_cd = 1
+WHERE ( MajorProductClass like '8%' or MajorProductClass like '9%' or MajorProductClass = '373')
+GO
+
+-- [hfm].[exclusive_product]
+UPDATE [hfm].[exclusive_product]
+	SET freegoods_exempt_cd = 2
+WHERE [BrandEquityCategory] in('Owned', 'Exclusive', 'CorporateBrand')
+GO
+
+--- TBD
+UPDATE dbo.BRS_CustomerVPA
+	set freegoods_exempt_cd = 1
+WHERE VPA = 'xxx'
+GO
+
+-- [BRS_CustomerSpecialty]
+UPDATE dbo.BRS_CustomerSpecialty 
+	set freegoods_exempt_cd = 1
+WHERE Specialty = 'xxx'
+GO
+
+-- [BRS_TransactionDW_Ext] (3min)
+UPDATE dbo.BRS_TransactionDW_Ext
+	set freegoods_exempt_cd = 1
+WHERE SalesOrderNumber = '-1'
+GO
+
+-- [BRS_Promotion]
+UPDATE dbo.BRS_Promotion 
+	set freegoods_exempt_cd = 1
+WHERE PromotionCode = 'xxx'
+GO
+
+
+
+-- set freegoods_exempt_cd values
+
+-- drop table fg.exempt_code
+
+BEGIN TRANSACTION
+GO
+
+CREATE TABLE fg.exempt_code
+	(
+	fg_exempt_cd char(6) NOT NULL,
+	fg_exempt_desc varchar(50) NOT NULL,
+	source_cd char(3) NOT NULL,
+	active_ind bit NOT NULL,
+	sequence_num smallint NOT NULL DEFAULT(0),
+	creation_dt date NOT NULL,
+	fg_exempt_key int NOT NULL IDENTITY (1, 1),
+	note_txt nchar(10) NULL
+	)  ON USERDATA
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_source_cd DEFAULT '' FOR source_cd
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_active_ind DEFAULT 0 FOR active_ind
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_creation_dt DEFAULT getdate() FOR creation_dt
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	PK_exempt_code PRIMARY KEY CLUSTERED 
+	(
+	fg_exempt_cd
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+
+
+
+
