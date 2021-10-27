@@ -1,0 +1,12 @@
+-- 20211025 rebate model, tmc
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemMPC ADD
+	rebate_exclude_ind bit NOT NULL CONSTRAINT DF_BRS_ItemMPC_rebate_exclude_ind DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_ItemMPC SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+

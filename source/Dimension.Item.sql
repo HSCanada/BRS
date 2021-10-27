@@ -52,6 +52,7 @@ AS
 --	17 Aug 21	tmc		Add Top15 User version
 --	19 Aug 21	tmc		Add comm_group_legacy_cd to help with change analysis
 --	29 Sep 21	tmc		Add FamilySet code for analysis
+--	25 Oct 21	tmc		Add Rebate Exclude for analysis
 **    
 *******************************************************************************/
 
@@ -165,6 +166,7 @@ SELECT
 	,i.comm_group_legacy_cd
 
 	,i.FamilySetLeader				AS FamilySetCode
+	,mpc.rebate_exclude_ind				AS RebateExcludeInd
 
 
 FROM            

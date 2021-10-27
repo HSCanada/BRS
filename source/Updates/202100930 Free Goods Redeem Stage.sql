@@ -125,9 +125,18 @@ ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX F5554240_fg_redeem_Staging_u_idx01 ON Integration.F5554240_fg_redeem_Staging
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
 ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
 
 --
 -- exclude / except flags
@@ -313,8 +322,133 @@ ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- link fg to TransDW via sytheic PK
+
+SELECT
+	row_number() over(PARTITION BY WKDOCO_salesorder_number order by ID) rno_dst,
+	WKDOCO_salesorder_number, WKLITM_item_number, line_id, ID
+FROM            Integration.F5554240_fg_redeem_Staging
+WHERE        (WKDOCO_salesorder_number in(14498659, 14503431)) AND (WKLITM_item_number in('5874352', '1019778'))
 
 
+SELECT
+	row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno,
+	[SalesOrderNumber], [Item], [LineNumber], ID
+FROM            [dbo].[BRS_TransactionDW]
+WHERE        ([SalesOrderNumber]in(14498659, 14503431)) AND ( [Item]in('5874352', '1019778'))
 
 
+--
+SELECT
+	row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno_src,
+	[SalesOrderNumber], [DocType], [LineNumber], ID
+FROM            [dbo].[BRS_TransactionDW]
+WHERE 
+	EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
+	(DocType <> 'AA') AND
+	([ShippedQty] <> 0) AND
+	([NetSalesAmt] = 0) AND
+--	(FreeGoodsInvoicedInd = 1) AND
+	([SalesOrderNumber] = 14498659) AND
+	(1=1)
+
+
+SELECT * 
+FROM 
+	(
+	SELECT
+		row_number() over(PARTITION BY WKDOCO_salesorder_number order by ID) rno_dst,
+		WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, ID
+	FROM
+		Integration.F5554240_fg_redeem_Staging 
+	) d
+	INNER JOIN 
+	(
+	SELECT
+		row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno_src,
+		[SalesOrderNumber], [DocType], [LineNumber], ID
+	FROM
+		[dbo].[BRS_TransactionDW]
+	WHERE 
+		EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
+		(DocType <> 'AA') AND
+		([ShippedQty] <> 0) AND
+		([NetSalesAmt] = 0) AND
+		-- test
+		--(SalesOrderNumber in(14498659, 14503431)) AND
+		--(item in ('5874352', '1019778')) AND
+		(1=1)
+	) s
+	ON WKDOCO_salesorder_number = [SalesOrderNumber] AND
+		[WKDCTO_order_type] = [DocType] AND
+		WKLITM_item_number = [WKLITM_item_number] AND
+		s.rno_src = d.rno_dst
+WHERE
+	-- test
+	(WKDOCO_salesorder_number in(14498659, 14503431)) AND 
+	(WKLITM_item_number in('5874352', '1019778'))
+
+
+--
+-- UPDATE Integration.F5554240_fg_redeem_Staging SET [WKLNNO_line_number] = null
+
+UPDATE Integration.F5554240_fg_redeem_Staging 
+SET [WKLNNO_line_number] = s.LineNumber
+--test
+-- SELECT * 
+FROM Integration.F5554240_fg_redeem_Staging
+INNER JOIN
+	(
+	SELECT
+		WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, ID,
+		row_number() over(PARTITION BY WKDOCO_salesorder_number order by WKLITM_item_number, ID) rno_dst
+	FROM
+		Integration.F5554240_fg_redeem_Staging 
+	WHERE
+		-- no internal
+		([WKAC10_division_code]<>'AZA') AND
+		-- by definition, no adjustments or NON free goods included (ensure stage and DW match)
+		-- test
+		--(WKDOCO_salesorder_number in(14492625)) AND (WKLITM_item_number in('3783903')) AND
+		--(WKDOCO_salesorder_number in(14498659)) AND (WKLITM_item_number in('5874352')) AND
+		(1=1)
+	) d
+	ON Integration.F5554240_fg_redeem_Staging.ID = d.ID
+
+	INNER JOIN 
+--	LEFT JOIN 
+	(
+	SELECT
+		[SalesOrderNumber], [DocType], [item], [LineNumber], ID,
+		row_number() over(PARTITION BY [SalesOrderNumber] order by [item], ID) rno_src
+	FROM
+		[dbo].[BRS_TransactionDW]
+	WHERE 
+		EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
+		-- no internal
+		([SalesDivision]<>'AZA') AND
+		-- no adjustments
+		(DocType <> 'AA') AND
+		-- free goods only
+		([ShippedQty] <> 0) AND
+		([NetSalesAmt] = 0) AND
+		-- test
+		--(SalesOrderNumber in(14492625)) AND (item in ('3783903')) AND
+		--(SalesOrderNumber in(14498659)) AND (item in ('5874352')) AND
+		(1=1)
+	) s
+	ON d.WKDOCO_salesorder_number = s.[SalesOrderNumber] AND
+		d.[WKDCTO_order_type] = s.[DocType] AND
+		RTRIM(d.WKLITM_item_number) = RTRIM(s.[item]) AND
+		d.rno_dst = s.rno_src AND
+		(1=1)
+WHERE
+	-- test
+	(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14492625)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in ('3783903')) AND
+
+--	(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14498659)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in('5874352')) AND
+--	(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
+	(1=1)
+
+--
 
