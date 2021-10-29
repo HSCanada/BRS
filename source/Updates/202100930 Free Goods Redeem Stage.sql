@@ -60,10 +60,6 @@ CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 	[order_file_name] varchar(50) not null,
 	[line_id] int not null,
 
-	[CalMonth] [int] NOT NULL,
-	[status_code] smallint not null default (-1),
-	[fg_exempt_cd] char(6) null,
-
 	[WKKEY__key] [char](20)  NULL,
 	[WKAC10_division_code] [char](3)  NULL,
 	[WK$SPC_supplier_code] [char](6)  NULL,
@@ -83,17 +79,29 @@ CREATE TABLE [Integration].[F5554240_fg_redeem_Staging](
 	[WKDOCO_salesorder_number] [numeric](8, 0)  NULL,
 	[WKDCTO_order_type] [char](2)  NULL,
 	[WK$HGS_status_code_high] [char](3)  NULL,
-	[WKDATE_order_date] [char](8)  NULL,
+	[WKDATE_order_date_text] [char](8)  NULL,
 	[WKFRGD_from_grade] [char](3)  NULL,
 	[WKTHGD_thru_grade] [char](3)  NULL,
 	[WKLNTY_line_type] [char](2)  NULL,
 	[WKPSN__invoice_number] [numeric](8, 0)  NULL,
 	[WK$ODN_free_goods_contract_number] [char](12)  NULL,
 	[WKDL01_promo_description] [char](30)  NULL,
-	[WKPMID_promo_code] [char] (2) NULL,
-	[WKLNNO_line_number] [float] NULL,
 
-	ID int identity(1,1) NOT NULL
+	ID int identity(1,1) NOT NULL,
+	[status_code] smallint not null default (-1),
+
+	-- staging pre-load helpers
+	[WKLNNO_line_number] [float] NULL,
+	[ID_source_ref] [int] NULL,
+
+	[WKDATE_order_date] [date]  NULL,
+	[CalMonthOrder] [int] NULL,
+	[CalMonthRedeem] [int] NULL,
+	[WKPMID_promo_code] [char] (2) NULL,
+
+	-- need in stage?  
+	[fg_exempt_cd] char(6) NULL,
+
 ) ON [USERDATA]
 GO
 
@@ -126,8 +134,6 @@ ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
 	
 GO
 
-BEGIN TRANSACTION
-GO
 CREATE UNIQUE NONCLUSTERED INDEX F5554240_fg_redeem_Staging_u_idx01 ON Integration.F5554240_fg_redeem_Staging
 	(
 	ID
@@ -136,6 +142,19 @@ GO
 ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
+
+-- add config flag
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_FiscalMonth ADD
+	fg_status_cd smallint NOT NULL CONSTRAINT DF_BRS_FiscalMonth_fg_status_cd DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_FiscalMonth SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 
 
 --
@@ -224,6 +243,25 @@ ALTER TABLE [hfm].[exclusive_product] ADD
 GO
 COMMIT
 
+-- BRS_LineTypeOrder
+BEGIN TRANSACTION
+GO
+ALTER TABLE [dbo].[BRS_LineTypeOrder] ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_brs_LineTypeOrder_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+-- BRS_LineTypeOrder
+BEGIN TRANSACTION
+GO
+ALTER TABLE [dbo].[BRS_ItemLabel] ADD
+	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_brs_ItemLabel_freegoods_exempt_cd DEFAULT 0
+	,freegoods_exempt_note varchar(50) NULL
+GO
+COMMIT
+
+
 -- set freegoods_exempt_cd values
 
 -- [BRS_SalesDivision]
@@ -236,13 +274,27 @@ GO
 -- [BRS_DocType]
 UPDATE dbo.BRS_DocType
 	Set freegoods_exempt_cd = 1
-WHERE DocType in ('CO', 'SX')
+WHERE DocType in ('CO', 'CM', 'SX')
 GO
 
--- [BRS_ItemSupplier]
+--[dbo].[BRS_LineTypeOrder]
+UPDATE [dbo].[BRS_LineTypeOrder]
+	Set freegoods_exempt_cd = 1
+WHERE [LineTypeOrder] IN ('M2', 'MS')
+GO
+
+
+
+-- [BRS_ItemSupplier], docs
 UPDATE dbo.BRS_ItemSupplier
 	SET freegoods_exempt_cd = 1
 WHERE Supplier in('HENSCH', 'HENGLB', 'HSCAT', 'HSDENT', 'DELL', 'CDWCA')
+GO
+
+-- [BRS_ItemSupplier], John exclude excel 29 Oct 21
+UPDATE dbo.BRS_ItemSupplier
+	SET freegoods_exempt_cd = 1
+WHERE Supplier in('DECMAT', 'SIRONC', 'BAINTE', 'CARDIN', 'GLHEAL', 'HANDLR', 'HEDYCA', 'IMPEXW', 'IVOCZA', 'MORITA', 'ORTHOT', 'PROCGA', 'ROSSCH', 'SABLEI', 'SOUDEN', 'SSWBUR', 'TALLAD', 'USENDO', 'AMAGIR')
 GO
 
 -- [BRS_ItemMPC]
@@ -281,11 +333,64 @@ UPDATE dbo.BRS_Promotion
 WHERE PromotionCode = 'xxx'
 GO
 
-
+-- [BRS_Promotion]
+UPDATE [dbo].[BRS_ItemLabel]
+	set freegoods_exempt_cd = 1
+WHERE [Label] = 'P'
+GO
 
 -- set freegoods_exempt_cd values
 
--- drop table fg.exempt_code
+INSERT INTO [fg].[exempt_code]
+           ([fg_exempt_cd]
+           ,[fg_exempt_desc]
+           ,[source_cd]
+           ,[active_ind]
+           ,[sequence_num]
+           ,[note_txt])
+     VALUES
+           (''
+           ,'unassigned'
+           ,''
+           ,0
+           ,0
+           ,'.')
+GO
+-- pop exempt rules
+INSERT INTO [fg].[exempt_code]
+           ([fg_exempt_cd]
+           ,[fg_exempt_desc]
+           ,[source_cd]
+           ,[active_ind]
+           ,[sequence_num]
+           ,[note_txt])
+VALUES
+	('ZZZDIV','[BRS_SalesDivision]','',1,10,'.')
+	,('ZZZLNT','[BRS_LineTypeOrder]','',1,10,'.')
+
+	,('XXXDOC','[BRS_DocType]','',1,10,'.')
+	,('XXXMPC','[BRS_ItemMPC]','',1,10,'.')
+
+	,('XXXSUP','[BRS_ItemSupplier]','',1,10,'.')
+	,('XXXHSB','[BRS_ItemLabel]','',1,10,'.')
+
+	,('XXXVPA','[BRS_CustomerVPA]','',1,10,'.')
+	,('XXXSPC','[BRS_CustomerSpecialty]','',1,10,'.')
+	,('XXXPRO','[BRS_Promotion]','',1,10,'.')
+
+	,('XXXCBV','Chargeback VPA [fg].[exempt_supplier_rule]','',1,10,'.')
+	,('XXXCBS','Chargeback Supplier [fg].[exempt_supplier_rule]','',1,10,'.')
+	,('XXXCBM','Chargeback Multi [fg].[exempt_supplier_rule]','',1,10,'.')
+
+	,('FGAUTO','Auto Add','',1,10,'.')
+	,('FGMANU','Manual Add','',1,10,'.')
+	,('FGMXXX','Manual Exclude','',1,10,'.')
+
+	,('FGMMGR','Manager Excpt [BRS_TransactionDW_Ext]','',1,10,'.')
+
+GO
+
+
 
 BEGIN TRANSACTION
 GO
@@ -322,133 +427,412 @@ ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- link fg to TransDW via sytheic PK
+-- create prod table
+-- use history for fsc / cust / item views (tie to finacial) CalMonthOrder
 
-SELECT
-	row_number() over(PARTITION BY WKDOCO_salesorder_number order by ID) rno_dst,
-	WKDOCO_salesorder_number, WKLITM_item_number, line_id, ID
-FROM            Integration.F5554240_fg_redeem_Staging
-WHERE        (WKDOCO_salesorder_number in(14498659, 14503431)) AND (WKLITM_item_number in('5874352', '1019778'))
+-- TRUNCATE TABLE  [fg].[transaction_F5554240]
+-- drop TABLE [fg].[transaction_F5554240]
+CREATE TABLE [fg].[transaction_F5554240](
+	[WKDOCO_salesorder_number] [int] NOT NULL,
+	[WKDCTO_order_type] [char](2) NOT NULL,
+	[WKLNNO_line_number] [int] NOT NULL,
 
+	[ID_source_ref] [int] NOT NULL,
+	[CalMonthRedeem] [int] NOT NULL,
+	[CalMonthOrder] [int] NOT NULL,
 
-SELECT
-	row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno,
-	[SalesOrderNumber], [Item], [LineNumber], ID
-FROM            [dbo].[BRS_TransactionDW]
-WHERE        ([SalesOrderNumber]in(14498659, 14503431)) AND ( [Item]in('5874352', '1019778'))
+	[fg_exempt_cd] [char](6) NOT NULL,
+	[fg_offer_id] [int] NOT NULL,
+	[fg_offer_note] [varchar](30) NOT NULL,
+	[WK$ODN_free_goods_contract_number] [varchar](12) NOT NULL,
 
+	[WKDATE_order_date] [datetime] NOT NULL,
+	[WKSHAN_shipto] [int] NOT NULL,
+	[WKLITM_item_number] [char](10) NOT NULL,
+	[WKUORG_quantity] [int] NOT NULL,
+
+	[WKECST_extended_cost] [money] NOT NULL,
+	[WKUNCS_unit_cost] [money] NOT NULL,
+	[WKCRCD_currency_code] [char](3) NOT NULL,
+
+	[WKDSC1_description] [varchar](30) NOT NULL,
+	[WKPMID_promo_code] [char](2) NOT NULL,
+	[VPA] [char](10) NOT NULL,
+
+	[Specialty] [char](10) NOT NULL,
+
+	[WKLNTY_line_type] [char](2) NOT NULL,
+	[WKAC10_division_code] [char](3) NOT NULL,
+	[MajorProductClass] [char](3) NOT NULL,
+
+	[Label] [char](1) NOT NULL,
+
+	[WK$SPC_supplier_code] [char](6) NOT NULL,
+	[WKPSN__invoice_number] [int] NOT NULL,
+	[OriginalSalesOrderNumber] [int] NOT NULL,
+	[WKDSC2_pricing_adjustment_line] [varchar](30) NOT NULL,
+	[WKAN8__billto] [int] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+--
+	[WKKEY__key] [varchar](20) NOT NULL,
+	[WKCITM_customersupplier_item_number] [varchar](25) NOT NULL,
+	[WKUOM__um] [char](2) NOT NULL,
+	[WKALPH_billto_name] [varchar](40) NOT NULL,
+	[WKNAME_shipto_name] [varchar](30) NOT NULL,
+	[WK$HGS_status_code_high] [char](3) NOT NULL,
+	[WKFRGD_from_grade] [char](3) NOT NULL,
+	[WKTHGD_thru_grade] [char](3) NOT NULL,
+	[WKDL01_promo_description] [varchar](30) NOT NULL,
+
+	[status_code] [smallint] NOT NULL,
+
+	[WKECST_extended_cost_org] [money] NULL,
+	[WKUNCS_unit_cost_org] [money] NULL,
+	[WKCRCD_currency_code_org] [char](3) NULL,
+
+	[order_file_name] [varchar](50) NOT NULL,
+	[line_id] [int] NOT NULL,
+
+ CONSTRAINT [fg_transaction_F5554240_pk] PRIMARY KEY  
+(
+	[WKDOCO_salesorder_number] ASC,
+	[WKDCTO_order_type] ASC,
+	[WKLNNO_line_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+-- fg RI
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_TransactionDW FOREIGN KEY
+	(
+	WKDOCO_salesorder_number,
+	WKDCTO_order_type,
+	WKLNNO_line_number
+	) REFERENCES dbo.BRS_TransactionDW
+	(
+	SalesOrderNumber,
+	DocType,
+	LineNumber
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_TransactionDW1 FOREIGN KEY
+	(
+	ID_source_ref
+	) REFERENCES dbo.BRS_TransactionDW
+	(
+	ID
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_CalMonth FOREIGN KEY
+	(
+	CalMonthRedeem
+	) REFERENCES dbo.BRS_CalMonth
+	(
+	CalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_CalMonth1 FOREIGN KEY
+	(
+	CalMonthOrder
+	) REFERENCES dbo.BRS_CalMonth
+	(
+	CalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_exempt_code FOREIGN KEY
+	(
+	fg_exempt_cd
+	) REFERENCES fg.exempt_code
+	(
+	fg_exempt_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_offer FOREIGN KEY
+	(
+	fg_offer_id
+	) REFERENCES fg.offer
+	(
+	offer_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_SalesDay FOREIGN KEY
+	(
+	WKDATE_order_date
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDate
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_Customer FOREIGN KEY
+	(
+	WKSHAN_shipto
+	) REFERENCES dbo.BRS_Customer
+	(
+	ShipTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_Item FOREIGN KEY
+	(
+	WKLITM_item_number
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_Currency FOREIGN KEY
+	(
+	WKCRCD_currency_code
+	) REFERENCES dbo.BRS_Currency
+	(
+	Currency
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_Promotion FOREIGN KEY
+	(
+	WKPMID_promo_code
+	) REFERENCES dbo.BRS_Promotion
+	(
+	PromotionCode
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_CustomerVPA FOREIGN KEY
+	(
+	VPA
+	) REFERENCES dbo.BRS_CustomerVPA
+	(
+	VPA
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_LineTypeOrder FOREIGN KEY
+	(
+	WKLNTY_line_type
+	) REFERENCES dbo.BRS_LineTypeOrder
+	(
+	LineTypeOrder
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_SalesDivision FOREIGN KEY
+	(
+	WKAC10_division_code
+	) REFERENCES dbo.BRS_SalesDivision
+	(
+	SalesDivision
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_ItemMPC FOREIGN KEY
+	(
+	MajorProductClass
+	) REFERENCES dbo.BRS_ItemMPC
+	(
+	MajorProductClass
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_ItemSupplier FOREIGN KEY
+	(
+	WK$SPC_supplier_code
+	) REFERENCES dbo.BRS_ItemSupplier
+	(
+	Supplier
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_CustomerBT FOREIGN KEY
+	(
+	WKAN8__billto
+	) REFERENCES dbo.BRS_CustomerBT
+	(
+	BillTo
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_transaction_F5554240 FOREIGN KEY
+	(
+	WKDOCO_salesorder_number,
+	WKDCTO_order_type,
+	WKLNNO_line_number
+	) REFERENCES fg.transaction_F5554240
+	(
+	WKDOCO_salesorder_number,
+	WKDCTO_order_type,
+	WKLNNO_line_number
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 --
-SELECT
-	row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno_src,
-	[SalesOrderNumber], [DocType], [LineNumber], ID
-FROM            [dbo].[BRS_TransactionDW]
-WHERE 
-	EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
-	(DocType <> 'AA') AND
-	([ShippedQty] <> 0) AND
-	([NetSalesAmt] = 0) AND
---	(FreeGoodsInvoicedInd = 1) AND
-	([SalesOrderNumber] = 14498659) AND
-	(1=1)
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_CustomerSpecialty FOREIGN KEY
+	(
+	Specialty
+	) REFERENCES dbo.BRS_CustomerSpecialty
+	(
+	Specialty
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_ItemLabel FOREIGN KEY
+	(
+	Label
+	) REFERENCES dbo.BRS_ItemLabel
+	(
+	Label
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- drop TABLE [fg].[exempt_supplier_rule]
+
+CREATE TABLE [fg].[exempt_supplier_rule](
+	[Supplier_WhereClauseLike] [varchar](30) NOT NULL,
+	[VPA_WhereClauseLike] [varchar](30) NOT NULL,
+	[Specialty_WhereClauseLike] [varchar](30) NOT NULL,
+
+	[fg_exempt_cd_target] [char](6) NOT NULL,
+
+	[rule_name_txt] [varchar](50) NOT NULL,
+
+	[active_ind] [bit] NOT NULL DEFAULT(0),
+	[sequence_num] [smallint] NOT NULL DEFAULT(0),
+	[note_txt] [varchar](50) NULL,
+	[creation_dt] [date] NOT NULL DEFAULT(GETDATE()),
+	[exempt_supplier_rule_key] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [exempt_supplier_rule_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[Supplier_WhereClauseLike]  ASC,
+	[VPA_WhereClauseLike]  ASC,
+	[Specialty_WhereClauseLike]  ASC
+
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
+	FK_exempt_supplier_rule_exempt_code FOREIGN KEY
+	(
+	fg_exempt_cd_target
+	) REFERENCES fg.exempt_code
+	(
+	fg_exempt_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- 
+INSERT INTO [fg].[exempt_supplier_rule]
+           ([Supplier_WhereClauseLike]
+           ,[VPA_WhereClauseLike]
+           ,[Specialty_WhereClauseLike]
+           ,[fg_exempt_cd_target]
+           ,[rule_name_txt]
+           ,[active_ind]
+           ,[sequence_num]
+           ,[note_txt])
+     VALUES
+           (''
+           ,''
+           ,''
+           ,''
+           ,'unassigned'
+           ,0
+           ,0
+           ,'')
+GO
 
 
-SELECT * 
-FROM 
-	(
-	SELECT
-		row_number() over(PARTITION BY WKDOCO_salesorder_number order by ID) rno_dst,
-		WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, ID
-	FROM
-		Integration.F5554240_fg_redeem_Staging 
-	) d
-	INNER JOIN 
-	(
-	SELECT
-		row_number() over(PARTITION BY [SalesOrderNumber] order by ID) rno_src,
-		[SalesOrderNumber], [DocType], [LineNumber], ID
-	FROM
-		[dbo].[BRS_TransactionDW]
-	WHERE 
-		EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
-		(DocType <> 'AA') AND
-		([ShippedQty] <> 0) AND
-		([NetSalesAmt] = 0) AND
-		-- test
-		--(SalesOrderNumber in(14498659, 14503431)) AND
-		--(item in ('5874352', '1019778')) AND
+-- build dynamic logic to find last day of month (fg view?)
+SELECT 
+	top 10
+	m.CalMonth
+	,l.SalesDate
+	,l.Item
+	,l.Supplier
+	,l.Currency
+	,l.SupplierCost
+
+	,l.PriceKey
+
+FROM         
+	[dbo].[BRS_ItemBaseHistoryDay] AS l 
+
+	INNER JOIN [dbo].[BRS_CalMonth] as m
+	ON l.FiscalMonth = m.CalMonth AND
+		l.SalesDate = '2021-08-27' AND
+--		l.SalesDate = m.BCI_BenchmarkDay AND
 		(1=1)
-	) s
-	ON WKDOCO_salesorder_number = [SalesOrderNumber] AND
-		[WKDCTO_order_type] = [DocType] AND
-		WKLITM_item_number = [WKLITM_item_number] AND
-		s.rno_src = d.rno_dst
 WHERE
-	-- test
-	(WKDOCO_salesorder_number in(14498659, 14503431)) AND 
-	(WKLITM_item_number in('5874352', '1019778'))
+	m.CalMonth = 202108
+order by 2 asc
 
-
---
--- UPDATE Integration.F5554240_fg_redeem_Staging SET [WKLNNO_line_number] = null
-
-UPDATE Integration.F5554240_fg_redeem_Staging 
-SET [WKLNNO_line_number] = s.LineNumber
---test
--- SELECT * 
-FROM Integration.F5554240_fg_redeem_Staging
-INNER JOIN
-	(
-	SELECT
-		WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, ID,
-		row_number() over(PARTITION BY WKDOCO_salesorder_number order by WKLITM_item_number, ID) rno_dst
-	FROM
-		Integration.F5554240_fg_redeem_Staging 
-	WHERE
-		-- no internal
-		([WKAC10_division_code]<>'AZA') AND
-		-- by definition, no adjustments or NON free goods included (ensure stage and DW match)
-		-- test
-		--(WKDOCO_salesorder_number in(14492625)) AND (WKLITM_item_number in('3783903')) AND
-		--(WKDOCO_salesorder_number in(14498659)) AND (WKLITM_item_number in('5874352')) AND
-		(1=1)
-	) d
-	ON Integration.F5554240_fg_redeem_Staging.ID = d.ID
-
-	INNER JOIN 
---	LEFT JOIN 
-	(
-	SELECT
-		[SalesOrderNumber], [DocType], [item], [LineNumber], ID,
-		row_number() over(PARTITION BY [SalesOrderNumber] order by [item], ID) rno_src
-	FROM
-		[dbo].[BRS_TransactionDW]
-	WHERE 
-		EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
-		-- no internal
-		([SalesDivision]<>'AZA') AND
-		-- no adjustments
-		(DocType <> 'AA') AND
-		-- free goods only
-		([ShippedQty] <> 0) AND
-		([NetSalesAmt] = 0) AND
-		-- test
-		--(SalesOrderNumber in(14492625)) AND (item in ('3783903')) AND
-		--(SalesOrderNumber in(14498659)) AND (item in ('5874352')) AND
-		(1=1)
-	) s
-	ON d.WKDOCO_salesorder_number = s.[SalesOrderNumber] AND
-		d.[WKDCTO_order_type] = s.[DocType] AND
-		RTRIM(d.WKLITM_item_number) = RTRIM(s.[item]) AND
-		d.rno_dst = s.rno_src AND
-		(1=1)
-WHERE
-	-- test
-	(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14492625)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in ('3783903')) AND
-
---	(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14498659)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in('5874352')) AND
---	(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
-	(1=1)
-
---
 
