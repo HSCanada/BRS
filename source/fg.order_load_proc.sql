@@ -104,7 +104,7 @@ Begin
 	Print 'Confirm BatchStatus NOT locked'
 	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
-	Print 'Checking steps 1 - 10'
+	Print 'Checking steps 1 - 4'
 End
 
 -- only run once
@@ -365,7 +365,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '5. Integration.F5554240_fg_redeem_Staging - clear'
+		print 'Integration.F5554240_fg_redeem_Staging - clear'
 
 	DELETE FROM [Integration].[F5554240_fg_redeem_Staging] where [status_code] in(0, 5)
 

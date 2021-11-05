@@ -120,29 +120,6 @@ GO
 COMMIT
 
 --
-BEGIN TRANSACTION
-GO
-ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
-	FK_F5554240_fg_redeem_Staging_exempt_code FOREIGN KEY
-	(
-	fg_exempt_cd
-	) REFERENCES fg.exempt_code
-	(
-	fg_exempt_cd
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-
-CREATE UNIQUE NONCLUSTERED INDEX F5554240_fg_redeem_Staging_u_idx01 ON Integration.F5554240_fg_redeem_Staging
-	(
-	ID
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-GO
-ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-
 
 
 -- add config flag
@@ -339,6 +316,65 @@ UPDATE [dbo].[BRS_ItemLabel]
 WHERE [Label] = 'P'
 GO
 
+--
+BEGIN TRANSACTION
+GO
+
+CREATE TABLE fg.exempt_code
+	(
+	fg_exempt_cd char(6) NOT NULL,
+	fg_exempt_desc varchar(50) NOT NULL,
+	source_cd char(3) NOT NULL,
+	active_ind bit NOT NULL,
+	sequence_num smallint NOT NULL DEFAULT(0),
+	creation_dt date NOT NULL,
+	fg_exempt_key int NOT NULL IDENTITY (1, 1),
+	note_txt nchar(10) NULL
+	)  ON USERDATA
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_source_cd DEFAULT '' FOR source_cd
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_active_ind DEFAULT 0 FOR active_ind
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	DF_exempt_code_creation_dt DEFAULT getdate() FOR creation_dt
+GO
+ALTER TABLE fg.exempt_code ADD CONSTRAINT
+	PK_exempt_code PRIMARY KEY CLUSTERED 
+	(
+	fg_exempt_cd
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
+	FK_F5554240_fg_redeem_Staging_exempt_code FOREIGN KEY
+	(
+	fg_exempt_cd
+	) REFERENCES fg.exempt_code
+	(
+	fg_exempt_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX F5554240_fg_redeem_Staging_u_idx01 ON Integration.F5554240_fg_redeem_Staging
+	(
+	ID
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE Integration.F5554240_fg_redeem_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 -- set freegoods_exempt_cd values
 
 INSERT INTO [fg].[exempt_code]
@@ -390,42 +426,6 @@ VALUES
 
 GO
 
-
-
-BEGIN TRANSACTION
-GO
-
-CREATE TABLE fg.exempt_code
-	(
-	fg_exempt_cd char(6) NOT NULL,
-	fg_exempt_desc varchar(50) NOT NULL,
-	source_cd char(3) NOT NULL,
-	active_ind bit NOT NULL,
-	sequence_num smallint NOT NULL DEFAULT(0),
-	creation_dt date NOT NULL,
-	fg_exempt_key int NOT NULL IDENTITY (1, 1),
-	note_txt nchar(10) NULL
-	)  ON USERDATA
-GO
-ALTER TABLE fg.exempt_code ADD CONSTRAINT
-	DF_exempt_code_source_cd DEFAULT '' FOR source_cd
-GO
-ALTER TABLE fg.exempt_code ADD CONSTRAINT
-	DF_exempt_code_active_ind DEFAULT 0 FOR active_ind
-GO
-ALTER TABLE fg.exempt_code ADD CONSTRAINT
-	DF_exempt_code_creation_dt DEFAULT getdate() FOR creation_dt
-GO
-ALTER TABLE fg.exempt_code ADD CONSTRAINT
-	PK_exempt_code PRIMARY KEY CLUSTERED 
-	(
-	fg_exempt_cd
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
-
-GO
-ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 -- create prod table
 -- use history for fsc / cust / item views (tie to finacial) CalMonthOrder
@@ -811,6 +811,7 @@ INSERT INTO [fg].[exempt_supplier_rule]
 GO
 
 
+--- TBD, cost fix
 -- build dynamic logic to find last day of month (fg view?)
 SELECT 
 	top 10

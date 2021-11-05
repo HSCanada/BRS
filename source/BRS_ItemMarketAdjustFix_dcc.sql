@@ -84,6 +84,8 @@ SELECT
 
 --	,(ROUND(i.new_market_adj, 4) - 1.0) * 100. AS new_market_adj_import
 	,i.Est12MoSales
+	,dcc.note_txt
+	,dcc.status_cd
 
 FROM
 	BRS_ItemMarketAdjustModel AS i 
@@ -123,6 +125,7 @@ order by est12mosales desc
 -- output
 -- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where DivisionalMarketAdjustmentPct <> new_divisional_adj AND CorporateMarketAdjustmentPct >= 1
 
+-- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where status_cd <> 0 AND CorporateMarketAdjustmentPct >= 1 AND new_divisional_adj_import < 0
 
 
 
