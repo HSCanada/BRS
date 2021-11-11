@@ -125,8 +125,11 @@ order by est12mosales desc
 -- output
 -- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where DivisionalMarketAdjustmentPct <> new_divisional_adj AND CorporateMarketAdjustmentPct >= 1
 
--- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where status_cd <> 0 AND CorporateMarketAdjustmentPct >= 1 AND new_divisional_adj_import < 0
+-- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where status_cd <> 0 AND CorporateMarketAdjustmentPct >= 1 AND new_divisional_adj_import < 0 and item = '9394968'
 
+-- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where status_cd <> 0 AND CorporateMarketAdjustmentPct < 1 AND new_divisional_adj_import < 0 
+
+-- SELECT * FROM BRS_ItemMarketAdjustFix_dcc where item = '9394968'
 
 
 

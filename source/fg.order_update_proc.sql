@@ -158,12 +158,53 @@ Begin
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3. WKPMID_promo_code TBD'
+		print '3. EnteredBy'
+
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		fg.transaction_F5554240.[EnteredBy] = s.[EnteredBy]
+	FROM
+		fg.transaction_F5554240 
+
+		INNER JOIN [dbo].[BRS_TransactionDW] AS s 
+		ON fg.transaction_F5554240.ID_source_ref = s.ID
+	WHERE 
+		CalMonthRedeem = @nCurrentFiscalYearmoNum AND
+		fg.transaction_F5554240.[EnteredBy] <> s.[EnteredBy]
 
 		Set @nErrorCode = @@Error
 
 End
 
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3c. OriginalSalesOrderNumber'
+
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		fg.transaction_F5554240.[OriginalSalesOrderNumber] = s.[OriginalSalesOrderNumber]
+		,fg.transaction_F5554240.[OriginalOrderDocumentType] = s.[OriginalOrderDocumentType]
+		,fg.transaction_F5554240.[OriginalOrderLineNumber] = s.[OriginalOrderLineNumber]
+
+	FROM
+		fg.transaction_F5554240 
+
+		INNER JOIN [dbo].[BRS_TransactionDW] AS s 
+		ON fg.transaction_F5554240.ID_source_ref = s.ID
+	WHERE 
+		CalMonthRedeem = @nCurrentFiscalYearmoNum AND
+		fg.transaction_F5554240.[OriginalSalesOrderNumber] <> s.[OriginalSalesOrderNumber] AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+
+End
+
+--> exempt logic begin
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -184,8 +225,31 @@ Begin
 		s.freegoods_exempt_cd = 1 
 
 		Set @nErrorCode = @@Error
-
 End
+
+-- run MPC before docs so we can ID credit rebill
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '7. BRS_ItemMPC exempt'
+
+	-- ('XXXMPC','[BRS_ItemMPC]','',1,10,'.')
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		fg_exempt_cd = 'XXXMPC'
+	FROM
+		fg.transaction_F5554240
+		INNER JOIN [BRS_ItemMPC] AS s 
+		ON fg.transaction_F5554240.MajorProductClass = s.MajorProductClass
+	WHERE
+		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
+		(fg.transaction_F5554240.fg_exempt_cd = '') AND
+		s.freegoods_exempt_cd = 1 
+
+		Set @nErrorCode = @@Error
+End
+
 
 If (@nErrorCode = 0) 
 Begin
@@ -233,28 +297,6 @@ Begin
 
 End
 
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		print '7. BRS_ItemMPC exempt'
-
-	-- ('XXXMPC','[BRS_ItemMPC]','',1,10,'.')
-	UPDATE
-		fg.transaction_F5554240
-	SET
-		fg_exempt_cd = 'XXXMPC'
-	FROM
-		fg.transaction_F5554240
-		INNER JOIN [BRS_ItemMPC] AS s 
-		ON fg.transaction_F5554240.MajorProductClass = s.MajorProductClass
-	WHERE
-		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
-		(fg.transaction_F5554240.fg_exempt_cd = '') AND
-		s.freegoods_exempt_cd = 1 
-
-		Set @nErrorCode = @@Error
-
-End
 
 If (@nErrorCode = 0) 
 Begin

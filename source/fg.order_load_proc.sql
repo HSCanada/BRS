@@ -143,7 +143,7 @@ Begin
 			SET [WKLNNO_line_number] = null
 			, ID_source_ref = null
 
-	-- link free good transactoins to [dbo].[STAGE_BRS_TransactionDW]
+	-- link free good transactions to [dbo].[STAGE_BRS_TransactionDW]
 	UPDATE 
 		Integration.F5554240_fg_redeem_Staging 
 	SET 

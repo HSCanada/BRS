@@ -50,6 +50,7 @@ SELECT
 	,i.ItemDescription
 	,[ShippedQty]
 	,([NetSalesAmt]-[GPAtFileCostAmt]) AS WKECST_extended_cost
+	,([NetSalesAmt]-[GPAtFileCostAmt]) AS [ExtFileCostCadAmt]
 	,0 AS WKUNCS_unit_cost
 	,'CAD' AS WKCRCD_currency_code
 	,t.[PromotionCode] 
@@ -66,6 +67,8 @@ SELECT
 	,ih.Supplier 
 	,[InvoiceNumber]
 	,[OriginalSalesOrderNumber]
+	,[OriginalOrderDocumentType]
+	,[OriginalOrderLineNumber]
 	,c.BillTo
 	,'na' AS billto_name
 	,t.ID
@@ -73,7 +76,8 @@ SELECT
 	,'na' AS status_code_high
 	,[ChargebackContractNumber] 
 	,[PricingAdjustmentLine]
-	,[EnteredBy] AS order_file_name
+	,[EnteredBy] 
+	,'' AS order_file_name
 FROM
 	[dbo].[BRS_TransactionDW] t
 
@@ -112,7 +116,8 @@ WHERE
 		FROM fg.transaction_F5554240 s
 		WHERE 
 			(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
-			(fg_exempt_cd NOT LIKE 'XXX%') AND
+			-- test
+--			(fg_exempt_cd NOT LIKE 'XXX%') AND
 			(t.[SalesOrderNumber] = s.WKDOCO_salesorder_number ) AND
 			(1=1)
 	) AND
@@ -149,13 +154,14 @@ SELECT
 	,WKDSC1_description
 	,WKUORG_quantity
 	,WKECST_extended_cost
+	,([NetSalesAmt]-[GPAtFileCostAmt]) AS [ExtFileCostCadAmt]
 	,WKUNCS_unit_cost
 	,WKCRCD_currency_code
 	,WKPMID_promo_code
 	,WKDL01_promo_description
 	,WKFRGD_from_grade AS [OrderPromotionCode]
 	,WKDATE_order_date
-	,VPA
+	,t.VPA
 	,Specialty
 	,WKLNTY_line_type
 	,WKAC10_division_code
@@ -164,17 +170,24 @@ SELECT
 	,Label
 	,WK$SPC_supplier_code
 	,WKPSN__invoice_number
-	,OriginalSalesOrderNumber
+	,t.OriginalSalesOrderNumber
+	,t.[OriginalOrderDocumentType]
+	,t.[OriginalOrderLineNumber]
 	,WKAN8__billto
 	,WKALPH_billto_name
-	,ID
-	,ID_source_ref
+	,t.ID
+	,t.ID_source_ref
 	,WK$HGS_status_code_high
 	,WK$ODN_free_goods_contract_number
 	,WKDSC2_pricing_adjustment_line
+	,t.[EnteredBy] 
 	,order_file_name
 FROM
 	fg.transaction_F5554240 t
+
+	INNER JOIN 
+	[dbo].[BRS_TransactionDW] tt
+	ON t.ID_source_ref = tt.ID
 
 	INNER JOIN [dbo].[BRS_ItemMPC] mpc
 	ON t.MajorProductClass = mpc.MajorProductClass

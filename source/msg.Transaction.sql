@@ -95,16 +95,16 @@ GO
 -------------------------------------------------------------------------------
 
 -- 1. export item
--- 20211029_camsg_Item.txt
+-- 20211105_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20211029_camsg_Customer.txt
+-- 20211105_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20211029_camsg_Transaction.txt
--- SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-10-23' and '2021-10-29'
+-- 20211105_camsg_Transaction.txt
+-- SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-10-30' and '2021-11-05'
 
 
 
