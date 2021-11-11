@@ -744,6 +744,37 @@ GO
 ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+-- add after
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	EnteredBy char(10) NOT NULL CONSTRAINT DF_transaction_F5554240_EnteredBy DEFAULT ''
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_entered_by FOREIGN KEY
+	(
+	EnteredBy
+	) REFERENCES Pricing.entered_by
+	(
+	entered_by_code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	OriginalOrderDocumentType char(2) NOT NULL CONSTRAINT DF_transaction_F5554240_OriginalOrderDocumentType DEFAULT (''),
+	OriginalOrderLineNumber int NOT NULL CONSTRAINT DF_transaction_F5554240_OriginalOrderLineNumber DEFAULT ((0))
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 -- drop TABLE [fg].[exempt_supplier_rule]
 
@@ -837,3 +868,17 @@ WHERE
 order by 2 asc
 
 
+-- line commission free goods redeem to DW so that we can complare model with actual via DW 
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.comm_freegoods_Staging ADD
+	WKLNNO_line_number float(53) NULL,
+	ID_source_ref int NULL
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- UPDATE [fg].[transaction_F5554240] set fg_exempt_cd = ''

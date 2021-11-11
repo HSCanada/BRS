@@ -239,7 +239,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 WHERE
 	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110)
 GO
 
 print('sales test')
@@ -249,7 +249,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_sales_key] is null) AND
 	([NetSalesAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110) AND
 	(1=1)
 GO
 
@@ -266,7 +266,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 WHERE
 	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110)
 GO
 
 print ('cost test')
@@ -276,7 +276,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_cost_key] is null) AND
 	([ExtendedCostAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110) AND
 	(1=1)
 GO
 
@@ -293,7 +293,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110)
 GO
 
 print ('chargeback test')
@@ -303,7 +303,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_chargeback_key] is null) AND
 	([ExtChargebackAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110) AND
 	(1=1)
 order by GL_BusinessUnit
 GO
@@ -317,7 +317,7 @@ UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202108 AND 202109
+	FiscalMonth BETWEEN 202110 AND 202110
 GO
 
 UPDATE       [dbo].[BRS_Transaction]
@@ -328,7 +328,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202109 AND 202109) AND
+	(FiscalMonth BETWEEN 202110 AND 202110) AND
 	(1=1)
 GO
 
@@ -342,12 +342,12 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	(FiscalMonth BETWEEN 202109 AND 202109) AND
+	(FiscalMonth BETWEEN 202110 AND 202110) AND
 	(1=1)
 GO
 
 -------------------------------------------------------------------------------
-
+-- xxx fix 3D printer new mapping, 10 Nov 21
 -- update BRS_ItemCategory!global for new codes first
 print '16. set Global Item Group - AFTER manual maint'
 UPDATE       BRS_ItemHistory
@@ -359,7 +359,7 @@ WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	-- null filter not needed below
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 201901 AND 202109
+	FiscalMonth BETWEEN 202110 AND 202110
 GO
 
 -- add the GL vs Global consistence rules corections here...
@@ -384,7 +384,7 @@ FROM
 WHERE
 	(BRS_Transaction.Item > '') AND 
 	(ISNULL(BRS_Transaction.global_product_class_key,0) <> ig.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110)
 GO
 
 -- 50s in dev
@@ -414,8 +414,8 @@ WHERE
 	(BRS_Transaction.SalesDivision < 'AZA') AND 
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(bu_trans.global_product_class_default <> '') AND 
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND 
 	(BRS_Transaction.global_product_class_key <> iglob_def.global_product_class_key) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110) AND 
 	(1 = 1)
 GO
 
@@ -426,9 +426,13 @@ UPDATE       BRS_Transaction
 SET                global_product_class_key = 3310
 FROM            BRS_Transaction INNER JOIN
                          BRS_BusinessUnitClass AS bu_trans ON BRS_Transaction.GLBU_Class = bu_trans.GLBU_Class
-WHERE        (BRS_Transaction.SalesDivision < 'AZA') AND (BRS_Transaction.GLBU_Class IN ('EQDIG', 'HICAD')) AND (bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND (BRS_Transaction.global_product_class_key IS NULL) AND 
-                         (BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109) AND (1 = 1)
-						 
+WHERE
+	(BRS_Transaction.SalesDivision < 'AZA') AND 
+	(BRS_Transaction.GLBU_Class IN ('EQDIG', 'HICAD')) AND 
+	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
+	(BRS_Transaction.global_product_class_key IS NULL) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110) AND 
+	(1 = 1)
 GO
 
 /*
@@ -505,13 +509,15 @@ ORDER BY bu_trans.global_product_class_default
 -------------------------------------------------------------------------------
 print ('global JDE - test')
 SELECT 
-	global_product_class_key 
+	GLBU_Class, MajorProductClass, global_product_class_key, NetSalesAmt 
 FROM
 	BRS_Transaction 
 WHERE
 	(BRS_Transaction.Item > '') AND 
+	(GLBU_Class <> 'FREIG') AND
 	(BRS_Transaction.global_product_class_key =1) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202109)
+	(BRS_Transaction.FiscalMonth BETWEEN 202110 AND 202110)
+ORDER BY NetSalesAmt desc
 GO
 
 
@@ -530,7 +536,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202109 AND 202109
+	FiscalMonth BETWEEN 202110 AND 202110
 GO
 
 --2 min
@@ -575,7 +581,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202109 AND 202109)
+	(BRS_Transaction.FiscalMonth between 202110 AND 202110)
 GO
 
 -- 30s
@@ -607,7 +613,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202109 AND 202109)
+	(BRS_Transaction.FiscalMonth between 202110 AND 202110)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -616,7 +622,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202109 AND 202109
+	FiscalMonth BETWEEN 202110 AND 202110
 GO
 
 -------------------------------------------------------------------------------
@@ -629,9 +635,9 @@ GO
 --
 -- 1. set results to file, CSV format
 -- 2. copy below
--- a_CAN_Sep-21_RA.csv
+-- a_CAN_Oct-21_RA.csv
 -- 3. select & run below
--- [hfm].global_cube_new_proc  202109
+-- [hfm].global_cube_new_proc  202110
 
 -------------------------------------------------------------------------------
 
