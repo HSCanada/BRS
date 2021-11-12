@@ -24,6 +24,12 @@ SELECT
 	RTRIM(MIN([HIST_MarketClass]))  AS MarketClass,
 	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
 
+	-- test
+	--,t.Shipto
+	--,min(c.[PracticeName]) AS PracticeName
+	--,min(c.VPA) AS VPA
+	--
+
 FROM            
 	BRS_AGG_CMI_DW_Sales AS t 
 
@@ -42,16 +48,17 @@ FROM
 
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
---	(t.SalesCategory = 'TEETH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
 		(t.FiscalMonth BETWEEN 202101 and 202110) OR
 		(t.FiscalMonth BETWEEN 201901 and 201910)
 	) AND
 	-- test with quote exclude
---	(t.OrderSourceCode IN ('A', 'L')) AND 
+	--(Branch = 'TORNT') AND
+	--(t.FiscalMonth in (202110, 201910)) AND
+	--([HIST_MarketClass]='MIDMKT') AND
+	--
 
---	i.[Supplier] = 'DENTZA' AND
 	(1=1)
 
 
@@ -66,6 +73,15 @@ GROUP BY
 	c.SalesDivision, 
 	c.SegCd,
 	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END 
+
+	-- test
+	-- ,t.shipto
+
+-- test
+-- HAVING
+--	RTRIM(MIN([HIST_MarketClass])) = 'MIDMKT'
+--
+
 
 ORDER BY 1
 
