@@ -34,53 +34,56 @@ AS
 
 --
 SELECT
-	[SalesOrderNumber]
-	,[DocType]
-	,0 AS [LineNumber]
+	t.[SalesOrderNumber]
+	,tt.WKDCTO_order_type [DocType]
+	,tt.WKLNNO_line_number AS [LineNumber]
 	,conf.PriorFiscalMonth AS CalMonthRedeem
 	,t.[FiscalMonth] AS [CalMonth]
-	,'' AS fg_exempt_cd
+	,tt.fg_exempt_cd
 	,t.SourceCode as src
-	,0 AS fg_offer_id
-	,'' AS fg_offer_note
-	,t.[Shipto]
-	,c.PracticeName
+	,tt.fg_offer_id
+	,tt.fg_offer_note
+	,tt.WKSHAN_shipto AS [Shipto]
+	,tt. WKNAME_shipto_name AS PracticeName
 	,fsc.Branch
 	,t.[Item]
-	,i.ItemDescription
-	,0 AS [ShippedQty]
-	,[ExtFileCostCadAmt] AS WKECST_extended_cost
-	, [ExtFileCostCadAmt]
-	,0 AS WKUNCS_unit_cost
-	,'CAD' AS WKCRCD_currency_code
-	,'.' AS [PromotionCode] 
-	,'.' AS PromotionDescription
-	,'.' AS [OrderPromotionCode]
-	,NULL AS [OrderFirstShipDate]
-	,ch.HIST_VPA AS VPA
+	,tt.WKDSC1_description ItemDescription
+	,tt.[WKUORG_quantity] AS [ShippedQty]
+	,tt.WKECST_extended_cost
+	,t.[ExtFileCostCadAmt]
+	,tt.WKUNCS_unit_cost
+	,tt.WKCRCD_currency_code
+	,tt.[WKPMID_promo_code] AS [PromotionCode] 
+	,tt.[WKDL01_promo_description] AS PromotionDescription
+	,tt.WKFRGD_from_grade AS [OrderPromotionCode]
+	,tt.[WKDATE_order_date] AS [OrderFirstShipDate]
+	,tt.VPA
 	,ch.HIST_Specialty 
-	,'.' AS [LineTypeOrder]
-	,ch.HIST_SalesDivision AS [SalesDivision]
-	,i.MajorProductClass AS MajorProductClass
+	,tt.[WKLNTY_line_type] AS [LineTypeOrder]
+	,tt.WKAC10_division_code AS [SalesDivision]
+	,tt.MajorProductClass
 	,mpc.MajorProductClassDesc
 	,ih.Label
-	,ih.Supplier 
-	,'.' AS [InvoiceNumber]
-	,0 AS [OriginalSalesOrderNumber]
-	,'.' AS [OriginalOrderDocumentType]
-	,0 AS [OriginalOrderLineNumber]
-	,c.BillTo
-	,'.' AS billto_name
+	,tt.WK$SPC_supplier_code Supplier 
+	,tt.WKPSN__invoice_number AS [InvoiceNumber]
+	,tt.[OriginalSalesOrderNumber]
+	,tt.[OriginalOrderDocumentType]
+	,tt.[OriginalOrderLineNumber]
+	,tt.WKAN8__billto AS BillTo
+	,tt.WKALPH_billto_name AS billto_name
 	,t.ID
-	,t.[ID] AS ID_source_ref
-	,'.' AS status_code_high
-	,'.' AS [ChargebackContractNumber] 
-	,'.' AS [PricingAdjustmentLine]
-	,'.' AS [EnteredBy] 
-	,'' AS order_file_name
+	,t.ID_source_ref 
+	,tt.[WK$HGS_status_code_high] AS status_code_high
+	,tt.[WK$ODN_free_goods_contract_number] [ChargebackContractNumber] 
+	,tt.[WKDSC2_pricing_adjustment_line] AS [PricingAdjustmentLine]
+	,tt.[EnteredBy] 
+	,tt.order_file_name
 FROM
 	[comm].[freegoods] t
 
+	LEFT JOIN
+	[fg].[transaction_F5554240] tt
+	ON t.ID_source_ref = tt.ID_source_ref
 
 	INNER JOIN [dbo].[BRS_Item] i
 	ON t.Item = i.item
@@ -123,3 +126,6 @@ GO
 
 --SELECT TOP 100 * FROM fg.redeem_working
 SELECT * FROM fg.redeem_actual_commission WHERE SalesOrderNumber = 14459975
+
+SELECT * FROM fg.redeem_actual_commission WHERE r
+
