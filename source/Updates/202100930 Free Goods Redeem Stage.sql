@@ -414,18 +414,33 @@ VALUES
 	,('XXXSPC','[BRS_CustomerSpecialty]','',1,10,'.')
 	,('XXXPRO','[BRS_Promotion]','',1,10,'.')
 
-	,('XXXCBV','Chargeback VPA [fg].[exempt_supplier_rule]','',1,10,'.')
-	,('XXXCBS','Chargeback Supplier [fg].[exempt_supplier_rule]','',1,10,'.')
 	,('XXXCBM','Chargeback Multi [fg].[exempt_supplier_rule]','',1,10,'.')
 
 	,('FGAUTO','Auto Add','',1,10,'.')
 	,('FGMANU','Manual Add','',1,10,'.')
-	,('FGMXXX','Manual Exclude','',1,10,'.')
 
 	,('FGMMGR','Manager Excpt [BRS_TransactionDW_Ext]','',1,10,'.')
 
 GO
 
+INSERT INTO [fg].[exempt_code]
+           ([fg_exempt_cd]
+           ,[fg_exempt_desc]
+           ,[source_cd]
+           ,[active_ind]
+           ,[sequence_num]
+           ,[note_txt])
+VALUES
+	('FGDEAL','xxx','',1,10,'.')
+	,('FGGOOD','xxx','',1,10,'.')
+	,('XXCRRB','xxx','',1,10,'.')
+	,('XXLITR','xxx','',1,10,'.')
+	,('XXNQAL','xxx','',1,10,'.')
+	,('XXDEAL','xxx','',1,10,'.')
+
+
+
+--DELETE FROM [fg].[exempt_code] WHERE [fg_exempt_cd] in('XXXCBV', 'XXXCBS', 'FGMXXX', 'FGMMGR')
 
 -- create prod table
 -- use history for fsc / cust / item views (tie to finacial) CalMonthOrder
@@ -444,7 +459,7 @@ CREATE TABLE [fg].[transaction_F5554240](
 	[fg_exempt_cd] [char](6) NOT NULL,
 	[fg_offer_id] [int] NOT NULL,
 	[fg_offer_note] [varchar](30) NOT NULL,
-	[WK$ODN_free_goods_contract_number] [varchar](12) NOT NULL,
+	[WK$ODN_free_goods_contract_number] int NOT NULL,
 
 	[WKDATE_order_date] [datetime] NOT NULL,
 	[WKSHAN_shipto] [int] NOT NULL,
@@ -492,6 +507,9 @@ CREATE TABLE [fg].[transaction_F5554240](
 
 	[order_file_name] [varchar](50) NOT NULL,
 	[line_id] [int] NOT NULL,
+
+	[exempt_supplier_rule_key] [int] NULL,
+
 
  CONSTRAINT [fg_transaction_F5554240_pk] PRIMARY KEY  
 (
@@ -776,12 +794,48 @@ ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_exempt_supplier_rule FOREIGN KEY
+	(
+	exempt_supplier_rule_key
+	) REFERENCES fg.exempt_supplier_rule
+	(
+	exempt_supplier_rule_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_chargeback FOREIGN KEY
+	(
+	WK$ODN_free_goods_contract_number
+	) REFERENCES fg.chargeback
+	(
+	cb_contract_num
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 -- drop TABLE [fg].[exempt_supplier_rule]
 
 CREATE TABLE [fg].[exempt_supplier_rule](
-	[Supplier_WhereClauseLike] [varchar](30) NOT NULL,
-	[VPA_WhereClauseLike] [varchar](30) NOT NULL,
-	[Specialty_WhereClauseLike] [varchar](30) NOT NULL,
+	[ChargebackContractNumber] [int] NOT NULL,
+	[Supplier] [char](6) NOT NULL,
+	[VPA] [char](10) NOT NULL,
 
 	[fg_exempt_cd_target] [char](6) NOT NULL,
 
@@ -789,15 +843,14 @@ CREATE TABLE [fg].[exempt_supplier_rule](
 
 	[active_ind] [bit] NOT NULL DEFAULT(0),
 	[sequence_num] [smallint] NOT NULL DEFAULT(0),
-	[note_txt] [varchar](50) NULL,
+	[signoff_note_txt] [varchar](50) NULL,
 	[creation_dt] [date] NOT NULL DEFAULT(GETDATE()),
 	[exempt_supplier_rule_key] [int] IDENTITY(1,1) NOT NULL,
  CONSTRAINT [exempt_supplier_rule_c_pk] PRIMARY KEY CLUSTERED 
 (
-	[Supplier_WhereClauseLike]  ASC,
-	[VPA_WhereClauseLike]  ASC,
-	[Specialty_WhereClauseLike]  ASC
-
+	[ChargebackContractNumber] ASC,
+	[Supplier] ASC,
+	[VPA] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
@@ -819,26 +872,81 @@ GO
 ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+--
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX exempt_supplier_rule_u_idx_02 ON fg.exempt_supplier_rule
+	(
+	exempt_supplier_rule_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
+	FK_exempt_supplier_rule_chargeback FOREIGN KEY
+	(
+	ChargebackContractNumber
+	) REFERENCES fg.chargeback
+	(
+	cb_contract_num
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
+	FK_exempt_supplier_rule_BRS_ItemSupplier FOREIGN KEY
+	(
+	Supplier
+	) REFERENCES dbo.BRS_ItemSupplier
+	(
+	Supplier
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
+	FK_exempt_supplier_rule_BRS_CustomerVPA FOREIGN KEY
+	(
+	VPA
+	) REFERENCES dbo.BRS_CustomerVPA
+	(
+	VPA
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
 -- 
 INSERT INTO [fg].[exempt_supplier_rule]
-           ([Supplier_WhereClauseLike]
-           ,[VPA_WhereClauseLike]
-           ,[Specialty_WhereClauseLike]
+           (
+		   [ChargebackContractNumber]
+		   ,[Supplier]
+           ,[VPA]
+
            ,[fg_exempt_cd_target]
            ,[rule_name_txt]
            ,[active_ind]
            ,[sequence_num]
-           ,[note_txt])
+           ,[signoff_note_txt])
      VALUES
-           (''
+           (
+		   0
+			,''
            ,''
+
            ,''
-           ,''
-           ,'unassigned'
-           ,0
-           ,0
-           ,'')
+           ,'.'
+		   ,0
+		   ,0
+           ,'.'
+           )
 GO
 
 
@@ -1049,6 +1157,7 @@ UPDATE
 SET
 	WKLNNO_line_number = s.WKLNNO_line_number
 	,ID_source_ref = s.ID_source_ref
+--SELECT *
 FROM
 	comm.freegoods
 	INNER JOIN Integration.comm_freegoods_Staging AS s 
@@ -1060,7 +1169,161 @@ FROM
 WHERE
 	s.WKLNNO_line_number is not null
 
+-----------------------------------------------------------------
+-- add chargebacks -- one-time
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.chargeback ADD
+	creation_dt date NULL,
+	note_txt nchar(10) NULL
+GO
+ALTER TABLE fg.chargeback ADD CONSTRAINT
+	DF_chargeback_creation_dt DEFAULT getdate() FOR creation_dt
+GO
+ALTER TABLE fg.chargeback SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+INSERT INTO [fg].[chargeback]
+(
+[cb_contract_num]
+,[note_txt]
+)
+select distinct [ChargebackContractNumber], 'init' from [dbo].[BRS_TransactionDW] where [ChargebackContractNumber] > 0
+GO
 
+--truncate table zzzitem
+--truncate table zzzitem2
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_FiscalMonth ADD
+	fg_cost_date datetime NULL
+GO
+ALTER TABLE dbo.BRS_FiscalMonth ADD CONSTRAINT
+	FK_BRS_FiscalMonth_BRS_SalesDay FOREIGN KEY
+	(
+	fg_cost_date
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDate
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_FiscalMonth SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	PriceKey int NULL
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_BRS_ItemBaseHistoryDAT FOREIGN KEY
+	(
+	PriceKey
+	) REFERENCES dbo.BRS_ItemBaseHistoryDAT
+	(
+	PriceID
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+--
 -- UPDATE [fg].[transaction_F5554240] set fg_exempt_cd = ''
+
+-- drop TABLE [fg].[item_cost_extract_override]
+CREATE TABLE [fg].[item_cost_extract_override](
+	[calmonth] [int] NOT NULL,
+	[item] [char](10) NOT NULL,
+	[unit_cost] [money] NOT NULL,
+	[currency_code] [char](3) NOT NULL,
+	[note_txt] [nchar](10) NULL,
+	[create_dt] [datetime] NOT NULL Default (GETDATE()),
+	item_cost_extract_override_key int NOT NULL Identity(1,1)
+ CONSTRAINT [item_cost_extract_override_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[calmonth] ASC,
+	[item] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX item_cost_extract_override_u_idx ON fg.item_cost_extract_override
+	(
+	item_cost_extract_override_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE fg.item_cost_extract_override SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	item_cost_extract_override_key int NULL
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_item_cost_extract_override FOREIGN KEY
+	(
+	item_cost_extract_override_key
+	) REFERENCES fg.item_cost_extract_override
+	(
+	item_cost_extract_override_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.item_cost_extract_override ADD CONSTRAINT
+	FK_item_cost_extract_override_BRS_CalMonth FOREIGN KEY
+	(
+	calmonth
+	) REFERENCES dbo.BRS_CalMonth
+	(
+	CalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.item_cost_extract_override ADD CONSTRAINT
+	FK_item_cost_extract_override_BRS_Item FOREIGN KEY
+	(
+	item
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.item_cost_extract_override ADD CONSTRAINT
+	FK_item_cost_extract_override_BRS_Currency FOREIGN KEY
+	(
+	currency_code
+	) REFERENCES dbo.BRS_Currency
+	(
+	Currency
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.item_cost_extract_override SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

@@ -39,10 +39,10 @@ SELECT
 	,[LineNumber]
 	,conf.PriorFiscalMonth AS CalMonthRedeem
 	,t.[CalMonth]
-	,'' AS fg_exempt_cd
+	,'.' AS fg_exempt_cd
 	, 'BUY' as src
 	,0 AS fg_offer_id
-	,'' AS fg_offer_note
+	,'.' AS fg_offer_note
 	,t.[Shipto]
 	,c.PracticeName
 	,fsc.Branch
@@ -70,14 +70,17 @@ SELECT
 	,[OriginalOrderDocumentType]
 	,[OriginalOrderLineNumber]
 	,c.BillTo
-	,'na' AS billto_name
+	,'.' AS billto_name
 	,t.ID
 	,t.[ID] AS ID_source_ref
-	,'na' AS status_code_high
+	,'.' AS status_code_high
 	,[ChargebackContractNumber] 
 	,[PricingAdjustmentLine]
 	,[EnteredBy] 
-	,'' AS order_file_name
+	,'.' AS order_file_name
+	,i.FamilySetLeader
+	,i.ManufPartNumber
+	,i.SalesCategory
 FROM
 	[dbo].[BRS_TransactionDW] t
 
@@ -107,8 +110,6 @@ FROM
 	CROSS JOIN [dbo].[BRS_Config] conf
 
 WHERE
-	-- temp
---	(t.CalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 	-- include full order
 	EXISTS 
 	(
@@ -130,9 +131,12 @@ WHERE
 			(t.ID = s2.ID_source_ref ) AND
 			(1=1)
 	) AND
+	-- remove restocking
+	-- (t.Item > '0') AND
 	-- test
 	--(t.SalesOrderNumber = 14459975) AND
 	(1=1)
+
 
 UNION ALL
 
@@ -167,7 +171,7 @@ SELECT
 	,WKAC10_division_code
 	,t.MajorProductClass
 	,mpc.MajorProductClassDesc
-	,Label
+	,t.Label
 	,WK$SPC_supplier_code
 	,WKPSN__invoice_number
 	,t.OriginalSalesOrderNumber
@@ -178,10 +182,14 @@ SELECT
 	,t.ID
 	,t.ID_source_ref
 	,WK$HGS_status_code_high
-	,WK$ODN_free_goods_contract_number
+	,t.WK$ODN_free_goods_contract_number
 	,WKDSC2_pricing_adjustment_line
 	,t.[EnteredBy] 
 	,order_file_name
+	,i.FamilySetLeader AS FamilySetLeader
+	,t.[WKCITM_customersupplier_item_number] ManufPartNumber
+	,i.SalesCategory
+
 FROM
 	fg.transaction_F5554240 t
 
@@ -199,6 +207,9 @@ FROM
 	INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
 	ON ch.HIST_TerritoryCd = fsc.TerritoryCd
 
+	INNER JOIN [dbo].[BRS_Item] i
+	ON t.WKLITM_item_number = i.Item
+
 WHERE
 	(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 	-- test
@@ -214,5 +225,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
---SELECT TOP 100 * FROM fg.redeem_working
-SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 14459975
+SELECT TOP 100 * FROM fg.redeem_working
+--SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 14459975

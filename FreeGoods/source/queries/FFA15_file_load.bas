@@ -9,9 +9,6 @@ Begin OutputColumns
     Expression ="lnk_F5554240_LOAD.FILE_NAME"
     Name ="line_id"
     Expression ="lnk_F5554240_LOAD.FILE_LINE"
-    Alias ="calmonth"
-    Name ="CalMonth"
-    Expression ="Left([FILE_NAME],6)"
     Name ="WKKEY__key"
     Expression ="lnk_F5554240_LOAD.[Key  ----------]"
     Name ="WKAC10_division_code"
@@ -50,7 +47,7 @@ Begin OutputColumns
     Expression ="lnk_F5554240_LOAD.[Or Ty --]"
     Name ="WK$HGS_status_code_high"
     Expression ="lnk_F5554240_LOAD.[High Sts ----]"
-    Name ="WKDATE_order_date"
+    Name ="WKDATE_order_date_text"
     Expression ="lnk_F5554240_LOAD.[ORDER DATE     ]"
     Name ="WKFRGD_from_grade"
     Expression ="lnk_F5554240_LOAD.[Frm Grd ---]"
@@ -195,12 +192,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1435
+    Right =1573
     Bottom =918
     Left =-1
     Top =-1
-    Right =1419
-    Bottom =673
+    Right =1287
+    Bottom =639
     Left =0
     Top =0
     ColumnsShown =651

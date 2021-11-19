@@ -12,7 +12,10 @@ SELECT
 	t.OrderSourceCode, 
 	t.PriceMethod, 
 	c.SalesDivision, 
-	RTRIM(c.SegCd)		AS SegCd,
+
+	RTRIM(t.HIST_SegCd)		AS SegCd,
+--	RTRIM(c.SegCd)		AS SegCd,
+
 	SUM(t.ExtBase)		AS ExtBase, 
 	SUM(t.SalesAmt)		AS SalesAmt, 
 	0					AS placeholder,
@@ -71,14 +74,18 @@ GROUP BY
 	t.OrderSourceCode, 
 	t.PriceMethod, 
 	c.SalesDivision, 
-	c.SegCd,
+
+	-- fixed 12 Nov 21
+	t.HIST_SegCd,
+	--	c.SegCd,
+
 	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END 
 
 	-- test
 	-- ,t.shipto
 
 -- test
--- HAVING
+--HAVING
 --	RTRIM(MIN([HIST_MarketClass])) = 'MIDMKT'
 --
 

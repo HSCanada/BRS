@@ -181,7 +181,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '3c. OriginalSalesOrderNumber'
+		print '4. OriginalSalesOrderNumber'
 
 	UPDATE
 		fg.transaction_F5554240
@@ -204,11 +204,81 @@ Begin
 
 End
 
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5. ChargebackContractNumber update'
+
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		[WK$ODN_free_goods_contract_number] = s.ChargebackContractNumber
+
+	FROM
+		fg.transaction_F5554240 
+
+		INNER JOIN [dbo].[BRS_TransactionDW] AS s 
+		ON fg.transaction_F5554240.ID_source_ref = s.ID
+	WHERE 
+		(CalMonthRedeem = @nCurrentFiscalYearmoNum) AND
+		(fg.transaction_F5554240.[WK$ODN_free_goods_contract_number] <> s.ChargebackContractNumber) AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6. [fg].[exempt_supplier_rule] add new'
+
+	INSERT INTO [fg].[exempt_supplier_rule]
+	(
+		[ChargebackContractNumber]
+		,[Supplier]
+		,[VPA]
+		,[fg_exempt_cd_target]
+		,[rule_name_txt]
+		,[active_ind]
+		,[sequence_num]
+		,[signoff_note_txt]
+	)
+	SELECT DISTINCT 
+		[WK$ODN_free_goods_contract_number]
+		,WK$SPC_supplier_code
+		,VPA
+		,'XXXCBM' AS [fg_exempt_cd_target]
+		,'.' AS [rule_name_txt]
+		,0 AS [active_ind]
+		,0 AS [sequence_num]
+		,'.' AS [signoff_note_txt]
+	FROM
+		fg.transaction_F5554240 s
+	WHERE 
+		(CalMonthRedeem = 202109) AND
+		(NOT EXISTS (
+			SELECT * 
+			FROM [fg].[exempt_supplier_rule] d 
+			WHERE 
+				s.[WK$ODN_free_goods_contract_number] = d.[ChargebackContractNumber] AND
+				s.WK$SPC_supplier_code = d.[Supplier] AND
+				s.VPA = d.[VPA] 
+		)) AND
+
+--		(CalMonthRedeem = @nCurrentFiscalYearmoNum) AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+
+End
+
 --> exempt logic begin
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '4. BRS_SalesDivision exempt'
+		print '100. BRS_SalesDivision exempt'
 
 	-- ('ZZZDIV','[BRS_SalesDivision]','',1,10,'.')
 	UPDATE
@@ -231,7 +301,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '7. BRS_ItemMPC exempt'
+		print '110. BRS_ItemMPC exempt'
 
 	-- ('XXXMPC','[BRS_ItemMPC]','',1,10,'.')
 	UPDATE
@@ -254,7 +324,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '5. BRS_LineTypeOrder exempt'
+		print '120. BRS_LineTypeOrder exempt'
 
 	-- 	,('ZZZLNT','[BRS_LineTypeOrder]','',1,10,'.')
 	UPDATE
@@ -277,7 +347,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6. BRS_DocType exempt'
+		print '130. BRS_DocType exempt'
 
 	-- 	,('XXXDOC','[BRS_DocType]','',1,10,'.')
 	UPDATE
@@ -301,7 +371,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '8. BRS_ItemSupplier exempt'
+		print '140. BRS_ItemSupplier exempt'
 
 	-- ,('XXXSUP','[BRS_ItemSupplier]','',1,10,'.')
 	UPDATE
@@ -324,7 +394,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '9. BRS_ItemLabel exempt'
+		print '150. BRS_ItemLabel exempt'
 
 	-- 	,('XXXHSB','[BRS_ItemLabel]','',1,10,'.')
 	UPDATE
@@ -347,7 +417,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '10. BRS_CustomerVPA exempt'
+		print '160. BRS_CustomerVPA exempt'
 
 	-- ,('XXXVPA','[BRS_CustomerVPA]','',1,10,'.')
 	UPDATE
@@ -370,7 +440,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '11. BRS_CustomerSpecialty exempt'
+		print '170. BRS_CustomerSpecialty exempt'
 
 	-- ,('XXXSPC','[BRS_CustomerSpecialty]','',1,10,'.')
 	UPDATE
@@ -393,7 +463,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '12. BRS_Promotion exempt'
+		print '180. BRS_Promotion exempt'
 
 	-- ,('XXXPRO','[BRS_Promotion]','',1,10,'.')
 	UPDATE
@@ -416,19 +486,21 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '13. Chargeback Multi exempt'
+		print '190. Chargeback Multi exempt'
 
 	-- ,('XXXCBM','Chargeback Multi [fg].[exempt_supplier_rule]','',1,10,'.')
 	UPDATE
 		fg.transaction_F5554240
 	SET
 		fg_exempt_cd = 'XXXCBM'
+		,[exempt_supplier_rule_key] = s.[exempt_supplier_rule_key]
 	FROM
 		fg.transaction_F5554240
 		INNER JOIN [fg].[exempt_supplier_rule] AS s 
-		ON fg.transaction_F5554240.WK$SPC_supplier_code LIKE s.Supplier_WhereClauseLike AND
-			fg.transaction_F5554240.VPA LIKE s.VPA_WhereClauseLike AND
-			fg.transaction_F5554240.Specialty LIKE s.Specialty_WhereClauseLike AND
+		ON 
+			(fg.transaction_F5554240.[WK$ODN_free_goods_contract_number] = s.[ChargebackContractNumber]) AND
+			(fg.transaction_F5554240.WK$SPC_supplier_code = s.Supplier) AND
+			(fg.transaction_F5554240.VPA LIKE s.VPA) AND
 			(1=1)
 	WHERE
 		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
@@ -442,20 +514,72 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '14. Chargeback VPA Supplier TBD'
+		print '200. Correct Costs, JDE extract'
 
--- TBD
---	,('XXXCBV','Chargeback VPA [fg].[exempt_supplier_rule]','',1,10,'.')
---	,('XXXCBS','Chargeback Supplier [fg].[exempt_supplier_rule]','',1,10,'.')
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		[WKUNCS_unit_cost] = [SupplierCost]
+		,[WKECST_extended_cost] = [SupplierCost] * [WKUORG_quantity]
+		,[WKCRCD_currency_code] = [Currency]
+		,PriceKey = s.PriceKey
+
+		,[WKUNCS_unit_cost_org] = [WKUNCS_unit_cost]
+		,[WKECST_extended_cost_org] = [WKECST_extended_cost]
+		,[WKCRCD_currency_code_org] = [WKCRCD_currency_code]
+
+	-- SELECT [WKLITM_item_number], [CalMonthOrder], [CalMonth], [WKUORG_quantity], [WKECST_extended_cost], [WKUNCS_unit_cost], [SupplierCost], [WKCRCD_currency_code], [Currency], [CorporatePrice], s.PriceKey
+	FROM
+		fg.transaction_F5554240
+		INNER JOIN [fg].[item_cost_extract] AS s 
+		ON 
+			(fg.transaction_F5554240.[WKLITM_item_number] = s.[Item]) AND
+			(1=1)
+	WHERE
+--		(fg.transaction_F5554240.CalMonthRedeem) = 202110 AND
+--		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
+		(abs(fg.transaction_F5554240.[WKUNCS_unit_cost] - [SupplierCost]) > 0.01 OR [WKCRCD_currency_code] <> [Currency]) AND
+		([WKUNCS_unit_cost_org] IS NULL) AND
+		(1=1)
 
 		Set @nErrorCode = @@Error
-
 End
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '15. Auto adds'
+		print '205. Correct Costs, manual overrides'
+
+	UPDATE
+		fg.transaction_F5554240
+	SET
+		[WKUNCS_unit_cost] = s.[unit_cost]
+		,[WKECST_extended_cost] = s.[unit_cost] * [WKUORG_quantity]
+		,[WKCRCD_currency_code] = s.[currency_code]
+		,[item_cost_extract_override_key] = s.[item_cost_extract_override_key]
+
+
+	-- SELECT fg.transaction_F5554240.[WKUNCS_unit_cost] , s.*
+	FROM
+		fg.transaction_F5554240
+		INNER JOIN [fg].[item_cost_extract_override] AS s 
+		ON 
+			(fg.transaction_F5554240.[WKLITM_item_number] = s.[Item]) AND
+			([CalMonthRedeem] =  s.[calmonth]) AND
+			(1=1)
+	WHERE
+		(fg.transaction_F5554240.CalMonthRedeem) = 202110 AND
+--		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
+		(abs(fg.transaction_F5554240.[WKUNCS_unit_cost] - [unit_cost]) > 0.01 OR [WKCRCD_currency_code] <> s.[currency_code]) AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '210. Auto adds'
 
 	-- Auto adds WKDSC2_pricing_adjustment_line
 	UPDATE

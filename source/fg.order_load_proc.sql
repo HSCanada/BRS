@@ -346,7 +346,7 @@ Begin
 		,[WK$HGS_status_code_high]
 		,ISNULL([WKFRGD_from_grade],'')
 		,ISNULL([WKTHGD_thru_grade],'')
-		,[WKDL01_promo_description]
+		,ISNULL([WKDL01_promo_description],'')
 		,[status_code]
 		,[order_file_name]
 		,[line_id]

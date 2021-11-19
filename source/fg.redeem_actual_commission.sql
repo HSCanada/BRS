@@ -39,7 +39,7 @@ SELECT
 	,tt.WKLNNO_line_number AS [LineNumber]
 	,conf.PriorFiscalMonth AS CalMonthRedeem
 	,t.[FiscalMonth] AS [CalMonth]
-	,tt.fg_exempt_cd
+	,tt.fg_exempt_cd AS fg_exempt_cd
 	,t.SourceCode as src
 	,tt.fg_offer_id
 	,tt.fg_offer_note
@@ -125,7 +125,7 @@ GO
 
 
 --SELECT TOP 100 * FROM fg.redeem_working
-SELECT * FROM fg.redeem_actual_commission WHERE SalesOrderNumber = 14459975
+-- SELECT * FROM fg.redeem_actual_commission WHERE SalesOrderNumber = 14459975
 
-SELECT * FROM fg.redeem_actual_commission WHERE r
+SELECT * FROM fg.redeem_actual_commission WHERE ID_source_ref is null
 
