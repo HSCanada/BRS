@@ -32,6 +32,7 @@ AS
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
 Declare @sMessage varchar(255)
+Declare @dtDate date
 
 Set @nErrorCode = @@Error
 Set @nTranCount = @@Trancount
@@ -514,7 +515,38 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '200. Correct Costs, JDE extract'
+		print '200. set cost extact date default, JDE extract'
+
+	SELECT
+		@dtDate = MAX(s.SalesDate)
+	FROM
+		BRS_Config AS c 
+		INNER JOIN BRS_SalesDay AS d 
+		ON c.PriorFiscalMonth = d.CalMonth 
+			
+		INNER JOIN BRS_ItemBaseHistoryDayLNK AS s 
+		ON d.SalesDate = s.SalesDate
+	GROUP BY 
+		d.FiscalMonth
+
+	UPDATE
+		BRS_FiscalMonth
+	SET
+		fg_cost_date = @dtDate
+	WHERE
+		(FiscalMonth = @nCurrentFiscalYearmoNum) AND
+		-- update if not set manully
+		(fg_cost_date) is null AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '201. Correct Costs, JDE extract'
 
 	UPDATE
 		fg.transaction_F5554240
@@ -537,7 +569,7 @@ Begin
 			(1=1)
 	WHERE
 --		(fg.transaction_F5554240.CalMonthRedeem) = 202110 AND
---		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
+		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
 		(abs(fg.transaction_F5554240.[WKUNCS_unit_cost] - [SupplierCost]) > 0.01 OR [WKCRCD_currency_code] <> [Currency]) AND
 		([WKUNCS_unit_cost_org] IS NULL) AND
 		(1=1)
@@ -568,8 +600,8 @@ Begin
 			([CalMonthRedeem] =  s.[calmonth]) AND
 			(1=1)
 	WHERE
-		(fg.transaction_F5554240.CalMonthRedeem) = 202110 AND
---		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
+--		(fg.transaction_F5554240.CalMonthRedeem) = 202110 AND
+		(fg.transaction_F5554240.CalMonthRedeem) = @nCurrentFiscalYearmoNum AND
 		(abs(fg.transaction_F5554240.[WKUNCS_unit_cost] - [unit_cost]) > 0.01 OR [WKCRCD_currency_code] <> s.[currency_code]) AND
 		(1=1)
 

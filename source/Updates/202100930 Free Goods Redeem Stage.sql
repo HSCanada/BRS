@@ -1327,3 +1327,28 @@ GO
 ALTER TABLE fg.item_cost_extract_override SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
+SELECT        MAX(s.SalesDate) AS Expr1
+FROM            BRS_Config AS c INNER JOIN
+                         BRS_SalesDay AS d ON c.PriorFiscalMonth = d.CalMonth INNER JOIN
+                         BRS_ItemBaseHistoryDayLNK AS s ON d.SalesDate = s.SalesDate
+GROUP BY 
+d.FiscalMonth
+
+UPDATE       BRS_FiscalMonth
+SET                fg_cost_date =  0
+FROM
+BRS_FiscalMonth dd
+INNER JOIN
+(
+	SELECT        d.FiscalMonth, MAX(s.SalesDate) AS Expr1
+	FROM            BRS_Config AS c INNER JOIN
+							 BRS_SalesDay AS d ON c.PriorFiscalMonth = d.CalMonth INNER JOIN
+							 BRS_ItemBaseHistoryDayLNK AS s ON d.SalesDate = s.SalesDate
+	GROUP BY 
+	d.FiscalMonth
+) ss
+ON dd.FiscalMonth = ss.FiscalMonth
+
+
