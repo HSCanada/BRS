@@ -8,6 +8,7 @@ Begin OutputColumns
     Expression ="BRS_FiscalMonth.FiscalMonth"
     Expression ="BRS_FiscalMonth.me_status_cd"
     Expression ="BRS_FiscalMonth.fg_status_cd"
+    Expression ="BRS_FiscalMonth.fg_cost_date"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -31,17 +32,23 @@ Begin
         dbText "Name" ="BRS_FiscalMonth.FiscalMonth"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_FiscalMonth.fg_cost_date"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1605"
+        dbBoolean "ColumnHidden" ="0"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1586
+    Right =1489
     Bottom =918
     Left =-1
     Top =-1
-    Right =1300
-    Bottom =605
+    Right =1473
+    Bottom =472
     Left =0
     Top =0
     ColumnsShown =539

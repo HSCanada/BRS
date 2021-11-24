@@ -61,7 +61,8 @@ FROM
 	[Pricing].[order_header_note_F5503] ord
 where
 	-- 9898 is external note
-	[Q3INMG_print_message] in ('9999', 'FULL80') AND
+	[Q3INMG_print_message] in ('9999', 'FULL80', '9898') AND
+--	[Q3INMG_print_message] in ('9898') AND
 	(1=1)
 
 GO
@@ -71,7 +72,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+-- SELECT distinct [Q3INMG_print_message] FROM [Pricing].[order_header_note_F5503] 
+-- SELECT top 1000 * FROM Dimension.Salesorder_note where DocType like 'S%' order by 3 desc 
 
--- SELECT top 1000 * FROM Dimension.Salesorder_note order by OrderDate asc where   SalesOrderNumber= 12997658
 
---  where [Q3DOCO_salesorder_number] = 1181905 or 1178540

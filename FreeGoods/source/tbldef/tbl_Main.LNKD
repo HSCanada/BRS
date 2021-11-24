@@ -1,4 +1,0 @@
-﻿tbl_Main
-ODBC;DSN=Redemptions;Description=Redemptions;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=Redemptions;Network=DBMSSOCN
-dbo.tbl_Main
-RecID

@@ -53,6 +53,7 @@ AS
 --	19 Aug 21	tmc		Add comm_group_legacy_cd to help with change analysis
 --	29 Sep 21	tmc		Add FamilySet code for analysis
 --	25 Oct 21	tmc		Add Rebate Exclude for analysis
+--	21 Nov 21	tmc		Add 2 model params for thrive analysis
 **    
 *******************************************************************************/
 
@@ -167,6 +168,8 @@ SELECT
 
 	,i.FamilySetLeader				AS FamilySetCode
 	,mpc.rebate_exclude_ind				AS RebateExcludeInd
+	,CASE WHEN i.adhoc_model_code <> '' THEN i.adhoc_model_code ELSE 'Other' END adhoc_model_code
+	,CASE WHEN i.adhoc_model_code2 <> '' THEN i.adhoc_model_code2 ELSE 'Other' END adhoc_model_code2
 
 
 FROM            

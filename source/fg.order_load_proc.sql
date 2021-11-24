@@ -155,8 +155,9 @@ Begin
 		Integration.F5554240_fg_redeem_Staging
 		INNER JOIN
 			(
+			-->
 			SELECT
-				WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, ID,
+				WKDOCO_salesorder_number, [WKDCTO_order_type], WKLITM_item_number, line_id, [WKDATE_order_date_text], [WKUORG_quantity], ID,
 				row_number() over(PARTITION BY WKDOCO_salesorder_number, WKLITM_item_number order by ID) rno_dst2
 			FROM
 				Integration.F5554240_fg_redeem_Staging 
@@ -166,21 +167,33 @@ Begin
 				([WKLNTY_line_type] NOT IN ('M2', 'MS')) AND
 				-- by definition, no adjustments or NON free goods included (ensure stage and DW match)
 				-- test
+--				(WKDOCO_salesorder_number in(14485298)) AND (WKLITM_item_number in('7720768')) AND
 				--(WKDOCO_salesorder_number in(14492625)) AND (WKLITM_item_number in('3783903')) AND
 				--(WKDOCO_salesorder_number in(14498659)) AND (WKLITM_item_number in('5874352')) AND
 				(1=1)
+			--<
 			) d
 			ON Integration.F5554240_fg_redeem_Staging.ID = d.ID
 
 			INNER JOIN 
 			(
+			-->
 			SELECT
-				[SalesOrderNumber], [DocType], [item], [LineNumber], ID,
+				[SalesOrderNumber], [DocType], [item], [LineNumber], [Date], [ShippedQty], ID,
 				row_number() over(PARTITION BY [SalesOrderNumber], [item] order by ID) rno_src2
 			FROM
 				[dbo].[BRS_TransactionDW]
 			WHERE 
 				EXISTS (SELECT * FROM Integration.F5554240_fg_redeem_Staging WHERE [SalesOrderNumber] = WKDOCO_salesorder_number) AND
+				-- exclude previously loaded lines (allow backorders to be loaded)
+				NOT EXISTS (
+					SELECT * FROM [fg].[transaction_F5554240] dd 
+					WHERE dd.[WKDOCO_salesorder_number] = [dbo].[BRS_TransactionDW].[SalesOrderNumber] AND 
+						dd.[WKLITM_item_number] = [item] AND
+						dd.ID_source_ref = [dbo].[BRS_TransactionDW].[ID] AND
+						1=1
+				) AND
+
 				-- no internal
 				([SalesDivision]<>'AZA') AND
 				-- no adjustments
@@ -189,9 +202,11 @@ Begin
 		--		([ShippedQty] <> 0) AND
 				([NetSalesAmt] = 0) AND
 				-- test
+--				(SalesOrderNumber in(14485298)) AND (item in ('7720768')) AND
 				--(SalesOrderNumber in(14492625)) AND (item in ('3783903')) AND
 				--(SalesOrderNumber in(14498659)) AND (item in ('5874352')) AND
 				(1=1)
+			--<
 			) s
 			ON d.WKDOCO_salesorder_number = s.[SalesOrderNumber] AND
 				d.[WKDCTO_order_type] = s.[DocType] AND
@@ -200,20 +215,8 @@ Begin
 				(1=1)
 		WHERE
 			-- test
-			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14492625)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in ('3783903')) AND
-			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14498659)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in('5874352')) AND
 			--(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
 			(1=1)
-
-			/*			
-			-- test
-			SELECT * FROM Integration.F5554240_fg_redeem_Staging  
-			WHERE 
-				WKLNNO_line_number is null AND
-				([WKAC10_division_code]<>'AZA') AND
-				([WKLNTY_line_type] NOT IN ('M2', 'MS')) AND
-				(1=1)
-			*/
 
 
 	Set @nErrorCode = @@Error
@@ -368,6 +371,21 @@ Begin
 		print 'Integration.F5554240_fg_redeem_Staging - clear'
 
 	DELETE FROM [Integration].[F5554240_fg_redeem_Staging] where [status_code] in(0, 5)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print 'Integration.F5554240_fg_redeem_Staging - clear test'
+
+	SELECT @nRowCount = count(*) FROM [Integration].[F5554240_fg_redeem_Staging]
+	if (@bDebug <> 0 AND @nRowCount > 0)
+	Begin
+		print 'FALED: non zero rows =' + @nRowCount
+		Set @nErrorCode = 512
+	end
 
 	Set @nErrorCode = @@Error
 End

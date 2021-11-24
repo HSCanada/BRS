@@ -56,10 +56,6 @@ dbBoolean "TotalsRow" ="0"
 dbMemo "OrderBy" ="[t sm model].[SumOfExtChargebackAmt] DESC"
 Begin
     Begin
-        dbText "Name" ="BRS_Customer.MarketClass_New"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="SumOfGPAtFileCostAmt"
         dbLong "AggregateType" ="-1"
         dbInteger "ColumnWidth" ="2655"
@@ -72,39 +68,11 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="BRS_TransactionDW.FreeGoodsInvoicedInd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_TransactionDW.CalMonth"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_Item.SalesCategory"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_Customer.SalesDivision"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_TransactionDW.GPAtFileCostAmt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_TransactionDW.ExtChargebackAmt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="BRS_Item.Supplier"
         dbLong "AggregateType" ="-1"
     End
     Begin
         dbText "Name" ="BRS_Customer.VPA"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -120,12 +88,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1782
+    Right =1489
     Bottom =918
     Left =-1
     Top =-1
-    Right =1496
-    Bottom =673
+    Right =1473
+    Bottom =656
     Left =0
     Top =0
     ColumnsShown =543

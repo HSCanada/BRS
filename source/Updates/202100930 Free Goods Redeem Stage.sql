@@ -354,6 +354,15 @@ COMMIT
 
 BEGIN TRANSACTION
 GO
+ALTER TABLE fg.exempt_code ADD
+	show_ind bit NOT NULL CONSTRAINT DF_exempt_code_show_ind DEFAULT 1
+GO
+ALTER TABLE fg.exempt_code SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
 ALTER TABLE Integration.F5554240_fg_redeem_Staging ADD CONSTRAINT
 	FK_F5554240_fg_redeem_Staging_exempt_code FOREIGN KEY
 	(
@@ -519,6 +528,27 @@ CREATE TABLE [fg].[transaction_F5554240](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
 ) ON [USERDATA]
 GO
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	fg_redeem_ind bit NULL
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD
+	ExtFileCostCadAmt money NULL
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
 
 -- fg RI
 
@@ -1050,7 +1080,7 @@ SELECT
 FROM [comm].[freegoods]
 where
 	[SourceCode] = 'ACT' AND
-	[FiscalMonth] between 202107 and 202110 AND
+	[FiscalMonth] between 202101 and 202110 AND
 	(1=1)
 GO
 
@@ -1351,4 +1381,280 @@ INNER JOIN
 ) ss
 ON dd.FiscalMonth = ss.FiscalMonth
 
+
+--
+-- drop TABLE [Integration].[F5554240_fg_redeem_finalize_Staging]
+CREATE TABLE [Integration].[F5554240_fg_redeem_finalize_Staging](
+	-- PK must match fg.transaction_F555115!ID
+	[ID] [int] NOT NULL,
+
+	-- check
+	[CalMonthRedeem] [int] NOT NULL,
+	[WK$SPC_supplier_code] [char](6) NOT NULL,
+	[WKDOCO_salesorder_number] [int] NOT NULL,
+	[WKSHAN_shipto] [int] NOT NULL,
+	[WKLITM_item_number] [char](10) NOT NULL,
+
+	-- update primary
+	[fg_redeem_ind] [char](1) NOT NULL,
+	[fg_offer_id] [int] NOT NULL,
+	[fg_exempt_cd] [char](6) NOT NULL,
+	[fg_offer_note] [varchar](30) NOT NULL,
+	[OriginalSalesOrderNumber] [int] NOT NULL ,
+
+	-- update secondary
+	[WKECST_extended_cost] [money] NULL ,
+	[WKCRCD_currency_code] [char](3) NULL,
+
+	[status_code] [smallint] NOT NULL Default(-1),
+
+ CONSTRAINT [Integration_F5554240_fg_redeem_finalize_Staging_pk] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+--
+/****** Object:  Table [fg].[order_test]    Script Date: 2021/11/23 1:14:30 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[order_test]') AND type in (N'U'))
+DROP TABLE [fg].[order_test]
+GO
+
+/****** Object:  Table [fg].[order_test_detail]    Script Date: 2021/11/23 1:57:23 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[order_test_detail]') AND type in (N'U'))
+DROP TABLE [fg].[order_test_detail]
+GO
+
+/****** Object:  Table [fg].[offer_detail]    Script Date: 2021/11/23 1:59:33 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer_detail]') AND type in (N'U'))
+DROP TABLE [fg].[offer_detail]
+GO
+
+-- XXX, fix RI first
+/****** Object:  Table [fg].[offer]    Script Date: 2021/11/23 2:00:14 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer]') AND type in (N'U'))
+DROP TABLE [fg].[offer]
+GO
+
+--
+-- drop TABLE [fg].[deal]
+CREATE TABLE [fg].[deal](
+	[deal_id] [int] NOT NULL
+	,[SalesDivision] [char](3) NOT NULL
+
+	,[Supplier] [char](6) NOT NULL
+
+	,buy_txt [varchar](50) NOT NULL default('.')
+	,get_txt [varchar](50) NOT NULL default('.')
+	,deal_txt [varchar](50) NOT NULL default('.')
+	,[deal_type_cd] [char](6) NOT NULL Default ('')
+	,buy_qty [smallint] NOT NULL default(0)
+	,get_qty [smallint] NOT NULL default(0)
+
+	,[EffDate] [date] NOT NULL
+	,[Expired] [date] NOT NULL
+	,[auto_add_ind] [bit] NOT NULL 
+	,[active_ind] [bit] NOT NULL default(0)
+
+	,[supplier_nmOrg] [nvarchar](50) NOT NULL
+	,[BuyOrg] [nvarchar](255) NOT NULL
+	,[GetOrg] [nvarchar](255) NOT NULL
+
+	,[RedeemOrg] [nvarchar](1000) NOT NULL
+	,[QuarterOrg] [nvarchar](255) NOT NULL
+	,[SummaryOrg] [nvarchar](255) NOT NULL
+	,[NoteOrg] [ntext] NOT NULL
+
+ CONSTRAINT [fg_deal_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[deal_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [USERDATA] TEXTIMAGE_ON [USERDATA]
+GO
+
+--
+-- drop TABLE [fg].[deal_item]
+CREATE TABLE [fg].[deal_item](
+	-- pk, ensure an item maps to one and only one deal
+	[CalMonthRedeem] [int] NOT NULL
+	,[item] [char](10) NOT NULL
+
+	,[deal_id] [int] NOT NULL
+	-- historical family set, used to consolidate orders for deals
+	,[FamilySetLeader] [char](10) NOT NULL
+
+	-- track imported vs LEARNED codes
+	,[deal_source_cd] [char](6) NOT NULL Default ('')
+
+	-- assume codes are all buy / get interchangable.  Mix and Max handled manually
+	,buy_ind [bit] NOT NULL default (1)
+	,get_ind [bit] NOT NULL default (1)
+	,get_default_ind [bit] NOT NULL default(0)
+	,active_ind [bit] NOT NULL default(1)
+
+	,note_txt varchar(50) NULL
+	,create_dt [date] NOT NULL default (getdate())
+	,ID [int] NOT NULL identity(1,1)
+
+ CONSTRAINT [fg_deal_item_c_pk] PRIMARY KEY CLUSTERED 
+(
+	[CalMonthRedeem] ASC
+	,[item] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [USERDATA]
+) ON [USERDATA]
+GO
+
+-- add default / na deal
+INSERT INTO [fg].[deal]
+           ([deal_id]
+           ,[SalesDivision]
+           ,[Supplier]
+           ,[buy_txt]
+           ,[get_txt]
+           ,[deal_txt]
+           ,[deal_type_cd]
+           ,[buy_qty]
+           ,[get_qty]
+           ,[EffDate]
+           ,[Expired]
+           ,[auto_add_ind]
+           ,[active_ind]
+           ,[supplier_nmOrg]
+           ,[BuyOrg]
+           ,[GetOrg]
+           ,[RedeemOrg]
+           ,[QuarterOrg]
+           ,[SummaryOrg]
+           ,[NoteOrg])
+     VALUES
+           (0
+           ,''
+           ,''
+           ,''
+           ,''
+           ,'na'
+           ,''
+           ,''
+           ,''
+           ,'1980-01-01'
+           ,'1980-01-01'
+           ,0
+           ,0
+           ,''
+           ,''
+           ,''
+           ,''
+           ,''
+           ,''
+           ,'')
+GO
+
+
+-- deal RI...
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240
+	DROP CONSTRAINT FK_transaction_F5554240_offer
+GO
+ALTER TABLE fg.offer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_deal FOREIGN KEY
+	(
+	fg_offer_id
+	) REFERENCES fg.deal
+	(
+	deal_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- deal RI
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.deal ADD CONSTRAINT
+	FK_deal_BRS_SalesDivision FOREIGN KEY
+	(
+	SalesDivision
+	) REFERENCES dbo.BRS_SalesDivision
+	(
+	SalesDivision
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal ADD CONSTRAINT
+	FK_deal_BRS_ItemSupplier FOREIGN KEY
+	(
+	Supplier
+	) REFERENCES dbo.BRS_ItemSupplier
+	(
+	Supplier
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.deal_item ADD CONSTRAINT
+	FK_deal_item_BRS_CalMonth FOREIGN KEY
+	(
+	CalMonthRedeem
+	) REFERENCES dbo.BRS_CalMonth
+	(
+	CalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal_item ADD CONSTRAINT
+	FK_deal_item_BRS_Item FOREIGN KEY
+	(
+	item
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal_item ADD CONSTRAINT
+	FK_deal_item_deal FOREIGN KEY
+	(
+	deal_id
+	) REFERENCES fg.deal
+	(
+	deal_id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal_item ADD CONSTRAINT
+	FK_deal_item_BRS_Item1 FOREIGN KEY
+	(
+	FamilySetLeader
+	) REFERENCES dbo.BRS_Item
+	(
+	Item
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE fg.deal_item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 

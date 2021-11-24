@@ -41,6 +41,7 @@ SELECT
 	,t.[CalMonth]
 	,'.' AS fg_exempt_cd
 	, 'BUY' as src
+	,0 as fg_redeem_ind
 	,0 AS fg_offer_id
 	,'.' AS fg_offer_note
 	,t.[Shipto]
@@ -134,7 +135,7 @@ WHERE
 	-- remove restocking
 	-- (t.Item > '0') AND
 	-- test
-	--(t.SalesOrderNumber = 14459975) AND
+	-- (t.SalesOrderNumber = 14651893) AND
 	(1=1)
 
 
@@ -147,13 +148,14 @@ SELECT
 	,WKLNNO_line_number
 	,CalMonthRedeem
 	,CalMonthOrder
-	,fg_exempt_cd
+	,t.fg_exempt_cd
 	, 'GET' as src
+	,ISNULL(fg_redeem_ind,'') as fg_redeem_ind
 	,fg_offer_id
 	,fg_offer_note
 	,WKSHAN_shipto
 	,WKNAME_shipto_name
-	,fsc.Branch
+	,ISNULL(fsc.Branch, '.') Branch
 	,WKLITM_item_number
 	,WKDSC1_description
 	,WKUORG_quantity
@@ -197,23 +199,36 @@ FROM
 	[dbo].[BRS_TransactionDW] tt
 	ON t.ID_source_ref = tt.ID
 
-	INNER JOIN [dbo].[BRS_ItemMPC] mpc
+	INNER JOIN 
+	[dbo].[BRS_ItemMPC] mpc
 	ON t.MajorProductClass = mpc.MajorProductClass
 
-	INNER JOIN [dbo].[BRS_CustomerFSC_History] ch
+	LEFT JOIN 
+--	INNER JOIN 
+	[dbo].[BRS_CustomerFSC_History] ch
 	ON t.WKSHAN_shipto = ch.[Shipto] AND
 	t.CalMonthRedeem = ch.FiscalMonth
 
-	INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
+	LEFT JOIN 
+--	INNER JOIN 
+	[dbo].[BRS_FSC_Rollup] fsc
 	ON ch.HIST_TerritoryCd = fsc.TerritoryCd
 
-	INNER JOIN [dbo].[BRS_Item] i
+	INNER JOIN 
+	[dbo].[BRS_Item] i
 	ON t.WKLITM_item_number = i.Item
+
+--	LEFT JOIN 
+	INNER JOIN 
+	[fg].[exempt_code] ex
+	ON t.fg_exempt_cd = ex.fg_exempt_cd
 
 WHERE
 	(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
+	(ex.show_ind = 1) AND
+
 	-- test
-	--(t.WKDOCO_salesorder_number = 14459975) AND
+	--(t.WKDOCO_salesorder_number = 14652012) AND
 	(1=1)
 
 

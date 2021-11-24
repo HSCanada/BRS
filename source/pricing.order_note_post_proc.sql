@@ -97,7 +97,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '1. add notes'
+		print '2. add notes'
 
 	INSERT INTO Pricing.order_header_note_F5503 (
 		Q3KCOO_order_number_document_company,
