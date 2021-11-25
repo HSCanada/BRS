@@ -1,5 +1,6 @@
 ﻿Operation =1
 Option =0
+Where ="(((fg_redeem_working.Item)>\"0\"))"
 Begin InputTables
     Name ="fg_redeem_working"
     Name ="fg_deal"
@@ -13,18 +14,18 @@ Begin OutputColumns
     Expression ="fg_redeem_working.SalesOrderNumber"
     Alias ="Date"
     Expression ="fg_redeem_working.OrderFirstShipDate"
-    Alias ="OrderDeal"
+    Alias ="OrdDeal"
     Expression ="fg_redeem_working.OriginalSalesOrderNumber"
     Alias ="FS"
     Expression ="fg_redeem_working.FamilySetLeader"
     Alias ="Item"
     Expression ="Trim([fg_redeem_working]![Item]) & \" | \" & [ItemDescription]"
-    Alias ="fg_src"
+    Alias ="buyget"
     Expression ="fg_redeem_working.src"
     Alias ="Qty"
     Expression ="fg_redeem_working.ShippedQty"
-    Expression ="fg_redeem_working.fg_redeem_ind"
-    Expression ="fg_redeem_working.fg_offer_id"
+    Alias ="claim?"
+    Expression ="IIf([src]=\"GET\",IIf([fg_redeem_ind],\"Y\",\"no\"),\".\")"
     Expression ="fg_deal.deal_id"
     Expression ="fg_redeem_working.fg_exempt_cd"
     Alias ="fg_note"
@@ -34,7 +35,8 @@ Begin OutputColumns
     Alias ="deal_get"
     Expression ="Left([GetOrg],30)"
     Alias ="deal_txt"
-    Expression ="Left([QuarterOrg],30)"
+    Expression ="IIf([fg_deal]![deal_id],Left([fg_deal]![deal_txt],30) & IIf([auto_add_ind],\" (A"
+        "A)\",\" (MM)\"),\".\")"
     Expression ="fg_redeem_working.PromotionDescription"
     Expression ="fg_redeem_working.Branch"
     Expression ="fg_redeem_working.ID"
@@ -64,6 +66,8 @@ Begin OutputColumns
     Expression ="fg_redeem_working.status_code_high"
     Expression ="fg_redeem_working.ChargebackContractNumber"
     Expression ="fg_redeem_working.PricingAdjustmentLine"
+    Expression ="fg_redeem_working.CreditMinorReasonCode"
+    Expression ="fg_redeem_working.CreditTypeCode"
 End
 Begin Joins
     LeftTable ="fg_deal"
@@ -180,6 +184,8 @@ Begin
     Begin
         dbText "Name" ="fg_redeem_working.Supplier"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1200"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.InvoiceNumber"
@@ -239,12 +245,8 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="fg_src"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="fg_note"
-        dbInteger "ColumnWidth" ="1470"
+        dbInteger "ColumnWidth" ="2385"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -261,12 +263,6 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="fg_redeem_working.fg_redeem_ind"
-        dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1845"
-        dbBoolean "ColumnHidden" ="0"
-    End
-    Begin
         dbText "Name" ="deal_get"
         dbInteger "ColumnWidth" ="2850"
         dbBoolean "ColumnHidden" ="0"
@@ -275,7 +271,7 @@ Begin
     Begin
         dbText "Name" ="deal_txt"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1770"
+        dbInteger "ColumnWidth" ="3615"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -287,11 +283,63 @@ Begin
     Begin
         dbText "Name" ="fg_deal.deal_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1110"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.fg_exempt_cd"
-        dbInteger "ColumnWidth" ="1155"
+        dbInteger "ColumnWidth" ="1740"
         dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_redeem_working.CreditTypeCode"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_redeem_working.CreditMinorReasonCode"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="buyget"
+        dbInteger "ColumnWidth" ="960"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="OrdDeal"
+        dbInteger "ColumnWidth" ="1185"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_deal.[deal_id]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="claim?"
+        dbInteger "ColumnWidth" ="1530"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="claim_yn"
+        dbInteger "ColumnWidth" ="1845"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_deal_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_redeem_working.fg_redeem_ind"
+        dbInteger "ColumnWidth" ="1845"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_deal.SalesDivision"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -301,7 +349,35 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
+        dbText "Name" ="SalesDivision"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_claim_yn"
+        dbInteger "ColumnWidth" ="1530"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
         dbText "Name" ="fg_redeem_working.fg_offer_id"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_deal.auto_add_ind"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_src"
+        dbInteger "ColumnWidth" ="960"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_deal.deal_txt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr1"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -309,38 +385,38 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1564
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =357
+    Right =1278
+    Bottom =468
     Left =0
     Top =0
     ColumnsShown =539
     Begin
-        Left =-11
-        Top =-14
-        Right =461
-        Bottom =561
+        Left =166
+        Top =-3
+        Right =638
+        Bottom =572
         Top =0
         Name ="fg_redeem_working"
         Name =""
     End
     Begin
-        Left =829
-        Top =18
-        Right =973
-        Bottom =162
+        Left =958
+        Top =36
+        Right =1249
+        Bottom =432
         Top =0
         Name ="fg_deal"
         Name =""
     End
     Begin
-        Left =610
-        Top =95
-        Right =754
-        Bottom =239
+        Left =763
+        Top =105
+        Right =907
+        Bottom =249
         Top =0
         Name ="fg_deal_item"
         Name =""

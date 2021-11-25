@@ -82,6 +82,8 @@ SELECT
 	,i.FamilySetLeader
 	,i.ManufPartNumber
 	,i.SalesCategory
+	,t.CreditMinorReasonCode
+	,t.CreditTypeCode
 FROM
 	[dbo].[BRS_TransactionDW] t
 
@@ -121,6 +123,8 @@ WHERE
 			-- test
 --			(fg_exempt_cd NOT LIKE 'XXX%') AND
 			(t.[SalesOrderNumber] = s.WKDOCO_salesorder_number ) AND
+			-- remove price adj
+			(s.[WKDCTO_order_type] not in ('CO')) AND
 			(1=1)
 	) AND
 	-- exclude get line (added below)
@@ -132,9 +136,9 @@ WHERE
 			(t.ID = s2.ID_source_ref ) AND
 			(1=1)
 	) AND
+	-- manual removes slow
+	--(t.Item > '0') AND
 	-- remove restocking
-	-- (t.Item > '0') AND
-	-- test
 	-- (t.SalesOrderNumber = 14651893) AND
 	(1=1)
 
@@ -191,6 +195,8 @@ SELECT
 	,i.FamilySetLeader AS FamilySetLeader
 	,t.[WKCITM_customersupplier_item_number] ManufPartNumber
 	,i.SalesCategory
+	,tt.CreditMinorReasonCode
+	,tt.CreditTypeCode
 
 FROM
 	fg.transaction_F5554240 t
@@ -226,7 +232,6 @@ FROM
 WHERE
 	(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 	(ex.show_ind = 1) AND
-
 	-- test
 	--(t.WKDOCO_salesorder_number = 14652012) AND
 	(1=1)

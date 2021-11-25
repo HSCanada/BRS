@@ -5,6 +5,9 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="fg_redeem_working.SalesOrderNumber"
+    Expression ="fg_redeem_working.DocType"
+    Alias ="MinOfID_source_ref"
+    Expression ="Min(fg_redeem_working.ID_source_ref)"
     Alias ="buy_cnt"
     Expression ="Sum(IIf([src]=\"BUY\",1,0))"
     Alias ="get_cnt"
@@ -14,6 +17,8 @@ Begin OutputColumns
 End
 Begin Groups
     Expression ="fg_redeem_working.SalesOrderNumber"
+    GroupLevel =0
+    Expression ="fg_redeem_working.DocType"
     GroupLevel =0
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -27,10 +32,6 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="fg_redeem_working.src"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="fg_redeem_working.SalesOrderNumber"
         dbLong "AggregateType" ="-1"
     End
@@ -43,19 +44,15 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="buy_count"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="SumOffg_redeem_ind"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_redeem_working.fg_redeem_ind"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="redeem_cnt"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_redeem_working.DocType"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="MinOfID_source_ref"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -63,12 +60,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1564
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =639
+    Right =1548
+    Bottom =605
     Left =0
     Top =0
     ColumnsShown =543

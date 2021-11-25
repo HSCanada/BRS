@@ -11,9 +11,8 @@ Begin OutputColumns
     Expression ="Redemptions_tbl_Main.RecID"
     Name ="SalesDivision"
     Expression ="Redemptions_tbl_Main.Div"
-    Alias ="Expr1"
     Name ="Supplier"
-    Expression ="\"\""
+    Expression ="Redemptions_tbl_Main.VendorID"
     Name ="supplier_nmOrg"
     Expression ="Redemptions_tbl_Main.VendorName"
     Name ="BuyOrg"
@@ -24,9 +23,8 @@ Begin OutputColumns
     Expression ="Redemptions_tbl_Main.Redeem"
     Name ="QuarterOrg"
     Expression ="Redemptions_tbl_Main.Quarter"
-    Alias ="Expr3"
-    Name ="SummaryOrg"
-    Expression ="\"\""
+    Name ="deal_txt"
+    Expression ="Redemptions_tbl_Main.SetLeader_Name"
     Name ="NoteOrg"
     Expression ="Redemptions_tbl_Main.Note"
     Name ="EffDate"
@@ -35,7 +33,7 @@ Begin OutputColumns
     Expression ="Redemptions_tbl_Main.Expired"
     Alias ="Expr2"
     Name ="auto_add_ind"
-    Expression ="0"
+    Expression ="Redemptions_tbl_Main.AutoAdd"
 End
 Begin Joins
     LeftTable ="Redemptions_tbl_Main"
@@ -108,17 +106,29 @@ Begin
         dbText "Name" ="fg_deal.deal_id"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Redemptions_tbl_Main.VendorID"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Redemptions_tbl_Main.AutoAdd"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Redemptions_tbl_Main.SetLeader_Name"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1564
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =639
+    Right =1548
+    Bottom =605
     Left =0
     Top =0
     ColumnsShown =651
@@ -134,8 +144,8 @@ Begin
     Begin
         Left =689
         Top =165
-        Right =833
-        Bottom =309
+        Right =966
+        Bottom =592
         Top =0
         Name ="fg_deal"
         Name =""

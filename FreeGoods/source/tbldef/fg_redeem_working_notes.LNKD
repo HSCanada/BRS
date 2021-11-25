@@ -1,4 +1,4 @@
 ﻿fg_redeem_working_notes
 ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
 fg.redeem_working_notes
-SalesOrderNumber
+SalesOrderNumber;+DocType

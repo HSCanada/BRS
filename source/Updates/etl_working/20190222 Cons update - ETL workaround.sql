@@ -23,9 +23,18 @@ GO
 
 -- 
 INSERT INTO Redemptions_tbl_Main
-                         (RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired)
+	(
+	RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
+	,Setleader
+	,VendorID
+	,SetLeader_Name
+	,AutoAdd
+	)
 SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
-
+	,Setleader
+	,VendorID
+	,SetLeader_Name
+	,AutoAdd
 FROM            
 	Redemptions..tbl_Main
 WHERE        
@@ -39,7 +48,6 @@ GO
 
 INSERT INTO Redemptions_tbl_Items
 	(RecID, ItemNumber, ItemID)
-
 SELECT        
 	(MIN(i.RecID)), ibr.Item, MAX(ibr.ItemKey) AS ItemID
 FROM            
@@ -50,11 +58,9 @@ FROM
 	
 	INNER JOIN BRS_Item AS ibr 
 	ON i.ItemNumber = ibr.Item
-
 WHERE 
 --	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
 	(1=1)
-
 GROUP BY 
 	ibr.Item
 

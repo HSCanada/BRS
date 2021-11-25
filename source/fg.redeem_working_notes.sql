@@ -42,6 +42,8 @@ SELECT
 FROM
 	[Dimension].[Salesorder_note] t
 
+	-- ref DW for extra...
+
 	CROSS JOIN [dbo].[BRS_Config] conf
 
 WHERE
@@ -58,7 +60,7 @@ WHERE
 			(t.[SalesOrderNumber] = s.WKDOCO_salesorder_number ) AND
 			(ex.show_ind = 1) AND
 			-- test
-			-- (s.WKDOCO_salesorder_number = 14502711) AND
+			--(s.WKDOCO_salesorder_number = 14651893) AND
 			(1=1)
 	) AND
 	(1=1)

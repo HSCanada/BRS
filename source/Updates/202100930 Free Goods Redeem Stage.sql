@@ -193,15 +193,32 @@ ALTER TABLE dbo.BRS_CustomerSpecialty ADD
 GO
 COMMIT
 
--- [BRS_TransactionDW_Ext] (3min)
+-- [BRS_TransactionDW_Ext] 
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_TransactionDW_Ext ADD
-	freegoods_exempt_cd smallint NOT NULL CONSTRAINT DF_BRS_TransactionDW_Ext_freegoods_exempt_cd DEFAULT 0
-	,freegoods_exempt_note varchar(50) NULL
+	fg_CalMonthRedeem int NULL
+	,fg_exempt_cd char(6) NULL 
+	,fg_exempt_note varchar(50) NULL
 GO
 COMMIT
 
+
+--
+/*
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP CONSTRAINT DF_BRS_TransactionDW_Ext_freegoods_exempt_cd
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext
+	DROP COLUMN freegoods_exempt_cd, freegoods_exempt_note
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+*/
+--
 -- [BRS_Promotion]
 BEGIN TRANSACTION
 GO
@@ -300,7 +317,7 @@ GO
 
 -- [BRS_TransactionDW_Ext] (3min)
 UPDATE dbo.BRS_TransactionDW_Ext
-	set freegoods_exempt_cd = 1
+	set freegoods_exempt_cd = ''
 WHERE SalesOrderNumber = '-1'
 GO
 
@@ -550,7 +567,39 @@ COMMIT
 
 --
 
--- fg RI
+-- fg RI 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_BRS_CalMonth FOREIGN KEY
+	(
+	fg_CalMonthRedeem
+	) REFERENCES dbo.BRS_CalMonth
+	(
+	CalMonth
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_exempt_code FOREIGN KEY
+	(
+	fg_exempt_cd
+	) REFERENCES fg.exempt_code
+	(
+	fg_exempt_cd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
+--
+
 
 BEGIN TRANSACTION
 GO
@@ -1048,7 +1097,9 @@ ALTER TABLE [comm].[freegoods] SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- set FG ref
+-------------------------------------------------------------------------------
+-- Map Actual FG to DW - BEGIN
+-------------------------------------------------------------------------------
 
 -- clear
 truncate table [Integration].[comm_freegoods_Staging]
@@ -1080,19 +1131,13 @@ SELECT
 FROM [comm].[freegoods]
 where
 	[SourceCode] = 'ACT' AND
-	[FiscalMonth] between 202101 and 202110 AND
+	[FiscalMonth] between 202110 and 202110 AND
 	(1=1)
 GO
 
 -- update target
 -- move this to comm prep proc, TBD
 
-/*
-If (@nErrorCode = 0) 
-Begin
-	if (@bDebug <> 0)
-		print '2. [Integration].[F5554240_fg_redeem_Staging] - set order xref'
-*/
 	-- clear values
 	UPDATE 
 		[Integration].[comm_freegoods_Staging]
@@ -1164,21 +1209,6 @@ Begin
 			--(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
 			(1=1)
 
-			/*			
-			-- test
-			SELECT * FROM Integration.F5554240_fg_redeem_Staging  
-			WHERE 
-				WKLNNO_line_number is null AND
-				([WKAC10_division_code]<>'AZA') AND
-				([WKLNTY_line_type] NOT IN ('M2', 'MS')) AND
-				(1=1)
-			*/
-
-/*
-	Set @nErrorCode = @@Error
-End
-
-*/
 
 -- copy back
 
@@ -1198,6 +1228,10 @@ FROM
 	comm.freegoods.DocType = s.DocType
 WHERE
 	s.WKLNNO_line_number is not null
+
+-------------------------------------------------------------------------------
+-- Map Actual FG to DW - END
+-------------------------------------------------------------------------------
 
 -----------------------------------------------------------------
 -- add chargebacks -- one-time
@@ -1431,7 +1465,7 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer_
 DROP TABLE [fg].[offer_detail]
 GO
 
--- XXX, fix RI first
+-- fix RI first
 /****** Object:  Table [fg].[offer]    Script Date: 2021/11/23 2:00:14 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer]') AND type in (N'U'))
 DROP TABLE [fg].[offer]
@@ -1658,3 +1692,17 @@ ALTER TABLE fg.deal_item SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- fix prior error
+-- UPDATE BRS_TransactionDW_Ext SET freegoods_exempt_cd = ' ' where freegoods_exempt_cd = '0'
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.Redemptions_tbl_Main ADD
+	Setleader nvarchar(50) NULL,
+	VendorID nvarchar(50) NULL,
+	SetLeader_Name nvarchar(255) NULL,
+	AutoAdd bit NULL
+GO
+ALTER TABLE dbo.Redemptions_tbl_Main SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
