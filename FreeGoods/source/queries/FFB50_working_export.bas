@@ -322,64 +322,6 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="claim_yn"
-        dbInteger "ColumnWidth" ="1845"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_deal_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_redeem_working.fg_redeem_ind"
-        dbInteger "ColumnWidth" ="1845"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_deal.SalesDivision"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="OrderDeal"
-        dbInteger "ColumnWidth" ="1275"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="SalesDivision"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_claim_yn"
-        dbInteger "ColumnWidth" ="1530"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_redeem_working.fg_offer_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_deal.auto_add_ind"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_src"
-        dbInteger "ColumnWidth" ="960"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_deal.deal_txt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0

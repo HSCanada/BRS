@@ -317,7 +317,7 @@ GO
 
 -- [BRS_TransactionDW_Ext] (3min)
 UPDATE dbo.BRS_TransactionDW_Ext
-	set freegoods_exempt_cd = ''
+	set fg_exempt_cd = ''
 WHERE SalesOrderNumber = '-1'
 GO
 
@@ -841,6 +841,7 @@ GO
 ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
 -- add after
 BEGIN TRANSACTION
 GO
@@ -873,23 +874,6 @@ ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
---
-BEGIN TRANSACTION
-GO
-ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
-	FK_transaction_F5554240_exempt_supplier_rule FOREIGN KEY
-	(
-	exempt_supplier_rule_key
-	) REFERENCES fg.exempt_supplier_rule
-	(
-	exempt_supplier_rule_key
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
-ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 --
 BEGIN TRANSACTION
@@ -934,7 +918,6 @@ CREATE TABLE [fg].[exempt_supplier_rule](
 ) ON [USERDATA]
 GO
 
---
 BEGIN TRANSACTION
 GO
 ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
@@ -951,18 +934,26 @@ GO
 ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
---
+
+
 BEGIN TRANSACTION
 GO
-CREATE UNIQUE NONCLUSTERED INDEX exempt_supplier_rule_u_idx_02 ON fg.exempt_supplier_rule
+ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
+	FK_transaction_F5554240_exempt_supplier_rule FOREIGN KEY
 	(
 	exempt_supplier_rule_key
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+	) REFERENCES fg.exempt_supplier_rule
+	(
+	exempt_supplier_rule_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
 GO
-ALTER TABLE fg.exempt_supplier_rule SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE fg.transaction_F5554240 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
---
+
+
 BEGIN TRANSACTION
 GO
 ALTER TABLE fg.exempt_supplier_rule ADD CONSTRAINT
@@ -1028,7 +1019,7 @@ INSERT INTO [fg].[exempt_supplier_rule]
            )
 GO
 
-
+/*
 --- TBD, cost fix
 -- build dynamic logic to find last day of month (fg view?)
 SELECT 
@@ -1053,7 +1044,7 @@ FROM
 WHERE
 	m.CalMonth = 202108
 order by 2 asc
-
+*/
 
 -- line commission free goods redeem to DW so that we can complare model with actual via DW 
 
@@ -1097,142 +1088,6 @@ ALTER TABLE [comm].[freegoods] SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--------------------------------------------------------------------------------
--- Map Actual FG to DW - BEGIN
--------------------------------------------------------------------------------
-
--- clear
-truncate table [Integration].[comm_freegoods_Staging]
-GO
-
--- copy target
-INSERT INTO [Integration].[comm_freegoods_Staging]
-(
-	[FiscalMonth]
-	,[SalesOrderNumber]
-	,[DocType]
-	,[original_line_number]
-	,[SourceCode]
-	,[Item]
-	,ShipTo
-	,Supplier
-	,ExtFileCostCadAmt
-)
-SELECT
-	[FiscalMonth]
-	,[SalesOrderNumber]
-	,[DocType]
-	,[original_line_number]
-	,[SourceCode]
-	,[Item]
-	,ShipTo
-	,Supplier
-	,ExtFileCostCadAmt
-FROM [comm].[freegoods]
-where
-	[SourceCode] = 'ACT' AND
-	[FiscalMonth] between 202110 and 202110 AND
-	(1=1)
-GO
-
--- update target
--- move this to comm prep proc, TBD
-
-	-- clear values
-	UPDATE 
-		[Integration].[comm_freegoods_Staging]
-			SET [WKLNNO_line_number] = null
-			, ID_source_ref = null
-
-	-- link free good transactions to [dbo].[STAGE_BRS_TransactionDW]
-	UPDATE 
-		[Integration].[comm_freegoods_Staging]
-	SET 
-		[WKLNNO_line_number] = s.LineNumber
-		,ID_source_ref = s.id
-	--test
-	-- SELECT * 
-	FROM
-		[Integration].[comm_freegoods_Staging]
-		INNER JOIN
-			(
-			SELECT
-				[SalesOrderNumber], [Item], [original_line_number], ID,
-				row_number() over(PARTITION BY [SalesOrderNumber], [Item] order by ID) rno_dst2
-			FROM
-				[Integration].[comm_freegoods_Staging]
-			WHERE
-				-- no internal, not avail
-				--([WKAC10_division_code]<>'AZA') AND
-				--([WKLNTY_line_type] NOT IN ('M2', 'MS')) AND
-				([SourceCode] = 'ACT') AND
-				--
-				-- by definition, no adjustments or NON free goods included (ensure stage and DW match)
-				-- test
-				--(WKDOCO_salesorder_number in(14492625)) AND (WKLITM_item_number in('3783903')) AND
-				--(WKDOCO_salesorder_number in(14498659)) AND (WKLITM_item_number in('5874352')) AND
-				(1=1)
-			) d
-			ON [Integration].[comm_freegoods_Staging].ID = d.ID
-
-			INNER JOIN 
-			(
-			SELECT
-				[SalesOrderNumber], [DocType], [item], [LineNumber], ID,
-				row_number() over(PARTITION BY [SalesOrderNumber], [item] order by ID) rno_src2
-			FROM
-				[dbo].[BRS_TransactionDW]
-			WHERE 
-				EXISTS (SELECT * FROM [Integration].[comm_freegoods_Staging] WHERE [SalesOrderNumber] = [SalesOrderNumber]) AND
-				-- no internal
-				([SalesDivision]<>'AZA') AND
-				-- no adjustments
-				(DocType <> 'AA') AND
-				-- free goods only (relax qty = 0 for price adj, likely be to be ignored downstream
-		--		([ShippedQty] <> 0) AND
-				([NetSalesAmt] = 0) AND
-				-- test
-				--(SalesOrderNumber in(14492625)) AND (item in ('3783903')) AND
-				--(SalesOrderNumber in(14498659)) AND (item in ('5874352')) AND
-				(1=1)
-			) s
-			ON d.[SalesOrderNumber] = s.[SalesOrderNumber] AND
-				-- not avail
-				-- d.[WKDCTO_order_type] = s.[DocType] AND
-				RTRIM(d.[item]) = RTRIM(s.[item]) AND
-				d.rno_dst2 = s.rno_src2 AND
-				(1=1)
-		WHERE
-			-- test
-			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14492625)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in ('3783903')) AND
-			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14498659)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in('5874352')) AND
-			--(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
-			(1=1)
-
-
--- copy back
-
-UPDATE
-	comm.freegoods
-SET
-	WKLNNO_line_number = s.WKLNNO_line_number
-	,ID_source_ref = s.ID_source_ref
---SELECT *
-FROM
-	comm.freegoods
-	INNER JOIN Integration.comm_freegoods_Staging AS s 
-	ON comm.freegoods.FiscalMonth = s.FiscalMonth AND 
-	comm.freegoods.SalesOrderNumber = s.SalesOrderNumber AND 
-	comm.freegoods.original_line_number = s.original_line_number AND 
-	comm.freegoods.SourceCode = s.SourceCode AND 
-	comm.freegoods.DocType = s.DocType
-WHERE
-	s.WKLNNO_line_number is not null
-
--------------------------------------------------------------------------------
--- Map Actual FG to DW - END
--------------------------------------------------------------------------------
-
 -----------------------------------------------------------------
 -- add chargebacks -- one-time
 BEGIN TRANSACTION
@@ -1248,6 +1103,7 @@ ALTER TABLE fg.chargeback SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- 1min
 INSERT INTO [fg].[chargeback]
 (
 [cb_contract_num]
@@ -1392,13 +1248,14 @@ ALTER TABLE fg.item_cost_extract_override SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
-
+/*
 SELECT        MAX(s.SalesDate) AS Expr1
 FROM            BRS_Config AS c INNER JOIN
                          BRS_SalesDay AS d ON c.PriorFiscalMonth = d.CalMonth INNER JOIN
                          BRS_ItemBaseHistoryDayLNK AS s ON d.SalesDate = s.SalesDate
 GROUP BY 
 d.FiscalMonth
+
 
 UPDATE       BRS_FiscalMonth
 SET                fg_cost_date =  0
@@ -1415,6 +1272,7 @@ INNER JOIN
 ) ss
 ON dd.FiscalMonth = ss.FiscalMonth
 
+*/
 
 --
 -- drop TABLE [Integration].[F5554240_fg_redeem_finalize_Staging]
@@ -1465,7 +1323,15 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer_
 DROP TABLE [fg].[offer_detail]
 GO
 
--- fix RI first
+BEGIN TRANSACTION
+GO
+ALTER TABLE fg.transaction_F5554240
+	DROP CONSTRAINT FK_transaction_F5554240_offer
+GO
+ALTER TABLE fg.offer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
 /****** Object:  Table [fg].[offer]    Script Date: 2021/11/23 2:00:14 PM ******/
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[fg].[offer]') AND type in (N'U'))
 DROP TABLE [fg].[offer]
@@ -1588,15 +1454,6 @@ GO
 -- deal RI...
 BEGIN TRANSACTION
 GO
-ALTER TABLE fg.transaction_F5554240
-	DROP CONSTRAINT FK_transaction_F5554240_offer
-GO
-ALTER TABLE fg.offer SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-
-BEGIN TRANSACTION
-GO
 ALTER TABLE fg.transaction_F5554240 ADD CONSTRAINT
 	FK_transaction_F5554240_deal FOREIGN KEY
 	(
@@ -1706,3 +1563,162 @@ GO
 ALTER TABLE dbo.Redemptions_tbl_Main SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
+-------------------------------------------------------------------------------
+-- Map Actual FG to DW - BEGIN 
+-------------------------------------------------------------------------------
+
+-- clear
+truncate table [Integration].[comm_freegoods_Staging]
+GO
+
+-- copy target (set dates)
+INSERT INTO [Integration].[comm_freegoods_Staging]
+(
+	[FiscalMonth]
+	,[SalesOrderNumber]
+	,[DocType]
+	,[original_line_number]
+	,[SourceCode]
+	,[Item]
+	,ShipTo
+	,Supplier
+	,ExtFileCostCadAmt
+)
+SELECT
+	[FiscalMonth]
+	,[SalesOrderNumber]
+	,[DocType]
+	,[original_line_number]
+	,[SourceCode]
+	,[Item]
+	,ShipTo
+	,Supplier
+	,ExtFileCostCadAmt
+FROM [comm].[freegoods]
+where
+	[SourceCode] = 'ACT' AND
+	[FiscalMonth] between 202101 and 202110 AND
+	(1=1)
+GO
+
+
+-- update target
+-- move this to comm prep proc, TBD
+
+	-- clear values
+	UPDATE 
+		[Integration].[comm_freegoods_Staging]
+			SET [WKLNNO_line_number] = null
+			, ID_source_ref = null
+
+	-- link free good transactions to [dbo].[STAGE_BRS_TransactionDW]
+	UPDATE 
+		[Integration].[comm_freegoods_Staging]
+	SET 
+		[WKLNNO_line_number] = s.LineNumber
+		,ID_source_ref = s.id
+	--test
+	-- SELECT * 
+	FROM
+		[Integration].[comm_freegoods_Staging]
+		INNER JOIN
+			(
+			SELECT
+				[SalesOrderNumber], [Item], [original_line_number], ID,
+				row_number() over(PARTITION BY [SalesOrderNumber], [Item] order by ID) rno_dst2
+			FROM
+				[Integration].[comm_freegoods_Staging]
+			WHERE
+				-- no internal, not avail
+				--([WKAC10_division_code]<>'AZA') AND
+				--([WKLNTY_line_type] NOT IN ('M2', 'MS')) AND
+				([SourceCode] = 'ACT') AND
+				--
+				-- by definition, no adjustments or NON free goods included (ensure stage and DW match)
+				-- test
+				--(WKDOCO_salesorder_number in(14492625)) AND (WKLITM_item_number in('3783903')) AND
+				--(WKDOCO_salesorder_number in(14498659)) AND (WKLITM_item_number in('5874352')) AND
+				(1=1)
+			) d
+			ON [Integration].[comm_freegoods_Staging].ID = d.ID
+
+			INNER JOIN 
+			(
+			SELECT
+				[SalesOrderNumber], [DocType], [item], [LineNumber], ID,
+				row_number() over(PARTITION BY [SalesOrderNumber], [item] order by ID) rno_src2
+			FROM
+				[dbo].[BRS_TransactionDW]
+			WHERE 
+				EXISTS (SELECT * FROM [Integration].[comm_freegoods_Staging] WHERE [SalesOrderNumber] = [SalesOrderNumber]) AND
+				-- no internal
+				([SalesDivision]<>'AZA') AND
+				-- no adjustments
+				(DocType <> 'AA') AND
+				-- free goods only (relax qty = 0 for price adj, likely be to be ignored downstream
+		--		([ShippedQty] <> 0) AND
+				([NetSalesAmt] = 0) AND
+				-- test
+				--(SalesOrderNumber in(14492625)) AND (item in ('3783903')) AND
+				--(SalesOrderNumber in(14498659)) AND (item in ('5874352')) AND
+				(1=1)
+			) s
+			ON d.[SalesOrderNumber] = s.[SalesOrderNumber] AND
+				-- not avail
+				-- d.[WKDCTO_order_type] = s.[DocType] AND
+				RTRIM(d.[item]) = RTRIM(s.[item]) AND
+				d.rno_dst2 = s.rno_src2 AND
+				(1=1)
+		WHERE
+			-- test
+			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14492625)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in ('3783903')) AND
+			--(Integration.F5554240_fg_redeem_Staging.WKDOCO_salesorder_number in(14498659)) AND (Integration.F5554240_fg_redeem_Staging.WKLITM_item_number in('5874352')) AND
+			--(Integration.F5554240_fg_redeem_Staging.ID = 4263) AND
+			(1=1)
+
+
+-- copy back
+
+UPDATE
+	comm.freegoods
+SET
+	WKLNNO_line_number = s.WKLNNO_line_number
+	,ID_source_ref = s.ID_source_ref
+--SELECT *
+FROM
+	comm.freegoods
+	INNER JOIN Integration.comm_freegoods_Staging AS s 
+	ON comm.freegoods.FiscalMonth = s.FiscalMonth AND 
+	comm.freegoods.SalesOrderNumber = s.SalesOrderNumber AND 
+	comm.freegoods.original_line_number = s.original_line_number AND 
+	comm.freegoods.SourceCode = s.SourceCode AND 
+	comm.freegoods.DocType = s.DocType
+WHERE
+	s.WKLNNO_line_number is not null
+
+-- ORG 51474
+-- NEW 51283
+-- 191 missed, pre 202108
+
+-- clear
+truncate table [Integration].[comm_freegoods_Staging]
+GO
+
+-------------------------------------------------------------------------------
+-- Map Actual FG to DW - END
+-------------------------------------------------------------------------------
+/*
+-- create views and procs:
+[Dimension].[Item]
+[Dimension].[Salesorder_note]
+pricing.order_note_post_proc
+fg.redeem_actual_commission
+fg.item_cost_extract
+[fg].[order_load_proc]
+[fg].[order_update_proc]
+fg.redeem_working
+fg.redeem_working_notes
+*/
+-- test!

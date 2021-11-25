@@ -47,7 +47,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
@@ -56,10 +56,6 @@ dbBoolean "TotalsRow" ="0"
 Begin
     Begin
         dbText "Name" ="fg_redeem_working_notes.OrderDate"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_redeem_working_notes.SalesOrderNumber"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -118,17 +114,21 @@ Begin
         dbText "Name" ="Order"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="fg_redeem_working_notes.SalesOrderNumber"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1294
+    Right =1564
     Bottom =918
     Left =-1
     Top =-1
-    Right =1278
-    Bottom =319
+    Right =1548
+    Bottom =302
     Left =0
     Top =0
     ColumnsShown =539
