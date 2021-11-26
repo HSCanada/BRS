@@ -230,6 +230,7 @@ SELECT
 	,c.adhoc_model_code
 	,CASE WHEN c.ApplyFreightInd = 'Y' THEN 1 ELSE 0 END			As ApplyFreightInd
 	,CASE WHEN c.ApplySmallOrderChargesInd = 'Y' THEN 1 ELSE 0 END	As ApplySmallOrderChargesInd
+	,c.adhoc_model_code2
 
 
 
