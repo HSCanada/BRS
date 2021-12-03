@@ -158,7 +158,12 @@ Begin
 		(1=1)
 
 		Set @nErrorCode = @@Error
-		If @nRowCount > 0 Set @nErrorCode = 2
+		If @nRowCount > 0
+		Begin
+			Set @nErrorCode = 2
+			if (@bDebug <> 0)
+				print 'bad row count='  + CONVERT(varchar(10),@nRowCount) +	'rows'
+		End
 
 	End
 

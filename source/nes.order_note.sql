@@ -4,12 +4,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Salesorder_note]
+ALTER VIEW nes.order_note
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: DocType
+**	Name: nes.order_note
 **	Desc:  
 **		
 **
@@ -23,7 +23,7 @@ AS
 **	----------				-----------
 **
 **	Auth: tmc
-**	Date: 14 Feb 20
+**	Date: 26 Nov 21
 *******************************************************************************
 **	Change History
 *******************************************************************************
@@ -31,6 +31,8 @@ AS
 **	-----	----------	--------------------------------------------
 **    
 *******************************************************************************/
+
+-- this needs work.  figure out header vs line vs duplicate workorder / missing and doctype
 
 SELECT
 	distinct (ord.[Q3DOCO_salesorder_number])	AS [SalesOrderNumber]
@@ -48,23 +50,21 @@ SELECT
 			RTRIM(' ' + LTRIM(SUBSTRING([Q3$PMQ_program_parameter],  421+1, 60))) +
 			RTRIM(' ' + LTRIM(SUBSTRING([Q3$PMQ_program_parameter],  481+1, 60))) AS [text()]
 		FROM 
-			[Pricing].[order_header_note_F5503] note_line
+			nes.order_note_D1ICMTPF note_line
 		WHERE
-			ord.[Q3DOCO_salesorder_number] = note_line.[Q3DOCO_salesorder_number] AND
+			ord.[ICMOWO_work_order_number]  = note_line.[ICMOWO_work_order_number]  AND
 			ord.[Q3INMG_print_message] = note_line.[Q3INMG_print_message]
 		Order by 
-			[Q3$SNB_sequence_number] ASC
+			[ICMSEQ_comments_sequence] ASC
 		FOR XML PATH('') 
 	) AS OrderMessage_Internal
            
 FROM
-	[Pricing].[order_header_note_F5503] ord
+	nes.order_note_D1ICMTPF ord
 where
 	-- 9898 is external note
-	[Q3INMG_print_message] in ('9999', 'FULL80', '9898') AND
+	[ICMTYP2_header_detail] = 'H') AND
 --	[Q3INMG_print_message] in ('9898') AND
-	-- test
-	-- ord.[Q3DOCO_salesorder_number] = 14754593  AND
 	(1=1)
 
 GO
