@@ -1,7 +1,8 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_salesperson_master.comm_plan_id) Like \"ess*\" And (comm_salesperson_mas"
-    "ter.comm_plan_id)<>\"ESSGPZZ\"))"
+Where ="(((comm_salesperson_master.master_salesperson_cd) Like \"ess*\") AND ((comm_sale"
+    "sperson_master.comm_plan_id) Like \"ess*\" And (comm_salesperson_master.comm_pla"
+    "n_id)<>\"ESSGPZZ\"))"
 Begin InputTables
     Name ="comm_salesperson_master"
 End
@@ -16,13 +17,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[qryFSCBonusSalesperson-ESS].[employee_num]"
 Begin
     Begin
         dbText "Name" ="comm_salesperson_master.employee_num"
@@ -48,15 +48,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1492
-    Bottom =756
+    State =0
+    Left =88
+    Top =146
+    Right =1550
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1500
-    Bottom =550
+    Right =1438
+    Bottom =516
     Left =0
     Top =0
     ColumnsShown =539

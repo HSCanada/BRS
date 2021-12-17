@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_Item.SubMajorProdClass)=\"373-01\"))"
+Where ="(((BRS_Item.Item)=\"5875350\"))"
 Begin InputTables
     Name ="BRS_Item"
     Name ="BRS_ItemCategory"
@@ -41,7 +41,7 @@ Begin
     End
     Begin
         dbText "Name" ="BRS_Item.ItemDescription"
-        dbInteger "ColumnWidth" ="3210"
+        dbInteger "ColumnWidth" ="3270"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -51,7 +51,7 @@ Begin
     End
     Begin
         dbText "Name" ="BRS_Item.comm_note_txt"
-        dbInteger "ColumnWidth" ="4050"
+        dbInteger "ColumnWidth" ="2190"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -94,14 +94,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1466
-    Bottom =748
+    Left =-198
+    Top =55
+    Right =1116
+    Bottom =953
     Left =-1
     Top =-1
-    Right =1442
-    Bottom =290
+    Right =1290
+    Bottom =444
     Left =0
     Top =0
     ColumnsShown =539

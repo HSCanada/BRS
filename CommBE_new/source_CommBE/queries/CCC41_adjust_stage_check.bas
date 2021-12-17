@@ -7,7 +7,8 @@ Where ="(((Integration_comm_adjustment_Staging.fsc_code)<>\".\") AND ((BRS_FSC_R
     "n_comm_adjustment_Staging.WSDOC__document_number)>0) AND ((BRS_TransactionDW_Ext"
     ".SalesOrderNumber) Is Null)) OR (((Integration_comm_adjustment_Staging.WSLITM_it"
     "em_number)<>\".\") AND ((BRS_Item.Item) Is Null)) OR (((comm_group.comm_group_cd"
-    ") Is Null)) OR (((Integration_comm_adjustment_Staging.status_code)<>0))"
+    ") Is Null)) OR (((Integration_comm_adjustment_Staging.status_code)<>0)) OR (((In"
+    "tegration_comm_adjustment_Staging.gp_code) Not In (\"GP\",\"CC\",\"CF\")))"
 Begin InputTables
     Name ="Integration_comm_adjustment_Staging"
     Name ="BRS_FSC_Rollup"
@@ -51,6 +52,7 @@ Begin OutputColumns
     Expression ="Integration_comm_adjustment_Staging.fsc_comm_group_cd"
     Expression ="comm_group.comm_group_cd"
     Expression ="Integration_comm_adjustment_Staging.status_code"
+    Expression ="Integration_comm_adjustment_Staging.gp_code"
 End
 Begin Joins
     LeftTable ="Integration_comm_adjustment_Staging"
@@ -87,12 +89,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[CCC41_adjust_stage_check].[WSOGNO_original_line_number]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.ess_code"
@@ -115,6 +118,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.WSOGNO_original_line_number"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3420"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Owner"
@@ -151,6 +156,8 @@ Begin
     Begin
         dbText "Name" ="Additional_Notes"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2610"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fsc"
@@ -186,17 +193,21 @@ Begin
         dbText "Name" ="Integration_comm_adjustment_Staging.status_code"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_adjustment_Staging.gp_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1280
-    Bottom =946
+    State =0
+    Left =0
+    Top =40
+    Right =1481
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1256
-    Bottom =430
+    Right =1457
+    Bottom =379
     Left =0
     Top =0
     ColumnsShown =539

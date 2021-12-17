@@ -39,8 +39,11 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA42_territory_map_new].[Branch], [CCA42_territory_map_new].[AddedDt] DESC, [C"
-    "CA42_territory_map_new].[comm_salesperson_key_id]"
+dbMemo "OrderBy" ="[CCA42_territory_map_new].[Branch], [CCA42_territory_map_new].[comm_salesperson_"
+    "key_id], [CCA42_territory_map_new].[FSCName], [CCA42_territory_map_new].[Territo"
+    "ryCd], [CCA42_territory_map_new].[AddedDt] DESC, [CCA42_territory_map_new].[grou"
+    "p_type]"
+dbMemo "Filter" ="([CCA42_territory_map_new].[order_taken_by]=\"CADA05    \")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -85,15 +88,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1550
-    Bottom =946
+    State =0
+    Left =0
+    Top =40
+    Right =1467
+    Bottom =593
     Left =-1
     Top =-1
-    Right =1428
-    Bottom =85
+    Right =1443
+    Bottom =-1
     Left =0
     Top =0
     ColumnsShown =539

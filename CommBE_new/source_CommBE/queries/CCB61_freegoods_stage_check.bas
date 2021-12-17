@@ -1,18 +1,19 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_TransactionDW_Ext.SalesOrderNumber) Is Null)) OR (((BRS_Customer.ShipTo) "
-    "Is Null)) OR (((BRS_Item.Item) Is Null)) OR (((BRS_ItemSupplier.Supplier) Is Nul"
-    "l)) OR (((Integration_comm_freegoods_Staging.status_code)<>0))"
+Where ="(((BRS_TransactionDW_Ext.SalesOrderNumber) Is Null)) OR (((BRS_ItemHistory.Item)"
+    " Is Null)) OR (((BRS_CustomerFSC_History.Shipto) Is Null)) OR (((BRS_ItemSupplie"
+    "r.Supplier) Is Null)) OR (((Integration_comm_freegoods_Staging.status_code)<>0))"
 Begin InputTables
     Name ="Integration_comm_freegoods_Staging"
     Name ="BRS_TransactionDW_Ext"
-    Name ="BRS_Customer"
-    Name ="BRS_Item"
     Name ="BRS_ItemSupplier"
+    Name ="BRS_ItemHistory"
+    Name ="BRS_CustomerFSC_History"
 End
 Begin OutputColumns
     Expression ="Integration_comm_freegoods_Staging.FiscalMonth"
     Expression ="Integration_comm_freegoods_Staging.SalesOrderNumber"
+    Expression ="Integration_comm_freegoods_Staging.DocType"
     Expression ="Integration_comm_freegoods_Staging.ShipTo"
     Expression ="Integration_comm_freegoods_Staging.Item"
     Expression ="Integration_comm_freegoods_Staging.ItemDescription"
@@ -20,8 +21,8 @@ Begin OutputColumns
     Expression ="Integration_comm_freegoods_Staging.SourceCode"
     Expression ="Integration_comm_freegoods_Staging.ID"
     Expression ="BRS_TransactionDW_Ext.SalesOrderNumber"
-    Expression ="BRS_Customer.ShipTo"
-    Expression ="BRS_Item.Item"
+    Expression ="BRS_ItemHistory.Item"
+    Expression ="BRS_CustomerFSC_History.Shipto"
     Expression ="BRS_ItemSupplier.Supplier"
     Expression ="Integration_comm_freegoods_Staging.status_code"
 End
@@ -36,16 +37,25 @@ Begin Joins
     Expression ="Integration_comm_freegoods_Staging.DocType = BRS_TransactionDW_Ext.DocType"
     Flag =2
     LeftTable ="Integration_comm_freegoods_Staging"
-    RightTable ="BRS_Customer"
-    Expression ="Integration_comm_freegoods_Staging.ShipTo = BRS_Customer.ShipTo"
-    Flag =2
-    LeftTable ="Integration_comm_freegoods_Staging"
-    RightTable ="BRS_Item"
-    Expression ="Integration_comm_freegoods_Staging.Item = BRS_Item.Item"
-    Flag =2
-    LeftTable ="Integration_comm_freegoods_Staging"
     RightTable ="BRS_ItemSupplier"
     Expression ="Integration_comm_freegoods_Staging.Supplier = BRS_ItemSupplier.Supplier"
+    Flag =2
+    LeftTable ="Integration_comm_freegoods_Staging"
+    RightTable ="BRS_ItemHistory"
+    Expression ="Integration_comm_freegoods_Staging.FiscalMonth = BRS_ItemHistory.FiscalMonth"
+    Flag =2
+    LeftTable ="Integration_comm_freegoods_Staging"
+    RightTable ="BRS_ItemHistory"
+    Expression ="Integration_comm_freegoods_Staging.Item = BRS_ItemHistory.Item"
+    Flag =2
+    LeftTable ="Integration_comm_freegoods_Staging"
+    RightTable ="BRS_CustomerFSC_History"
+    Expression ="Integration_comm_freegoods_Staging.FiscalMonth = BRS_CustomerFSC_History.FiscalM"
+        "onth"
+    Flag =2
+    LeftTable ="Integration_comm_freegoods_Staging"
+    RightTable ="BRS_CustomerFSC_History"
+    Expression ="Integration_comm_freegoods_Staging.ShipTo = BRS_CustomerFSC_History.Shipto"
     Flag =2
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -63,6 +73,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.SalesOrderNumber"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="5805"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ID"
@@ -81,6 +93,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ShipTo"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4650"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.Supplier"
@@ -97,14 +111,8 @@ Begin
     Begin
         dbText "Name" ="BRS_TransactionDW_Ext.SalesOrderNumber"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_Customer.ShipTo"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_Item.Item"
-        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4500"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_ItemSupplier.Supplier"
@@ -114,63 +122,77 @@ Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.status_code"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.DocType"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="BRS_ItemHistory.Item"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="BRS_CustomerFSC_History.Shipto"
+        dbInteger "ColumnWidth" ="3525"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1167
-    Bottom =787
+    State =2
+    Left =-8
+    Top =-31
+    Right =1586
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1143
-    Bottom =371
+    Right =1562
+    Bottom =320
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =167
         Top =17
-        Right =311
-        Bottom =222
+        Right =471
+        Bottom =332
         Top =0
         Name ="Integration_comm_freegoods_Staging"
         Name =""
     End
     Begin
-        Left =413
-        Top =41
-        Right =557
-        Bottom =185
+        Left =648
+        Top =157
+        Right =792
+        Bottom =301
         Top =0
         Name ="BRS_TransactionDW_Ext"
         Name =""
     End
     Begin
-        Left =626
-        Top =35
-        Right =770
-        Bottom =179
-        Top =0
-        Name ="BRS_Customer"
-        Name =""
-    End
-    Begin
-        Left =846
-        Top =38
-        Right =990
-        Bottom =182
-        Top =0
-        Name ="BRS_Item"
-        Name =""
-    End
-    Begin
-        Left =789
-        Top =168
-        Right =933
-        Bottom =312
+        Left =868
+        Top =186
+        Right =1012
+        Bottom =330
         Top =0
         Name ="BRS_ItemSupplier"
+        Name =""
+    End
+    Begin
+        Left =702
+        Top =1
+        Right =846
+        Bottom =145
+        Top =0
+        Name ="BRS_ItemHistory"
+        Name =""
+    End
+    Begin
+        Left =922
+        Top =46
+        Right =1066
+        Bottom =190
+        Top =0
+        Name ="BRS_CustomerFSC_History"
         Name =""
     End
 End

@@ -26,10 +26,11 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[salesperson_key_id] DESC, [CCA30_salesperson_sta"
-    "ge_load].[deficit_amt], [CCA30_salesperson_stage_load].[email_ind] DESC, [CCA30_"
-    "salesperson_stage_load].[salesperson_nm], [CCA30_salesperson_stage_load].[employ"
-    "ee_num], [CCA30_salesperson_stage_load].[CostCenter]"
+dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[salesperson_key_id], [CCA30_salesperson_stage_lo"
+    "ad].[employee_num] DESC, [CCA30_salesperson_stage_load].[comm_plan_id], [CCA30_s"
+    "alesperson_stage_load].[deficit_amt], [CCA30_salesperson_stage_load].[email_ind]"
+    " DESC, [CCA30_salesperson_stage_load].[salesperson_nm], [CCA30_salesperson_stage"
+    "_load].[CostCenter]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -98,18 +99,20 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1890"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
-    Left =-202
-    Top =32
-    Right =1322
-    Bottom =930
+    Left =0
+    Top =40
+    Right =1602
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1500
-    Bottom =340
+    Right =1578
+    Bottom =221
     Left =0
     Top =0
     ColumnsShown =539

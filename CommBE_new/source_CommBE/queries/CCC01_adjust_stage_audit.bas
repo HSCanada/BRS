@@ -37,6 +37,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[CCC01_adjust_stage_audit].[FiscalMonth], [CCC01_adjust_stage_audit].[adj_type_c"
+    "ode2], [CCC01_adjust_stage_audit].[owner_code]"
 Begin
     Begin
         dbText "Name" ="SumOftransaction_amt"
@@ -47,6 +49,8 @@ Begin
     Begin
         dbText "Name" ="SumOfgp_ext_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2145"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_adjustment_import.FiscalMonth"
@@ -80,15 +84,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1465
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1610
+    Bottom =946
     Left =-1
     Top =-1
     Right =1441
-    Bottom =394
+    Bottom =343
     Left =0
     Top =0
     ColumnsShown =543

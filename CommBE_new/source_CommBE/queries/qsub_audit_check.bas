@@ -39,6 +39,12 @@ Begin
         dbText "Name" ="BRS_SalesDay.FiscalMonth"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="FiscalMonth"
+    End
+    Begin
+        dbText "Name" ="WSAC10_division_code"
+    End
 End
 Begin
     State =0

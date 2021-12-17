@@ -1,0 +1,4 @@
+﻿Dimension_Item
+ODBC;DSN=DEV_BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+Dimension.Item
+Item

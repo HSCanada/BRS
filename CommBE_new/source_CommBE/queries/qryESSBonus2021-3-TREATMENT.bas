@@ -1,11 +1,11 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth) Between 202001 And 202101) AND ((comm_t"
-    "ransaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_transaction_F5551"
-    "15.ess_comm_group_cd) Not In (\"ITMEQ0\",\"ITMPAR\")) AND ((comm_transaction_F55"
-    "5115.source_cd)=\"JDE\") AND ((BRS_Item.SubMajorProdClass) In (\"800-04\",\"800-"
-    "05\",\"800-06\",'800-08')) AND ((BRS_Item.Supplier) In (\"SIRONC\",\"TRIAFS\",\""
-    "PELCRA\")))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_t"
+    "ransaction_F555115.ess_comm_group_cd) Not In (\"ITMEQ0\",\"ITMPAR\")) AND ((comm"
+    "_transaction_F555115.source_cd)=\"JDE\") AND ((BRS_Item.SubMajorProdClass) In (\""
+    "800-04\",\"800-05\",\"800-06\",'800-08')) AND ((BRS_Item.Supplier) In (\"SIRONC\""
+    ",\"TRIAFS\",\"PELCRA\")))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Item"
@@ -34,13 +34,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[qryESSBonus2021-3-TREATMENT].[gp_ext_amt] DESC"
 Begin
     Begin
         dbText "Name" ="comm_transaction_F555115.FiscalMonth"
@@ -63,14 +62,14 @@ Begin
 End
 Begin
     State =0
-    Left =-195
-    Top =63
-    Right =1271
-    Bottom =771
+    Left =0
+    Top =40
+    Right =1493
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1442
-    Bottom =316
+    Right =1469
+    Bottom =282
     Left =0
     Top =0
     ColumnsShown =543

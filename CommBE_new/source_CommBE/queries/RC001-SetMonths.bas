@@ -34,24 +34,26 @@ Begin
     Begin
         dbText "Name" ="new_fiscal"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1410"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="prod_fiscal"
-        dbInteger "ColumnWidth" ="3015"
+        dbInteger "ColumnWidth" ="1440"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
+    Left =72
+    Top =103
+    Right =1484
+    Bottom =880
     Left =-1
     Top =-1
     Right =1388
-    Bottom =450
+    Bottom =433
     Left =0
     Top =0
     ColumnsShown =539

@@ -1,8 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth)=202101) AND ((comm_transaction_F555115."
-    "eps_comm_group_cd)<>\"\") AND ((comm_transaction_F555115.source_cd)=\"JDE\") AND"
-    " ((comm_transaction_F555115.eps_salesperson_key_id)<>\"\"))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.eps_comm_group_cd)<>\"\") AND ((comm_transact"
+    "ion_F555115.source_cd)=\"JDE\") AND ((comm_transaction_F555115.eps_salesperson_k"
+    "ey_id)<>\"\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Customer"
@@ -193,32 +194,32 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1550
-    Bottom =946
+    State =0
+    Left =-337
+    Top =66
+    Right =1156
+    Bottom =947
     Left =-1
     Top =-1
-    Right =1526
-    Bottom =245
+    Right =1469
+    Bottom =211
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =54
-        Top =-40
+        Top =0
         Right =552
-        Bottom =259
+        Bottom =299
         Top =0
         Name ="comm_transaction_F555115"
         Name =""
     End
     Begin
         Left =620
-        Top =-31
+        Top =0
         Right =764
-        Bottom =113
+        Bottom =144
         Top =0
         Name ="BRS_Customer"
         Name =""
@@ -234,9 +235,9 @@ Begin
     End
     Begin
         Left =874
-        Top =-16
+        Top =0
         Right =1018
-        Bottom =128
+        Bottom =144
         Top =0
         Name ="BRS_FSC_Rollup"
         Name =""

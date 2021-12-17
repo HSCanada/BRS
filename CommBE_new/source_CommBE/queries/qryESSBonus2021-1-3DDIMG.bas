@@ -1,9 +1,10 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth) Between 202001 And 202101) AND ((comm_t"
-    "ransaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_transaction_F5551"
-    "15.ess_comm_group_cd) Not In (\"ITMEQ0\",\"DIGIMP\")) AND ((comm_transaction_F55"
-    "5115.source_cd)=\"JDE\") AND ((BRS_Item.SubMajorProdClass)=\"800-52\"))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_t"
+    "ransaction_F555115.ess_comm_group_cd) Not In (\"ITMEQ0\",\"DIGIMP\")) AND ((comm"
+    "_transaction_F555115.source_cd)=\"JDE\") AND ((BRS_Item.SubMajorProdClass)=\"800"
+    "-52\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Item"
@@ -59,32 +60,32 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1492
-    Bottom =756
+    State =0
+    Left =0
+    Top =40
+    Right =1493
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1500
-    Bottom =350
+    Right =1469
+    Bottom =316
     Left =0
-    Top =288
+    Top =0
     ColumnsShown =543
     Begin
         Left =121
-        Top =-216
+        Top =0
         Right =534
-        Bottom =181
+        Bottom =397
         Top =0
         Name ="comm_transaction_F555115"
         Name =""
     End
     Begin
         Left =636
-        Top =-169
+        Top =0
         Right =974
-        Bottom =157
+        Bottom =326
         Top =0
         Name ="BRS_Item"
         Name =""

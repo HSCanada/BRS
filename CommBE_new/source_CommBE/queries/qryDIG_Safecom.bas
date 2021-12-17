@@ -1,9 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth)=202101) AND ((comm_transaction_F555115."
-    "WSLITM_item_number) In (\"5837912\",\"5831069\",\"5831451\",\"5834943\",\"583754"
-    "5\",\"5833107\",\"5834937\",\"5844099\",\"9398060\",\"9399459\",\"9393267\",\"93"
-    "92430\",\"9396203\")))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.WSLITM_item_number) In (\"5837912\",\"5831069"
+    "\",\"5831451\",\"5834943\",\"5837545\",\"5833107\",\"5834937\",\"5844099\",\"939"
+    "8060\",\"9399459\",\"9393267\",\"9392430\",\"9396203\")))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Customer"
@@ -48,7 +48,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
@@ -56,17 +56,9 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="comm_transaction_F555115.cps_comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="BRS_Customer.PracticeName"
         dbInteger "ColumnWidth" ="3435"
         dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_transaction_F555115.cps_code"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -92,10 +84,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="PC3"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_transaction_F555115.transaction_amt"
         dbLong "AggregateType" ="-1"
     End
@@ -116,23 +104,11 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="BRS_Item.MinorProductClass"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_transaction_F555115.fsc_salesperson_key_id"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_transaction_F555115.fsc_code"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="BRS_FSC_Rollup.Branch"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="PC1"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -154,60 +130,24 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_transaction_F555115.WSCAG__cagess_code"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="BRS_Item.Supplier"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1013"
         dbLong "AggregateType" ="-1"
     End
     Begin
         dbText "Name" ="FreeGoods_Ind"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="comm_transaction_F555115.fsc_comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1001"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1005"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1015"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1016"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
-    Left =0
+    Left =-272
     Top =40
-    Right =1466
-    Bottom =524
+    Right =1288
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1442
-    Bottom =296
+    Right =1536
+    Bottom =455
     Left =0
     Top =0
     ColumnsShown =539

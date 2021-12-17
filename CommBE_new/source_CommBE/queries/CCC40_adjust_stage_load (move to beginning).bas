@@ -82,6 +82,8 @@ Begin
     Begin
         dbText "Name" ="customer_nm"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2715"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Sales order"
@@ -130,12 +132,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1391
-    Bottom =937
+    Right =1560
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1367
-    Bottom =294
+    Right =1536
+    Bottom =226
     Left =0
     Top =0
     ColumnsShown =539

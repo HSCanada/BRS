@@ -36,9 +36,12 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[comm_plan_id], [CCA44_salesperson_stage_review"
-    "].[salesperson_nm], [CCA44_salesperson_stage_review].[salesperson_key_id], [comm"
-    "_salesperson_master].[FiscalMonth]"
+dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[salesperson_key_id], [CCA44_salesperson_stage_"
+    "review].[territory_start_dt] DESC, [comm_salesperson_master].[FiscalMonth] DESC,"
+    " [CCA44_salesperson_stage_review].[salesperson_nm], [CCA44_salesperson_stage_rev"
+    "iew].[master_salesperson_cd], [CCA44_salesperson_stage_review].[email_ind], [CCA"
+    "44_salesperson_stage_review].[comm_plan_id]"
+dbMemo "Filter" ="([CCA44_salesperson_stage_review].[master_salesperson_cd]=\"WZ1JV\")"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -91,6 +94,8 @@ Begin
     Begin
         dbText "Name" ="comm_salesperson_master.FiscalMonth"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4140"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="comm_salesperson_master.salary_draw_amt"
@@ -105,12 +110,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1550
+    Right =1507
     Bottom =946
     Left =-1
     Top =-1
-    Right =1368
-    Bottom =144
+    Right =1526
+    Bottom =7
     Left =0
     Top =0
     ColumnsShown =539

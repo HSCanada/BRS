@@ -25,7 +25,11 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
-dbMemo "OrderBy" ="[CCB50_rebate_stage_load].[original_line_number]"
+dbMemo "OrderBy" ="[CCB50_rebate_stage_load].[FiscalMonth], [CCB50_rebate_stage_load].[original_lin"
+    "e_number], [CCB50_rebate_stage_load].[ShipTo], [CCB50_rebate_stage_load].[fsc_co"
+    "de], [CCB50_rebate_stage_load].[rebate_amt], [CCB50_rebate_stage_load].[Practice"
+    "Name], [CCB50_rebate_stage_load].[SourceCode], [CCB50_rebate_stage_load].[comm_n"
+    "ote_txt]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.comm_note_txt"
@@ -67,6 +71,33 @@ Begin
         dbText "Name" ="Integration_comm_customer_rebate_Staging.status_code"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="FiscalMonth"
+    End
+    Begin
+        dbText "Name" ="original_line_number"
+    End
+    Begin
+        dbText "Name" ="ShipTo"
+    End
+    Begin
+        dbText "Name" ="fsc_code"
+    End
+    Begin
+        dbText "Name" ="rebate_amt"
+    End
+    Begin
+        dbText "Name" ="PracticeName"
+    End
+    Begin
+        dbText "Name" ="SourceCode"
+    End
+    Begin
+        dbText "Name" ="comm_note_txt"
+    End
+    Begin
+        dbText "Name" ="status_code"
+    End
 End
 Begin
     State =0
@@ -77,7 +108,7 @@ Begin
     Left =-1
     Top =-1
     Right =1388
-    Bottom =237
+    Bottom =220
     Left =0
     Top =0
     ColumnsShown =539

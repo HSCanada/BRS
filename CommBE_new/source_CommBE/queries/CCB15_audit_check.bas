@@ -70,6 +70,8 @@ Begin
         dbText "Format" ="$#,##0.00;($#,##0.00)"
         dbByte "DecimalPlaces" ="2"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1950"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="sales_380"
@@ -90,12 +92,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1147
-    Bottom =555
+    Right =1493
+    Bottom =601
     Left =-1
     Top =-1
-    Right =826
-    Bottom =198
+    Right =1443
+    Bottom =181
     Left =0
     Top =0
     ColumnsShown =539

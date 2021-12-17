@@ -1,7 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_item_group_rule.MinorProductClass)<>\"\") AND ((Left([MinorProductClass]"
-    ",6)) Like \"8*\"))"
+Where ="(((comm_item_group_rule.MinorProductClass) Like \"341*\"))"
 Begin InputTables
     Name ="comm_item_group_rule"
 End
@@ -24,10 +23,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbMemo "Filter" ="([CCB01_comm_sync_fix_rules].[sub_minor]=\"800-11\")"
-dbMemo "OrderBy" ="[CCB01_comm_sync_fix_rules].[Supplier], [CCB01_comm_sync_fix_rules].[comm_group_"
-    "cd], [CCB01_comm_sync_fix_rules].[comm_note_txt], [CCB01_comm_sync_fix_rules].[s"
-    "ub_minor]"
+dbMemo "OrderBy" ="[CMB01_comm_sync_fix_rules].[MinorProductClass]"
 dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
@@ -72,8 +68,8 @@ Begin
     Bottom =937
     Left =-1
     Top =-1
-    Right =1509
-    Bottom =617
+    Right =1116
+    Bottom =600
     Left =0
     Top =0
     ColumnsShown =539

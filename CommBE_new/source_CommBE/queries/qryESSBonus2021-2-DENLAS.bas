@@ -1,9 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth) Between 202001 And 202101) AND ((comm_t"
-    "ransaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_transaction_F5551"
-    "15.source_cd)=\"JDE\") AND ((BRS_Item.Supplier) In (\"CONVER\",\"SIRONC\",\"DECM"
-    "AT\")) AND ((BRS_Item.SubMajorProdClass)=\"800-19\"))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.ess_comm_plan_id) Like \"ess*\") AND ((comm_t"
+    "ransaction_F555115.source_cd)=\"JDE\") AND ((BRS_Item.Supplier) In (\"CONVER\",\""
+    "SIRONC\",\"DECMAT\")) AND ((BRS_Item.SubMajorProdClass)=\"800-19\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Item"
@@ -59,15 +59,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1492
-    Bottom =756
+    State =0
+    Left =0
+    Top =40
+    Right =1493
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1468
-    Bottom =423
+    Right =1469
+    Bottom =389
     Left =0
     Top =0
     ColumnsShown =543

@@ -1,13 +1,17 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth)=202101) AND ((comm_transaction_F555115."
-    "source_cd) In (\"JDE\",\"IMP\")) AND ((comm_transaction_F555115.isr_salesperson_"
-    "key_id)<>\"\") AND ((comm_transaction_F555115.isr_comm_group_cd)<>\"\"))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.isr_salesperson_key_id)<>\"\") AND ((comm_pla"
+    "n_group_rate.disp_comm_group_cd)<>\"\" And (comm_plan_group_rate.disp_comm_group"
+    "_cd) Not In (\"ITMPAR\",\"ITMSER\",\"ITMEQ0\")) AND ((comm_transaction_F555115.s"
+    "ource_cd) In (\"JDE\",\"IMP\") And (comm_transaction_F555115.source_cd)=\"JDE\")"
+    ")"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Customer"
     Name ="BRS_Item"
     Name ="BRS_FSC_Rollup"
+    Name ="comm_plan_group_rate"
 End
 Begin OutputColumns
     Expression ="comm_transaction_F555115.ID"
@@ -25,7 +29,8 @@ Begin OutputColumns
     Expression ="comm_transaction_F555115.ess_salesperson_key_id"
     Expression ="comm_transaction_F555115.[WS$OSC_order_source_code]"
     Expression ="comm_transaction_F555115.WSVR01_reference"
-    Expression ="comm_transaction_F555115.isr_comm_group_cd"
+    Alias ="isr_comm_group_cd"
+    Expression ="comm_plan_group_rate.disp_comm_group_cd"
     Expression ="comm_transaction_F555115.ess_comm_group_cd"
     Expression ="BRS_Item.MajorProductClass"
     Expression ="comm_transaction_F555115.WSUORG_quantity"
@@ -48,10 +53,6 @@ Begin OutputColumns
     Expression ="comm_transaction_F555115.cust_comm_group_cd"
     Expression ="BRS_Customer.MarketClass"
     Expression ="comm_transaction_F555115.source_cd"
-    Expression ="comm_transaction_F555115.isr_salesperson_key_id"
-    Expression ="comm_transaction_F555115.isr_comm_plan_id"
-    Expression ="comm_transaction_F555115.isr_code"
-    Expression ="comm_transaction_F555115.isr_comm_group_cd"
 End
 Begin Joins
     LeftTable ="comm_transaction_F555115"
@@ -66,6 +67,10 @@ Begin Joins
     RightTable ="BRS_FSC_Rollup"
     Expression ="comm_transaction_F555115.fsc_code = BRS_FSC_Rollup.TerritoryCd"
     Flag =1
+    LeftTable ="comm_transaction_F555115"
+    RightTable ="comm_plan_group_rate"
+    Expression ="comm_transaction_F555115.isr_calc_key = comm_plan_group_rate.calc_key"
+    Flag =1
 End
 Begin OrderBy
     Expression ="comm_transaction_F555115.ID"
@@ -74,12 +79,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[qryISR_Backend].[ID]"
 Begin
     Begin
         dbText "Name" ="BRS_Customer.PracticeName"
@@ -172,10 +178,6 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="comm_transaction_F555115.isr_comm_group_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="comm_transaction_F555115.isr_salesperson_key_id"
         dbInteger "ColumnWidth" ="2580"
         dbBoolean "ColumnHidden" ="0"
@@ -234,32 +236,22 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="Expr1013"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_transaction_F555115.isr_comm_plan_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1005"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Expr1006"
+        dbText "Name" ="isr_comm_group_cd"
+        dbInteger "ColumnWidth" ="2280"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1524
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1657
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1500
-    Bottom =388
+    Right =1469
+    Bottom =303
     Left =0
     Top =0
     ColumnsShown =539
@@ -297,6 +289,15 @@ Begin
         Bottom =144
         Top =0
         Name ="BRS_FSC_Rollup"
+        Name =""
+    End
+    Begin
+        Left =629
+        Top =177
+        Right =773
+        Bottom =321
+        Top =0
+        Name ="comm_plan_group_rate"
         Name =""
     End
 End

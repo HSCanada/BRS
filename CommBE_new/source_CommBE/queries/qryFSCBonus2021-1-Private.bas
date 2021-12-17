@@ -1,10 +1,10 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth) Between 202001 And 202101) AND ((comm_t"
-    "ransaction_F555115.fsc_comm_plan_id) In (\"FSCGP02\",\"FSCGP03\",\"FSCGPM\")) AN"
-    "D ((comm_transaction_F555115.fsc_comm_group_cd) In (\"ITMPVT\",\"ITMSND\")) AND "
-    "((comm_transaction_F555115.source_cd)=\"JDE\") AND ((BRS_Item.SalesCategory)=\"M"
-    "ERCH\"))"
+Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
+    "g)) AND ((comm_transaction_F555115.fsc_comm_plan_id) In (\"FSCGP02\",\"FSCGP03\""
+    ",\"FSCGPM\")) AND ((comm_transaction_F555115.fsc_comm_group_cd) In (\"ITMPVT\",\""
+    "ITMSND\")) AND ((comm_transaction_F555115.source_cd)=\"JDE\") AND ((BRS_Item.Sal"
+    "esCategory)=\"MERCH\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Item"
@@ -60,14 +60,14 @@ Begin
 End
 Begin
     State =0
-    Left =-142
-    Top =34
-    Right =1382
-    Bottom =932
+    Left =44
+    Top =93
+    Right =1493
+    Bottom =921
     Left =-1
     Top =-1
-    Right =1500
-    Bottom =601
+    Right =1425
+    Bottom =567
     Left =0
     Top =0
     ColumnsShown =543
