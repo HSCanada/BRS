@@ -170,6 +170,9 @@ SELECT
 	,mpc.rebate_exclude_ind				AS RebateExcludeInd
 	,CASE WHEN i.adhoc_model_code <> '' THEN i.adhoc_model_code ELSE 'Other' END adhoc_model_code
 	,CASE WHEN i.adhoc_model_code2 <> '' THEN i.adhoc_model_code2 ELSE 'Other' END adhoc_model_code2
+	,CASE WHEN i.adhoc_model_code3 <> '' THEN i.adhoc_model_code3 ELSE 'Other' END adhoc_model_code3
+	,CASE WHEN i.adhoc_model_code4 <> '' THEN i.adhoc_model_code4 ELSE 'Other' END adhoc_model_code4
+	,CASE WHEN i.adhoc_model_code5 <> '' THEN i.adhoc_model_code5 ELSE 'Other' END adhoc_model_code5
 
 
 FROM            

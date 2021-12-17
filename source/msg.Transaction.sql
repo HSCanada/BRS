@@ -90,6 +90,8 @@ GO
 --1708 @ 1m27s
 -- 20181230_20210925_pickup_camsg_Transaction.txt
 
+-- SELECT top 10 * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-11-20' and '2021-11-26'
+
 -------------------------------------------------------------------------------
 -- set export file, tab delimited
 -------------------------------------------------------------------------------
@@ -97,16 +99,16 @@ GO
 -- SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]
 
 -- 1. export item
--- 20211126_camsg_Item.txt
+-- 20211210_camsg_Item.txt
 -- select  * from msg.item 	
 
 -- 2. export customer
--- 20211126_camsg_Customer.txt
+-- 20211210_camsg_Customer.txt
 -- SELECT * FROM msg.Customer
 
 -- 3. export sales
--- 20211126_camsg_Transaction.txt
--- SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-11-20' and '2021-11-26'
+-- 20211210_camsg_Transaction.txt
+-- SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2021-12-04' and '2021-12-10'
 
 
 

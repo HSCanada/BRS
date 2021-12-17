@@ -30,6 +30,8 @@ AS
 **	-----	----------	--------------------------------------------
 **	29 Jan 21	tmc		add Private Label logic for 2021 plan    
 **	27 Feb 21	tmc		add Private Label exclusion logic
+**  16 Dec 21	tmc		add ISR sync logic
+**	
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -178,6 +180,59 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '2d. ISR, sync to FSC, with small EQ correction  '
+
+		-- copy FSC to ISR, non exceptions
+		UPDATE
+			i
+		SET
+			comm_group_isr_cd = i.comm_group_cd
+		FROM
+			BRS_Item AS i INNER JOIN
+			BRS_ItemMPC AS mpc ON i.MajorProductClass = mpc.MajorProductClass
+		WHERE
+			(i.comm_group_isr_cd <> i.comm_group_cd) AND 
+			(mpc.comm_isr_merch_override_ind = 0) AND
+			(1=1)
+
+		-- copy FSC to ISR, exception exceptions
+		UPDATE
+			i
+		SET
+			comm_group_isr_cd = i.comm_group_cd
+		FROM
+			BRS_Item AS i INNER JOIN
+			BRS_ItemMPC AS mpc ON i.MajorProductClass = mpc.MajorProductClass
+		WHERE
+			(i.comm_group_isr_cd <> i.comm_group_cd) AND 
+			(mpc.comm_isr_merch_override_ind = 1) AND
+			-- copy non-eq codes
+			(i.comm_group_cd NOT LIKE 'ITMFO%') AND 
+			(1=1)
+
+		-- set FSC exception EQ to sundry
+		UPDATE
+			i
+		SET
+			comm_group_isr_cd = 'ITMSND'
+		FROM
+			BRS_Item AS i INNER JOIN
+			BRS_ItemMPC AS mpc ON i.MajorProductClass = mpc.MajorProductClass
+		WHERE
+			(i.comm_group_isr_cd <> 'ITMSND') AND 
+			(mpc.comm_isr_merch_override_ind = 1) AND
+			-- copy non-eq codes
+			(i.comm_group_cd LIKE 'ITMFO%') AND 
+			(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+--
 
 If (@nErrorCode = 0) 
 Begin

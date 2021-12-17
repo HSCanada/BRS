@@ -31,6 +31,7 @@ AS
 **	22 Sep 20	tmc		Add ISR commission logic
 **	21 Dec 20	tmc		Add sales summary logic to help with rebate allocation
 **						Add EST and fix ISR snapshots
+**  16 Dec 21	tmc		add ISR logic
 **    
 *******************************************************************************/
 
@@ -261,7 +262,7 @@ Begin
 			,[HIST_comm_group_cps_cd]
 			,[HIST_comm_group_eps_cd]
 			,[HIST_comm_group_est_cd]
-
+			,[HIST_comm_group_isr_cd]
 		)
 		SELECT     
 			BRS_Item.Item
@@ -274,6 +275,7 @@ Begin
 			,[comm_group_cps_cd]
 			,[comm_group_eps_cd]
 			,[comm_group_est_cd]
+			,[comm_group_isr_cd]
 
 		FROM         
 			BRS_Item 

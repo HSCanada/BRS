@@ -32,6 +32,7 @@ AS
 **	27 Sep 20	tmc		Fix Transfer FSC bug, code changed bug not key
 **	27 Oct 20	tmc		Fix ISR commission locic bug, use seperate comm_group
 **  20 Nov 20	tmc		setup table-driven parts promotion logic
+**  16 Dec 21	tmc		add ISR logic
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -367,7 +368,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '5c. FSC Post transfer update plan & salesperson_key update'
+			print '6. FSC Post transfer update plan & salesperson_key update'
 
 		UPDATE
 			comm.transaction_F555115
@@ -401,7 +402,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '6. FSC update item commgroup - JDE'
+			print '7. FSC update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -436,7 +437,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '7. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
+			print '8. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
 		
 		UPDATE
 			comm.transaction_F555115
@@ -463,7 +464,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '8. FSC update commgroup - IMP'
+			print '9. FSC update commgroup - IMP'
 
 		UPDATE
 			comm.transaction_F555115
@@ -497,76 +498,11 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-	-- at this point, (a) ISR = FSC for JDE source, but (b) IMP is special case
-	-- copy allows us to leverage prior FSC logic
-	-- note that we copy over fsc codes that are applicable to isr plan
-	If (@nErrorCode = 0 AND @bLegacy = 0) 
-	Begin
-		if (@bDebug <> 0)
-			print '8a. ISR clone FSC commgroup - JDE'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			isr_comm_group_cd = fsc_comm_group_cd
-		-- SELECT t.* 
----- XXX
-		FROM
-			comm.transaction_F555115 t
-
-			INNER JOIN [comm].[plan_group_rate] AS r 
-			ON t.isr_comm_plan_id = r.comm_plan_id AND
-				t.fsc_comm_group_cd = r.item_comm_group_cd AND
-				t.[cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
-----
-		WHERE 
-			-- active isr plan and rate
-			(t.isr_comm_plan_id <> '') AND
-			(r.active_ind = 1) AND
-			-- fsc code is avail (assume isr subset of fsc)
-			(t.fsc_comm_group_cd <> '') AND 
-			(t.source_cd = 'JDE') AND
-			(FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
 --
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '8b. ISR update commgroup - IMP'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			isr_comm_group_cd = s.HIST_comm_group_cd
-		-- SELECT t.* 
-		FROM
-			[dbo].[BRS_ItemHistory] AS s 
-
-			INNER JOIN comm.transaction_F555115 d
-			ON (d.WSLITM_item_number = s.Item) AND
-			(d.FiscalMonth = s.FiscalMonth)
-		WHERE        
-			(d.isr_comm_plan_id <> '') AND
-			(d.source_cd = 'IMP') AND
-			(s.HIST_comm_group_cd <> '') AND
-			-- If Source IMP, and the CommCode is supplied, do not override.
-			(d.WSLITM_item_number <> '') AND
-			(ISNULL(d.isr_comm_group_cd,'') = '') AND
-			(d.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
---
---
-	If (@nErrorCode = 0 AND @bLegacy = 0) 
-	Begin
-		if (@bDebug <> 0)
-			print '9. FSC update comm - non-booking -new'
+			print '10. FSC update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -604,7 +540,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '10. FSC update comm - pay'
+			print '11. FSC update comm - pay'
 
 		UPDATE
 			comm.transaction_F555115
@@ -635,6 +571,8 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+
 ------------------------------------------------------------------------------------------------------
 -- New - ESS/CCS
 ------------------------------------------------------------------------------------------------------
@@ -642,7 +580,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '11. ESS/CCS update plan & salesperson_key'
+			print '12. ESS/CCS update plan & salesperson_key'
 
 		UPDATE
 			comm.transaction_F555115
@@ -667,7 +605,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '12. ESS/CCS update commgroup - JDE'
+			print '13. ESS/CCS update commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -692,7 +630,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '13. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
+			print '14. ESS/CCS update commgroup - ITMPAR -> ITMFO3 promotion'
 
 		UPDATE
 			comm.transaction_F555115
@@ -719,7 +657,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '14. ESS/CCS update commgroup - IMP'
+			print '15. ESS/CCS update commgroup - IMP'
 
 		UPDATE
 			comm.transaction_F555115
@@ -748,7 +686,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '15. ESS/CCS update comm - non-booking -new'
+			print '16. ESS/CCS update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -786,7 +724,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '16. ESS/CSS update comm - pay'
+			print '17. ESS/CSS update comm - pay'
 
 		UPDATE
 			comm.transaction_F555115
@@ -824,7 +762,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '17. CPS update item commgroup - JDE'
+			print '18. CPS update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -849,7 +787,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18. CPS update comm - non-booking -new'
+			print '19. CPS update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -887,7 +825,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '19. CPS update comm - booking - new'
+			print '20. CPS update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -928,7 +866,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '20. EPS update item commgroup - JDE'
+			print '21. EPS update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -955,7 +893,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '21. EPS update comm - non-booking -new'
+			print '22. EPS update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -993,7 +931,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '22. EPS update comm - booking - new'
+			print '23. EPS update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1031,10 +969,114 @@ Begin
 -- New & Legacy - ISR
 ------------------------------------------------------------------------------------------------------
 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '24. ISR update item commgroup - JDE'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			-- reference item version
+			isr_comm_group_cd = s.[HIST_comm_group_isr_cd]
+
+--		select s.* 
+		FROM
+			[dbo].[BRS_ItemHistory] s
+
+			INNER JOIN comm.transaction_F555115 AS d 
+			ON (d.WSLITM_item_number = s.Item) AND
+			(d.FiscalMonth = s.FiscalMonth) AND
+			(d.source_cd = 'JDE') AND
+			(d.isr_comm_plan_id <> '') AND
+--			(s.HIST_comm_group_cd <> '') AND
+			(1 = 1)
+		WHERE 
+			(s.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(s.[HIST_comm_group_isr_cd] <> '') AND
+--			test
+--			(s.FiscalMonth >= 202001) AND
+--			(s.HIST_comm_group_cd like 'SPM%') AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+	End
+/*
+	-- not needed, replaced by prior block of code
+	--
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '8a. ISR clone FSC commgroup - JDE'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			isr_comm_group_cd = fsc_comm_group_cd
+		-- SELECT t.isr_comm_plan_id, t.fsc_comm_plan_id, t.isr_comm_group_cd
+---- XXX
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.isr_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				t.[cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+----
+		WHERE 
+			-- active isr plan and rate
+			(t.isr_comm_plan_id <> '') AND
+			(r.active_ind = 1) AND
+			-- fsc code is avail (assume isr subset of fsc)
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd = 'JDE') AND
+			(FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			-- test
+			--(FiscalMonth = 202111 ) AND
+			--
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+*/
+--
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '25. ISR update commgroup - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			isr_comm_group_cd = s.[HIST_comm_group_isr_cd]
+		-- SELECT t.* 
+		FROM
+			[dbo].[BRS_ItemHistory] AS s 
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (d.WSLITM_item_number = s.Item) AND
+			(d.FiscalMonth = s.FiscalMonth)
+		WHERE        
+			(d.isr_comm_plan_id <> '') AND
+			(d.source_cd = 'IMP') AND
+			(s.[HIST_comm_group_isr_cd] <> '') AND
+			-- If Source IMP, and the CommCode is supplied, do not override.
+			(d.WSLITM_item_number <> '') AND
+			(ISNULL(d.isr_comm_group_cd,'') = '') AND
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+--
+
+----
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '23. ISR update comm - non-booking -new'
+			print '26. ISR update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1076,7 +1118,8 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
-
+/*
+	-- not needed
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -1114,11 +1157,15 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+*/
+------------------------------------------------------------------------------------------------------
+-- ESS history populate
+------------------------------------------------------------------------------------------------------
 
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '25. ESS history populate'
+			print '27. ESS history populate'
 
 
 		UPDATE [dbo].[BRS_TransactionDW_Ext]
@@ -1151,7 +1198,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '26. EST update item commgroup - JDE'
+			print '28. EST update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1177,7 +1224,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '26. EST update comm - non-booking -new'
+			print '29. EST update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1223,7 +1270,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '27. EST update comm - booking - new'
+			print '30. EST update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1318,7 +1365,9 @@ GO
 -- Debug, 2m
 -- Exec comm.transaction_commission_calc_proc @bDebug=1
 
--- test, 6m
---8a. ISR clone FSC commgroup - JDE
---(95073 rows affected)
---(63431 rows affected)
+-- testing
+-- 1.00m - ORG
+-- 1.07m - set JDE codes
+-- 1.14m - set IMP codes
+-- 1.21m - calc rates
+

@@ -487,7 +487,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '190. Chargeback Multi exempt'
+		print '190. Chargeback Multi exempt, ensure that we do not redeem FG and CB where requested'
 
 	-- ,('XXXCBM','Chargeback Multi [fg].[exempt_supplier_rule]','',1,10,'.')
 	UPDATE

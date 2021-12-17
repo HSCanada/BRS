@@ -32,7 +32,7 @@ AS
 **    
 *******************************************************************************/
 
---
+-- Buy section
 SELECT
 	[SalesOrderNumber]
 	,[DocType]
@@ -84,6 +84,8 @@ SELECT
 	,i.SalesCategory
 	,t.CreditMinorReasonCode
 	,t.CreditTypeCode
+	,1 AS show_ind
+
 FROM
 	[dbo].[BRS_TransactionDW] t
 
@@ -145,7 +147,7 @@ WHERE
 
 UNION ALL
 
---
+-- GET Section
 SELECT
 	WKDOCO_salesorder_number
 	,WKDCTO_order_type
@@ -197,6 +199,7 @@ SELECT
 	,i.SalesCategory
 	,tt.CreditMinorReasonCode
 	,tt.CreditTypeCode
+	,ex.show_ind
 
 FROM
 	fg.transaction_F5554240 t
@@ -231,7 +234,7 @@ FROM
 
 WHERE
 	(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
-	(ex.show_ind = 1) AND
+--	(ex.show_ind = 1) AND
 	-- test
 	--(t.WKDOCO_salesorder_number = 14652012) AND
 	(1=1)
@@ -245,5 +248,13 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT TOP 100 * FROM fg.redeem_working
+-- SELECT TOP 100 * FROM fg.redeem_working
+-- SELECT * FROM fg.redeem_working
+-- 20 sec
+
+-- SELECT count (*) FROM fg.redeem_working
+
+-- ORG 80 293
+-- all 103 885
+
 --SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 14459975
