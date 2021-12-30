@@ -89,7 +89,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202111 AND 202111
+	FiscalMonth BETWEEN 202112 AND 202112
 GO
 
 
@@ -101,7 +101,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202111 AND 202111
+	FiscalMonth BETWEEN 202112 AND 202112
 GO
 
 /*
@@ -150,7 +150,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202111 AND 202111
+	FiscalMonth BETWEEN 202112 AND 202112
 GO
 
 
@@ -169,7 +169,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN  202111 AND 202111
+	FiscalMonth BETWEEN  202112 AND 202112
 GO
 
 
@@ -182,7 +182,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN  202111 AND 202111
+	FiscalMonth BETWEEN  202112 AND 202112
 GO
 
 print '11. set owned based on GL'
