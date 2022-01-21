@@ -9,7 +9,9 @@
 		,RTRIM(excl.Excl_Code_Public)			AS BRAND_LINE
 		,RTRIM(br.Branch)						AS BRANCH
 		,t.AdjCode
-
+		--
+		--,t.GLBU_Class
+		--
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
 			THEN 'GL_Input' 
@@ -57,7 +59,7 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202112 AND 202112)  AND
+		(t.FiscalMonth between 202101 AND 202112)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
@@ -68,6 +70,9 @@
 	GROUP BY 
 		t.FiscalMonth
 		,t.AdjCode
+		--
+		--,t.GLBU_Class
+		--
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
 		,br.Branch

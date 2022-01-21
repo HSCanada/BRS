@@ -25,6 +25,12 @@ GO
 ALTER TABLE [Integration].[F5554240_fg_redeem_finalize_Staging] ADD  DEFAULT ((-1)) FOR [status_code]
 GO
 
+--
+/****** Object:  Table [Integration].[F5554240_fg_redeem_Staging]    Script Date: 2022/01/14 12:53:47 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Integration].[F5554240_fg_redeem_Staging]') AND type in (N'U'))
+DROP TABLE [Integration].[F5554240_fg_redeem_Staging]
+GO
+
 
 --
 

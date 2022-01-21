@@ -98,17 +98,17 @@ GO
 
 -- SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]
 
--- 1. export item
--- 20220107_camsg_Item.txt
--- select * from msg.item 	
+-- 20220114_camsg_Item.txt
+print('1. export item')
+select * from msg.item 	
 
--- 2. export customer
--- 20220107_camsg_Customer.txt
--- SELECT * FROM msg.Customer
+-- 20220114_camsg_Customer.txt
+print('2. export customer')
+SELECT * FROM msg.Customer
 
--- 3. export sales
--- 20220107_camsg_Transaction.txt
--- SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2022-01-01' and '2022-01-07'
+-- 20220114_camsg_Transaction.txt
+print ('3. export sales')
+SELECT * FROM msg.[Transaction] where POSTED_DATE BETWEEN '2022-01-08' and '2022-01-14'
 
 
 
