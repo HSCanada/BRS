@@ -94,6 +94,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -143,7 +144,8 @@ Begin
 	WHERE
 		(comm_group_cd = 'ITMPVT') AND
 		([comm_group_eps_cd] <> comm_group_cd) AND
-		-- eps PPE exclusion
+		/*
+		-- eps PPE exclusion, remove for 2022 plan
 		([SubMajorProdClass]  NOT IN(
 			'008-01'
 			,'008-02'
@@ -175,6 +177,7 @@ Begin
 			,'203-52'
 			)
 		) AND
+		*/
 		(1=1)
 
 	Set @nErrorCode = @@Error

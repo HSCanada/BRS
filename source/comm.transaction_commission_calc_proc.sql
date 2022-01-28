@@ -1356,7 +1356,7 @@ Return @nErrorCode
 
 GO
 
--- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202012
+-- SELECT FiscalMonth, comm_status_cd FROM BRS_FiscalMonth  where FiscalMonth between 201901 and 202112
 -- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202010
 
 -- Prod
