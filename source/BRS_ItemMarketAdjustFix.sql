@@ -35,6 +35,7 @@ AS
 **  08 Jan 21	tmc		update to add new import format  1.025 = 2.5
 **	11 Jan 21	tmc		add PPE exclude with where ME < 1
 **	26 May 21	tmc		move logic to BRS_ItemMarketAdjustModel for more flex
+**	04 Feb 22	tmc		add excption logic for Med 200 codes
 **    
 *******************************************************************************/
 
@@ -58,12 +59,14 @@ SELECT
 	,i.ma_base_factor
 	,ma_supplier_factor
 	,ma_stocking_factor
+	,[ma_exception_factor]
+
 
 	,i.FreightAdjPct
 	,i.CorporateMarketAdjustmentPct
 
-	,ROUND(i.new_market_adj, 5)					AS new_market_adj
-	,(ROUND(i.new_market_adj, 4) - 1.0) * 100.	AS new_market_adj_import
+	,ROUND(i.new_market_adj+[ma_exception_factor], 5)					AS new_market_adj
+	,(ROUND(i.new_market_adj+[ma_exception_factor], 4) - 1.0) * 100.	AS new_market_adj_import
 	,i.Est12MoSales
 
 FROM
@@ -71,12 +74,17 @@ FROM
 
 WHERE
 	-- Correction needed?
-	ABS(CorporateMarketAdjustmentPct - i.new_market_adj) > 0.001 AND
+	ABS(CorporateMarketAdjustmentPct - (i.new_market_adj+[ma_exception_factor])) > 0.001 AND
+--	ABS(CorporateMarketAdjustmentPct - i.new_market_adj) > 0.001 AND
 
 	-- exclude PPE overrides
 	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
 
 	(1=1) 
+
+	-- test
+	--OR [ma_exception_factor] <> 0.0
+
 
 
 GO
@@ -85,9 +93,9 @@ GO
 
 -- SELECT top 10 * FROM BRS_ItemMarketAdjustFix where ma_heavy_ind = 0
 -- SELECT * FROM BRS_ItemMarketAdjustFix order by 	Est12MoSales desc 
-
 -- SELECT count(*) FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
 -- SELECT * FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
 -- SELECT * FROM BRS_ItemMarketAdjustFix where item = '5854180'
-
 -- ORG 76206, with EXLUDE 76165
+
+-- SELECT  * FROM BRS_ItemMarketAdjustFix where [ma_exception_factor] <> 0 order by new_market_adj desc

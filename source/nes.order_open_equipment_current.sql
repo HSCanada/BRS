@@ -90,6 +90,8 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+--SELECT distinct [SalesDate] from nes.open_order_opordrpt order by 1
+
 -- SELECT TOP 10 * FROM nes.order_open_equipment_current
 -- SELECT * FROM nes.order_open_equipment_current
 

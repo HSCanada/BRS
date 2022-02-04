@@ -377,6 +377,7 @@ WHERE        (comm_plan_id IN ('FSCGP02', 'FSCGP03', 'ESSGP', 'CCSGP'))
 -- run to build up rate rules for new plans
 -- Prod
 -- Exec comm.transaction_commission_calc_proc @bDebug=0
+-- Exec comm.transaction_commission_calc_proc @bDebug=1
 
 -- fix PPE private label 
 UPDATE       BRS_ItemHistory
@@ -405,39 +406,8 @@ where
 (comm_plan_id IN ('FSCGP02', 'FSCGP03', 'ESSGP', 'CCSGP'))
 ORDER BY 3
 
-UPDATE       comm.salesperson_master
-SET                comm_plan_id = RTRIM(comm_plan_id)+'_Q'
-FROM            comm.salesperson_master INNER JOIN
-                         BRS_FSC_Rollup AS f ON comm.salesperson_master.master_salesperson_cd = f.TerritoryCd
-WHERE        (f.Branch IN ('MNTRL', 'QUEBC')) AND (comm.salesperson_master.comm_plan_id IN ('FSCGP02', 'FSCGP03', 'ESSGP', 'CCSGP'))
-
-
-SELECT        *
-FROM            comm.salesperson_master
-WHERE        (comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q'))
-
--- set Dec plans (to test) QA ONLY 
-
-UPDATE       BRS_CustomerFSC_History
-SET                HIST_fsc_comm_plan_id = m.comm_plan_id
-FROM            BRS_CustomerFSC_History INNER JOIN
-                         comm.salesperson_master AS m ON BRS_CustomerFSC_History.HIST_fsc_salesperson_key_id = m.salesperson_key_id
-WHERE
-	(m.comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q')) AND 
-	(HIST_fsc_comm_plan_id <> m.comm_plan_id) AND
-	(BRS_CustomerFSC_History.FiscalMonth BETWEEN 202112 AND 202112) 
-
-
-SELECT
-h.Shipto, h.FiscalMonth, h.HIST_fsc_salesperson_key_id, h.HIST_fsc_comm_plan_id, m.comm_plan_id
-FROM            BRS_CustomerFSC_History AS h INNER JOIN
-                         comm.salesperson_master AS m ON h.HIST_fsc_salesperson_key_id = m.salesperson_key_id
-WHERE
-(m.comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q')) AND
-(h.FiscalMonth between 202112 and 202112)
-
-
--- re-run plans
+--
+-- re-run plans PRE rate change
 
 -- recalc model 2020 (12m)
 print 202101
@@ -489,6 +459,41 @@ UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202112
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
 
+--
+
+UPDATE       comm.salesperson_master
+SET                comm_plan_id = RTRIM(comm_plan_id)+'_Q'
+FROM            comm.salesperson_master INNER JOIN
+                         BRS_FSC_Rollup AS f ON comm.salesperson_master.master_salesperson_cd = f.TerritoryCd
+WHERE        (f.Branch IN ('MNTRL', 'QUEBC')) AND (comm.salesperson_master.comm_plan_id IN ('FSCGP02', 'FSCGP03', 'ESSGP', 'CCSGP'))
+
+
+SELECT        *
+FROM            comm.salesperson_master
+WHERE        (comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q'))
+
+-- set Dec plans (to test) QA ONLY 
+/*
+UPDATE       BRS_CustomerFSC_History
+SET                HIST_fsc_comm_plan_id = m.comm_plan_id
+FROM            BRS_CustomerFSC_History INNER JOIN
+                         comm.salesperson_master AS m ON BRS_CustomerFSC_History.HIST_fsc_salesperson_key_id = m.salesperson_key_id
+WHERE
+	(m.comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q')) AND 
+	(HIST_fsc_comm_plan_id <> m.comm_plan_id) AND
+	(BRS_CustomerFSC_History.FiscalMonth BETWEEN 202112 AND 202112) 
+*/
+
+SELECT
+h.Shipto, h.FiscalMonth, h.HIST_fsc_salesperson_key_id, h.HIST_fsc_comm_plan_id, m.comm_plan_id
+FROM            BRS_CustomerFSC_History AS h INNER JOIN
+                         comm.salesperson_master AS m ON h.HIST_fsc_salesperson_key_id = m.salesperson_key_id
+WHERE
+(m.comm_plan_id IN ('FSCGP02_Q', 'FSCGP03_Q', 'ESSGP_Q', 'CCSGP_Q')) AND
+(h.FiscalMonth between 202112 and 202112)
+
+
+
 -- test model in DEV
 -- plan rollups? old vs new plan codes (see Gary template)
 -- DONE!
@@ -511,9 +516,3 @@ print 202112
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202112
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
-
-
-
-
-
-

@@ -383,7 +383,7 @@ Begin
 	SELECT @nRowCount = count(*) FROM [Integration].[F5554240_fg_redeem_Staging]
 	if (@bDebug <> 0 AND @nRowCount > 0)
 	Begin
-		print 'FALED: non zero rows =' + @nRowCount
+		print 'FALED: non zero rows =' +  CAST(@nRowCount as varchar(30))
 		Set @nErrorCode = 512
 	end
 
@@ -444,3 +444,4 @@ GO
 
 -- Debug
 -- EXEC fg.order_load_proc @bDebug=1
+

@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	04 Feb 22	tmc		add excption logic for Med 200 codes
 **    
 *******************************************************************************/
 
@@ -52,6 +53,7 @@ SELECT
 	ma_base_factor,
 	ma_supplier_factor,
 	ma_stocking_factor,
+	[ma_exception_factor],
 
 	i.FreightAdjPct, 
 	i.CorporateMarketAdjustmentPct,
@@ -76,6 +78,8 @@ FROM
 	INNER JOIN BRS_ItemStocking AS stk 
 	ON i.StockingType = stk.StockingType
 
+	INNER JOIN [dbo].[BRS_ItemCategory] AS cat
+	ON i.MinorProductClass = cat.MinorProductClass
 
 	CROSS JOIN [dbo].[BRS_Config] AS cfg
 
@@ -87,6 +91,7 @@ WHERE
 	(i.ItemStatus <> 'P') AND 
 	-- no MSDS items
 	(i.MajorProductClass <> '904') AND
+	-- remove 20* MPC
 
 	(i.FreightAdjPct > 0) AND
 
@@ -117,6 +122,7 @@ SELECT
 	ma_base_factor,
 	ma_supplier_factor,
 	ma_stocking_factor,
+	[ma_exception_factor],
 
 	i.FreightAdjPct, 
 	i.CorporateMarketAdjustmentPct,
@@ -140,6 +146,9 @@ FROM
 	
 	INNER JOIN BRS_ItemStocking AS stk 
 	ON i.StockingType = stk.StockingType
+
+	INNER JOIN [dbo].[BRS_ItemCategory] AS cat
+	ON i.MinorProductClass = cat.MinorProductClass
 
 	CROSS JOIN [dbo].[BRS_Config] AS cfg
 
@@ -181,7 +190,7 @@ SELECT
 	ma_base_factor,
 	ma_supplier_factor,
 	ma_stocking_factor,
-
+	[ma_exception_factor],
 
 	i.FreightAdjPct, 
 	i.CorporateMarketAdjustmentPct,
@@ -205,6 +214,9 @@ FROM
 	
 	INNER JOIN BRS_ItemStocking AS stk 
 	ON i.StockingType = stk.StockingType
+
+	INNER JOIN [dbo].[BRS_ItemCategory] AS cat
+	ON i.MinorProductClass = cat.MinorProductClass
 
 	CROSS JOIN [dbo].[BRS_Config] AS cfg
 
@@ -252,6 +264,7 @@ SELECT
 	-- hard code as eco type not reportable
 	0.05							AS ma_supplier_factor,
 	ma_stocking_factor,
+	[ma_exception_factor],
 
 
 	i.FreightAdjPct, 
@@ -277,6 +290,8 @@ FROM
 	INNER JOIN BRS_ItemStocking AS stk 
 	ON i.StockingType = stk.StockingType
 
+	INNER JOIN [dbo].[BRS_ItemCategory] AS cat
+	ON i.MinorProductClass = cat.MinorProductClass
 
 	CROSS JOIN [dbo].[BRS_Config] AS cfg
 
@@ -315,4 +330,5 @@ GO
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustModel 
 
+-- ORG 76965
 

@@ -155,7 +155,7 @@ GO
 
 
 -- SELECT * FROM nes.pipeline
--- SELECT sum(SalesAmt) FROM nes.pipeline where FiscalMonthInstall between 202001 and 202012
+-- SELECT sum(SalesAmt) FROM nes.pipeline where FiscalMonthInstall between 202201 and 202201
 -- ORG 30 537 393.8314
 -- NEW 30 409 619.3017
 
