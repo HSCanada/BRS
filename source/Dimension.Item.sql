@@ -54,6 +54,7 @@ AS
 --	29 Sep 21	tmc		Add FamilySet code for analysis
 --	25 Oct 21	tmc		Add Rebate Exclude for analysis
 --	21 Nov 21	tmc		Add 2 model params for thrive analysis
+--	21 Feb 22	tmc		Add globl product for EQ bonus model
 **    
 *******************************************************************************/
 
@@ -65,7 +66,9 @@ SELECT
 	,RTRIM(sc.SalesCategoryName)		AS SalesCategory
 	,RTRIM(sc2.SalesCategoryName)		AS SalesCategoryRollup
 	,RTRIM(mpc.MPC_Category)			AS Abc_MpcItem
-	,RTRIM(cr.category_rollup_desc) 	AS CategoryRollup
+	,RTRIM(cr.[CategoryRollup])
+		+ ' | '
+		+ RTRIM(cr.category_rollup_desc) 	AS CategoryRollup
 
 	,CASE
 		WHEN cr.top15_ind = 1
@@ -174,6 +177,9 @@ SELECT
 	,CASE WHEN i.adhoc_model_code4 <> '' THEN i.adhoc_model_code4 ELSE 'Other' END adhoc_model_code4
 	,CASE WHEN i.adhoc_model_code5 <> '' THEN i.adhoc_model_code5 ELSE 'Other' END adhoc_model_code5
 
+	,RTRIM(c.global_product_class) 
+		+ ' | ' + RTRIM(glob.global_product_class_descr) AS global_product
+
 
 FROM            
 	BRS_Item AS i 
@@ -220,12 +226,16 @@ FROM
 	LEFT JOIN [Pricing].[item_wcs_unique_fields_file_F5656] wcs
 	ON i.Item =wcs.QVLITM_item_number
 
+	LEFT JOIN [hfm].[global_product] glob
+	ON c.global_product_class = glob.global_product_class
+
 	-- equity graft on last month results
 	LEFT JOIN 
 	(
 		SELECT [Item]
 			,excl.BrandEquityCategory
 			,excl.Excl_Code
+
 		FROM [dbo].[BRS_ItemHistory] ih
 			INNER JOIN [hfm].[exclusive_product] excl
 			ON ih.Excl_key = excl.Excl_Key

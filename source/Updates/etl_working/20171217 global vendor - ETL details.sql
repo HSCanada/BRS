@@ -89,7 +89,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202201 AND 202201
+	FiscalMonth BETWEEN 202202 AND 202202
 GO
 
 
@@ -101,7 +101,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202201 AND 202201
+	FiscalMonth BETWEEN 202202 AND 202202
 GO
 
 /*
@@ -150,7 +150,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202201 AND 202201
+	FiscalMonth BETWEEN 202202 AND 202202
 GO
 
 
@@ -169,7 +169,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202201 AND 202201
+	FiscalMonth BETWEEN 202202 AND 202202
 GO
 
 
@@ -182,7 +182,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202201 AND 202201
+	FiscalMonth BETWEEN 202202 AND 202202
 GO
 
 print '11. set owned based on GL'
@@ -433,6 +433,24 @@ WHERE
 	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202201) AND 
 	(1 = 1)
 GO
+
+-- set BSOLN to 930-99, if missing
+print ('global - set BSOLN to 930-99, if missing')
+UPDATE       BRS_Transaction
+SET                global_product_class_key = 3311
+-- SELECT * 
+FROM            BRS_Transaction INNER JOIN
+                         BRS_BusinessUnitClass AS bu_trans ON BRS_Transaction.GLBU_Class = bu_trans.GLBU_Class
+WHERE
+	(BRS_Transaction.SalesDivision < 'AZA') AND 
+	(BRS_Transaction.GLBU_Class IN ('BSOLN')) AND 
+	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
+	(BRS_Transaction.global_product_class_key IS NULL) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 201901 AND 202201) AND 
+	(1 = 1)
+GO
+
+
 
 /*
 SELECT

@@ -995,6 +995,7 @@ Begin
 			(s.FiscalMonth = @nCurrentFiscalYearmoNum) AND
 			(s.[HIST_comm_group_isr_cd] <> '') AND
 --			test
+--			(d.id = 9992704) AND
 --			(s.FiscalMonth >= 202001) AND
 --			(s.HIST_comm_group_cd like 'SPM%') AND
 			(1=1)
@@ -1085,7 +1086,7 @@ Begin
 			[isr_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
 			[isr_calc_key] = r.calc_key
 
---		select * 
+--		select g.*, * 
 		FROM
 			comm.transaction_F555115 t
 
@@ -1105,15 +1106,16 @@ Begin
 			(t.isr_comm_plan_id <> '') AND
 			(t.isr_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
-			(g.booking_rt = 0) AND
+			--(g.booking_rt = 0) AND
 			(r.active_ind = 1) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 
 			-- test
+			-- (t.id=9992704) AND
 			-- (t.FiscalMonth = 201912 ) AND
 			-- (t.source_cd = 'IMP') AND
 			-- (t.isr_comm_group_cd='REBSND') AND 
 			--
-			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
 			(1 = 1)
 
 		Set @nErrorCode = @@Error

@@ -516,3 +516,11 @@ print 202112
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202112
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
+
+-- retro ISR comm codes for 2021
+UPDATE       BRS_ItemHistory
+SET                HIST_comm_group_isr_cd = BRS_Item.comm_group_isr_cd
+FROM            BRS_Item INNER JOIN
+                         BRS_ItemHistory ON BRS_Item.Item = BRS_ItemHistory.Item AND BRS_Item.comm_group_isr_cd <> BRS_ItemHistory.HIST_comm_group_isr_cd
+WHERE        (BRS_ItemHistory.FiscalMonth BETWEEN 202101 AND 202202)
+GO

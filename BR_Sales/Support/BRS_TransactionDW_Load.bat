@@ -16,7 +16,8 @@ ECHO LOAD Integration.BRS_CreditInfo...
 BCP %DB_DST%.Integration.BRS_CreditInfo in ../Upload/BRSCreditInfo.txt -c -T -S %BRS_SQLSERVER% -e BRSCreditInfo_ERR.txt -F 2
 
 ECHO LOAD STAGE_BRS_TransactionDW...
-BCP %DB_DST%..STAGE_BRS_TransactionDW in ../Upload/BRS_TransactionDW.txt -c -T -S %BRS_SQLSERVER% -e BRS_TransactionDW_ERR.txt -F 2
+BCP %DB_DST%..STAGE_BRS_TransactionDW in ../Upload/BRS_TransactionDW.txt -c -T -S %BRS_SQLSERVER% -e BRS_TransactionDW_ERR.txt -F 2 -t"|"
+::BCP %DB_DST%..STAGE_BRS_TransactionDW in ../Upload/BRS_TransactionDW.txt -c -T -S %BRS_SQLSERVER% -e BRS_TransactionDW_ERR.txt -F 2 
 
 ECHO LOAD Prod...
 ::PAUSE
