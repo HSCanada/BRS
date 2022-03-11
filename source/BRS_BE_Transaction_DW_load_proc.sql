@@ -52,6 +52,7 @@ AS
 --	05 Oct 18	tmc		fix alert logic to use text
 --	22 Aug 19	tmc		add new entered_by logic
 --	20 Jul 20	tmc		add credit info load logic for returns dashboard
+--	09 Mar 22	tmc		exclude Private label from free goods (billing in 2022)
 **    
 *******************************************************************************/
 BEGIN
@@ -702,6 +703,72 @@ BEGIN
 			Set @nErrorCode = @@Error
 
 		End
+
+		If (@nErrorCode = 0 And @nRowCount > 0) 
+		Begin
+
+			If (@bDebug <> 0)
+			Begin
+				Print '------------------------------------------------------------------------------------------------------------'
+				Print '14b. Free Goods Private Label correction to remove free goods estimates for Label = P
+				Print '------------------------------------------------------------------------------------------------------------'
+				Print ''
+			End
+
+			UPDATE    
+				BRS_TransactionDW
+			SET              
+				FreeGoodsEstInd = 0
+			-- SELECT *
+			FROM         
+				BRS_TransactionDW 
+		
+				INNER JOIN BRS_Item AS i 
+				ON BRS_TransactionDW.Item = i.Item
+
+			WHERE     
+				(i.Label = 'P') AND 
+				(BRS_TransactionDW.Date >= '2022-01-01') AND 
+				(BRS_TransactionDW.FreeGoodsEstInd = 1) AND
+				/*
+				EXISTS
+				(
+					Select 
+						* 
+					From 
+						STAGE_BRS_TransactionDW s
+					Where 
+						SalesOrderNumber = s.JDEORNO And
+						DocType = s.ORDOTYCD And
+						LineNumber = ROUND(s.LNNO * 1000,0) 
+				) AND
+				*/
+				(1 = 1)
+
+			Set @nErrorCode = @@Error
+
+
+		End
+
+		/*  retro fix, 1 time
+			Print '14c. Free Goods Private Label correction to remove free goods estimates for Label = P - Retro 1-time
+
+			UPDATE    
+				BRS_TransactionDW
+			SET              
+				FreeGoodsEstInd = 0
+			FROM         
+				BRS_TransactionDW 
+		
+				INNER JOIN BRS_Item AS i 
+				ON BRS_TransactionDW.Item = i.Item
+
+			WHERE     
+				(i.Label = 'P') AND 
+				(BRS_TransactionDW.FreeGoodsEstInd = 1) AND
+				(1 = 1)
+		*/
+
 
 		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
