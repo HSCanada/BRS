@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	14 Mar 22	tmc		Added GM line and group key for analysis
 *******************************************************************************/
 
 BEGIN
@@ -95,9 +96,14 @@ BEGIN
 
 		,t.[FreeGoodsEstInd]
 
-		,(t.[NetSalesAmt])							AS sales_amt
-		,(t.[ExtendedCostAmt]) 
-		-ISNULL(t.[ExtChargebackAmt],0)				AS gp_amt
+		,t.[NetSalesAmt]							AS sales_amt
+
+		,(t.[NetSalesAmt]) - (t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))						AS gp_amt
+
+		-- ugly, due to 0 trapping
+		,ISNULL(1-(t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))/NULLIF(t.[NetSalesAmt],0),0)	AS gm_line
+		,q.SpendKey	AS gm_line_key
+	
 
 -- test
 
@@ -172,6 +178,22 @@ BEGIN
 		LEFT JOIN [hfm].[gps_code] as g
 		ON t.GpsKey = g.GpsKey
 
+		LEFT JOIN 
+		(
+			SELECT
+				Spend_From, Spend_To, Spend_Display, Spend_Rank, SpendKey
+			FROM
+				BRS_Customer_Spend_Category
+			WHERE
+				(Spend_Category = N'Q')
+		) as q ON 
+
+		(ISNULL(1-(t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))/NULLIF(t.[NetSalesAmt],0),0) >= q.Spend_From ) AND
+		(ISNULL(1-(t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))/NULLIF(t.[NetSalesAmt],0),0) < q.Spend_to) AND
+		-- between is inclusive and picking up overlaps
+		-- (ISNULL(1-(t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))/NULLIF(t.[NetSalesAmt],0),0) between q.Spend_From and q.Spend_to)
+		(1=1)
+
 
 	WHERE
 		(t.FiscalMonth >= @StartMonth)  AND
@@ -179,6 +201,7 @@ BEGIN
 --		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE CAST(t.SalesDate as date) = dd.SalesDate)) AND
 
 		-- test
+--		t.id = 26278116 AND
 --		t.SalesOrderNumber = 1109883 AND
 --		ext.PromotionTrackingCode is null AND
 --		(t.FiscalMonth = 202009)  AND
@@ -194,5 +217,6 @@ GO
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
--- Exec [hfm].global_cube_model_proc 
+ -- Exec [hfm].global_cube_model_proc 
+ -- 262 532
 -- 8 778 939 in 3.30m

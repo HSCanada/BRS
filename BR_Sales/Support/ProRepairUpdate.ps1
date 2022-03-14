@@ -2,11 +2,13 @@
 # 13 Nov 18, tmc, enable refresh after filter set
 # 16 Nov 18, tmc, added Calgary, Edmonton, Ottawa to set
 # 12 Dec 18, tmc, added FSC, EST to detail
+# 14 Mar 22, tmc, moved template to daily folder
 
 #$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20201023.xlsm'
 
 # This is the tempalate.  Can be anything
-$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
+$File_in = 'S:\BR\RegularReports\Daily\Prorepair_Pipeline_KPI\template\ProRepair-20181212.xlsm'
+#$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
 
 # Part 1 - Pull data into 1 template
 
