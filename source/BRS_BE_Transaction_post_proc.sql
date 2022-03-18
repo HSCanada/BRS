@@ -36,6 +36,7 @@ AS
 --	13 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 --	07 Jun 17	tmc		REVERSED - Fix SAIT. Proper fix once new VPA in place
 --	04 Jun 18	tmc		Update special Market logic 
+--	15 Mar 22	tmc		Link DS to DW to enable cross functional goodness
 **    
 *******************************************************************************/
 BEGIN
@@ -594,6 +595,32 @@ Begin
 End
 
 --
+-- Map DW to DS
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		Print 'Map DW to DS'
+
+
+	Set @nExceptionCount = @nExceptionCount + @nRowCount
+
+	UPDATE
+		BRS_Transaction
+	SET
+		ID_source_ref = dw.ID
+	FROM
+		BRS_Transaction 
+		INNER JOIN BRS_TransactionDW AS dw 
+		ON BRS_Transaction.LineNumber = dw.LineNumber AND BRS_Transaction.DocType = dw.DocType AND BRS_Transaction.SalesOrderNumber = dw.SalesOrderNumber
+	WHERE
+		(BRS_Transaction.DocType NOT IN ('AA', 'SX')) AND 
+		(BRS_Transaction.GLBU_Class NOT IN ('FREIG', 'FRTEQ')) AND 
+		(BRS_Transaction.ID_source_ref IS NULL) AND
+		(BRS_Transaction.FiscalMonth = @nFiscalMonth) AND
+		(1=1)
+End
+
+--
 	if (@bDebug <> 0) 
 	Begin
 		Print @sMessage
@@ -648,7 +675,7 @@ End
 		Set @sMessage = @sMessage + ':  Return(' + Convert(varchar, @nErrorCode) + ')'
 		Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-		RAISERROR (50060, 9, 1, @sMessage )
+		RAISERROR ('%s', 9, 1, @sMessage )
 
 		Rollback Tran mytran
 
@@ -667,33 +694,10 @@ Return @nErrorCode
 END
 GO
 
-
-/*
-UPDATE       
-	BRS_Customer
-SET                
-	MarketClass = '', 
-	SegCd = ''
--- 62713 rows
-
-UPDATE       
-	BRS_Customer
-SET                
-	MarketClass = h.HIST_MarketClass, 
-	SegCd = h.HIST_SegCd
-FROM            
-	BRS_Customer 
-	INNER JOIN BRS_CustomerFSC_History AS h 
-	ON BRS_Customer.ShipTo = h.Shipto
-WHERE        
-	(h.FiscalMonth = 201805) AND
-	h.HIST_MarketClass <> ''
--- 62712 rows
-*/
+-- Prod Run
+-- [BRS_BE_Transaction_post_proc] @bDebug=0
 
 -- Debug Run
--- [BRS_BE_Transaction_post_proc] 
+-- [BRS_BE_Transaction_post_proc] @bDebug=1
 
--- Prod Run
--- [BRS_BE_Transaction_post_proc] 0
 

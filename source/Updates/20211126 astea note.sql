@@ -91,9 +91,11 @@ ALTER TABLE nes.order_note_D1ICMTPF SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add wo forRI
 INSERT INTO [nes].[order]([work_order_num], note)
 select distinct ICMOWO_work_order_number, '' from Integration.D1ICMTPF_order_note_Stage where not exists (select * from [nes].[order] where ICMOWO_work_order_number = [work_order_num])
 
+-- find bad data.  think WO WQ02190041
 SELECT        count (*) from Integration.D1ICMTPF_order_note_Stage group by 
 	[ICMOWO_work_order_number]
 	,[ICMORD_ets_order_number]
@@ -113,3 +115,5 @@ SELECT        ICMOWO_work_order_number, ICMORD_ets_order_number, ICMTYP2_header_
                          ICMTYP1_record_type
 FROM            Integration.D1ICMTPF_order_note_Stage s
 WHERE ICMOWO_work_order_number <>'WQ02190041'
+
+-- create view?  may just query raw table to map note to token

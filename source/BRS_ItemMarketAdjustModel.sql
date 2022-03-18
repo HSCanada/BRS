@@ -326,7 +326,7 @@ GO
 
 -- SELECT SalesCategory, COUNT(*) AS cnt FROM BRS_ItemMarketAdjustModel GROUP BY SalesCategory
 
--- SELECT top 10 * FROM BRS_ItemMarketAdjustModel where ma_heavy_ind = 0
+-- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('9394967', '9394864', '1382569', '9396337')
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustModel 
 

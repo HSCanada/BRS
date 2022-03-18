@@ -2,12 +2,12 @@
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [hfm].global_cube_model_proc 
+ALTER view fact.global_cube
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: [hfm].global_cube_model_proc 
+**	Name: [hfm].global_cube_model
 **	Desc: more granular version of [hfm].global_cube_proc.  used for modelling
 **
 **              
@@ -31,13 +31,6 @@ AS
 **	-----	----------	--------------------------------------------
 **	14 Mar 22	tmc		Added GM line and group key for analysis
 *******************************************************************************/
-
-BEGIN
-	Declare @StartMonth int
-
-	SET NOCOUNT ON;
-
-	Set @StartMonth = (Select MIN([FiscalMonth]) FROM [Dimension].[Day])
 
 	SELECT   
 --		top 1000
@@ -89,12 +82,13 @@ BEGIN
 --		,t.AdjCode	
 		,adj.[AdjCodeKey]
 
-		,promo.promotion_key
-
 		,t.SalesOrderNumber	
 		,t.LineNumber
 
 		,t.[FreeGoodsEstInd]
+		,ISNULL(dw.FreeGoodsInvoicedInd,0)			AS FreeGoodsInvoicedInd
+
+		,ISNULL(dw.ShippedQty,0)					AS ShippedQty
 
 		,t.[NetSalesAmt]							AS sales_amt
 
@@ -103,15 +97,21 @@ BEGIN
 		-- ugly, due to 0 trapping
 		,ISNULL(1-(t.[ExtendedCostAmt] -ISNULL(t.[ExtChargebackAmt],0))/NULLIF(t.[NetSalesAmt],0),0)	AS gm_line
 		,q.SpendKey	AS gm_line_key
+
+		,ISNULL(pm.PriceMethodKey, 1)			AS PriceMethodKey
 	
 		-- Lookup fields for Salesorder dimension
 		,ISNULL(hdr.ID_Header, 0)				AS ID_Header
+
+		,ISNULL(dw.OriginalSalesOrderNumber,0)	AS OriginalSalesOrderNumber
 		,ISNULL(t.[DocType], '')				AS [DocType]
 		,ISNULL(dw.[OrderPromotionCode], '')	AS [OrderPromotionCode]
 		,ISNULL(t.[OrderSourceCode], '')		AS [OrderSourceCode]
 		,ISNULL(dw.[EnteredBy], '')				AS [EnteredBy]
 		,ISNULL(dw.[OrderTakenBy], '')			AS [OrderTakenBy]
-		,ISNULL(dw.PriceMethod, '')				AS PriceMethod
+		-- promo tracking key
+		,ISNULL(promo.promotion_key, 1)			AS promotion_key
+
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -212,7 +212,7 @@ BEGIN
 			FROM
 				BRS_Transaction
 			WHERE 
-				(FiscalMonth >= @StartMonth)  AND
+				(FiscalMonth >= (Select MIN([FiscalMonth]) FROM [Dimension].[Day]))  AND
 				-- (FiscalMonth = 202203)  AND
 				(SalesDivision NOT IN('AZA', 'AZE')) AND 
 				(1=1)
@@ -220,13 +220,17 @@ BEGIN
 		) AS hdr
 		ON t.SalesOrderNumber = hdr.SalesOrderNumber
 
+		LEFT JOIN [dbo].[BRS_PriceMethod] pm
+		ON dw.PriceMethod = pm.PriceMethod
+
+
 
 	WHERE
-		(t.FiscalMonth >= @StartMonth)  AND
+		(t.FiscalMonth >= (Select MIN([FiscalMonth]) FROM [Dimension].[Day]))  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 
 		-- test
-		t.id = 26278116 AND
+		-- t.id = 26278116 AND
 --		t.SalesOrderNumber = 1109883 AND
 --		ext.PromotionTrackingCode is null AND
 --		(t.FiscalMonth = 202009)  AND
@@ -234,12 +238,10 @@ BEGIN
 		--
 		(1=1)
 
-END
-
 GO
 
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
- -- Exec [hfm].global_cube_model_proc 
- -- 6 445 502 @ 2.50
+ -- select * from fact.global_cube where SalesOrderNumber = 13164170
+ -- ORG 6 445 502 @ 2m50s
 

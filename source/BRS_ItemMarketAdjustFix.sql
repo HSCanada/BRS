@@ -36,6 +36,7 @@ AS
 **	11 Jan 21	tmc		add PPE exclude with where ME < 1
 **	26 May 21	tmc		move logic to BRS_ItemMarketAdjustModel for more flex
 **	04 Feb 22	tmc		add excption logic for Med 200 codes
+**	16 Mar 22	tmc		fix PPE potial problem by lowering thersh to 0.001
 **    
 *******************************************************************************/
 
@@ -78,7 +79,8 @@ WHERE
 --	ABS(CorporateMarketAdjustmentPct - i.new_market_adj) > 0.001 AND
 
 	-- exclude PPE overrides
-	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.001 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+--	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
 
 	(1=1) 
 
@@ -98,4 +100,4 @@ GO
 -- SELECT * FROM BRS_ItemMarketAdjustFix where item = '5854180'
 -- ORG 76206, with EXLUDE 76165
 
--- SELECT  * FROM BRS_ItemMarketAdjustFix where [ma_exception_factor] <> 0 order by new_market_adj desc
+-- SELECT  * FROM BRS_ItemMarketAdjustFix order by CorporateMarketAdjustmentPct desc
