@@ -117,3 +117,29 @@ FROM            Integration.D1ICMTPF_order_note_Stage s
 WHERE ICMOWO_work_order_number <>'WQ02190041'
 
 -- create view?  may just query raw table to map note to token
+
+-- test
+
+/*
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT [ICMOWO_work_order_number]
+      ,[ICMORD_ets_order_number]
+      ,[ICMTYP2_header_detail]
+      ,[ICMSEQ_comments_sequence]
+      ,[ICMMSG_comments]
+      ,[ICMTYP1_record_type]
+      ,[ID]
+  FROM [DEV_BRSales].[nes].[order_note_D1ICMTPF] 
+  where [ICMTYP2_header_detail] = 'H' and
+  [ICMORD_ets_order_number] > 'R' 
+  order by 2 desc
+
+  SELECT 
+      [ICMTYP1_record_type]
+	  ,count(*)
+  FROM [DEV_BRSales].[nes].[order_note_D1ICMTPF] 
+  where [ICMTYP2_header_detail] = 'H' and
+  [ICMORD_ets_order_number] > 'R' 
+  group by 
+  [ICMTYP1_record_type]
+*/
