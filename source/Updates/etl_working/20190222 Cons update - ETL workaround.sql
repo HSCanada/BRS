@@ -7,7 +7,8 @@
 -------------------------------------------------------------------------------
 
 
--- clear prod
+print '1. clear prod'
+
 truncate table Redemptions_tbl_Main
 GO
 truncate table Redemptions_tbl_Items
@@ -22,6 +23,9 @@ INSERT INTO [dbo].[Redemptions_tbl_Main]
 GO
 
 -- 
+
+print '2. add deals'
+
 INSERT INTO Redemptions_tbl_Main
 	(
 	RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
@@ -45,6 +49,8 @@ WHERE
 	(1=1)
 GO
 
+
+print '3. add items'
 
 INSERT INTO Redemptions_tbl_Items
 	(RecID, ItemNumber, ItemID)
@@ -127,3 +133,14 @@ GO
 -- END - Prod move
 
 */
+
+print '4. add new chargback'
+
+INSERT INTO [fg].[chargeback]
+(
+[cb_contract_num]
+,[note_txt]
+)
+select distinct [ChargebackContractNumber], 'init' from [dbo].[BRS_TransactionDW] dw where [ChargebackContractNumber] > 0 and 
+	not exists (select * from  [fg].[chargeback] cb where cb.cb_contract_num = dw.ChargebackContractNumber)
+GO

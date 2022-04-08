@@ -242,7 +242,7 @@ GO
 
 -- SELECT top 10 * FROM Fact.Commission where adjKey is null
 -- SELECT top 10 * FROM Fact.Commission where hs_branded_baseline_ind = 0
--- SELECT * FROM Fact.Commission where SalesOrderNumber = 1131213
+-- SELECT * FROM Fact.Commission where SalesOrderNumber = 14986507
 
 -- 30s
 
