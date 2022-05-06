@@ -327,6 +327,7 @@ GO
 -- SELECT SalesCategory, COUNT(*) AS cnt FROM BRS_ItemMarketAdjustModel GROUP BY SalesCategory
 
 -- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('9394967', '9394864', '1382569', '9396337')
+ --SELECT * FROM BRS_ItemMarketAdjustModel where item in ('5876217')
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustModel 
 

@@ -65,4 +65,4 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM Dimension.[SalesorderCommission] order by 1
+-- SELECT top 10 * FROM Dimension.[SalesorderCommission] where SalesOrderNumber = 14986507
