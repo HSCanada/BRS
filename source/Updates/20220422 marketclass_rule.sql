@@ -12,6 +12,7 @@ CREATE TABLE [hfm].[marketclass_rule](
 
 	,[MarketClass_Target] [char](6) NOT NULL
 	,[SegCd_Target] [char](20) NOT NULL
+	,cust_comm_group_cd_Target [char](6) NULL
 
 	,[MarketClass_TargetKey] [int] NOT NULL Identity(1,1)
 
@@ -58,6 +59,23 @@ ALTER TABLE hfm.marketclass_rule ADD CONSTRAINT
 	) REFERENCES dbo.BRS_CustomerSegment
 	(
 	SegCd
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.marketclass_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE hfm.marketclass_rule ADD CONSTRAINT
+	FK_marketclass_rule_group FOREIGN KEY
+	(
+	cust_comm_group_cd_Target
+	) REFERENCES comm.[group]
+	(
+	comm_group_cd
 	) ON UPDATE  NO ACTION 
 	 ON DELETE  NO ACTION 
 	
