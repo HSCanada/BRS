@@ -10,3 +10,22 @@ GO
 ALTER TABLE dbo.BRS_Customer SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Customer ADD
+	DSO_operatory_count smallint NOT NULL CONSTRAINT DF_BRS_Customer_DSO_operatories_count DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_Customer SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+
+UPDATE       BRS_Customer
+SET                adhoc_model_2_text = adhoc_model_code2
+WHERE        (adhoc_model_code2 <> '')
+
+UPDATE       BRS_Customer
+SET            DSO_operatory_count = 10
+WHERE        (DSO_TrackingCd = 'DSO')

@@ -56,6 +56,7 @@ AS
 --	17 Aug 21	tmc		Roll A25k code into AAA for ISR
 --	14 Oct 21	tmc		add freight ind for commission modelling
 --	19 Oct 21	tmc		break wheel active into 2 parts for more flex analysis
+--	08 Apr 22	tmc		add DSO operatory count and 3 full text adhoc fields
 
 **    
 *******************************************************************************/
@@ -232,7 +233,9 @@ SELECT
 	,CASE WHEN c.ApplySmallOrderChargesInd = 'Y' THEN 1 ELSE 0 END	As ApplySmallOrderChargesInd
 	,c.adhoc_model_code2
 
-
+	,c.adhoc_model_1_text
+	,c.adhoc_model_2_text
+	,c.adhoc_model_3_text
 
 FROM
 	BRS_Customer AS c 
@@ -370,4 +373,4 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
--- SELECT  distinct ApplyFreightInd, ApplySmallOrderChargesInd FROM Dimension.Customer
+ SELECT  * FROM Dimension.Customer where ShipTo = 1706379
