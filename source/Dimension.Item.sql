@@ -55,6 +55,7 @@ AS
 --	25 Oct 21	tmc		Add Rebate Exclude for analysis
 --	21 Nov 21	tmc		Add 2 model params for thrive analysis
 --	21 Feb 22	tmc		Add globl product for EQ bonus model
+--	01 Jun 22	tmc		Add price change fields to track GP uplift
 **    
 *******************************************************************************/
 
@@ -180,6 +181,14 @@ SELECT
 	,RTRIM(c.global_product_class) 
 		+ ' | ' + RTRIM(glob.global_product_class_descr) AS global_product
 
+	,i.pchg_active_ind 
+	,i.pchg_active_dt
+	,i.pchg_price_old
+	,i.pchg_price_new
+	,i.pchg_note
+	,i.pchg_brand_equiv
+
+
 
 FROM            
 	BRS_Item AS i 
@@ -291,3 +300,6 @@ GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 */
 
 -- SELECT * FROM Dimension.Item where itemKey  = 9
+-- SELECT * FROM Dimension.Item where item = '9493402'
+
+-- SELECT top 10 * FROM Dimension.Item where pchg_active_ind = 1
