@@ -73,11 +73,48 @@ WHERE        (GpsKey = 11)
 SELECT *
   FROM [hfm].[gps_code] order by gpskey
 
+  -- add global fix support
+  BEGIN TRANSACTION
+GO
+ALTER TABLE hfm.gps_fix_temp ADD
+	global_product_class char(12) NULL,
+	global_product_class_key_New int NULL
+GO
+ALTER TABLE hfm.gps_fix_temp ADD CONSTRAINT
+	FK_gps_fix_temp_global_product FOREIGN KEY
+	(
+	global_product_class_key_New
+	) REFERENCES hfm.global_product
+	(
+	global_product_class_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE hfm.gps_fix_temp SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- add global fix audit history
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction ADD
+	global_product_class_keyORG int NULL
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
 --> fix start here
 -- populate hfm.gps_fix_temp from excel
 
 SELECT count(*) FROM [hfm].[gps_fix_temp]
 -- 4916
+
+-- XXX fix global as well 
 
 -- test org gsp, must be Zero
 SELECT        t.ID, t.GpsKey, new.GpsKey AS Expr1, t.GpsKeyORG, new.GpsKeyNew
