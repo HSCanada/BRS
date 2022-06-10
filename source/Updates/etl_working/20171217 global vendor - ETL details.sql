@@ -534,7 +534,7 @@ WHERE
 	(BRS_Transaction.Item > '') AND 
 	(GLBU_Class <> 'FREIG') AND
 	(BRS_Transaction.global_product_class_key =1) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202204 AND 202204)
+	(BRS_Transaction.FiscalMonth BETWEEN 202205 AND 202205)
 ORDER BY NetSalesAmt desc
 GO
 
@@ -566,7 +566,7 @@ SET
 	GpsKey = NULL
 WHERE
 	(not GpsKey is NULL) AND
-	(BRS_Transaction.FiscalMonth between 202108 AND 202108)
+	(BRS_Transaction.FiscalMonth between 202205 AND 202205)
 GO
 */
 

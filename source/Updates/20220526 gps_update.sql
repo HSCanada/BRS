@@ -111,12 +111,13 @@ COMMIT
 --> fix start here
 -- populate hfm.gps_fix_temp from excel
 
+--truncate table [hfm].[gps_fix_temp]
+
 SELECT count(*) FROM [hfm].[gps_fix_temp]
--- 4916
+-- 9710, eq
+-- 1859, merch
 
--- XXX fix global as well 
-
--- test org gsp, must be Zero
+-- test org gsp, must be Zero PRE update
 SELECT        t.ID, t.GpsKey, new.GpsKey AS Expr1, t.GpsKeyORG, new.GpsKeyNew
 FROM            BRS_Transaction AS t INNER JOIN
                          hfm.gps_fix_temp AS new ON t.ID = new.ID
@@ -124,20 +125,49 @@ WHERE t.GpsKey <> new.GpsKey
 GO
 
 -- test new gsp, must be Zero (after update)
-SELECT        t.ID, t.GpsKey, new.GpsKey AS Expr1, t.GpsKeyORG, new.GpsKeyNew
+SELECT        t.FiscalMonth,  t.DocType, t.GLBU_Class, t.ID, t.GpsKey, new.GpsKey AS GpsKeyOLD, t.GpsKeyORG, new.GpsKeyNew
 FROM            BRS_Transaction AS t INNER JOIN
                          hfm.gps_fix_temp AS new ON t.ID = new.ID
-WHERE t.GpsKey <> new.GpsKeyNew
+WHERE ISNULL(t.GpsKey,0) <> new.GpsKeyNew
+ORDER BY 1
 
--- update
+
+-- test new global, must be Zero (after update)
+SELECT        t.FiscalMonth, t.DocType, t.Item, t.GLBU_Class, t.ID, t.[global_product_class_key], new.[global_product_class] AS global_product_classOLD, t.[global_product_class_keyORG], new.[global_product_class_key_New]
+FROM            BRS_Transaction AS t INNER JOIN
+                         hfm.gps_fix_temp AS new ON t.ID = new.ID
+WHERE 
+	ISNULL(t.[global_product_class_key],0) <> new.[global_product_class_key_New] AND
+--	(t.DocType = 'AA') AND
+	(t.Item <> '') AND
+	(1=1)
+ORDER BY 1
+
+-- update GPS (only change existing gps mapping, to ensure tie-out)
 UPDATE       BRS_Transaction
 SET                GpsKey = new.GpsKeyNew, GpsKeyORG = BRS_Transaction.GpsKey
 FROM            BRS_Transaction INNER JOIN
                          hfm.gps_fix_temp AS new ON BRS_Transaction.ID = new.ID AND BRS_Transaction.GpsKey <> new.GpsKeyNew
 
-
--- test post
+-- test post (all diff)
 SELECT        t.ID, t.GpsKey,  t.GpsKeyORG
 FROM            BRS_Transaction AS t INNER JOIN
                          hfm.gps_fix_temp AS new ON t.ID = new.ID
 WHERE t.GpsKeyORG is not null
+
+-- update Global (only change existing gps mapping, to ensure tie-out)
+UPDATE       BRS_Transaction
+SET
+	global_product_class_key = new.global_product_class_key_New, 
+	global_product_class_keyORG = global_product_class_key
+FROM            BRS_Transaction INNER JOIN
+                         hfm.gps_fix_temp AS new 
+						 ON BRS_Transaction.ID = new.ID AND 
+						 BRS_Transaction.global_product_class_key <> new.global_product_class_key_New
+WHERE        (BRS_Transaction.Item <> '') AND (1 = 1)
+
+-- test post (all diff)
+SELECT        t.ID, t.global_product_class_key,  t.global_product_class_keyORG
+FROM            BRS_Transaction AS t INNER JOIN
+                         hfm.gps_fix_temp AS new ON t.ID = new.ID
+WHERE t.global_product_class_keyORG is not null
