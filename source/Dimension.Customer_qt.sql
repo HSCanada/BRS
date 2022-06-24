@@ -60,6 +60,8 @@ SELECT
 	,RTRIM(ISNULL(padj.[PriceMethod],''))						AS AdjPriceMethod
 	,V.FocusCd													as SalesplanFocusCode
 	,v.VPATypeCd												AS SalesplanType
+	,bt.billto_adhoc_model_code1
+	,bt.billto_adhoc_model_code2
 
 
 FROM

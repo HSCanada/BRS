@@ -37,6 +37,7 @@ AS
 --	07 Jun 17	tmc		REVERSED - Fix SAIT. Proper fix once new VPA in place
 --	04 Jun 18	tmc		Update special Market logic 
 --	15 Mar 22	tmc		Link DS to DW to enable cross functional goodness
+--	21 Jun 22	tmc		Patch SM logic to fix ZahnSM and 123Dental priors
 **    
 *******************************************************************************/
 BEGIN
@@ -420,11 +421,56 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+-- XXX
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '12. Patch Zahn SM for groups that span Dental and Lab'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'ZAHNSM', 
+		SegCd_New = 'DSO'
+	-- SELECT *
+	FROM            
+		BRS_Customer 
+		INNER JOIN BRS_CustomerGroup AS g 
+		ON BRS_Customer.CustGrpWrk = g.CustGrp
+	WHERE        
+		(SalesDivision = 'AAL') AND 
+		(BRS_Customer.MarketClass_New <> 'ZAHNSM') AND 
+		(g.MarketClass_New in( 'ELITE', 'INSTIT', 'MIDMKT', 'ZAHNSM') )
+
+	Set @nErrorCode = @@Error
+End
 
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '12. merge new codes'
+		print '13. Patch 123Dental Prior'
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = 'PVTPRC', 
+		SegCd_New = ''
+	WHERE        
+		(SalesDivision = 'AAD') AND 
+		(MarketClass_New <> 'PVTPRC') AND
+		(CustGrpWrk = '123 Dentist') AND
+		(VPA not in ('123DENTA', '123DENNC')) AND
+		(1=1)
+
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '14. merge new codes'
 
 	UPDATE       
 		BRS_Customer
@@ -594,7 +640,8 @@ Begin
 
 End
 
---
+-- remove logic, 21 Jun 22, tmc, why is ID_source_ref removed?
+/*
 -- Map DW to DS
 If (@nErrorCode = 0) 
 Begin
@@ -619,7 +666,7 @@ Begin
 		(BRS_Transaction.FiscalMonth = @nFiscalMonth) AND
 		(1=1)
 End
-
+*/
 --
 	if (@bDebug <> 0) 
 	Begin

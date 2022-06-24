@@ -57,6 +57,7 @@ AS
 --	14 Oct 21	tmc		add freight ind for commission modelling
 --	19 Oct 21	tmc		break wheel active into 2 parts for more flex analysis
 --	08 Apr 22	tmc		add DSO operatory count and 3 full text adhoc fields
+--	10 May 22	tmc		map FieldSales name to commission master for rollup
 
 **    
 *******************************************************************************/
@@ -78,7 +79,8 @@ SELECT
 		THEN RTRIM([VPATypeCd])
 		ELSE RTRIM(padj.[EnrollSource])
 	END													AS SalesPlanType
-	,RTRIM(sroll.FSCName)								AS FieldSales
+	,RTRIM(fsc_master.salesperson_nm)					AS FieldSales
+--	,RTRIM(sroll.FSCName)								AS FieldSales
 	,RTRIM(b.BranchName)								AS Branch
 	,RTRIM(fsa.FSA)										AS FSA
 	,RTRIM(fsa.City)									AS City
@@ -374,3 +376,5 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
  SELECT  * FROM Dimension.Customer where ShipTo = 1706379
+
+ SELECT  * FROM Dimension.Customer where CommMasterCode_FSC_Current ='CZ1VK'

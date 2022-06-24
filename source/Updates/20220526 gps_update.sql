@@ -137,7 +137,8 @@ SELECT        t.FiscalMonth, t.DocType, t.Item, t.GLBU_Class, t.ID, t.[global_pr
 FROM            BRS_Transaction AS t INNER JOIN
                          hfm.gps_fix_temp AS new ON t.ID = new.ID
 WHERE 
-	ISNULL(t.[global_product_class_key],0) <> new.[global_product_class_key_New] AND
+--	ISNULL(t.[global_product_class_key],0) <> new.[global_product_class_key_New] AND
+	(t.id = 24571755) AND
 --	(t.DocType = 'AA') AND
 	(t.Item <> '') AND
 	(1=1)
