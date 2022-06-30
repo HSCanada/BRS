@@ -82,7 +82,8 @@ WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_Targe
 --> Part 1: STOP
 
 -------------------------------------------------------------------------------
--- Part 2 - HSB update, run after ME snapshot
+-- Part 2 - HSB update, run after ME snapshot (comm, Monday tasks)
+-- http://wiki.br.hsa.ca/wiki/Commission_Backend_BR_Docs_384#Monthend_snapshot
 -------------------------------------------------------------------------------
 
 print '6. test Excl_key - should be 0 null records'
@@ -91,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202205 AND 202205
+	FiscalMonth BETWEEN 202206 AND 202206
 GO
 
 
@@ -103,7 +104,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202205 AND 202205
+	FiscalMonth BETWEEN 202206 AND 202206
 GO
 
 /*
@@ -152,7 +153,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202205 AND 202205
+	FiscalMonth BETWEEN 202206 AND 202206
 GO
 
 
@@ -171,7 +172,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202205 AND 202205
+	FiscalMonth BETWEEN 202206 AND 202206
 GO
 
 
@@ -184,16 +185,14 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202205 AND 202205
+	FiscalMonth BETWEEN 202206 AND 202206
 GO
 
-
-
---> STOP
+--> STOP (part 2)
 
 -------------------------------------------------------------------------------
 -- Part 3 - Global update that is consistent with finacial
---				run after ME adjustment loaded
+--				run after ME adjustment loaded (day 7+)
 -------------------------------------------------------------------------------
 
 -- Global 

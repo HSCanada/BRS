@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	29 Jun 22	tmc		add Free Goods est code
 *******************************************************************************/
 
 Declare @sVersion	varchar(10)		= 'WRKNG'
@@ -63,6 +64,8 @@ BEGIN
 	WHERE
 		(PERIOD = @FiscalMonth) AND
 --		test
+		-- temp flag (1 of 3, sales)
+		(AdjCode <> 'XXXFGE') AND
 --		t.SalesOrderNumber = 1109883 AND
 		(1=1)
 
@@ -110,6 +113,8 @@ BEGIN
 	WHERE
 		(ReportingClass <> 'NSA') AND
 		(PERIOD = @FiscalMonth) AND
+		-- temp flag (2 of 3, ext_cost)
+		(AdjCode <> 'XXXFGE') AND
 		(1=1)
 
 	GROUP BY 
@@ -159,6 +164,9 @@ BEGIN
 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
+		-- temp flag (3 of 3, cb), DO NOT ADJ, TC
+		--(AdjCode = 'XXXFGE') AND
+
 
 		(1=1)
 
@@ -187,7 +195,10 @@ GO
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
 --a_CAN_Sep-21_RA.csv
--- [hfm].global_cube_new_proc 202109
+-- [hfm].global_cube_new_proc 202201
+-- 48 368 rows @ 3s
+
+-- FG 28 124
 
 -- 46 452 rows @ 6s
 -- 

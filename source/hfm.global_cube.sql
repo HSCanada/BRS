@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	29 Jun 22	tmc		add temp 
 **    
 *******************************************************************************/
 
@@ -227,6 +228,9 @@ AS
 		-- exclude non-sales
 		(t.SalesDivision < 'AZA') AND 
 		(gl_bu.[GLBU_ClassUS_L1] < 'ZZZZZ') AND
+		-- temp fix
+		(AdjCode <> 'XXXFGE') AND
+		--
 --		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		--
 --		test
@@ -308,7 +312,18 @@ SELECT * FROM [hfm].global_cube WHERE SourceCd is null
 
 -- TO DO GL conflict / 
 
--- SELECT top 100 * from [hfm].global_cube order by PERIOD desc
+--SELECT top 100 * from [hfm].global_cube order by PERIOD desc
+--SELECT sum(ext_cost) from [hfm].global_cube where period = 202201 and AdjCode <> 'XXXFGE' 
+--SELECT sum(ext_cost) from [hfm].global_cube where period = 202201 and AdjCode = 'XXXFGE' 
+--SELECT sum(ext_cost) from [hfm].global_cube where period = 202201 and AdjCode = 'FREEGD' 
+--SELECT * from [hfm].global_cube where period = 202201 and AdjCode in( 'FREEGD' ,'XXXFGE')
+--SELECT distinct AdjCode from [hfm].global_cube where period = 202108 and AdjCode <> 'XXXFGE' 
+
+/*
+FG = 745660.66
+FG Not = 23119915.8911
+total = 23865576.5511
+*/
 
 --SELECT  * from [hfm].global_cube order by PERIOD
 
