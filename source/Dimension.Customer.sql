@@ -375,6 +375,6 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
- SELECT  * FROM Dimension.Customer where ShipTo = 1706379
 
- SELECT  * FROM Dimension.Customer where CommMasterCode_FSC_Current ='CZ1VK'
+-- SELECT  * FROM Dimension.Customer where ShipTo = 1706379
+-- SELECT  * FROM Dimension.Customer where CommMasterCode_FSC_Current ='CZ1VK'

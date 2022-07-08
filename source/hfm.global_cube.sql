@@ -229,7 +229,7 @@ AS
 		(t.SalesDivision < 'AZA') AND 
 		(gl_bu.[GLBU_ClassUS_L1] < 'ZZZZZ') AND
 		-- temp fix
-		(AdjCode <> 'XXXFGE') AND
+		--(AdjCode <> 'XXXFGE') AND
 		--
 --		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		--
