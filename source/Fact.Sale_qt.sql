@@ -36,6 +36,8 @@ AS
 **	16 Aug 20	tmc		add Exclusives 
 **	18 Mar 21	tmc		add promo tracking sales
 **	29 Sep 21	tmc		add backorder for show analyis
+**	20 Jul 22	tmc		add PO Field to help with GSP analysis
+**	21 Jul 22	tmc		move filter logic from SSAS model to query.  add P&G FG
 **    
 *******************************************************************************/
 
@@ -99,6 +101,7 @@ SELECT
 --	,CASE WHEN  t.Date = t.OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
 	,CASE WHEN  NOT t.DocType like 'S%' OR t.Date = t.OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
 	,CAST(t.OrderFirstShipDate AS date)							AS OrderFirstShipDateKey
+	,hdr.[CustomerPOText1]
 
 
 FROM            
@@ -150,9 +153,10 @@ FROM
 	INNER JOIN 
 	(
 		SELECT
-			h.SalesOrderNumber, 
-			MIN(d.ID) AS IDMin,
-			MIN(h.[PromotionTrackingCode]) AS PromotionTrackingCode
+			h.SalesOrderNumber 
+			,MIN(d.ID) AS IDMin
+			,MIN(h.[PromotionTrackingCode]) AS PromotionTrackingCode
+			,MIN(d.[CustomerPOText1]) AS [CustomerPOText1]
 		FROM
 			BRS_TransactionDW_Ext AS h INNER JOIN
 
@@ -221,6 +225,10 @@ WHERE
 --	(NOT (t.OrderSourceCode IN ('A', 'L'))) AND 
 
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE d.FiscalMonth = dd.FiscalMonth)) AND
+
+	(i.SalesCategory in( 'MERCH', 'SMEQU', 'TEETH')) AND
+	-- Free goods is a rabbit hole.  just allowing GSP in for now, tmc, 21 Jul 22
+	(t.FreeGoodsInvoicedInd = 0 OR i.Supplier= 'PROCGA' ) AND
 	-- test
 	--t.SalesOrderNumber = 1113586 AND
 	(1 = 1)

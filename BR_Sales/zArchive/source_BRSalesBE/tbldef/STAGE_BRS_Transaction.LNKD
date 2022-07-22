@@ -1,0 +1,4 @@
+﻿STAGE_BRS_Transaction
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+dbo.STAGE_BRS_Transaction
+SHDOCO;+SHDCTO;+SDLNID;+GLANI;+GLAA

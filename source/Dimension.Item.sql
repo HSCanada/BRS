@@ -58,6 +58,7 @@ AS
 --	01 Jun 22	tmc		Add price change fields to track GP uplift
 --  06 Jul 22	tmc		Add more price change fields to track GP uplift
 --	07 Jul 22	tmc		Add Comm bonus flags
+--	19 Jul 22	tmc		Add rebate vpa exclude codes
 **    
 *******************************************************************************/
 
@@ -201,6 +202,9 @@ SELECT
 
 	,commgrp.comm_bonus3_cd  AS  comm_bonus3_cd
 	,mpc.comm_bonus3_cd		 AS  mpc_comm_bonus3_cd
+
+	,c.minor_adhoc_model_code1
+	,c.minor_adhoc_model_code2
 
 FROM            
 	BRS_Item AS i 

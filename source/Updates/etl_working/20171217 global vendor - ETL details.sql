@@ -575,6 +575,7 @@ UPDATE
 	BRS_Transaction
 SET
 	GpsKey = g.GpsKey
+	-- SELECT count(*) 
 FROM
 	BRS_ItemHistory AS h 
 
@@ -593,6 +594,10 @@ FROM
 	INNER JOIN hfm.gps_code AS g 
 	ON r.Gps_Code_TargKey = g.GpsCode
 WHERE
+	--
+	--(BRS_Transaction.GpsKey IS NULL) AND
+	--
+
 -- retro
 --	(r.Sequence in (110, 121)) AND 
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
@@ -607,6 +612,7 @@ UPDATE
 	BRS_Transaction
 SET
 	GpsKey = g.GpsKey
+	-- SELECT count(*)
 FROM
 	BRS_ItemHistory AS h 
 	INNER JOIN BRS_Transaction 

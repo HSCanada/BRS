@@ -1,0 +1,4 @@
+﻿BRS_AGG_ICMBGAD_Sales
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+dbo.BRS_AGG_ICMBGAD_Sales
+Item;+FiscalMonth;+Shipto;+Branch;+GLBU_Class;+AdjCode;+SalesDivision;+FreeGoodsEstInd;+OrderSourceCode

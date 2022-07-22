@@ -1,0 +1,4 @@
+﻿hfm_exclusive_product
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+hfm.exclusive_product
+Excl_Code

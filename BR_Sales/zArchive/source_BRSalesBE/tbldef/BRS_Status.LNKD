@@ -1,0 +1,4 @@
+﻿BRS_Status
+ODBC;DSN=DEV_BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office 2016;DATABASE=DEV_BRSales;
+dbo.BRS_Status
+StatusCd

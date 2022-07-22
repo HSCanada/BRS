@@ -205,7 +205,7 @@ Begin
 			print '4. check - cps cust (partial check)'
 
 		SELECT    @nRowCount = COUNT(*)
-		-- select top 10 *
+		-- select top 10 Shipto, [Country], [SalesDivision], [PostalCode], cps_code, * 
 		FROM  [dbo].[BRS_Customer]
 		WHERE 
 			(Shipto > 0) AND

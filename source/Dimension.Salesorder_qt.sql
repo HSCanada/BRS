@@ -36,6 +36,7 @@ AS
 **	30 Apr 20	tmc		remove (move) price method line-level dimension
 **						(price method at line level, not order)
 **	18 Mar 21	tmc		improve the convention order tracking using new process
+**	20 Jul 22	tmc		add PO Field to help with GSP analysis
 *******************************************************************************/
 
 SELECT
@@ -82,6 +83,7 @@ SELECT
 	,f.EnteredBy
 	,f.OrderTakenBy
 	,f.FactKeyFirst
+	,f.[CustomerPOText1]
 FROM
 	Fact.Sale_qt AS f 
 
@@ -96,7 +98,7 @@ FROM
 
 WHERE        
 	(f.FactKey = f.FactKeyFirst) AND
-	-- test
+	-- test (temp, help with quick model update)
 	-- (f.SalesOrderNumber = 13086442) AND
 	--
 	(1=1)

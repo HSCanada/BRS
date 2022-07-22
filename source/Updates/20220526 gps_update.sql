@@ -148,7 +148,7 @@ ORDER BY 1
 UPDATE       BRS_Transaction
 SET                GpsKey = new.GpsKeyNew, GpsKeyORG = BRS_Transaction.GpsKey
 FROM            BRS_Transaction INNER JOIN
-                         hfm.gps_fix_temp AS new ON BRS_Transaction.ID = new.ID AND BRS_Transaction.GpsKey <> new.GpsKeyNew
+                         hfm.gps_fix_temp AS new ON BRS_Transaction.ID = new.ID AND ISNULL(BRS_Transaction.GpsKey,0) <> new.GpsKeyNew
 
 -- test post (all diff)
 SELECT        t.ID, t.GpsKey,  t.GpsKeyORG
