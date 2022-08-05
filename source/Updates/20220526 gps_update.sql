@@ -1,4 +1,5 @@
 --gsp_update, tmc, 26 May 22
+-- keep this until JDE codes fixed
 
 -- add holding spot for rule-based code which will be replace with the manual corrections
 BEGIN TRANSACTION
