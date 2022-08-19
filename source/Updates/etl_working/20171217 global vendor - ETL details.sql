@@ -239,7 +239,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 WHERE
 	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207)
 GO
 
 print('sales test')
@@ -249,7 +249,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_sales_key] is null) AND
 	([NetSalesAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND
 	(1=1)
 GO
 
@@ -266,7 +266,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 WHERE
 	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207)
 GO
 
 print ('cost test')
@@ -276,7 +276,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_cost_key] is null) AND
 	([ExtendedCostAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND
 	(1=1)
 GO
 
@@ -293,7 +293,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207)
 GO
 
 print ('chargeback test')
@@ -303,7 +303,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_chargeback_key] is null) AND
 	([ExtChargebackAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND
 	(1=1)
 order by GL_BusinessUnit
 GO
@@ -316,7 +316,7 @@ UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202206 AND 202206
+	FiscalMonth BETWEEN 202207 AND 202207
 GO
 
 UPDATE       [dbo].[BRS_Transaction]
@@ -327,7 +327,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	FiscalMonth BETWEEN 202206 AND 202206 AND
+	FiscalMonth BETWEEN 202207 AND 202207 AND
 	(1=1)
 GO
 
@@ -341,14 +341,14 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	FiscalMonth BETWEEN 202206 AND 202206 AND
+	FiscalMonth BETWEEN 202207 AND 202207 AND
 	(1=1)
 GO
 
 -------------------------------------------------------------------------------
 -- xxx fix 3D printer new mapping, 10 Nov 21
 -- update BRS_ItemCategory!global for new codes first
-print '16. set Global Item Group - AFTER manual maint'
+print '17a. set Global Item Group - AFTER manual maint'
 UPDATE       BRS_ItemHistory
 	SET global_product_class = BRS_ItemCategory.global_product_class
 FROM
@@ -358,7 +358,7 @@ WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	-- null filter not needed below
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202206 AND 202206
+	FiscalMonth BETWEEN 202207 AND 202207
 GO
 
 -- add the GL vs Global consistence rules corections here...
@@ -383,7 +383,7 @@ FROM
 WHERE
 	(BRS_Transaction.Item > '') AND 
 	(ISNULL(BRS_Transaction.global_product_class_key,0) <> ig.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207)
 GO
 
 -- 50s in dev
@@ -414,7 +414,7 @@ WHERE
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(bu_trans.global_product_class_default <> '') AND 
 	(BRS_Transaction.global_product_class_key <> iglob_def.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND 
 	(1 = 1)
 GO
 
@@ -430,7 +430,7 @@ WHERE
 	(BRS_Transaction.GLBU_Class IN ('EQDIG', 'HICAD')) AND 
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(BRS_Transaction.global_product_class_key IS NULL) AND 
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND 
 	(1 = 1)
 GO
 
@@ -446,7 +446,7 @@ WHERE
 	(BRS_Transaction.GLBU_Class IN ('BSOLN')) AND 
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(BRS_Transaction.global_product_class_key IS NULL) AND 
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207) AND 
 	(1 = 1)
 GO
 
@@ -533,7 +533,7 @@ WHERE
 	(BRS_Transaction.Item > '') AND 
 	(GLBU_Class <> 'FREIG') AND
 	(BRS_Transaction.global_product_class_key =1) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth BETWEEN 202207 AND 202207)
 ORDER BY NetSalesAmt desc
 GO
 
@@ -553,7 +553,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202206 AND 202206
+	FiscalMonth BETWEEN 202207 AND 202207
 GO
 
 --2 min
@@ -565,7 +565,7 @@ SET
 	GpsKey = NULL
 WHERE
 	(not GpsKey is NULL) AND
-	(BRS_Transaction.FiscalMonth between 202205 AND 202205)
+	(BRS_Transaction.FiscalMonth between 202207 AND 202207)
 GO
 */
 
@@ -603,7 +603,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth between 202207 AND 202207)
 GO
 
 -- 30s
@@ -636,7 +636,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202206 AND 202206)
+	(BRS_Transaction.FiscalMonth between 202207 AND 202207)
 GO
 
 print '15. test GpsKey - should be > 0 records'
@@ -645,7 +645,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202206 AND 202206
+	FiscalMonth BETWEEN 202207 AND 202207
 GO
 
 -------------------------------------------------------------------------------
@@ -658,7 +658,7 @@ GO
 -- a_CAN_May-22_RA.csv
 -- TEMP use Access to fix source
 -- 3. select & run below
--- [hfm].global_cube_new_proc  202205
+-- [hfm].global_cube_new_proc  202207
 
 -------------------------------------------------------------------------------
 
