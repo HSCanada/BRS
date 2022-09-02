@@ -1180,10 +1180,8 @@ GO
 
 -- Prod
 -- BRS_DS_Cube_proc 0
--- ORG 8 772, 9s (cached)
--- NEW, pre PPE 13 345, 31s (cached)
--- NEW, PPE @ item 13 345, 5min + (abort)
--- NEW, PPE # code 21 146, 18s (cached)
+-- pre 20,070 @ 15s
+-- pos 16,188 @ 19s
 
 -- Dev
 -- Exec BRS_DS_Cube_proc @bDebug=1

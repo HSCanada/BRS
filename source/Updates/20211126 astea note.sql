@@ -96,7 +96,7 @@ INSERT INTO [nes].[order]([work_order_num], note)
 select distinct ICMOWO_work_order_number, '' from Integration.D1ICMTPF_order_note_Stage where not exists (select * from [nes].[order] where ICMOWO_work_order_number = [work_order_num])
 
 -- find bad data.  think WO WQ02190041
-SELECT        count (*) from Integration.D1ICMTPF_order_note_Stage group by 
+SELECT min([ICMOWO_work_order_number]), count (*) from Integration.D1ICMTPF_order_note_Stage group by 
 	[ICMOWO_work_order_number]
 	,[ICMORD_ets_order_number]
 	,[ICMTYP2_header_detail] 
