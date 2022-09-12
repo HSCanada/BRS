@@ -45,6 +45,8 @@ AS
 --	29 May 20	tmc		replace seg with DCC plugin
 --	13 Aug 20	tmc		add specialist to seg
 --	18 Jul 22	tmc		refactored Mulitsite to show DCC and 123 for Elite
+--	09 Sep 22	tmc		refactored Mulitsite to show CLP and Alitma for Midmarket
+
 **    
 *******************************************************************************/
 
@@ -108,8 +110,10 @@ SELECT
 	-- Use Current Seg as MTD is dynamic
 	cc.MarketClass, 
 	
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END as SegCd,
+	--- XXX
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.DAY.ACT' AS Status,
@@ -167,8 +171,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,cc.MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 
@@ -193,8 +198,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	c.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 
@@ -252,8 +258,9 @@ GROUP BY
 	,t.AdjCode
 	,t.SalesDivision
 	,c.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -273,8 +280,9 @@ SELECT
 	'E' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.DAY.EST' AS Status,
@@ -334,8 +342,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -356,8 +365,9 @@ SELECT
 	'P' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'PY.DAY.PRO' AS Status,
@@ -415,8 +425,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -440,8 +451,9 @@ SELECT
 
 	-- Use Current Seg as MTD is dynamic
 	cc.MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END as SegCd,
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.MTD.ACT' AS Status,
@@ -507,8 +519,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,cc.MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN c.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN c.MarketClass = 'PVTSPC' THEN c.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -530,8 +543,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	c.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+	-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'PY.MTD.ACT' AS Status,
@@ -590,8 +604,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,c.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -616,8 +631,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.ME.ACT' AS Status,
@@ -669,8 +685,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -692,8 +709,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'PY.ME.ACT' AS Status,
@@ -746,8 +764,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -772,8 +791,9 @@ SELECT
 	'E' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.MTD.EST' AS Status,
@@ -834,8 +854,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -857,8 +878,9 @@ SELECT
 	'P' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'PY.MTD.PRO' AS Status,
@@ -916,8 +938,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -941,8 +964,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.YTD.ACT' AS Status,
@@ -994,8 +1018,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -1019,8 +1044,9 @@ SELECT
 	'A' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'PY.YTD.ACT' AS Status,
@@ -1075,8 +1101,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -1101,8 +1128,9 @@ SELECT
 	'F' AS TrxSrc, 
 
 	t.HIST_MarketClass AS MarketClass, 
-	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END as SegCd,
+-- new front
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
 	'CY.PMTD.EST' AS Status,
@@ -1165,10 +1193,9 @@ GROUP BY
 	,t.SalesDivision
 
 	,t.HIST_MarketClass
-	--NEW
-	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	-- ORG
---	,CASE WHEN cc.BillTo = 2613256 THEN 'DENCORP' ELSE CASE WHEN cc.MarketClass = 'PVTSPC' THEN cc.[Specialty] ELSE '' END END
+	-- new back
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+--	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
 END

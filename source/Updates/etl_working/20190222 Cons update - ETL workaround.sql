@@ -66,6 +66,7 @@ FROM
 	ON i.ItemNumber = ibr.Item
 WHERE 
 --	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
+--	(i.ItemNumber = '1263888') AND
 	(1=1)
 GROUP BY 
 	ibr.Item
@@ -94,6 +95,21 @@ HAVING        (COUNT(d.RecID) > 1) order by 2 desc
 -- START - prod move
 --drop table [Redemptions_tbl_Items]
 GO
+
+SELECT        
+	(i.RecID), ibr.Item, ibr.ItemKey AS ItemID
+FROM            
+	Redemptions..tbl_Items AS i 
+
+	INNER JOIN Redemptions_tbl_Main AS d 
+	ON i.RecID = d.RecID 
+	
+	INNER JOIN BRS_Item AS ibr 
+	ON i.ItemNumber = ibr.Item
+WHERE 
+--	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
+	(i.ItemNumber = '1263888') AND
+	(1=1)
 
 
 CREATE TABLE [dbo].[Redemptions_tbl_Items](
