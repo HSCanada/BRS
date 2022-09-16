@@ -29,6 +29,8 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	27 Mar 20	tmc		fix update bug where doctype changes (unexpected)
+**  13 Sep 22	tmc		Add Astea note load to process
+**  14 Sep 22	tmc		add ScheinSaver & Backorder load
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -69,7 +71,7 @@ Else
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '1. update notes'
+		print '1. JDE update changed notes'
 
 UPDATE
 	Pricing.order_header_note_F5503
@@ -97,7 +99,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '2. add notes'
+		print '2. JDE add new notes'
 
 	INSERT INTO Pricing.order_header_note_F5503 (
 		Q3KCOO_order_number_document_company,
@@ -137,6 +139,192 @@ Begin
 							-- s.[Q3DCTO_order_type] = d.[Q3DCTO_order_type] AND
 							(1=1)
 					)
+
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '3. D1 update changed notes'
+
+	UPDATE
+		nes.order_note_D1ICMTPF
+	SET
+		ICMMSG_comments = s.ICMMSG_comments
+	FROM
+		Integration.D1ICMTPF_order_note_Stage AS s 
+
+		INNER JOIN nes.order_note_D1ICMTPF 
+		ON s.ICMOWO_work_order_number = nes.order_note_D1ICMTPF.ICMOWO_work_order_number AND 
+			s.ICMORD_ets_order_number = nes.order_note_D1ICMTPF.ICMORD_ets_order_number AND 
+			s.ICMTYP2_header_detail = nes.order_note_D1ICMTPF.ICMTYP2_header_detail AND 
+			s.ICMLNE_detail_line_sequence = nes.order_note_D1ICMTPF.ICMLNE_detail_line_sequence AND 
+			s.ICMSEQ_comments_sequence = nes.order_note_D1ICMTPF.ICMSEQ_comments_sequence AND 
+			s.ICMBCH_batch_number = nes.order_note_D1ICMTPF.ICMBCH_batch_number AND 
+			s.ICMTYP1_record_type = nes.order_note_D1ICMTPF.ICMTYP1_record_type
+	WHERE
+		(nes.order_note_D1ICMTPF.ICMMSG_comments <> s.ICMMSG_comments)
+
+	Set @nErrorCode = @@Error
+End
+
+-- 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '4. D1 add wo forRI'
+
+	INSERT INTO 
+		[nes].[order]([work_order_num], note)
+	SELECT 
+		DISTINCT ICMOWO_work_order_number, '' 
+	FROM 
+		Integration.D1ICMTPF_order_note_Stage 
+	WHERE 
+		NOT EXISTS (SELECT * FROM [nes].[order] WHERE ICMOWO_work_order_number = [work_order_num])
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '5. D1 add new notes'
+
+INSERT INTO 
+nes.order_note_D1ICMTPF
+(
+	ICMOWO_work_order_number
+	,ICMORD_ets_order_number
+	,ICMTYP2_header_detail
+	,ICMLNE_detail_line_sequence
+	,ICMSEQ_comments_sequence
+	,ICMMSG_comments
+	,ICMBCH_batch_number
+	,ICMTYP1_record_type
+)
+SELECT
+	ICMOWO_work_order_number
+	,ICMORD_ets_order_number
+	,ICMTYP2_header_detail
+	,ICMLNE_detail_line_sequence
+	,ICMSEQ_comments_sequence
+	,ICMMSG_comments
+	,ICMBCH_batch_number
+	,ICMTYP1_record_type
+FROM
+	Integration.D1ICMTPF_order_note_Stage s
+WHERE
+	NOT EXISTS 
+	(
+		SELECT * FROM nes.order_note_D1ICMTPF 
+		WHERE
+			s.ICMOWO_work_order_number = nes.order_note_D1ICMTPF.ICMOWO_work_order_number AND 
+			s.ICMORD_ets_order_number = nes.order_note_D1ICMTPF.ICMORD_ets_order_number AND 
+			s.ICMTYP2_header_detail = nes.order_note_D1ICMTPF.ICMTYP2_header_detail AND 
+			s.ICMLNE_detail_line_sequence = nes.order_note_D1ICMTPF.ICMLNE_detail_line_sequence AND 
+			s.ICMSEQ_comments_sequence = nes.order_note_D1ICMTPF.ICMSEQ_comments_sequence AND 
+			s.ICMBCH_batch_number = nes.order_note_D1ICMTPF.ICMBCH_batch_number AND 
+			s.ICMTYP1_record_type = nes.order_note_D1ICMTPF.ICMTYP1_record_type
+	)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6a. ScheinSaver clear prod'
+
+	truncate table Redemptions_tbl_Main
+	truncate table Redemptions_tbl_Items
+
+	-- inster dummy
+	INSERT INTO [dbo].[Redemptions_tbl_Main]
+			   ([RecID]
+			   ,[Buy]
+			   ,[Get])
+		 VALUES
+			   (0, '', '')
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6b. ScheinSaver add deal header'
+
+	INSERT INTO Redemptions_tbl_Main
+		(
+		RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
+		,Setleader
+		,VendorID
+		,SetLeader_Name
+		,AutoAdd
+		)
+	SELECT        RecID, Div, Buy, Get, VendorName, Redeem, Quarter, Note, EffDate, Expired
+		,Setleader
+		,VendorID
+		,SetLeader_Name
+		,AutoAdd
+	FROM            
+		Redemptions..tbl_Main
+	WHERE        
+		-- update date
+		( (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) BETWEEN EffDate AND Expired) AND
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6c. ScheinSaver add deal line'
+
+	INSERT INTO Redemptions_tbl_Items
+		(RecID, ItemNumber, ItemID)
+	SELECT        
+		(MIN(i.RecID)), ibr.Item, MAX(ibr.ItemKey) AS ItemID
+	FROM            
+		Redemptions..tbl_Items AS i 
+
+		INNER JOIN Redemptions_tbl_Main AS d 
+		ON i.RecID = d.RecID 
+	
+		INNER JOIN BRS_Item AS ibr 
+		ON i.ItemNumber = ibr.Item
+	WHERE 
+	--	(i.RecID IN (30310, 30311, 30312, 30313, 30314, 30315, 30316, 30317)) AND
+	--	(i.ItemNumber = '1263888') AND
+		(1=1)
+	GROUP BY 
+		ibr.Item
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6d. add new chargback'
+
+	INSERT INTO [fg].[chargeback]
+	(
+		[cb_contract_num]
+		,[note_txt]
+	)
+	SELECT DISTINCT [ChargebackContractNumber], 'init' 
+	FROM [dbo].[BRS_TransactionDW] dw 
+	WHERE [ChargebackContractNumber] > 0 and 
+		NOT EXISTS (
+			SELECT * 
+			FROM  [fg].[chargeback] cb 
+			WHERE cb.cb_contract_num = dw.ChargebackContractNumber
+		)
 
 	Set @nErrorCode = @@Error
 End
@@ -185,20 +373,3 @@ GO
 --EXECUTE pricing.order_note_post_proc @bDebug=1
 --EXECUTE pricing.order_note_post_proc @bDebug=0
 
-/*
-select * from Integration.F5503_canned_message_file_parameters_Staging 
-where 
-[Q3DOCO_salesorder_number] = 1179270 AND
-[Q3INMG_print_message] = 9898 AND
-[Q3$SNB_sequence_number] = 0.01 AND
-[Q3LNID_line_number] = -999.999 AND
-(1=1)
-
-select * from Pricing.order_header_note_F5503
-where 
-[Q3DOCO_salesorder_number] = 1179270 AND
-[Q3INMG_print_message] = 9898 AND
-[Q3$SNB_sequence_number] = 0.01 AND
-[Q3LNID_line_number] = -999.999 AND
-(1=1)
-*/
