@@ -329,6 +329,120 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '7a. add new salesorder from backorder for RI'
+
+	INSERT INTO 
+		BRS_TransactionDW_Ext
+		(SalesOrderNumber, DocType)
+	SELECT DISTINCT
+		SDDOCO_salesorder_number, SDDCTO_order_type
+	FROM
+		Integration.FBACKRPT1_backorder_Staging AS s
+	WHERE
+		(SDSOBK_quantity_backordered <> 0) AND 
+		(SDLNTY_line_type <> 'MS') AND 
+		(QCAC10_division_code <> 'AZA') AND 
+	--	(1=1)
+		(NOT EXISTS
+					(SELECT        *
+					FROM            BRS_TransactionDW_Ext AS d
+					WHERE        (s.SDDOCO_salesorder_number = d.SalesOrderNumber) AND (s.SDDCTO_order_type = d.DocType))
+		) 
+
+	Set @nErrorCode = @@Error
+End
+
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '7b. add new backorder'
+
+	INSERT INTO 
+		fg.backorder_FBACKRPT1_history 
+		(
+			SalesDay
+			,SDDOCO_salesorder_number
+			,SDDCTO_order_type
+			,SDLNID_line_number
+			,SDDOC__document_number
+			,SDSHAN_shipto
+			,SDLITM_item_number
+			,QN$SPC_supplier_code
+			,QCTRDJ_order_date
+			,SDUPRC_unit_price
+			,SDSOBK_quantity_backordered
+			,SDUORG_quantity
+			,IMBUYR_buyer_number
+			,SDDSC1_description
+			,QV$PRI_pricing_info
+			,QV$AVC_availability_code
+			,QV$CLC_classification_code
+			,SDSHAN01_mailing_name
+			,GIADDZ_postal_code
+			,GICTY1_city
+			,GIADDS_state
+			,GICTR__country
+			,QCAC10_division_code
+			,SDLNTY_line_type
+			,IMLNTY_line_type
+			,SDMCU__business_unit
+			,SDVR01_reference
+			,SDVR02_reference_2
+			,QCENTB_entered_by
+			,SDRSDJ_promised_delivery
+			,SDNXTR_status_code_next
+		)
+	SELECT
+	(
+		(SELECT MAX(QCTRDJ_order_date) AS SalesDay FROM Integration.FBACKRPT1_backorder_Staging)) AS SalesDay
+		,SDDOCO_salesorder_number
+		,SDDCTO_order_type
+		-- convert fload to int (same as other trans)
+		,SDLNID_line_number * 1000
+		,SDDOC__document_number
+		,SDSHAN_shipto
+		,SDLITM_item_number
+		,QN$SPC_supplier_code
+		,QCTRDJ_order_date
+		,SDUPRC_unit_price
+		,SDSOBK_quantity_backordered
+		,SDUORG_quantity
+		,IMBUYR_buyer_number
+		,SDDSC1_description
+		,QV$PRI_pricing_info
+		,QV$AVC_availability_code
+		,QV$CLC_classification_code
+		,SDSHAN01_mailing_name
+		,GIADDZ_postal_code
+		,GICTY1_city
+		,GIADDS_state
+		,GICTR__country
+		,QCAC10_division_code
+		,SDLNTY_line_type
+		,IMLNTY_line_type
+		,SDMCU__business_unit
+		,SDVR01_reference
+		,SDVR02_reference_2
+		,QCENTB_entered_by
+		,SDRSDJ_promised_delivery
+		,SDNXTR_status_code_next
+	FROM
+		Integration.FBACKRPT1_backorder_Staging AS FBACKRPT1_backorder_Staging_1
+	WHERE
+		(SDSOBK_quantity_backordered <> 0) AND 
+		(SDLNTY_line_type <> 'MS') AND 
+		(QCAC10_division_code <> 'AZA') AND 
+		(1 = 1)
+	Set @nErrorCode = @@Error
+End
+
+--
+
+--
 
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  

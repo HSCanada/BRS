@@ -36,18 +36,18 @@ AS
 **	28 May 15	tmc		Added Parent field to update
 **	04 Dec 15	tmc		Corrected for widened Desc and Strect field (added Left(...).  Due to French corruption of output
 **	08 Jan 16	tmc		renamed to BRS_BE* and moved to production
---	20 Sep 16	tmc		added TS territory load
---	07 Dec 16	tmc		Moved new BT for RI logic
---	25 May 17	tmc		Added FSA for GEO ranking
---	19 Jul 17	tmc		Added Brand to Item for Pricing
---  23 Oct 17	tmc		Added @bClearStage option to simplify rights
---	03 Jan 18	tmc		sunset BRS_TS_Rollup
---	05 Oct 18	tmc		Add Brand to supplier load for RI
+**	20 Sep 16	tmc		added TS territory load
+**	07 Dec 16	tmc		Moved new BT for RI logic
+**	25 May 17	tmc		Added FSA for GEO ranking
+**	19 Jul 17	tmc		Added Brand to Item for Pricing
+**  23 Oct 17	tmc		Added @bClearStage option to simplify rights
+**	03 Jan 18	tmc		sunset BRS_TS_Rollup
+**	05 Oct 18	tmc		Add Brand to supplier load for RI
 **	9 Jun 19	tmc		add subminorcode
---	16 Dec 20	tmc		add EST
---	06 Apr 21	tmc		teeth stocking MA fix
---	14 Oct 21	tmc		add pma and freight ind for commission modelling
- 
+**	16 Dec 20	tmc		add EST
+**	06 Apr 21	tmc		teeth stocking MA fix
+**	14 Oct 21	tmc		add pma and freight ind for commission modelling
+**	19 Sep 22	tmc		add privileges code for business review model
 *******************************************************************************/
 
 BEGIN
@@ -206,6 +206,30 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '6b. Add new privileges (from Stage)...'
+
+			INSERT INTO 
+				nes.[privileges]
+				(privileges_code, privileges_descr)
+			SELECT DISTINCT
+				PrivilegesCode, ''
+			FROM
+				STAGE_BRS_CustomerFull AS s
+			WHERE
+				(PrivilegesCode IS NOT NULL) AND 
+				(NOT EXISTS
+					(SELECT        privileges_code, privileges_descr, privileges_key, priority_code, pma_ind
+					FROM            nes.[privileges] AS d
+					WHERE        (privileges_code = s.PrivilegesCode)
+					)
+				)
+
+			Set @nErrorCode = @@Error
+		End
+
 
 		If (@nErrorCode = 0) 
 		Begin
@@ -283,9 +307,10 @@ BEGIN
 				BRS_Customer.est_code <> ISNULL(s.EstTerritoryCd, 0)  OR
 				BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3) OR
 
-				BRS_Customer.[PrivilegesCode] = LEFT(ISNULL(s.[PrivilegesCode], ''), 5) OR
-				BRS_Customer.[ApplyFreightInd] = ISNULL(s.[ApplyFreightInd], '') OR
-				BRS_Customer.[ApplySmallOrderChargesInd] = ISNULL(s.[ApplySmallOrderChargesInd], '')
+				-- fix bad logic, tmc, 19 Sep 22
+				BRS_Customer.[PrivilegesCode] <> LEFT(ISNULL(s.[PrivilegesCode], ''), 5) OR
+				BRS_Customer.[ApplyFreightInd] <> ISNULL(s.[ApplyFreightInd], '') OR
+				BRS_Customer.[ApplySmallOrderChargesInd] <> ISNULL(s.[ApplySmallOrderChargesInd], '')
 
 
 			Set @nErrorCode = @@Error

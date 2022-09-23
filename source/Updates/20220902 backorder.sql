@@ -244,6 +244,29 @@ ALTER TABLE fg.backorder_FBACKRPT1_history SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add flag to 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_FiscalMonth ADD
+	fg_backorder_date date NULL
+GO
+ALTER TABLE dbo.BRS_FiscalMonth ADD CONSTRAINT
+	FK_BRS_FiscalMonth_BRS_SalesDay1 FOREIGN KEY
+	(
+	fg_backorder_date
+	) REFERENCES dbo.BRS_SalesDay
+	(
+	SalesDay
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_FiscalMonth SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
 /*
 -- prod ready format (add ID after)
 SELECT
@@ -301,7 +324,7 @@ WHERE
 -- populdate (test)
 
 -- prod ready format (add ID after)
-
+/*
 INSERT INTO BRS_TransactionDW_Ext
                          (SalesOrderNumber, DocType)
 SELECT DISTINCT SDDOCO_salesorder_number, SDDCTO_order_type
@@ -360,8 +383,7 @@ SELECT        (SELECT        MAX(QCTRDJ_order_date) AS SalesDay
 FROM            Integration.FBACKRPT1_backorder_Staging AS FBACKRPT1_backorder_Staging_1
 WHERE        (SDSOBK_quantity_backordered <> 0) AND (SDLNTY_line_type <> 'MS') AND (QCAC10_division_code <> 'AZA') AND (1 = 1)
 --
+*/
 
-
-
-
+-- copy last BO ro Aug last day for testing
 

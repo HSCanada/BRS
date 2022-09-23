@@ -6,7 +6,7 @@
 
 #$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20201023.xlsm'
 
-# This is the tempalate.  Can be anything
+# This is the template.  Can be anything
 $File_in = 'S:\BR\RegularReports\Daily\Prorepair_Pipeline_KPI\template\ProRepair-20181212.xlsm'
 #$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
 

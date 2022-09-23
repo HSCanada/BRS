@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	19 Sep 22	tmc		link last backorder to month
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -542,6 +543,38 @@ Begin
 		Set @nErrorCode = @@Error
 End
 
+--
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '200b. set backorder date default, Last extract of month'
+
+	SELECT
+		@dtDate = MAX(s.SalesDay)
+	FROM
+		BRS_Config AS c 
+		INNER JOIN BRS_SalesDay AS d 
+		ON c.PriorFiscalMonth = d.CalMonth 
+			
+		INNER JOIN [fg].[backorder_FBACKRPT1_history] AS s 
+		ON d.SalesDate = s.SalesDay
+	GROUP BY 
+		d.FiscalMonth
+
+	UPDATE
+		BRS_FiscalMonth
+	SET
+		fg_backorder_date = @dtDate
+	WHERE
+		(FiscalMonth = @nCurrentFiscalYearmoNum) AND
+		-- update if not set manully
+		(fg_backorder_date) is null AND
+		(1=1)
+
+		Set @nErrorCode = @@Error
+End
+
+--
 
 If (@nErrorCode = 0) 
 Begin
