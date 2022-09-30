@@ -121,7 +121,7 @@ FROM            OPENQUERY(ESYS_PROD,
 --------------------------------------------------------------------------------
 -- create Integration.FBACKRPT1_backorder
 --------------------------------------------------------------------------------
---drop TABLE [fg].[backorder_FBACKRPT1_history]
+-- drop TABLE [fg].[backorder_FBACKRPT1_history]
 CREATE TABLE [fg].[backorder_FBACKRPT1_history](
 	[SalesDay] [date] NOT NULL,
 	[SDDOCO_salesorder_number] [int] NOT NULL,

@@ -15,7 +15,7 @@ SELECT
 	, "ICMBCH" AS ICMBCH_batch_number
 	, "ICMTYP1" AS ICMTYP1_record_type
 
---INTO Integration.D1ICMTPF_order_note_Stage
+INTO Integration.D1ICMTPF_order_note_Stage
 
 FROM 
     OPENQUERY (ASYS_PROD, '
@@ -30,7 +30,7 @@ FROM
 ')
 
 -- 7237043 @ 33m
-
+/*
 SELECT 
 *
 -- INTO Integration.ARCPDTA71_F060116_<instert_friendly_name_here>
@@ -46,6 +46,7 @@ FROM
 --    ORDER BY
 --        <insert custom code here>
 ')
+*/
 
 -- drop TABLE nes.order_note_D1ICMTPF 
 CREATE TABLE nes.order_note_D1ICMTPF (
@@ -192,7 +193,7 @@ SELECT [ICMOWO_work_order_number]
 --
 
 -- update note xref, run for each fiscal month (for speed)
-
+/*
 UPDATE       nes.order_note_D1ICMTPF
 SET                SalesOrderNumber_key = temp.MinOfID
 FROM            (SELECT        t.WSORD__equipment_order, MIN(ext.ID) AS MinOfID
@@ -203,7 +204,7 @@ FROM            (SELECT        t.WSORD__equipment_order, MIN(ext.ID) AS MinOfID
                          nes.order_note_D1ICMTPF ON temp.WSORD__equipment_order = nes.order_note_D1ICMTPF.ICMORD_ets_order_number
 WHERE        (nes.order_note_D1ICMTPF.SalesOrderNumber_key IS NULL)
 GO
-
+*/
 /*
 select * from (SELECT        t.WSORD__equipment_order, MIN(ext.ID) AS MinOfID
 FROM            comm.transaction_F555115 AS t INNER JOIN
@@ -211,7 +212,7 @@ FROM            comm.transaction_F555115 AS t INNER JOIN
 WHERE        (t.FiscalMonth = 202201) AND (t.WSORD__equipment_order <> '') AND (t.WSDCTO_order_type > 'AA') AND (t.WS$OSC_order_source_code IN ('A', 'L'))
 GROUP BY t.WSORD__equipment_order) temp
 */
-
+/*
 UPDATE       nes.order_note_D1ICMTPF
 SET                ICMMSG_comments = s.ICMMSG_comments
 FROM            Integration.D1ICMTPF_order_note_Stage AS s INNER JOIN
@@ -220,3 +221,18 @@ FROM            Integration.D1ICMTPF_order_note_Stage AS s INNER JOIN
                          s.ICMSEQ_comments_sequence = nes.order_note_D1ICMTPF.ICMSEQ_comments_sequence AND s.ICMBCH_batch_number = nes.order_note_D1ICMTPF.ICMBCH_batch_number AND 
                          s.ICMTYP1_record_type = nes.order_note_D1ICMTPF.ICMTYP1_record_type
 WHERE        (nes.order_note_D1ICMTPF.ICMMSG_comments <> s.ICMMSG_comments)
+*/
+
+/*
+1. run this script
+2. run backorder script
+3. backorder ETL
+4. note ETL
+5. update /run 
+	a) BRS_BE_Dimension_load_proc
+	b) pricing.order_note_post_proc
+	c) fg.order_update_proc
+	d) Dimension.Salesorder_astea_note
+
+*/
+

@@ -483,7 +483,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-
---EXECUTE pricing.order_note_post_proc @bDebug=1
+-- Prod
 --EXECUTE pricing.order_note_post_proc @bDebug=0
+
+-- Debug
+--EXECUTE pricing.order_note_post_proc @bDebug=1
 

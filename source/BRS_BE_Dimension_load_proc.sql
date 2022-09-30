@@ -671,9 +671,10 @@ GO
 -- This must be run AFTER the Daily sales update (to catch any new FSC territories, 10 Nov 15
 
 
-
+-- Prod
 -- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0
 
+-- Debug
 -- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=1
 
 

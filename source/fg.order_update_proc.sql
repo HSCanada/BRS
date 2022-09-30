@@ -259,7 +259,8 @@ Begin
 	FROM
 		fg.transaction_F5554240 s
 	WHERE 
-		(CalMonthRedeem = 202109) AND
+		(CalMonthRedeem = @nCurrentFiscalYearmoNum) AND
+--		(CalMonthRedeem = 202109) AND
 		(NOT EXISTS (
 			SELECT * 
 			FROM [fg].[exempt_supplier_rule] d 
@@ -269,7 +270,6 @@ Begin
 				s.VPA = d.[VPA] 
 		)) AND
 
---		(CalMonthRedeem = @nCurrentFiscalYearmoNum) AND
 		(1=1)
 
 		Set @nErrorCode = @@Error

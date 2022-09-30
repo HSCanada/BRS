@@ -78,6 +78,12 @@ SELECT
 	,[eps_code]
 	,[fg_eps_comm_group_cd]		AS [eps_comm_group_cd]
 	,[eps_salesperson_key_id]
+	,[CalMonthRedeem]
+	,[fg_quantity]
+	,[item_label_cd]
+	,[ID_redeem_xref]
+	,[Supplier]
+
 
  FROM 
 	[comm].[freegoods] s
