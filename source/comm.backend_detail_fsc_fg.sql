@@ -107,7 +107,8 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
-SELECT top 10 * FROM [comm].[backend_detail_fsc_fg]
+-- SELECT top 10 * FROM [comm].[backend_detail_fsc_fg]
+
 -- SELECT  * FROM [comm].[backend_detail_fsc_fg]
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new

@@ -33,6 +33,18 @@ ALTER TABLE comm.freegoods SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE Integration.comm_freegoods_Staging ADD
+	fg_quantity int NOT NULL CONSTRAINT DF_comm_freegoods_Staging_fg_quantity DEFAULT ((0))
+GO
+ALTER TABLE Integration.comm_freegoods_Staging SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
 -- update missing info
 
 UPDATE       comm.freegoods

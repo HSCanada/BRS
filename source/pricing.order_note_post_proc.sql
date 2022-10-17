@@ -484,8 +484,10 @@ GO
 
 
 -- Prod
---EXECUTE pricing.order_note_post_proc @bDebug=0
+-- EXECUTE pricing.order_note_post_proc @bDebug=0
 
 -- Debug
---EXECUTE pricing.order_note_post_proc @bDebug=1
+-- EXECUTE pricing.order_note_post_proc @bDebug=1
+
+-- *** fix dup so that if salesdate is there the batch is NOT reloaded
 

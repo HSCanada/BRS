@@ -87,6 +87,8 @@ FROM
 		,MAX(t.WSORD__equipment_order)	AS equipment_order
 	FROM 
 		comm.transaction_F555115 AS t 
+		-- swap to prod (temp)
+		--BRSales.comm.transaction_F555115 AS t 
 	WHERE 
 		-- just have Asea order
 		(t.WSORD__equipment_order <> '') AND 
@@ -96,6 +98,8 @@ FROM
 		(t.WS$OSC_order_source_code IN ('A', 'L')) AND
 		-- select prior completed monthend
 		(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRS_Config)) AND 
+		-- swap to prod (temp)
+		(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRSales.dbo.BRS_Config)) AND 
 		--test
 	--	(WSORD__equipment_order = 'T42205') AND
 		(1=1)
