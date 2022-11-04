@@ -34,6 +34,7 @@ AS
 -- 15 Feb 19	tmc		Add Price Method Key for PAR
 -- 08 Jun 20	tmc		Make CalMonth logic table driven so fails 100% no maint
 -- 09 Aug 21	tmc		Add hs_branded_baseline_ind for HSB reporting 
+-- 27 Oct 22	tmc		update for Free Goods modelling
 **    
 *******************************************************************************/
 
@@ -81,7 +82,14 @@ SELECT
 
 	,t.GLBusinessUnit
 	,bu.hs_branded_baseline_ind
-	
+
+	,CASE WHEN fg_order.FiscalMonth IS NOT NULL THEN 1 ELSE 0 END as fg_order_ind
+	,CASE WHEN fg_get.FiscalMonth IS NOT NULL THEN 1 ELSE 0 END as fg_get_ind
+	-- only count buy if on a order with a redeemed get
+	,CASE WHEN (fg_buy.CalMonthRedeem IS NOT NULL) AND (fg_order.FiscalMonth IS NOT NULL) THEN 1 ELSE 0 END as fg_buy_ind
+	,CASE WHEN (fg_buy.CalMonthRedeem IS NOT NULL) AND (fg_order.FiscalMonth IS NOT NULL) THEN 1 ELSE 0 END as fg_deal_ind
+	,CASE WHEN (fg_buy.CalMonthRedeem IS NOT NULL) AND (fg_order.FiscalMonth IS NOT NULL) THEN fg_buy.deal_id ELSE 0 END as fg_deal_id
+
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -117,6 +125,37 @@ FROM
 	-- HSB baseline
 	INNER JOIN [dbo].[BRS_BusinessUnit] as bu
 	ON t.GLBusinessUnit = bu.BusinessUnit
+
+	-- free good order
+	LEFT JOIN 
+	(
+		SELECT FiscalMonth, SalesorderNumber from comm.[freegoods] 
+		WHERE FiscalMonth >= 202201 AND SourceCode = 'ACT' 
+		GROUP BY FiscalMonth, SalesorderNumber
+	) AS fg_order
+	ON t.CalMonth = fg_order.FiscalMonth AND
+		t.SalesOrderNumber = fg_order.SalesOrderNumber AND
+		(1=1)
+
+	-- free good get
+	LEFT JOIN 
+	(
+		SELECT FiscalMonth, SalesorderNumber, Item  from comm.[freegoods] 
+		WHERE FiscalMonth >= 202201 AND SourceCode = 'ACT' 
+		GROUP BY FiscalMonth, SalesorderNumber, Item
+	) AS fg_get
+	ON t.CalMonth = fg_get.FiscalMonth AND
+		t.SalesOrderNumber = fg_get.SalesOrderNumber AND
+		t.Item = fg_get.Item AND
+		t.FreeGoodsInvoicedInd = 1 AND
+		(1=1)
+
+	-- free good buy
+	LEFT JOIN [fg].[deal_item] AS fg_buy
+	ON t.CalMonth = fg_buy.[CalMonthRedeem] AND
+		t.Item = fg_buy.Item AND
+--		t.FreeGoodsInvoicedInd = 1 AND
+		(1=1)
 
 
 	-- identify first sales order (for sales order dimension)
@@ -165,7 +204,7 @@ GO
  -- SELECT SalesOrderNumber, GLBusinessUnit, sum(SalesAmt) FROM Fact.Sale_brs where SalesOrderNumber = 1131213 group by SalesOrderNumber, GLBusinessUnit-- 
 
  -- SELECT count(*) FROM Fact.Sale_brs
- -- ORG=NEW 7 451 208
+ -- ORG=7 644 973 @ 12s
 
 -- 1 month test
 -- 1.03; 2 259 017 RAW

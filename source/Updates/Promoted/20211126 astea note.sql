@@ -236,3 +236,17 @@ WHERE        (nes.order_note_D1ICMTPF.ICMMSG_comments <> s.ICMMSG_comments)
 
 */
 
+/*
+prod
+connection_string=Data Source=CAHSIONNLSQL1;Initial Catalog=BRSales;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;
+Param_srcsql_F5503=SELECT "Q3KCOO" AS Q3KCOO_order_number_document_company, 	"Q3DCTO" AS Q3DCTO_order_type, 	"Q3DOCO" AS Q3DOCO_salesorder_number, 	"Q3LNID" AS Q3LNID_line_number, 	"Q3$APC" AS Q3$APC_application_code, 	"Q3$PMQ" AS Q3$PMQ_program_parameter, 	"Q3LNGP" AS Q3LNGP_language, 	"Q3INMG" AS Q3INMG_print_message, 	"Q3$SNB" AS Q3$SNB_sequence_number, 	"QCTRDJ" AS QCTRDJ_order_date, 	HASHBYTES('SHA1', "Q3$PMQ") AS chksum FROM      OPENQUERY (ESYS_PROD, ' 	SELECT 		Q3KCOO, 		Q3DCTO, 		Q3DOCO, 		CAST((Q3LNID)/1000.0 AS DEC(15,3)) AS Q3LNID, 		Q3$APC, 		Q3$PMQ, 		Q3LNGP, 		Q3INMG, 		CAST((Q3$SNB)/100.0 AS DEC(15,2)) AS Q3$SNB, 		DATE(DIGITS(DEC(QCTRDJ+ 1900000,7,0))) AS QCTRDJ  	FROM 		ARCPDTA71.F5503 n, ARCPDTA71.F5501 h     WHERE 		Q3KCOO = QCKCOO AND 		Q3DCTO = QCDCTO AND 		Q3DOCO = QCDOCO AND  		Q3KCOO = ''02000'' AND 		(QCTRDJ between 122000 and 122365)     ORDER BY         QCTRDJ ')
+
+qa
+connection_string=Data Source=CAHSIONNLSQL1;Initial Catalog=DEV_BRSales;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;
+Param_srcsql_F5503=SELECT    top 5  "Q3KCOO" AS Q3KCOO_order_number_document_company, 	"Q3DCTO" AS Q3DCTO_order_type, 	"Q3DOCO" AS Q3DOCO_salesorder_number, 	"Q3LNID" AS Q3LNID_line_number, 	"Q3$APC" AS Q3$APC_application_code, 	"Q3$PMQ" AS Q3$PMQ_program_parameter, 	"Q3LNGP" AS Q3LNGP_language, 	"Q3INMG" AS Q3INMG_print_message, 	"Q3$SNB" AS Q3$SNB_sequence_number, 	"QCTRDJ" AS QCTRDJ_order_date, 	HASHBYTES('SHA1', "Q3$PMQ") AS chksum FROM      OPENQUERY (ESYS_PROD, ' 	SELECT 		Q3KCOO, 		Q3DCTO, 		Q3DOCO, 		CAST((Q3LNID)/1000.0 AS DEC(15,3)) AS Q3LNID, 		Q3$APC, 		Q3$PMQ, 		Q3LNGP, 		Q3INMG, 		CAST((Q3$SNB)/100.0 AS DEC(15,2)) AS Q3$SNB, 		DATE(DIGITS(DEC(QCTRDJ+ 1900000,7,0))) AS QCTRDJ  	FROM 		ARCPDTA71.F5503 n, ARCPDTA71.F5501 h     WHERE 		Q3KCOO = QCKCOO AND 		Q3DCTO = QCDCTO AND 		Q3DOCO = QCDOCO AND  		Q3KCOO = ''02000'' AND 		(QCTRDJ >= 122000)     ORDER BY         QCTRDJ ')
+Param_srcsql_D1ICMTPF=SELECT    top 5    ICMOWO AS ICMOWO_work_order_number, ICMORD AS ICMORD_ets_order_number, ICMTYP2 AS ICMTYP2_header_detail, ICMLNE AS ICMLNE_detail_line_sequence, ICMSEQ AS ICMSEQ_comments_sequence,                           ICMMSG AS ICMMSG_comments, ICMBCH AS ICMBCH_batch_number, ICMTYP1 AS ICMTYP1_record_type FROM            OPENQUERY(ASYS_PROD, '  	SELECT ICMOWO, ICMORD, ICMTYP2, ICMLNE, ICMSEQ, ICMMSG,ICMBCH,ICMTYP1  	FROM 		ARCPCORDTA.D1ICMTPF 	WHERE ICMORD >= ''S00000'' --    ORDER BY --        <insert custom code here> ')
+*/
+
+
+
+

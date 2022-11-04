@@ -355,6 +355,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+
 --
 If (@nErrorCode = 0) 
 Begin
@@ -371,6 +372,7 @@ Begin
 			,SDDOC__document_number
 			,SDSHAN_shipto
 			,SDLITM_item_number
+
 			,QN$SPC_supplier_code
 			,QCTRDJ_order_date
 			,SDUPRC_unit_price
@@ -382,19 +384,25 @@ Begin
 			,QV$AVC_availability_code
 			,QV$CLC_classification_code
 			,SDSHAN01_mailing_name
+
 			,GIADDZ_postal_code
+
 			,GICTY1_city
+
 			,GIADDS_state
+
 			,GICTR__country
 			,QCAC10_division_code
 			,SDLNTY_line_type
 			,IMLNTY_line_type
+
 			,SDMCU__business_unit
 			,SDVR01_reference
 			,SDVR02_reference_2
 			,QCENTB_entered_by
 			,SDRSDJ_promised_delivery
 			,SDNXTR_status_code_next
+
 		)
 	SELECT
 	(
@@ -402,10 +410,11 @@ Begin
 		,SDDOCO_salesorder_number
 		,SDDCTO_order_type
 		-- convert fload to int (same as other trans)
-		,SDLNID_line_number * 1000
+		,SDLNID_line_number * 1000 AS line_number
 		,SDDOC__document_number
 		,SDSHAN_shipto
-		,SDLITM_item_number
+		,RTRIM(SDLITM_item_number) AS item
+
 		,QN$SPC_supplier_code
 		,QCTRDJ_order_date
 		,SDUPRC_unit_price
@@ -417,26 +426,44 @@ Begin
 		,QV$AVC_availability_code
 		,QV$CLC_classification_code
 		,SDSHAN01_mailing_name
-		,GIADDZ_postal_code
+
+		,LEFT(GIADDZ_postal_code,10)  AS GIADDZ_postal_code
+
 		,GICTY1_city
+
 		,GIADDS_state
+
 		,GICTR__country
 		,QCAC10_division_code
 		,SDLNTY_line_type
 		,IMLNTY_line_type
+
 		,SDMCU__business_unit
 		,SDVR01_reference
 		,SDVR02_reference_2
 		,QCENTB_entered_by
 		,SDRSDJ_promised_delivery
 		,SDNXTR_status_code_next
+
 	FROM
-		Integration.FBACKRPT1_backorder_Staging AS FBACKRPT1_backorder_Staging_1
+		Integration.FBACKRPT1_backorder_Staging AS s
 	WHERE
 		(SDSOBK_quantity_backordered <> 0) AND 
 		(SDLNTY_line_type <> 'MS') AND 
 		(QCAC10_division_code <> 'AZA') AND 
+		NOT EXISTS 
+		(
+			SELECT * FROM fg.backorder_FBACKRPT1_history  d 
+			WHERE 
+				(d.[SalesDay] = (SELECT MAX(QCTRDJ_order_date) AS SalesDay FROM Integration.FBACKRPT1_backorder_Staging)) AND
+				(d.SDDOCO_salesorder_number = s.SDDOCO_salesorder_number) AND
+				(d.[SDDCTO_order_type] = s.[SDDCTO_order_type]) AND
+				(d.[SDLNID_line_number] = s.[SDLNID_line_number] * 1000)
+		) AND
+		EXISTS (SELECT * FROM [dbo].[BRS_Item] i where s.SDLITM_item_number = i.item_usd) AND
+
 		(1 = 1)
+
 	Set @nErrorCode = @@Error
 End
 

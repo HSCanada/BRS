@@ -99,7 +99,7 @@ FROM
 		-- select prior completed monthend
 		(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRS_Config)) AND 
 		-- swap to prod (temp)
-		(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRSales.dbo.BRS_Config)) AND 
+		--(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRSales.dbo.BRS_Config)) AND 
 		--test
 	--	(WSORD__equipment_order = 'T42205') AND
 		(1=1)
