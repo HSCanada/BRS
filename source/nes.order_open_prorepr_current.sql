@@ -164,7 +164,9 @@ WHERE
 	(
 		[SalesDate] = '2012-01-01' AND
 		age.aging_key = 1
-	) 
+	) AND
+	1=1
+
 
 GO
 
@@ -174,7 +176,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT top 10 * FROM nes.order_open_prorepr_current order by sales_date desc
+-- SELECT top 100 * FROM nes.order_open_prorepr_current order by sales_date desc
 
 /*
 SELECT  * FROM nes.order_open_prorepr_current

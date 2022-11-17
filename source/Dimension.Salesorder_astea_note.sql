@@ -98,6 +98,7 @@ FROM
 		(t.WS$OSC_order_source_code IN ('A', 'L')) AND
 		-- select prior completed monthend
 		(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRS_Config)) AND 
+--		(t.FiscalMonth between 202201 and 202209) AND 
 		-- swap to prod (temp)
 		--(t.FiscalMonth = (SELECT PriorFiscalMonth FROM BRSales.dbo.BRS_Config)) AND 
 		--test
@@ -117,5 +118,6 @@ GO
 
 -- SELECT  * from [Dimension].[Salesorder_astea_note]
 
+-- SELECT  count(*) from [Dimension].[Salesorder_astea_note]
 
 

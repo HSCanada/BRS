@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	8 Nov 19	tmc		Add VPA foucs code for MBO tracking
 **	20 Apr 20	tmc		Add VPA quote type for quote margin tracking
+**	10 Nov 22	tmc		Add Billto goal amounts for rebate modelling
 **    
 *******************************************************************************/
 
@@ -62,6 +63,9 @@ SELECT
 	,v.VPATypeCd												AS SalesplanType
 	,bt.billto_adhoc_model_code1
 	,bt.billto_adhoc_model_code2
+
+	,bt.billto_adhoc_model_amt1
+	,bt.billto_adhoc_model_amt2
 
 
 FROM
