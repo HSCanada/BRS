@@ -53,7 +53,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[t sm model].[SumOfExtChargebackAmt] DESC"
+dbMemo "OrderBy" ="[qry_sm_model].SumOfExtChargebackAmt DESC"
 Begin
     Begin
         dbText "Name" ="SumOfGPAtFileCostAmt"
@@ -88,12 +88,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1254
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =656
+    Right =1238
+    Bottom =639
     Left =0
     Top =0
     ColumnsShown =543

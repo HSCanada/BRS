@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((fg_redeem_working.Item)>\"0\"))"
+Where ="(((fg_redeem_working.Item)>\"0\") AND ((fg_redeem_working.show_ind)=1))"
 Begin InputTables
     Name ="fg_redeem_working"
     Name ="fg_deal"
@@ -68,6 +68,8 @@ Begin OutputColumns
     Expression ="fg_redeem_working.PricingAdjustmentLine"
     Expression ="fg_redeem_working.CreditMinorReasonCode"
     Expression ="fg_redeem_working.CreditTypeCode"
+    Alias ="Item_code"
+    Expression ="fg_redeem_working.Item"
 End
 Begin Joins
     LeftTable ="fg_deal"
@@ -322,17 +324,21 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Item_code"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1564
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1278
-    Bottom =468
+    Right =1510
+    Bottom =359
     Left =0
     Top =0
     ColumnsShown =539
@@ -340,7 +346,7 @@ Begin
         Left =166
         Top =-3
         Right =638
-        Bottom =572
+        Bottom =661
         Top =0
         Name ="fg_redeem_working"
         Name =""

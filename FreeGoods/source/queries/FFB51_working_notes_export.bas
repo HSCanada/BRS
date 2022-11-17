@@ -47,12 +47,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="0"
 dbByte "RecordsetType" ="2"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[FFB51_working_notes_export].[fg_exempt_cd] DESC, [FFB51_working_notes_export].["
+    "OrderDate] DESC, [FFB51_working_notes_export].[Order]"
 Begin
     Begin
         dbText "Name" ="fg_redeem_working_notes.OrderDate"
@@ -93,7 +95,7 @@ Begin
     Begin
         dbText "Name" ="BRS_TransactionDW_Ext.fg_exempt_note"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1965"
+        dbInteger "ColumnWidth" ="5115"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -114,21 +116,17 @@ Begin
         dbText "Name" ="Order"
         dbLong "AggregateType" ="-1"
     End
-    Begin
-        dbText "Name" ="fg_redeem_working_notes.SalesOrderNumber"
-        dbLong "AggregateType" ="-1"
-    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1564
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1548
-    Bottom =302
+    Right =1510
+    Bottom =132
     Left =0
     Top =0
     ColumnsShown =539

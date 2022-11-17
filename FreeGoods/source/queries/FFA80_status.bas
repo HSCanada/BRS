@@ -23,6 +23,8 @@ Begin
     Begin
         dbText "Name" ="BRS_FiscalMonth.fg_status_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1845"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_FiscalMonth.me_status_cd"
@@ -43,12 +45,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =472
+    Right =1510
+    Bottom =421
     Left =0
     Top =0
     ColumnsShown =539

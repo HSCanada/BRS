@@ -11,5 +11,7 @@ Begin
     Begin
         dbText "Name" ="Expr1000"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2790"
+        dbBoolean "ColumnHidden" ="0"
     End
 End

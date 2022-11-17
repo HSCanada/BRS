@@ -28,6 +28,8 @@ Begin
     Begin
         dbText "Name" ="lnk_F5554240_LOAD.FILE_NAME"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2865"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="lnk_F5554240_LOAD.2nd Item Number --------------------"
@@ -134,12 +136,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1649
-    Bottom =918
+    Right =1177
+    Bottom =393
     Left =-1
     Top =-1
-    Right =1536
-    Bottom =639
+    Right =1161
+    Bottom =367
     Left =0
     Top =0
     ColumnsShown =539

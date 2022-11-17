@@ -1,0 +1,4 @@
+﻿BRS_CurrencyHistory
+ODBC;DSN=BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+dbo.BRS_CurrencyHistory
+Currency;+FiscalMonth

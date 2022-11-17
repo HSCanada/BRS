@@ -5,6 +5,7 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="BRS_Config.id"
+    Expression ="BRS_Config.SalesDateLastWeekly"
     Expression ="BRS_Config.PriorFiscalMonth"
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -25,17 +26,23 @@ Begin
         dbText "Name" ="BRS_Config.id"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_Config.SalesDateLastWeekly"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2400"
+        dbBoolean "ColumnHidden" ="0"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1489
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1473
-    Bottom =639
+    Right =1510
+    Bottom =557
     Left =0
     Top =0
     ColumnsShown =539

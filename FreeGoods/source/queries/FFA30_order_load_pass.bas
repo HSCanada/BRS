@@ -1,6 +1,6 @@
 ﻿dbMemo "SQL" ="EXEC fg.order_load_proc @bDebug=0"
-dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;UID=TCrowley;Trusted_Connection=Y"
-    "es;DATABASE=DEV_BRSales;Network=DBMSSOCN"
+dbMemo "Connect" ="ODBC;DSN=DEV_BRSales;Description=BRSales;Trusted_Connection=Yes;DATABASE=DEV_BRS"
+    "ales;Network=DBMSSOCN;"
 dbBoolean "ReturnsRecords" ="0"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"

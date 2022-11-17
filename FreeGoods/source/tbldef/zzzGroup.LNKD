@@ -1,0 +1,4 @@
+﻿zzzGroup
+ODBC;DSN=BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+dbo.zzzGroup
+group1

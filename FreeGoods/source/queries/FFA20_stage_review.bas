@@ -9,12 +9,14 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[FFA20_stage_review].[line_id], [FFA20_stage_review].[WKUNCS_unit_cost], [FFA20_"
+    "stage_review].[WK$SPC_supplier_code], [FFA20_stage_review].[order_file_name]"
 Begin
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKNAME_shipto_name"
@@ -27,6 +29,8 @@ Begin
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.order_file_name"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2865"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKAC10_division_code"
@@ -67,6 +71,8 @@ Begin
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKCITM_customersupplier_item_number"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4320"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKLNTY_line_type"
@@ -179,20 +185,20 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1564
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1278
-    Bottom =588
+    Right =1510
+    Bottom =452
     Left =0
     Top =0
     ColumnsShown =539
     Begin
         Left =139
         Top =79
-        Right =283
-        Bottom =223
+        Right =415
+        Bottom =330
         Top =0
         Name ="Integration_F5554240_fg_redeem_Staging"
         Name =""

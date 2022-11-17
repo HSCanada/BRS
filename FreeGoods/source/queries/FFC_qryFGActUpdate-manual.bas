@@ -1,12 +1,14 @@
-﻿Operation =4
+﻿Operation =1
 Option =0
+Where ="(((Integration_F5554240_fg_redeem_finalize_Staging.fg_offer_note)<>\".\") AND (("
+    "fg_transaction_F5554240.fg_offer_note)=\"\"))"
 Begin InputTables
     Name ="Integration_F5554240_fg_redeem_finalize_Staging"
     Name ="fg_transaction_F5554240"
 End
 Begin OutputColumns
-    Name ="fg_transaction_F5554240.ExtFileCostCadAmt"
-    Expression ="[Integration_F5554240_fg_redeem_finalize_Staging]![WKECST_extended_cost]"
+    Expression ="Integration_F5554240_fg_redeem_finalize_Staging.fg_offer_note"
+    Expression ="fg_transaction_F5554240.fg_offer_note"
 End
 Begin Joins
     LeftTable ="Integration_F5554240_fg_redeem_finalize_Staging"
@@ -27,107 +29,31 @@ dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
 Begin
     Begin
-        dbText "Name" ="fg_transaction_F5554240.CalMonthRedeem"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.status_code"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.CalMonthRedeem"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.ID"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.WKDOCO_salesorder_number"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.[WK$SPC_supplier_code]"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.WKLITM_item_number"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.WKSHAN_shipto"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.fg_redeem_ind"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.fg_offer_id"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.fg_exempt_cd"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.fg_offer_note"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.OriginalSalesOrderNumber"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.WKECST_extended_cost"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="Integration_F5554240_fg_redeem_finalize_Staging.WKCRCD_currency_code"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.[WK$SPC_supplier_code]"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.WKDOCO_salesorder_number"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.WKSHAN_shipto"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.fg_redeem_ind"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.fg_exempt_cd"
-        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="6585"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_transaction_F5554240.fg_offer_note"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.ExtFileCostCadAmt"
-        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="5205"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1564
+    Right =1363
     Bottom =918
     Left =-1
     Top =-1
-    Right =1548
-    Bottom =639
+    Right =1347
+    Bottom =588
     Left =0
     Top =0
-    ColumnsShown =579
+    ColumnsShown =539
     Begin
         Left =78
         Top =108
@@ -140,7 +66,7 @@ Begin
     Begin
         Left =537
         Top =68
-        Right =851
+        Right =827
         Bottom =584
         Top =0
         Name ="fg_transaction_F5554240"

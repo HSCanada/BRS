@@ -1,4 +1,4 @@
 ﻿fg_transaction_F5554240
-ODBC;DSN=DEV_BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+ODBC;DSN=BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
 fg.transaction_F5554240
 WKDOCO_salesorder_number;+WKDCTO_order_type;+WKLNNO_line_number

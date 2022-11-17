@@ -11,22 +11,25 @@ Begin OutputColumns
     Expression ="Redemptions_tbl_Main.RecID"
     Name ="SalesDivision"
     Expression ="Redemptions_tbl_Main.Div"
+    Alias ="Expr1"
     Name ="Supplier"
-    Expression ="Redemptions_tbl_Main.VendorID"
+    Expression ="Nz([VendorID],\"\")"
     Name ="supplier_nmOrg"
     Expression ="Redemptions_tbl_Main.VendorName"
     Name ="BuyOrg"
     Expression ="Redemptions_tbl_Main.Buy"
     Name ="GetOrg"
     Expression ="Redemptions_tbl_Main.Get"
+    Alias ="Expr4"
     Name ="RedeemOrg"
-    Expression ="Redemptions_tbl_Main.Redeem"
+    Expression ="Nz([Redeem],\".\")"
     Name ="QuarterOrg"
     Expression ="Redemptions_tbl_Main.Quarter"
     Name ="deal_txt"
     Expression ="Redemptions_tbl_Main.SetLeader_Name"
+    Alias ="Expr5"
     Name ="NoteOrg"
-    Expression ="Redemptions_tbl_Main.Note"
+    Expression ="Nz([Note],\".\")"
     Name ="EffDate"
     Expression ="Redemptions_tbl_Main.EffDate"
     Name ="Expired"
@@ -34,6 +37,9 @@ Begin OutputColumns
     Alias ="Expr2"
     Name ="auto_add_ind"
     Expression ="Redemptions_tbl_Main.AutoAdd"
+    Alias ="Expr3"
+    Name ="SummaryOrg"
+    Expression ="\".\""
 End
 Begin Joins
     LeftTable ="Redemptions_tbl_Main"
@@ -61,6 +67,8 @@ Begin
     Begin
         dbText "Name" ="Redemptions_tbl_Main.VendorName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3090"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Redemptions_tbl_Main.Get"
@@ -69,14 +77,20 @@ Begin
     Begin
         dbText "Name" ="Redemptions_tbl_Main.Buy"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="6150"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Redemptions_tbl_Main.Quarter"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4230"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Redemptions_tbl_Main.Redeem"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="8490"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Redemptions_tbl_Main.Note"
@@ -117,18 +131,30 @@ Begin
     Begin
         dbText "Name" ="Redemptions_tbl_Main.SetLeader_Name"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="6780"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="Expr4"
+        dbInteger "ColumnWidth" ="8490"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr5"
+        dbLong "AggregateType" ="-1"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1564
+    Right =1526
     Bottom =918
     Left =-1
     Top =-1
-    Right =1548
-    Bottom =605
+    Right =1510
+    Bottom =486
     Left =0
     Top =0
     ColumnsShown =651
