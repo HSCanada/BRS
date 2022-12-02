@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	04 Feb 22	tmc		add excption logic for Med 200 codes
+**	28 Nov 22	tmc		added minor and sub-minor
 **    
 *******************************************************************************/
 
@@ -41,6 +42,8 @@ SELECT
 	i.SalesCategory, 
 	i.ItemStatus, 
 	i.MajorProductClass,
+	i.[MinorProductClass],
+	i.[SubMinorProductCodec],
 	CAST(i.ItemCreationDate AS DATE) AS ItemCreationDate,
 
 	i.Supplier, 
@@ -111,6 +114,8 @@ SELECT
 	i.SalesCategory, 
 	i.ItemStatus, 
 	i.MajorProductClass,
+	i.[MinorProductClass],
+	i.[SubMinorProductCodec],
 	CAST(i.ItemCreationDate AS DATE) AS ItemCreationDate,
 
 	i.Supplier, 
@@ -178,6 +183,8 @@ SELECT
 	i.SalesCategory, 
 	i.ItemStatus, 
 	i.MajorProductClass,
+	i.[MinorProductClass],
+	i.[SubMinorProductCodec],
 	CAST(i.ItemCreationDate AS DATE) AS ItemCreationDate,
 
 	i.Supplier, 
@@ -251,6 +258,8 @@ SELECT
 	i.SalesCategory, 
 	i.ItemStatus, 
 	i.MajorProductClass,
+	i.[MinorProductClass],
+	i.[SubMinorProductCodec],
 	CAST(i.ItemCreationDate AS DATE) AS ItemCreationDate,
 
 	i.Supplier, 
@@ -327,7 +336,8 @@ GO
 -- SELECT SalesCategory, COUNT(*) AS cnt FROM BRS_ItemMarketAdjustModel GROUP BY SalesCategory
 
 -- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('9394967', '9394864', '1382569', '9396337')
- --SELECT * FROM BRS_ItemMarketAdjustModel where item in ('5876217')
+-- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('5876217')
+ SELECT top 10 * FROM BRS_ItemMarketAdjustModel 
 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustModel 
 

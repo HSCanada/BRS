@@ -37,6 +37,7 @@ AS
 **	26 May 21	tmc		move logic to BRS_ItemMarketAdjustModel for more flex
 **	04 Feb 22	tmc		add excption logic for Med 200 codes
 **	16 Mar 22	tmc		fix PPE potial problem by lowering thersh to 0.001
+**	28 Nov 22	tmc		added minor and sub-minor
 **    
 *******************************************************************************/
 
@@ -48,6 +49,8 @@ SELECT
 	,i.SalesCategory
 	,i.ItemStatus
 	,i.MajorProductClass
+	,i.[MinorProductClass]
+	,i.[SubMinorProductCodec] AS [SubMinorProductClass]
 	,i.ItemCreationDate
 
 	,i.Supplier

@@ -42,6 +42,7 @@ SELECT
 	,t.SalesOrderNumber
 	,t.DocType
 	,t.LineNumber
+	,t.InvoiceNumber
 	,t.OrderSourceCode
 	,t.PriceMethod
 	,t.NetSalesAmt
@@ -61,6 +62,7 @@ SELECT
 	,t.Shipto AS ShiptoCode
 	,t.MajorProductClass AS MajorProductClassCode
 	,t.Date
+	,d.FiscWeekName
 	,t.PromotionCode
 	,t.OrderPromotionCode
 	,t.GLBusinessUnit
@@ -68,6 +70,12 @@ SELECT
 	,t.OriginalSalesOrderNumber
 	,t.CreditTypeCode
 	,t.CreditMinorReasonCode
+	,i.CurrentFileCost
+	,i.CurrentCorporatePrice
+	,i.CurrentCorporatePrice - i.CurrentFileCost AS CurrentFileCostGP
+	,fsc.Branch
+	,d.CalWeek
+	,LEFT(d.FiscalMonth,4) AS year_
 
 FROM
 	BRS_TransactionDW AS t 
@@ -81,8 +89,17 @@ FROM
 	INNER JOIN BRS_Customer AS c 
 	ON t.Shipto = c.ShipTo 
 
+	INNER JOIN BRS_FSC_Rollup as fsc
+	ON c.TerritoryCd = fsc.TerritoryCd
+
 	INNER JOIN BRS_ItemMPC AS mpc 
 	ON i.MajorProductClass = mpc.MajorProductClass
+
+
+/*
+
+	INNER JOIN zzzShipto as so
+	ON t.SalesOrderNumber = so.ST
 
 	-- salesorder that with questionable GP
 	INNER JOIN (
@@ -97,12 +114,14 @@ FROM
 		GROUP BY 
 			t2.SalesOrderNumber
 		HAVING 
-			NOT SUM(t2.[GPAmt]) / NULLIF(SUM(t2.[NetSalesAmt]), 0) between 0.2 and 0.7 
+			NOT SUM(t2.[GPAmt]) / NULLIF(SUM(t2.[NetSalesAmt]), 0) between 0.2 and 0.5 
 	) so_filter
 	ON t.SalesOrderNumber = so_filter.SalesOrderNumber
+*/
 
 WHERE
-	d.FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]) 
+	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
+--	d.FiscalMonth between 202201 and 202209
 
 
 GO
@@ -112,7 +131,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT  top 10 * from nes.gp_exception_R5557ALL
+ SELECT  top 1000 * from nes.gp_exception_R5557ALL
 -- SELECT   * from nes.gp_exception_R5557ALL
 
 -- SELECT  count(*) from nes.gp_exception_R5557ALL

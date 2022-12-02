@@ -31,6 +31,7 @@ AS
 **	27 Mar 20	tmc		fix update bug where doctype changes (unexpected)
 **  13 Sep 22	tmc		Add Astea note load to process
 **  14 Sep 22	tmc		add ScheinSaver & Backorder load
+**	28 Nov 22	tmc		update ScheinSaver header info (they get recycled)
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -252,10 +253,49 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+-- update free good header for now (ensure redeem and free goods in sync)
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6b. ScheinSaver add deal header'
+		print '6b. fg.deal - update'
+
+	UPDATE fg.deal
+		Set SalesDivision = ISNULL(s.div,'')
+		,Supplier = ISNULL(s.VendorID,'')
+		,supplier_nmOrg = ISNULL(s.VendorName,'')
+		,BuyOrg = CAST(ISNULL(s.buy,'') AS varchar(255)) 
+		,GetOrg = CAST(ISNULL(s.get,'') AS varchar(255))
+		,RedeemOrg = ISNULL(s.Redeem,'')
+		,QuarterOrg = ISNULL(s.Quarter,'')
+
+		,deal_txt = LEFT(ISNULL(s.SetLeader_Name,''),50)
+		,NoteOrg = ISNULL(s.Note,'')
+		,EffDate = s.EffDate
+		,Expired =s.Expired
+		,auto_add_ind = s.AutoAdd
+
+		-- future
+		--,Setleader = s.Setleader
+
+	-- SELECT * 
+	FROM            
+		Redemptions..tbl_Main s
+	WHERE        
+		-- update date
+		( (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) BETWEEN s.EffDate AND s.Expired) AND
+		(deal_id = s.RecID) AND
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+--
+--
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '6c. ScheinSaver deal header - add'
 
 	INSERT INTO Redemptions_tbl_Main
 		(
@@ -283,7 +323,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6c. ScheinSaver add deal line'
+		print '6d. ScheinSaver add deal line'
 
 	INSERT INTO Redemptions_tbl_Items
 		(RecID, ItemNumber, ItemID)
@@ -310,7 +350,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6d. add new chargback'
+		print '6e. add new chargback'
 
 	INSERT INTO [fg].[chargeback]
 	(

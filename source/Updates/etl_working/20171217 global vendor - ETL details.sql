@@ -92,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202210 AND 202210
+	FiscalMonth BETWEEN 202211 AND 202211
 GO
 
 
@@ -104,7 +104,7 @@ SET
 FROM
 	BRS_ItemHistory 
 WHERE
-	FiscalMonth BETWEEN 202210 AND 202210
+	FiscalMonth BETWEEN 202211 AND 202211
 GO
 
 /*
@@ -153,7 +153,7 @@ FROM
 	ON r.Excl_Code_TargKey = p.Excl_Code  
 WHERE        
 	(r.StatusCd = 1) AND 
-	FiscalMonth BETWEEN 202210 AND 202210
+	FiscalMonth BETWEEN 202211 AND 202211
 GO
 
 
@@ -172,7 +172,7 @@ WHERE
 	(BRS_ItemHistory.Label = 'P') AND 
 	(mpc.PrivateLabelScopeInd = 1) AND 
 	(BRS_ItemHistory.Excl_key IS NULL) AND
-	FiscalMonth BETWEEN 202210 AND 202210
+	FiscalMonth BETWEEN 202211 AND 202211
 GO
 
 
@@ -185,7 +185,7 @@ FROM
 	BRS_ItemHistory 
 WHERE 
 	Excl_key IS NULL and
-	FiscalMonth BETWEEN 202210 AND 202210
+	FiscalMonth BETWEEN 202211 AND 202211
 GO
 
 --> STOP (part 2)
