@@ -29,7 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**    
+**  19 Dec 22	tmc		relaxed historical lookups to allow mid-month run     
 *******************************************************************************/
 
 -- Buy section
@@ -64,8 +64,10 @@ SELECT
 	,t.[SalesDivision]
 	,t.MajorProductClass
 	,mpc.MajorProductClassDesc
-	,ih.Label
-	,ih.Supplier 
+	,i.Label
+	--,ih.Label
+	,i.Supplier
+	--,ih.Supplier 
 	,[InvoiceNumber]
 	,[OriginalSalesOrderNumber]
 	,[OriginalOrderDocumentType]
@@ -98,14 +100,17 @@ FROM
 	INNER JOIN [dbo].[BRS_Customer] c
 	ON t.Shipto = c.ShipTo
 
-	INNER JOIN [dbo].[BRS_CustomerFSC_History] ch
+	LEFT JOIN [dbo].[BRS_CustomerFSC_History] ch
+--	INNER JOIN [dbo].[BRS_CustomerFSC_History] ch
 	ON t.shipto = ch.[Shipto] AND
 	t.CalMonth = ch.FiscalMonth
 
-	INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
+	LEFT JOIN [dbo].[BRS_FSC_Rollup] fsc
+--	INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
 	ON ch.HIST_TerritoryCd = fsc.TerritoryCd
 
-	INNER JOIN [dbo].[BRS_ItemHistory]ih
+	LEFT JOIN [dbo].[BRS_ItemHistory]ih
+--	INNER JOIN [dbo].[BRS_ItemHistory]ih
 	ON t.Item = ih.Item AND
 	t.CalMonth = ih.FiscalMonth
 
@@ -257,4 +262,4 @@ GO
 -- ORG 80 293
 -- all 103 885
 
---SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 14459975
+--SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 15846091

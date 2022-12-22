@@ -46,6 +46,7 @@ AS
 --	13 Aug 20	tmc		add specialist to seg
 --	18 Jul 22	tmc		refactored Mulitsite to show DCC and 123 for Elite
 --	09 Sep 22	tmc		refactored Mulitsite to show CLP and Alitma for Midmarket
+--  15 Dec 22	tmc		break out Heartland dental
 
 **    
 *******************************************************************************/
@@ -112,7 +113,7 @@ SELECT
 	
 	--- XXX
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -172,7 +173,7 @@ GROUP BY
 
 	,cc.MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -199,7 +200,7 @@ SELECT
 
 	c.HIST_MarketClass AS MarketClass, 
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -259,8 +260,7 @@ GROUP BY
 	,t.SalesDivision
 	,c.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
---	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 	,[CategoryRollupPPE]
 
 UNION ALL
@@ -281,7 +281,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -343,7 +343,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -366,7 +366,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -426,7 +426,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -452,7 +452,7 @@ SELECT
 	-- Use Current Seg as MTD is dynamic
 	cc.MarketClass, 
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -520,7 +520,7 @@ GROUP BY
 
 	,cc.MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -544,7 +544,7 @@ SELECT
 
 	c.HIST_MarketClass AS MarketClass, 
 	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -605,7 +605,7 @@ GROUP BY
 
 	,c.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -632,7 +632,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -686,7 +686,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -710,7 +710,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -765,7 +765,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -792,7 +792,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -855,7 +855,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -879,7 +879,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -939,7 +939,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -965,7 +965,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -1019,7 +1019,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -1045,7 +1045,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -1102,7 +1102,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -1129,7 +1129,7 @@ SELECT
 
 	t.HIST_MarketClass AS MarketClass, 
 -- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
+	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 	[CategoryRollupPPE],
 
@@ -1194,7 +1194,7 @@ GROUP BY
 
 	,t.HIST_MarketClass
 	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
+	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,[CategoryRollupPPE]
 
@@ -1207,8 +1207,9 @@ GO
 
 -- Prod
 -- BRS_DS_Cube_proc 0
--- pre 20,070 @ 15s
--- pos 16,188 @ 19s
+-- pre 18,863 @ 22s
+-- pos 18,751. test1, failed, need to break out new group
+-- pos 18,920. test2, passed.  
 
 -- Dev
 -- Exec BRS_DS_Cube_proc @bDebug=1
