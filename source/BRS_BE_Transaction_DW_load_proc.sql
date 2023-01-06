@@ -53,6 +53,8 @@ AS
 --	22 Aug 19	tmc		add new entered_by logic
 --	20 Jul 20	tmc		add credit info load logic for returns dashboard
 --	09 Mar 22	tmc		exclude Private label from free goods (billing in 2022)
+**	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
+
 **    
 *******************************************************************************/
 BEGIN
@@ -480,7 +482,7 @@ BEGIN
 				s.ITLONO AS Item, 
 
 				s.ENBYNA AS EnteredBy, 
-				s.ORTKBYID AS OrderTakenBy, 
+				ISNULL(s.ORTKBYID,'') AS OrderTakenBy, 
 				s.ORSCCD AS OrderSourceCode, 
 				LEFT(s.RF1TT,25) AS CustomerPOText1, 
 				s.PRMDCD AS PriceMethod, 
@@ -488,13 +490,14 @@ BEGIN
 
 				s.LNTY AS LineTypeOrder, 
 				s.HSDCDID AS SalesDivision, 
-				s.MJPRCLID AS MajorProductClass, 
+				ISNULL(s.MJPRCLID,'') AS MajorProductClass, 
 
 				--  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
 				CASE WHEN s.CBCONTRNO = '*' THEN 0 ELSE ISNULL(s.CBCONTRNO,0) END AS ChargebackContractNumber, 
 		--		ISNULL(s.CBCONTRNO,0) AS ChargebackContractNumber, 
 				ISNULL(s.GLBUNO,'') AS GLBusinessUnit, 
-				ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
+				ISNULL(NULLIF([ORFISHDT],'0'),'1980-01-10') AS OrderFirstShipDate, 
+				-- ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
 				s.IVNO AS InvoiceNumber, 
 
 				--  09 Dec 16	tmc		Update Metrics load logic
@@ -514,7 +517,7 @@ BEGIN
 				s.WJXBFS8                                       AS ExtListPriceORG,     
 
 				CASE 
-					WHEN s.PDDT = s.ORFISHDT 
+					WHEN s.PDDT = ISNULL(NULLIF([ORFISHDT],'0'),'1980-01-10')
 					THEN 0 ELSE 1 
 
 				END                                             AS BackorderInd,		

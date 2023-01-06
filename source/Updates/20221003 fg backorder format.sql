@@ -30,7 +30,7 @@ FROM
 	ON t.[SDSHAN_shipto] = c.ShipTo
 
 WHERE
-	(t.SalesDay ='2022-12-16') AND
+	(t.SalesDay ='2022-12-30') AND
 
 	-- include full order
 	EXISTS 

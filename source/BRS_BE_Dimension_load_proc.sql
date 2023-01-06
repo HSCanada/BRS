@@ -48,6 +48,7 @@ AS
 **	06 Apr 21	tmc		teeth stocking MA fix
 **	14 Oct 21	tmc		add pma and freight ind for commission modelling
 **	19 Sep 22	tmc		add privileges code for business review model
+**	04 Jan 23	tmc		add trims to correct for cloud backend escapes, @gt
 *******************************************************************************/
 
 BEGIN
@@ -484,7 +485,7 @@ BEGIN
 
 				ItemDescription= LEFT(ISNULL(s.ItemDescription, ''),40), 
 				Supplier= ISNULL(s.Supplier, ''), 
-				Size= ISNULL(s.Size, ''), 
+				Size= LEFT(ISNULL(s.Size, ''), 8), 
 				Strength= LEFT(ISNULL(s.Strength, ''),12), 
 				ManufPartNumber= Left(ISNULL(s.ManufPartNumber, ''),15), 
 				FamilySetLeader= ISNULL(s.FamilySetLeader, ''), 
@@ -581,7 +582,7 @@ BEGIN
 				s.Item, 
 				LEFT(ISNULL(s.ItemDescription, ''),40) ItemDescription,
 				ISNULL(s.Supplier, '')  Supplier, 
-				ISNULL(s.Size, '')  Size,
+				LEFT(ISNULL(s.Size, ''),8)  Size,
 				LEFT(ISNULL(s.Strength, ''),12)  Strength,
 				Left(ISNULL(s.ManufPartNumber, ''),15) ManufPartNumber, 
 				ISNULL(s.FamilySetLeader, '') FamilySetLeader,
