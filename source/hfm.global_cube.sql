@@ -253,27 +253,28 @@ GO
 /*
 
 print ('T01: missing ENTITY_sales')
-SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0
+SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0 and PERIOD = 202212
 -- ok
 
 print ('T02: missing ACCOUNT_sales')
-SELECT * FROM [hfm].global_cube where ACCOUNT_sales is null and sales <> 0.0
+SELECT * FROM [hfm].global_cube where ACCOUNT_sales is null and sales <> 0.0 and PERIOD = 202212
 -- ok
 
 print ('T03: missing ENTITY_cost')
-SELECT * FROM [hfm].global_cube where ENTITY_cost is null and ext_cost <> 0.0
+SELECT * FROM [hfm].global_cube where ENTITY_cost is null and ext_cost <> 0.0 and PERIOD = 202212
 -- ok
 
 print ('T04: missing ACCOUNT_cost')
-SELECT * FROM [hfm].global_cube where ACCOUNT_cost is null and ext_cost <> 0.0
+SELECT * FROM [hfm].global_cube where ACCOUNT_cost is null and ext_cost <> 0.0 and PERIOD = 202212
 -- ok
 
-print ('T05: missing ENTITY_cb')
-SELECT * FROM [hfm].global_cube where ENTITY_cb is null and ext_chargeback <> 0.0
+-- xxx
+print ('T05: missing ENTITY_cb') 
+SELECT * FROM [hfm].global_cube where ENTITY_cb is null and ext_chargeback <> 0.0 and PERIOD = 202212
 -- ok
 
 print ('T06: missing ACCOUNT_cb')
-SELECT * FROM [hfm].global_cube where ACCOUNT_cb is null and ext_chargeback <> 0.0
+SELECT * FROM [hfm].global_cube where ACCOUNT_cb is null and ext_chargeback <> 0.0 and PERIOD = 202212
 -- ok
 
 print ('T07: missing PRODUCT')

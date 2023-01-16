@@ -112,7 +112,7 @@ COMMIT
 --> fix start here
 -- populate hfm.gps_fix_temp from excel
 
---truncate table [hfm].[gps_fix_temp]
+-- truncate table [hfm].[gps_fix_temp]
 
 SELECT count(*) FROM [hfm].[gps_fix_temp]
 -- 9710, eq

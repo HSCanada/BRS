@@ -706,6 +706,7 @@ GO
 
 -- Prod
 -- EXEC dbo.monthend_summary_proc @bDebug=0
+-- 12min
 
 -- Debug
 -- EXEC dbo.monthend_summary_proc @bDebug=1

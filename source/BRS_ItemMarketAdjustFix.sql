@@ -38,6 +38,7 @@ AS
 **	04 Feb 22	tmc		add excption logic for Med 200 codes
 **	16 Mar 22	tmc		fix PPE potial problem by lowering thersh to 0.001
 **	28 Nov 22	tmc		added minor and sub-minor
+**	16 Jan 23	tmc		added Med EQ flag 
 **    
 *******************************************************************************/
 
@@ -72,6 +73,7 @@ SELECT
 	,ROUND(i.new_market_adj+[ma_exception_factor], 5)					AS new_market_adj
 	,(ROUND(i.new_market_adj+[ma_exception_factor], 4) - 1.0) * 100.	AS new_market_adj_import
 	,i.Est12MoSales
+	,CASE WHEN SUBSTRING(i.[MinorProductClass],8,20) = '79' THEN 1 ELSE 0 END		AS med_eq_code_ind
 
 FROM
 	BRS_ItemMarketAdjustModel AS i 
