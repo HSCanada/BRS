@@ -28,6 +28,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--  27 Jan 23	tmc		update param to for MTD vs PY MTD (full)
 **    
 *******************************************************************************/
 
@@ -120,7 +121,7 @@ FROM
 */
 
 WHERE
-	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
+	d.FiscalMonth = ((SELECT [FiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [FiscalMonth] FROM [dbo].[BRS_Config])-100) 
 --	d.FiscalMonth between 202201 and 202209
 
 

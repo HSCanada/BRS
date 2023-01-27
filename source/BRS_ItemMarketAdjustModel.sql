@@ -339,6 +339,8 @@ GO
 -- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('5876217')
  SELECT top 10 * FROM BRS_ItemMarketAdjustModel 
 
+ -- SELECT * FROM BRS_ItemMarketAdjustModel where ItemStatus = 'A'
+
 -- SELECT count(*) FROM BRS_ItemMarketAdjustModel 
 
 -- ORG 76965

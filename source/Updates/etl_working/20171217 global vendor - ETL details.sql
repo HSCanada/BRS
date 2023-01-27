@@ -239,7 +239,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 WHERE
 	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212)
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212)
 GO
 
 print('sales test')
@@ -249,7 +249,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_sales_key] is null) AND
 	([NetSalesAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212) AND
 	(1=1)
 GO
 
@@ -266,7 +266,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 WHERE
 	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212)
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212)
 GO
 
 print ('cost test')
@@ -276,7 +276,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_cost_key] is null) AND
 	([ExtendedCostAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212) AND
 	(1=1)
 GO
 
@@ -293,7 +293,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212)
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212)
 GO
 
 print ('chargeback test')
@@ -303,7 +303,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_chargeback_key] is null) AND
 	([ExtChargebackAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202212 AND 202212) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202201 AND 202212) AND
 	(1=1)
 order by GL_BusinessUnit
 GO

@@ -38,6 +38,7 @@ AS
 --	04 Jun 18	tmc		Update special Market logic 
 --	15 Mar 22	tmc		Link DS to DW to enable cross functional goodness
 --	21 Jun 22	tmc		Patch SM logic to fix ZahnSM and 123Dental priors
+--  18 Jan 23	tmc		add Hearland VPA to logic
 **    
 *******************************************************************************/
 BEGIN
@@ -459,7 +460,7 @@ Begin
 		(SalesDivision = 'AAD') AND 
 		(MarketClass_New <> 'PVTPRC') AND
 		(CustGrpWrk = '123 Dentist') AND
-		(VPA not in ('123DENTA', '123DENNC')) AND
+		(VPA not in ('123DENTA', '123DENNC', '123DNST')) AND
 		(1=1)
 
 
