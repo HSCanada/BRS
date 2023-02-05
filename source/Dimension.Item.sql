@@ -59,6 +59,7 @@ AS
 --  06 Jul 22	tmc		Add more price change fields to track GP uplift
 --	07 Jul 22	tmc		Add Comm bonus flags
 --	19 Jul 22	tmc		Add rebate vpa exclude codes
+--  30 Jan 23	tmc		move comm_bonus to item for more control
 **    
 *******************************************************************************/
 
@@ -194,17 +195,17 @@ SELECT
 	,CASE WHEN i.pchg_adhoc_model_code2 <> '' THEN i.pchg_adhoc_model_code2 ELSE 'zOther' END pchg_adhoc_model_code2
 	,mpc.pchg_mpc_active_ind
 
-	,commgrp.comm_bonus1_cd  AS  comm_bonus1_cd
-	,mpc.comm_bonus1_cd		 AS  mpc_comm_bonus1_cd
+	,CASE WHEN i.comm_bonus1_cd <> '' THEN i.comm_bonus1_cd ELSE 'zOther' END AS comm_bonus1_cd
+	,'zObs'	 AS  mpc_comm_bonus1_cd
 
-	,commgrp.comm_bonus2_cd  AS  comm_bonus2_cd
-	,mpc.comm_bonus2_cd		 AS  mpc_comm_bonus2_cd
+	,CASE WHEN i.comm_bonus2_cd <> '' THEN i.comm_bonus2_cd ELSE 'zOther' END AS comm_bonus2_cd
+	,'zObs'		 AS  mpc_comm_bonus2_cd
 
-	,commgrp.comm_bonus3_cd  AS  comm_bonus3_cd
-	,mpc.comm_bonus3_cd		 AS  mpc_comm_bonus3_cd
+	,CASE WHEN i.comm_bonus3_cd <> '' THEN i.comm_bonus3_cd ELSE 'zOther' END AS comm_bonus3_cd
+	,'zObs'		 AS  mpc_comm_bonus3_cd
 
-	,c.minor_adhoc_model_code1
-	,c.minor_adhoc_model_code2
+	,CASE WHEN c.minor_adhoc_model_code1 <> '' THEN c.minor_adhoc_model_code1 ELSE 'zOther' END AS minor_adhoc_model_code1
+	,CASE WHEN c.minor_adhoc_model_code2 <> '' THEN c.minor_adhoc_model_code2 ELSE 'zOther' END AS minor_adhoc_model_code2
 
 FROM            
 	BRS_Item AS i 

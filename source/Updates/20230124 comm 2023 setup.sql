@@ -225,3 +225,16 @@ WHERE        (comm.transaction_F555115.FiscalMonth = '202209') AND WSASN__adjust
 ORDER BY comm.transaction_F555115.FiscalMonth
 GO
 
+
+-- add new bonus
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Item ADD
+	comm_bonus1_cd varchar(50) NULL,
+	comm_bonus2_cd varchar(50) NULL,
+	comm_bonus3_cd varchar(50) NULL
+GO
+ALTER TABLE dbo.BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

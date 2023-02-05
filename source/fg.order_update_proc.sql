@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	19 Sep 22	tmc		link last backorder to month
+**	03 Feb 23	tmc		de-couple fiscal data lockin so can run FG any time
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
