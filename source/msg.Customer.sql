@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	08 Feb 23	tmc		add VPA to ID Elite for 2023
 **    
 *******************************************************************************/
 
@@ -75,6 +76,7 @@ SELECT
 	,RTRIM(isr.FSCName)									AS IsrName
 
 	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
+	,c.VPA
 
 
 FROM

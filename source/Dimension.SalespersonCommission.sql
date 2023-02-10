@@ -32,6 +32,7 @@ AS
 **	02 Jul 20		tmc	added master code to name for easier excel mapping, post
 **	03 Feb 21		tmc	fixed salesperson name to remove code for legal reasons
 **  19 Jul 21		tmc	add salesforce adoption and opportunity for playbook
+**	07 Feb 23		tmc	quick fix for Branch consolidation (use Zone for Br Code 
 **    
 *******************************************************************************/
 
@@ -49,7 +50,7 @@ SELECT
 	,[CostCenter]
 	,b.Branch					AS BranchCode
 	,b.BranchName
-	,b.ZoneName
+	,b.Branch					AS ZoneName
 	,tracker_ind
 
 	-- tmc	add salesforce adoption and opportunity for playbook, 19 Jul 21

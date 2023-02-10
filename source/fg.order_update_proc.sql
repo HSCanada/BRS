@@ -121,16 +121,15 @@ Begin
 	UPDATE
 		fg.transaction_F5554240
 	SET
-		VPA = s.HIST_VPA
-		, Specialty = s.HIST_Specialty
+		VPA = s.VPA
+		, Specialty = s.Specialty
 	FROM
 		fg.transaction_F5554240 
-		INNER JOIN BRS_CustomerFSC_History AS s 
-		ON fg.transaction_F5554240.CalMonthRedeem = s.FiscalMonth AND 
-		fg.transaction_F5554240.WKSHAN_shipto = s.Shipto
+		INNER JOIN BRS_Customer AS s 
+		ON fg.transaction_F5554240.WKSHAN_shipto = s.Shipto
 	WHERE 
 		CalMonthRedeem = @nCurrentFiscalYearmoNum AND
-		((VPA <> s.HIST_VPA) OR (Specialty <> s.HIST_Specialty))
+		((fg.transaction_F5554240.VPA <> s.VPA) OR (fg.transaction_F5554240.Specialty <> s.Specialty))
 
 	Set @nErrorCode = @@Error
 End
@@ -147,12 +146,11 @@ Begin
 		, Label = s.Label
 	FROM
 		fg.transaction_F5554240 
-		INNER JOIN [dbo].[BRS_ItemHistory] AS s 
-		ON fg.transaction_F5554240.CalMonthRedeem = s.FiscalMonth AND 
-		fg.transaction_F5554240.WKLITM_item_number = s.Item
+		INNER JOIN [dbo].[BRS_Item] AS s 
+		ON fg.transaction_F5554240.WKLITM_item_number = s.Item
 	WHERE 
 		CalMonthRedeem = @nCurrentFiscalYearmoNum AND
-		(MajorProductClass <> LEFT(s.MinorProductClass,3))
+		(fg.transaction_F5554240.MajorProductClass <> LEFT(s.MinorProductClass,3))
 
 		Set @nErrorCode = @@Error
 	End

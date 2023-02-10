@@ -70,7 +70,17 @@ SELECT         comm_plan_id, item_comm_group_cd, comm_rt, note_txt
 FROM            comm.plan_group_rate AS d
 WHERE        (comm_rt <> 0) AND (item_comm_group_cd = 'DIGSOL') and comm_plan_id like 'CCS%'
 
+SELECT         comm_plan_id, item_comm_group_cd, comm_rt, note_txt 
+FROM            comm.plan_group_rate AS d
+WHERE        comm_plan_id like 'FSC%' AND comm_plan_id<>'FSCGPM' AND (comm_rt <> 0) AND (item_comm_group_cd like 'DIG%') AND (item_comm_group_cd not in ('DIGMAT', 'DIGSOL')) 
+order by comm_rt DESC
 */
+
+-- fix DIG CadCAm less DIGMAT and DIGSOL
+UPDATE       comm.plan_group_rate
+SET                comm_rt = comm_rt + 3, note_txt = 'TC2023, 7 Feb 23'
+WHERE        comm_plan_id like 'FSC%' AND comm_plan_id<>'FSCGPM' AND (comm_rt <> 0) AND (item_comm_group_cd like 'DIG%') AND (item_comm_group_cd not in ('DIGMAT', 'DIGSOL')) 
+
 
 -- update rates DIGMAT
 

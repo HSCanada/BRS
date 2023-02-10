@@ -167,8 +167,8 @@ Begin
 	SET                
 		MarketClass_New = 'ELITE', 
 		SegCd_New = 'NDSO'
-	WHERE        
-		(BillTo = 2613256) AND 
+	WHERE  
+		[VPA] in ('DENCORP', '123DNST') AND
 		(MarketClass_New = '')
 
 	Set @nErrorCode = @@Error
@@ -185,7 +185,7 @@ Begin
 		MarketClass_New = 'ZAHNSM', 
 		SegCd_New = 'DSO'
 	WHERE        
-		(BillTo = 2613256) AND 
+		[VPA] in ('DENCORP', '123DNST') AND
 		(SalesDivision = 'AAL')
 
 	Set @nErrorCode = @@Error
@@ -208,7 +208,7 @@ Begin
 		ON BRS_Customer.Specialty = s.Specialty
 	WHERE        
 		(BRS_Customer.MarketClass_New = '') AND 
-		(BRS_Customer.CustGrpWrk = 'Dental Corp') AND
+		(BRS_Customer.CustGrpWrk in('Dental Corp', '123 Dentist (Heartland)')) AND
 		(s.MarketClass_New <> '') 
 
 	Set @nErrorCode = @@Error
@@ -228,7 +228,7 @@ Begin
 		BRS_Customer 
 	WHERE        
 		(BRS_Customer.MarketClass_New = '') AND 
-		(BRS_Customer.CustGrpWrk = 'Dental Corp') AND
+		(BRS_Customer.CustGrpWrk in('Dental Corp', '123 Dentist (Heartland)')) AND
 		(BRS_Customer.Specialty = 'DSO')
 
 	Set @nErrorCode = @@Error
@@ -446,6 +446,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+/*
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -466,7 +467,7 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
-
+*/
 
 If (@nErrorCode = 0) 
 Begin
