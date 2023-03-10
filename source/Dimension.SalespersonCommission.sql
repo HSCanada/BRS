@@ -50,7 +50,7 @@ SELECT
 	,[CostCenter]
 	,b.Branch					AS BranchCode
 	,b.BranchName
-	,b.Branch					AS ZoneName
+	,b.ZoneName					AS ZoneName
 	,tracker_ind
 
 	-- tmc	add salesforce adoption and opportunity for playbook, 19 Jul 21

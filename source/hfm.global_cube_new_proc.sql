@@ -195,7 +195,7 @@ GO
 -- see ETL for current update script docs - S:\BR\zDev\BRS\source\Updates\etl_working 20171217 global vendor - ETL details.sql
 
 --a_CAN_Sep-21_RA.csv
--- [hfm].global_cube_new_proc 202212
+-- [hfm].global_cube_new_proc 202112
 -- 48 368 rows @ 3s
 
 -- FG 28 124

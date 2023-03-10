@@ -331,3 +331,5 @@ total = 23865576.5511
 --SELECT  * from [hfm].global_cube order by PERIOD
 
 --SELECT  count(*) from [hfm].global_cube 
+
+SELECT * FROM [hfm].global_cube where PERIOD = 202212 and adjcode like 'CUTOFF%'

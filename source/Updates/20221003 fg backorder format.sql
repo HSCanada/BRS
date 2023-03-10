@@ -30,7 +30,7 @@ FROM
 	ON t.[SDSHAN_shipto] = c.ShipTo
 
 WHERE
-	(t.SalesDay ='2023-01-31') AND
+	(t.SalesDay ='2023-02-28') AND
 
 	-- include full order
 	EXISTS 
@@ -38,7 +38,7 @@ WHERE
 		SELECT * 
 		FROM [BRSales].[fg].[transaction_F5554240] s
 		WHERE 
-			(CalMonthRedeem = 202212 ) AND
+			(CalMonthRedeem = 202302 ) AND
 --			(CalMonthRedeem = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) AND
 			-- test
 --			(fg_exempt_cd NOT LIKE 'XXX%') AND
