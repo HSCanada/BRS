@@ -180,9 +180,9 @@ FROM            BRS_Transaction AS t INNER JOIN
 WHERE t.global_product_class_keyORG is not null
 GO
 
---
-
+--------------------------------------------------------------------------------------
 --add xref, tmc, 8 Mar 23
+-- Move to Prod, tmc, 13 Mar 23
 
 BEGIN TRANSACTION
 GO
@@ -233,10 +233,11 @@ FROM            hfm.gps_code AS gps_code_1
 WHERE        (GpsCode = '')
 GO
 
+delete from hfm.gps_code where  GpsCode = 'GPS'
 
 INSERT INTO hfm.gps_code
                          (GpsCode, GpsDescr, GpsRuleName, Note)
-SELECT        'Endodontics' AS GpsCode, GpsDescr, GpsRuleName, 'Endodontics' AS Note
+SELECT        'ENDODONTICS' AS GpsCode, GpsDescr, GpsRuleName, 'Endodontics' AS Note
 FROM            hfm.gps_code AS gps_code_1
 WHERE        (GpsCode = 'PORCELAIN')
 GO
@@ -244,12 +245,13 @@ GO
 
 INSERT INTO hfm.gps_code
                          (GpsCode, GpsDescr, GpsRuleName, Note)
-SELECT        'Orthodontics' AS GpsCode, GpsDescr, GpsRuleName, 'Orthodontics' AS Note
+SELECT        'ORTHODONTICS' AS GpsCode, GpsDescr, GpsRuleName, 'Orthodontics' AS Note
 FROM            hfm.gps_code AS gps_code_1
 WHERE        (GpsCode = 'PORCELAIN')
 GO
 
 -------------------
+-- manual copy from dev to prod here
 
 -- level 1 - 4
 SELECT        [global_product_class_key], [level_num], zzzItem.Item, RTRIM(SUBSTRING(zzzItem.Item, 2, 255)) + '%' AS glb, zzzItem.Note1, zzzItem.Note2 
@@ -341,7 +343,7 @@ WHERE        (RuleName = '17a')
 GO
 */
 
--- copy prod to dev
+-- copy prod to dev, NOT for PROD
 -- update GPS
 UPDATE       BRS_Transaction
 SET                GpsKey = s.GpsKey
@@ -392,7 +394,7 @@ SELECT  RTRIM([global_product_class]) [global_product_class]
       ,RTRIM([GpsCode_Lab]) [GpsCode_Lab]
       ,[GpsCode_note]
 	  ,level_num
-  FROM [DEV_BRSales].[hfm].[global_product]
+  FROM [hfm].[global_product]
   where [global_product_class] = '850-10-40'
 
 SELECT * from zzzItem where item like 'P850-10-40%'
@@ -439,7 +441,7 @@ WHERE
 	(ISNULL(gps.[GpsCode],'') <> ISNULL([GpsCode_Lab],'')) AND
 
 	-- Update Time Select
-	(s.FiscalMonth BETWEEN 202201 AND 202212) AND 
+	(s.FiscalMonth BETWEEN 202101 AND 202212) AND 
 	(1 = 1)
 -- stop here for update
 Order by 1
@@ -486,7 +488,7 @@ WHERE
 	(ISNULL(gps.[GpsCode],'') <> ISNULL([GpsCode_Den],'')) AND
 
 	-- Update Time Select
-	(s.FiscalMonth BETWEEN 202201 AND 202212) AND 
+	(s.FiscalMonth BETWEEN 202101 AND 202212) AND 
 	(1 = 1)
 -- stop here for update
 Order by 7

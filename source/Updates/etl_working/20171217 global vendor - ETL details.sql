@@ -92,7 +92,7 @@ FROM
 	BRS_ItemHistory 
 WHERE
 	Excl_key is null AND
-	FiscalMonth BETWEEN 202302 AND 202302
+	FiscalMonth BETWEEN 202301 AND 202302
 GO
 
 
@@ -239,7 +239,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 WHERE
 	ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302)
 GO
 
 print('sales test')
@@ -249,7 +249,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_sales_key] is null) AND
 	([NetSalesAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND
 	(1=1)
 GO
 
@@ -266,7 +266,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 WHERE
 	ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302)
 GO
 
 print ('cost test')
@@ -276,7 +276,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_cost_key] is null) AND
 	([ExtendedCostAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND
 	(1=1)
 GO
 
@@ -293,7 +293,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302)
 GO
 
 print ('chargeback test')
@@ -303,7 +303,7 @@ FROM            BRS_Transaction
 where 
 	([gl_account_chargeback_key] is null) AND
 	([ExtChargebackAmt] <> 0.0) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND
 	(1=1)
 order by GL_BusinessUnit
 GO
@@ -316,7 +316,7 @@ UPDATE       BRS_ItemHistory
 	SET [MinorProductClass] = '701-**-**'
 WHERE
 	(BRS_ItemHistory.Item = '105ZZZZ') AND 
-	FiscalMonth BETWEEN 202301 AND 202301
+	FiscalMonth BETWEEN 202301 AND 202302
 GO
 
 UPDATE       [dbo].[BRS_Transaction]
@@ -327,7 +327,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	FiscalMonth BETWEEN 202301 AND 202301 AND
+	FiscalMonth BETWEEN 202301 AND 202302 AND
 	(1=1)
 GO
 
@@ -341,7 +341,7 @@ FROM
 WHERE
 	([GLBU_Class]=  'LEASE') AND 
 	-- ([GL_BusinessUnit] ='020019000000') AND
-	FiscalMonth BETWEEN 202301 AND 202301 AND
+	FiscalMonth BETWEEN 202301 AND 202302 AND
 	(1=1)
 GO
 
@@ -358,7 +358,7 @@ WHERE
 	(BRS_ItemHistory.Item > '') AND 
 	-- null filter not needed below
 	BRS_ItemHistory.global_product_class <> BRS_ItemCategory.global_product_class  AND
-	FiscalMonth BETWEEN 202301 AND 202301
+	FiscalMonth BETWEEN 202301 AND 202302
 GO
 
 -- add the GL vs Global consistence rules corections here...
@@ -382,7 +382,7 @@ FROM
 WHERE
 	(BRS_Transaction.Item > '') AND 
 	(ISNULL(BRS_Transaction.global_product_class_key,0) <> ig.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302)
 GO
 
 -- 50s in dev
@@ -413,13 +413,12 @@ WHERE
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(bu_trans.global_product_class_default <> '') AND 
 	(BRS_Transaction.global_product_class_key <> iglob_def.global_product_class_key) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND 
 	(1 = 1)
 GO
 
 -- set HiCAD to 850-99, if missing
 print ('global - set HiCAD to 850-99, if missing')
-
 UPDATE       BRS_Transaction
 SET                global_product_class_key = 3310
 FROM            BRS_Transaction INNER JOIN
@@ -429,7 +428,7 @@ WHERE
 	(BRS_Transaction.GLBU_Class IN ('EQDIG', 'HICAD')) AND 
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(BRS_Transaction.global_product_class_key IS NULL) AND 
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND 
 	(1 = 1)
 GO
 
@@ -445,7 +444,7 @@ WHERE
 	(BRS_Transaction.GLBU_Class IN ('BSOLN')) AND 
 	(bu_trans.GLBU_ClassUS_L1 < 'ZZZZZ') AND 
 	(BRS_Transaction.global_product_class_key IS NULL) AND 
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301) AND 
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302) AND 
 	(1 = 1)
 GO
 
@@ -532,7 +531,7 @@ WHERE
 	(BRS_Transaction.Item > '') AND 
 	(GLBU_Class <> 'FREIG') AND
 	(BRS_Transaction.global_product_class_key =1) AND
-	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth BETWEEN 202301 AND 202302)
 ORDER BY NetSalesAmt desc
 GO
 
@@ -552,7 +551,7 @@ FROM
 	BRS_Transaction
 WHERE
 	GpsKey is NOT null AND
-	FiscalMonth BETWEEN 202301 AND 202301
+	FiscalMonth BETWEEN 202301 AND 202302
 GO
 
 --2 min
@@ -564,7 +563,7 @@ SET
 	GpsKey = NULL
 WHERE
 	(not GpsKey is NULL) AND
-	(BRS_Transaction.FiscalMonth between 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth between 202301 AND 202302)
 GO
 
 */
@@ -603,7 +602,7 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (110, 120)) AND 
-	(BRS_Transaction.FiscalMonth between 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth between 202301 AND 202302)
 GO
 
 -- 30s
@@ -636,16 +635,156 @@ WHERE
 --	(BRS_Transaction.FiscalMonth between 201701 and 201801)
 -- live
 	(r.Sequence in (230, 240)) AND 
-	(BRS_Transaction.FiscalMonth between 202301 AND 202301)
+	(BRS_Transaction.FiscalMonth between 202301 AND 202302)
 GO
 
+--
+/*
+-- test script tbd - Use Acess "qupd_hfm_gps_fix_item_jde_temp"
+print ('15. GPS crosswalk pre-fix - Item Global override')
+print ('global JDE - fix')
+UPDATE
+	BRS_Transaction
+SET
+	global_product_class_key = iglob_def.global_product_class_key
+FROM
+	BRS_Transaction s
+
+	INNER JOIN BRS_BusinessUnitClass AS bu_trans 
+	ON BRS_Transaction.GLBU_Class = bu_trans.GLBU_Class 
+
+	INNER JOIN hfm.global_product AS iglob 
+	ON BRS_Transaction.global_product_class_key = iglob.global_product_class_key 
+
+	INNER JOIN BRS_BusinessUnitClass AS iglob_bu 
+	ON iglob.GLBU_Class_map = iglob_bu.GLBU_Class AND 
+	bu_trans.GLBU_Class_map <> iglob_bu.GLBU_Class_map 
+
+	INNER JOIN hfm.global_product AS iglob_def 
+	ON bu_trans.global_product_class_default = iglob_def.global_product_class
+
+WHERE
+	-- exclude internal
+	(s.SalesDivision < 'AZA') AND 
+	-- exclude GL based lines
+	(s.GLBU_Class NOT IN('ZZZZZ', 'PROMX', 'PROMC', 'PROMM', 'ALLOE', 'ALLOM', 'ALLOT', 'CAMLG', 'FREIG', 'REBAT', 'EXNSW', 'BSOLN'  )) AND
+	-- include item base global (these set by prior rules)
+	(iglob.[global_product_class] <> '') AND
+
+	-- Lab select
+	(LEFT(ch.HIST_MarketClass,1)='Z') AND
+	(ISNULL(gps.[GpsCode],'') <> ISNULL([GpsCode_Lab],'')) AND
+
+	-- Update Time Select
+	(s.FiscalMonth BETWEEN 202101 AND 202212) AND 
+	(1 = 1)
+-- stop here for update
+Order by 1
+*/
+
+
+print ('16. GPS crosswalk fix - Lab')
+UPDATE
+	BRS_Transaction
+SET
+	GpsKey = gps_new.[GpsKey]
+-- SELECT  s.[FiscalMonth] ID, s.GLBU_Class, s.[DocType], s.item, iglob.[global_product_class], RTRIM(ch.HIST_MarketClass) HIST_MarketClass, [GpsCode_Den], [GpsCode_Lab], gps.[GpsCode] GpsCodeCURR, gps_new.[GpsCode]
+FROM
+	BRS_Transaction s
+
+	-- customer history
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+	ON s.Shipto = ch.[Shipto] AND
+		s.[FiscalMonth] = ch.[FiscalMonth]
+
+	-- Current Global
+	INNER JOIN [hfm].[global_product] as iglob
+	ON s.[global_product_class_key] = iglob.global_product_class_key
+
+	-- GPS Current
+	LEFT JOIN [hfm].[gps_code] gps
+	ON s.GpsKey = gps.[GpsKey]
+
+	-- GPS Lab New
+	INNER JOIN [hfm].[gps_code] gps_new
+	ON iglob.GpsCode_Lab = gps_new.[GpsCode]
+
+WHERE
+	-- exclude internal
+	(s.SalesDivision < 'AZA') AND 
+	-- exclude GL based lines
+	(s.GLBU_Class NOT IN('ZZZZZ', 'PROMX', 'PROMC', 'PROMM', 'ALLOE', 'ALLOM', 'ALLOT', 'CAMLG', 'FREIG', 'REBAT', 'EXNSW', 'BSOLN'  )) AND
+	-- include item base global (these set by prior rules)
+	(iglob.[global_product_class] <> '') AND
+
+	-- Lab select
+	(LEFT(ch.HIST_MarketClass,1)='Z') AND
+	(ISNULL(gps.[GpsCode],'') <> ISNULL([GpsCode_Lab],'')) AND
+
+	-- Update Time Select
+	(s.FiscalMonth BETWEEN 202301 AND 202302) AND 
+	(1 = 1)
+-- stop here for update
+Order by 1
+
+-- ORG 3546
+GO
+
+print ('17. GPS crosswalk fix - Den')
+UPDATE
+	BRS_Transaction
+SET
+	GpsKey = gps_new.[GpsKey]
+-- SELECT  s.[FiscalMonth] ID, s.GLBU_Class, s.[DocType], s.item, iglob.[global_product_class], RTRIM(ch.HIST_MarketClass) HIST_MarketClass, [GpsCode_Den], [GpsCode_Lab], gps.[GpsCode] GpsCodeCURR, gps_new.[GpsCode]
+FROM
+	BRS_Transaction s
+
+	-- customer history
+	INNER JOIN [dbo].[BRS_CustomerFSC_History] as ch
+	ON s.Shipto = ch.[Shipto] AND
+		s.[FiscalMonth] = ch.[FiscalMonth]
+
+	-- Current Global
+	INNER JOIN [hfm].[global_product] as iglob
+	ON s.[global_product_class_key] = iglob.global_product_class_key
+
+	-- GPS Current
+	LEFT JOIN [hfm].[gps_code] gps
+	ON s.GpsKey = gps.[GpsKey]
+
+	-- GPS Den New
+	INNER JOIN [hfm].[gps_code] gps_new
+	ON iglob.GpsCode_Den = gps_new.[GpsCode]
+
+WHERE
+	-- exclude internal
+	(s.SalesDivision < 'AZA') AND 
+	-- exclude GL based lines
+	(s.GLBU_Class NOT IN('ZZZZZ', 'PROMX', 'PROMC', 'PROMM', 'ALLOE', 'ALLOM', 'ALLOT', 'CAMLG', 'FREIG', 'REBAT', 'EXNSW', 'BSOLN'  )) AND
+	-- include item base global (these set by prior rules)
+	(iglob.[global_product_class] <> '') AND
+
+	-- Den select
+	(LEFT(ch.HIST_MarketClass,1)<>'Z') AND
+	(ISNULL(gps.[GpsCode],'') <> ISNULL([GpsCode_Den],'')) AND
+
+	-- Update Time Select
+	(s.FiscalMonth BETWEEN 202301 AND 202302) AND 
+	(1 = 1)
+-- stop here for update
+Order by 7
+
+-- ORG 3546
+GO
+
+--
 print '15. test GpsKey - should be > 0 records'
 SELECT COUNT(*)
 FROM
 	BRS_Transaction
 WHERE
 	GpsKey is null AND
-	FiscalMonth BETWEEN 202301 AND 202301
+	FiscalMonth BETWEEN 202301 AND 202302
 GO
 
 -------------------------------------------------------------------------------
