@@ -32,6 +32,7 @@ AS
 **  13 Sep 22	tmc		Add Astea note load to process
 **  14 Sep 22	tmc		add ScheinSaver & Backorder load
 **	28 Nov 22	tmc		update ScheinSaver header info (they get recycled)
+**	27 Mar 23	tmc		add hfm to proc (weekly)
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -237,7 +238,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6a. ScheinSaver clear prod'
+		print '6. ScheinSaver clear prod'
 
 	truncate table Redemptions_tbl_Main
 	truncate table Redemptions_tbl_Items
@@ -257,7 +258,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6b. fg.deal - update'
+		print '7. fg.deal - update'
 
 	UPDATE fg.deal
 		Set SalesDivision = ISNULL(s.div,'')
@@ -295,7 +296,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6c. ScheinSaver deal header - add'
+		print '8. ScheinSaver deal header - add'
 
 	INSERT INTO Redemptions_tbl_Main
 		(
@@ -323,7 +324,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6d. ScheinSaver add deal line'
+		print '9. ScheinSaver add deal line'
 
 	INSERT INTO Redemptions_tbl_Items
 		(RecID, ItemNumber, ItemID)
@@ -350,7 +351,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '6e. add new chargback'
+		print '10. add new chargback'
 
 	INSERT INTO [fg].[chargeback]
 	(
@@ -372,7 +373,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '7a. add new salesorder from backorder for RI'
+		print '11. add new salesorder from backorder for RI'
 
 	INSERT INTO 
 		BRS_TransactionDW_Ext
@@ -400,7 +401,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '7b. add new backorder'
+		print '12. add new backorder'
 
 	INSERT INTO 
 		fg.backorder_FBACKRPT1_history 
@@ -508,6 +509,114 @@ Begin
 End
 
 --
+-------------------------------------------------------------------------------
+-- Part 1 - HFM update, run any time
+-------------------------------------------------------------------------------
+
+--- update F0901 from ETL - run package to update F0901, F0909
+-- Doc this in Wiki -- DO IT! 31 May 22
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+print '13. add new [dbo].[BRS_BusinessUnit]'
+
+	INSERT INTO [dbo].[BRS_BusinessUnit]
+	(BusinessUnit)
+	SELECT        Distinct GMMCU__business_unit 
+	FROM            Integration.F0901_account_master AS s
+	WHERE NOT EXISTS 
+	(
+		SELECT * FROM [dbo].[BRS_BusinessUnit] b
+		WHERE s.GMMCU__business_unit = b.BusinessUnit
+	)
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+print '14. add new [dbo].[BRS_Object]'
+
+	INSERT INTO [dbo].[BRS_Object]
+	([GLAcctNumberObj])
+	SELECT        Distinct GMOBJ__object_account 
+	FROM            Integration.F0901_account_master AS s
+	WHERE NOT EXISTS 
+	(
+		SELECT * FROM [dbo].[BRS_Object] o
+		WHERE s.GMOBJ__object_account = o.[GLAcctNumberObj]
+	)
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+print '15. add new hfm.account_master_F0901'
+
+	INSERT INTO hfm.account_master_F0901
+							 (GMCO___company, GMAID__account_id, GMMCU__business_unit, GMOBJ__object_account, GMSUB__subsidiary, GMANS__free_form_3rd_acct_no, 
+							 GMDL01_description, GMLDA__account_level_of_detail, GMBPC__budget_pattern_code, GMPEC__posting_edit, GMUSER_user_id, GMPID__program_id, 
+							 GMJOBN_work_station_id, GMUPMJ_date_updated_JDT, GMUPMT_time_last_updated)
+	SELECT        GMCO___company, GMAID__account_id, GMMCU__business_unit, GMOBJ__object_account, GMSUB__subsidiary, GMANS__free_form_3rd_acct_no, 
+							 GMDL01_description, GMLDA__account_level_of_detail, GMBPC__budget_pattern_code, GMPEC__posting_edit, GMUSER_user_id, GMPID__program_id, 
+							 GMJOBN_work_station_id, GMUPMJ_date_updated_JDT, GMUPMT_time_last_updated
+	FROM            Integration.F0901_account_master AS s
+	WHERE NOT EXISTS 
+	(
+		SELECT * FROM hfm.account_master_F0901 d
+		WHERE 
+			s.[GMMCU__business_unit]=d.[GMMCU__business_unit] AND 
+			s.[GMOBJ__object_account] = d.[GMOBJ__object_account] AND
+			s.[GMSUB__subsidiary] = d.[GMSUB__subsidiary]
+	)
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+print '16. update bu map - hfm.account_master_F0901'
+
+	UPDATE       
+		hfm.account_master_F0901
+	SET                
+		HFM_CostCenter = b.CostCenter, 
+		[LastUpdated]  = getdate()
+	FROM            
+		[dbo].[BRS_BusinessUnit] b 
+		INNER JOIN hfm.account_master_F0901 m
+	ON 
+		m.[GMMCU__business_unit] = b.BusinessUnit 
+	WHERE 
+		b.CostCenter <>'' AND
+		ISNULL(HFM_CostCenter,'') <> b.CostCenter
+
+	Set @nErrorCode = @@Error
+End
+
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+
+	print '17. update Obj map - hfm.account_master_F0901'
+	UPDATE       hfm.account_master_F0901
+	SET                HFM_Account = [HFM_Account_TargetKey]
+	FROM            hfm.account_master_F0901 INNER JOIN
+							 hfm.object_to_account_map_rule AS m ON 
+							 hfm.account_master_F0901.GMMCU__business_unit + hfm.account_master_F0901.GMOBJ__object_account + hfm.account_master_F0901.GMSUB__subsidiary LIKE
+							  REPLACE(REPLACE(m.Rule_WhereClauseLike, '?', '_'), '*', '%')
+	WHERE        (m.ActiveInd = 1) AND ISNULL(HFM_Account, '') <> [HFM_Account_TargetKey]
+
+	Set @nErrorCode = @@Error
+End
 
 --
 

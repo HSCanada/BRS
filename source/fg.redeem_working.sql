@@ -29,7 +29,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**  19 Dec 22	tmc		relaxed historical lookups to allow mid-month run     
+**  19 Dec 22	tmc		relaxed historical lookups to allow mid-month run
+**	31 Mar 23	tmc		add backorder to feed
 *******************************************************************************/
 
 -- Buy section
@@ -243,6 +244,8 @@ WHERE
 	-- test
 	--(t.WKDOCO_salesorder_number = 14652012) AND
 	(1=1)
+
+-- add backorder HERE
 
 
 GO

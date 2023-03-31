@@ -32,6 +32,7 @@ AS
 **	21 Dec 20	tmc		Add sales summary logic to help with rebate allocation
 **						Add EST and fix ISR snapshots
 **  16 Dec 21	tmc		add ISR logic
+**	27 Mar 23	tmc		add hsb to proc (monthly)
 **    
 *******************************************************************************/
 
@@ -502,6 +503,111 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+--
+-------------------------------------------------------------------------------
+-- Part 2 - HSB update, run after ME snapshot (comm, Monday tasks)
+-- http://wiki.br.hsa.ca/wiki/Commission_Backend_BR_Docs_384#Monthend_snapshot
+-------------------------------------------------------------------------------
+
+/*
+
+-- restate rules 201901 - 2021; 
+SELECT Excl_Code, BrandEquityCategory,[EffectivePeriod],[ExpiredPeriod]
+FROM [hfm].[exclusive_product]
+WHERE        [Excl_Code] in ('CAO_LASER', 'COMPUDENT', 'MILESTONE', 'ZIRLUX', 'ZYRISI', 'DENMAT')
+GO
+
+-- move from Excl to Brand after 202103
+UPDATE       [hfm].[exclusive_product]
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
+WHERE        (Excl_Code in('MILESTONE' ))
+
+-- move from Excl to Brand after 202007
+UPDATE       [hfm].[exclusive_product]
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
+WHERE        ([Excl_Code] = 'CAO_LASER')
+
+-- move from Brand to from Exclafter 202001
+UPDATE       [hfm].[exclusive_product]
+--SET                [BrandEquityCategory] = 'Exclusive'
+SET                [BrandEquityCategory] = 'Branded'
+WHERE        ([Excl_Code] = 'DENMAT')
+
+
+*/
+
+	If (@nErrorCode = 0) 
+	Begin
+		print '10. set Exclusives - Excl_key, 1s, 1 OF 3'
+
+		UPDATE       
+			BRS_ItemHistory
+		SET
+			Excl_key = p.[Excl_Key]
+		FROM
+			BRS_ItemHistory 
+			INNER JOIN hfm.exclusive_product_rule AS r 
+			ON BRS_ItemHistory.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
+				BRS_ItemHistory.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 
+				BRS_ItemHistory.MinorProductClass LIKE RTRIM(r.MinorProductClass_WhereClauseLike) AND 
+				BRS_ItemHistory.Item LIKE RTRIM(r.Item_WhereClauseLike) AND 
+				1 = 1 
+			INNER JOIN hfm.exclusive_product AS p 
+			ON r.Excl_Code_TargKey = p.Excl_Code  
+		WHERE        
+			(r.StatusCd = 1) AND 
+			(FiscalMonth = @nCurrentFiscalYearmoNum)
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	If (@nErrorCode = 0) 
+	Begin
+		print '11. set private - Excl_key, 2 OF 3'
+
+		UPDATE
+			BRS_ItemHistory
+		SET
+			Excl_key = 1
+		FROM
+			BRS_ItemHistory 
+
+			INNER JOIN BRS_ItemMPC AS mpc 
+			ON mpc.MajorProductClass = LEFT(BRS_ItemHistory.MinorProductClass, 3)
+
+		WHERE
+			(BRS_ItemHistory.Label = 'P') AND 
+			(mpc.PrivateLabelScopeInd = 1) AND 
+			(BRS_ItemHistory.Excl_key IS NULL) AND
+			(FiscalMonth = @nCurrentFiscalYearmoNum)
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	If (@nErrorCode = 0) 
+	Begin
+		print '12. set Branded - Excl_key, 3 of 3'
+
+		UPDATE
+			BRS_ItemHistory
+		SET
+			Excl_key = 2
+		FROM
+			BRS_ItemHistory 
+		WHERE 
+			(Excl_key IS NULL) and
+			(FiscalMonth = @nCurrentFiscalYearmoNum)
+
+		Set @nErrorCode = @@Error
+	End
+
+--> STOP (part 2)
+
+--
 ------------------------------------------------------------------------------------------------------------
 -- Wrap-up routines.  
 ------------------------------------------------------------------------------------------------------------
@@ -550,7 +656,7 @@ End
 Return @nErrorCode
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202012
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202302
 
 -- Prod
 -- EXEC dbo.monthend_snapshot_proc @bDebug=0

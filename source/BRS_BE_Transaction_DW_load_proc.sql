@@ -53,7 +53,8 @@ AS
 --	22 Aug 19	tmc		add new entered_by logic
 --	20 Jul 20	tmc		add credit info load logic for returns dashboard
 --	09 Mar 22	tmc		exclude Private label from free goods (billing in 2022)
-**	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
+--	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
+--  27 Mar 23	tmc		fix credit info addend bug
 
 **    
 *******************************************************************************/
@@ -372,7 +373,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '12. Update Credit lookup table'
+				Print '12. Append Credit lookup table'
 
 		INSERT INTO 
 			[dbo].[BRS_Creditinfo]
@@ -381,8 +382,9 @@ BEGIN
 			, [CreditTypeCode]
 		)
 		SELECT 
-			DISTINCT CRMNRECD AS CreditMinorReasonCode
-			, CRTYCD AS CreditTypeCode
+			DISTINCT 
+				ISNULL(CRMNRECD,'') AS CreditMinorReasonCode
+				,ISNULL(CRTYCD, '') AS CreditTypeCode
 		FROM
 			Integration.BRS_CreditInfo s
 		WHERE 
@@ -390,8 +392,8 @@ BEGIN
 			(
 				SELECT * 
 				FROM [dbo].[BRS_Creditinfo] d 
-				WHERE s.CRMNRECD = d.CreditMinorReasonCode AND 
-					s.CRTYCD = d.CreditTypeCode)
+				WHERE ISNULL(s.CRMNRECD, '') = d.CreditMinorReasonCode AND 
+					ISNULL(s.CRTYCD, '') = d.CreditTypeCode)
 
 			Set @nErrorCode = @@Error
 		End

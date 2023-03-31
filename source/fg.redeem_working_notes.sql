@@ -75,5 +75,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT TOP 100 * FROM fg.redeem_working_notes where doctype like 'S%'
+--SELECT TOP 100 * FROM fg.redeem_working_notes
+
+--SELECT TOP 100 * FROM fg.redeem_working_notes where doctype like 'S%'
 --SELECT * FROM fg.redeem_working_notes WHERE SalesOrderNumber = 14502711

@@ -121,7 +121,7 @@ FROM
 */
 
 WHERE
-	d.FiscalMonth = ((SELECT [FiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [FiscalMonth] FROM [dbo].[BRS_Config])-100) 
+	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
 --	d.FiscalMonth between 202201 and 202209
 
 
@@ -132,7 +132,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
- SELECT  top 1000 * from nes.gp_exception_R5557ALL
+-- SELECT  top 1000 * from nes.gp_exception_R5557ALL order by 2 desc
 -- SELECT   * from nes.gp_exception_R5557ALL
 
 -- SELECT  count(*) from nes.gp_exception_R5557ALL

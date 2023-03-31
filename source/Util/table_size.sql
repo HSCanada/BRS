@@ -10,3 +10,7 @@ FROM       #RowCountsAndSizes
 ORDER BY   SizeinKB DESC,TableName
 
 DROP TABLE #RowCountsAndSizes
+
+-- select top 10 * from [comm].[transaction_F555115] order by 1
+
+-- select top 10 * from [dbo].[BRS_TransactionDW] order by 1
