@@ -33,6 +33,7 @@ AS
 **  14 Sep 22	tmc		add ScheinSaver & Backorder load
 **	28 Nov 22	tmc		update ScheinSaver header info (they get recycled)
 **	27 Mar 23	tmc		add hfm to proc (weekly)
+**  03 Apr 23	tmc		duplicate note work around - remove French Lang (PK iss)
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -140,7 +141,11 @@ Begin
 							s.[Q3LNID_line_number] = d.[Q3LNID_line_number] AND
 							-- s.[Q3DCTO_order_type] = d.[Q3DCTO_order_type] AND
 							(1=1)
-					)
+					) AND
+		-- hack to exclude duplicate order.   Remove French?  
+		s.Q3LNGP_language <> 'F'
+		-- s.[Q3DOCO_salesorder_number] not in (1360497)
+		
 
 	Set @nErrorCode = @@Error
 End
