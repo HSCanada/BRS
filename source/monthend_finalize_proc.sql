@@ -105,7 +105,7 @@ Begin
 	Print 'Confirm BatchStatus NOT finalized (5)'
 	Print @nCurrentFiscalYearmoNum
 	Print Convert(varchar, @nBatchStatus)
-	Print 'post-process: checking steps 1 - n'
+	Print 'post-process: checking steps 1 - 11'
 End
 
 -- only run once
@@ -285,7 +285,6 @@ Begin
 	End
 
 -- add the GL vs Global consistence rules corections here...
--- TBD
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)

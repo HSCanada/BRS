@@ -38,6 +38,7 @@ AS
 **	29 Sep 21	tmc		add backorder for show analyis
 **	20 Jul 22	tmc		add PO Field to help with GSP analysis
 **	21 Jul 22	tmc		move filter logic from SSAS model to query.  add P&G FG
+**	09 Apr 23	tmc		fix bug where free goods breaking saleorder logic
 **    
 *******************************************************************************/
 
@@ -158,14 +159,46 @@ FROM
 			,MIN(h.[PromotionTrackingCode]) AS PromotionTrackingCode
 			,MIN(d.[CustomerPOText1]) AS [CustomerPOText1]
 		FROM
+			BRS_TransactionDW_Ext AS h, BRS_TransactionDW AS d, BRS_Item  ii
+			where h.SalesOrderNumber = d.SalesOrderNumber AND
+				(h.DocType = d.DocType) AND
+				(d.Item = ii.Item) AND
+				-- remove FG from first order key
+				(d.FreeGoodsInvoicedInd = 0 or ii.Supplier= 'PROCGA' ) AND
+				(ii.SalesCategory in( 'MERCH', 'SMEQU', 'TEETH')) AND
+
+				(1=1)
+				-- no item join, leave out for now
+				-- (d.FreeGoodsInvoicedInd = 0 OR i.Supplier= 'PROCGA' )
+
+		GROUP BY h.SalesOrderNumber
+	) AS hdr
+	ON t.SalesOrderNumber = hdr.SalesOrderNumber
+/*
+	-- identify first sales order (for sales order dimension)
+	INNER JOIN 
+	(
+		SELECT
+			h.SalesOrderNumber 
+			,MIN(d.ID) AS IDMin
+			,MIN(h.[PromotionTrackingCode]) AS PromotionTrackingCode
+			,MIN(d.[CustomerPOText1]) AS [CustomerPOText1]
+		FROM
 			BRS_TransactionDW_Ext AS h INNER JOIN
 
 			BRS_TransactionDW AS d 
 			ON h.SalesOrderNumber = d.SalesOrderNumber AND
-				h.DocType = d.DocType
+				(h.DocType = d.DocType) AND
+				-- remove FG from first order key
+--				(d.FreeGoodsInvoicedInd = 0 ) AND
+				(1=1)
+				-- no item join, leave out for now
+				-- (d.FreeGoodsInvoicedInd = 0 OR i.Supplier= 'PROCGA' )
+
 		GROUP BY h.SalesOrderNumber
 	) AS hdr
 	ON t.SalesOrderNumber = hdr.SalesOrderNumber
+*/
 
 /*
 	-- quote link - phase 2
@@ -335,7 +368,9 @@ from BRS_TransactionDW where CalMonth = 202109 and DocType like 'S%'
 
 
 -- SELECT count(*) FROM Fact.Sale_qt where fiscalmonth = 202109
--- 218196 @ 1m54
+-- ORG 5 326 626 @ 31s
+-- NEW 5 321 764 @ 29s, missing P&G 
+-- NW2 5 326 626 @ 32s, added P&G back
 -- 7 670 103, 12s
 
 -- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 and doctype = 'CM' and ReturnValidInd =0
@@ -343,4 +378,5 @@ from BRS_TransactionDW where CalMonth = 202109 and DocType like 'S%'
 
 -- why do we care about first ship date on credit? what problems? just just the order date.  full stop.
 
-
+-- SELECT FactKeyFirst, * FROM Fact.Sale_qt where SalesOrderNumber = 15098812 order by 2
+-- SELECT * FROM Fact.Sale_qt where FactKeyFirst = 39854701 order by 1

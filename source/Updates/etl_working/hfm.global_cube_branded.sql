@@ -1,3 +1,5 @@
+use BRSales
+
 	-- Sales 1 of 3
 	SELECT   
 --		top 10  
@@ -59,7 +61,7 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202302 AND 202302)  AND
+		(t.FiscalMonth between 202304 AND 202304)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
@@ -78,8 +80,9 @@
 		,br.Branch
 		,doct.SourceCd
 
+-- Jen can help
 -- 1. set date
--- 2. set to tab text
+-- 2. set to tab text 
 -- 3. run script
 
 

@@ -110,7 +110,19 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT  * FROM Dimension.Salesorder_qt where SalesOrderNumber = 13086442 
+/*
+SELECT  * FROM Dimension.Salesorder_qt where SalesOrderNumber = 15098812 
+
+SELECT FactKey,  FactKeyFirst, SalesOrderNumber, docType, * FROM Fact.Sale_qt 
+where 
+ SalesOrderNumber = 15097626  or 
+FactKey = 39843422 order by 1
+
+SELECT SalesOrderNumber, ID, * from [dbo].[BRS_TransactionDW] where ID = 39854701 or SalesOrderNumber = 15098812  order by 2
+
+SELECT * from [dbo].[BRS_TransactionDW_Ext] where SalesOrderNumber = 15097626
+
+*/
 -- SELECT top 10 * FROM Dimension.Salesorder_qt where ReturnMonths = 8
 
 

@@ -35,6 +35,7 @@ AS
 -- 08 Jun 20	tmc		Make CalMonth logic table driven so fails 100% no maint
 -- 09 Aug 21	tmc		Add hs_branded_baseline_ind for HSB reporting 
 -- 27 Oct 22	tmc		update for Free Goods modelling
+-- 09 Apr 23	tmc		fix promo tracking code to use correct flag
 **    
 *******************************************************************************/
 
@@ -200,7 +201,7 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 -- SELECT top 10 * FROM Fact.Sale_brs
--- SELECT * FROM Fact.Sale_brs where SalesOrderNumber = 1131213
+-- SELECT * FROM Fact.Sale_brs where SalesOrderNumber = 15098812
  -- SELECT SalesOrderNumber, GLBusinessUnit, sum(SalesAmt) FROM Fact.Sale_brs where SalesOrderNumber = 1131213 group by SalesOrderNumber, GLBusinessUnit-- 
 
  -- SELECT count(*) FROM Fact.Sale_brs
