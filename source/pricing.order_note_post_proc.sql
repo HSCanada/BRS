@@ -34,6 +34,7 @@ AS
 **	28 Nov 22	tmc		update ScheinSaver header info (they get recycled)
 **	27 Mar 23	tmc		add hfm to proc (weekly)
 **  03 Apr 23	tmc		duplicate note work around - remove French Lang (PK iss)
+**	25 May 23	tmc		fixed bug where items NOT in US item were being excluded
 *******************************************************************************/
 
 Declare @nErrorCode int,
@@ -497,6 +498,7 @@ Begin
 		(SDSOBK_quantity_backordered <> 0) AND 
 		(SDLNTY_line_type <> 'MS') AND 
 		(QCAC10_division_code <> 'AZA') AND 
+
 		NOT EXISTS 
 		(
 			SELECT * FROM fg.backorder_FBACKRPT1_history  d 
@@ -506,8 +508,11 @@ Begin
 				(d.[SDDCTO_order_type] = s.[SDDCTO_order_type]) AND
 				(d.[SDLNID_line_number] = s.[SDLNID_line_number] * 1000)
 		) AND
-		EXISTS (SELECT * FROM [dbo].[BRS_Item] i where s.SDLITM_item_number = i.item_usd) AND
 
+		EXISTS (SELECT * FROM [dbo].[BRS_Item] i where s.SDLITM_item_number = i.item) AND
+		-- test
+		--(SDDOCO_salesorder_number = 16148903) AND
+		--
 		(1 = 1)
 
 	Set @nErrorCode = @@Error
