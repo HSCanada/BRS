@@ -23,7 +23,9 @@ ECHO LOAD Prod...
 SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=0; SELECT SalesDateLastWeekly FROM BRS_Config"
 
 ECHO Update ISR consolidator...
-::PAUSE
-osql -S %BRS_SQLSERVER% -E -r -p -Q"exec msdb.dbo.sp_start_job 'SSIS_br_inside_sales_update'"
+PAUSE
+::osql -S %BRS_SQLSERVER% -E -r -p -Q"exec msdb.dbo.sp_start_job 'SSIS_br_inside_sales_update'"
+sqlcmd -S %BRS_SQLSERVER% -E -d MSDB -Q "sp_start_job 'SSIS_br_inside_sales_update'"
+
 
 PAUSE

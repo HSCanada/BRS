@@ -788,7 +788,8 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
-		If (@nErrorCode = 0 And @nRowCount > 0) 
+		If (@nErrorCode = 0 ) 
+--		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
 
 			If (@bDebug <> 0)
