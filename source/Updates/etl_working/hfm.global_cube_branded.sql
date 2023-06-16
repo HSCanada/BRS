@@ -61,7 +61,7 @@ use BRSales
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202304 AND 202304)  AND
+		(t.FiscalMonth between 202305 AND 202305)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND

@@ -53,8 +53,8 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 202301 and 202304) OR
-		(t.FiscalMonth BETWEEN 202201 and 202204)
+		(t.FiscalMonth BETWEEN 202301 and 202305) OR
+		(t.FiscalMonth BETWEEN 202201 and 202205)
 	) AND
 	-- test with quote exclude
 	--(Branch = 'TORNT') AND
