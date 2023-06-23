@@ -49,6 +49,7 @@ AS
 **	14 Oct 21	tmc		add pma and freight ind for commission modelling
 **	19 Sep 22	tmc		add privileges code for business review model
 **	04 Jan 23	tmc		add trims to correct for cloud backend escapes, @gt
+**	19 Jun 23	mtc		add JDE marketclass to allow synch
 *******************************************************************************/
 
 BEGIN
@@ -271,6 +272,9 @@ BEGIN
 				,[ApplyFreightInd] = ISNULL(s.[ApplyFreightInd], '')
 				,[ApplySmallOrderChargesInd] = ISNULL(s.[ApplySmallOrderChargesInd], '')
 				
+				,[SegCd_JDE] = ISNULL(s.[SegCd], '')
+				,[MarketClass_JDE] = ISNULL(s.[MarketClass],'')
+
 
 
 			FROM         
@@ -311,7 +315,12 @@ BEGIN
 				-- fix bad logic, tmc, 19 Sep 22
 				BRS_Customer.[PrivilegesCode] <> LEFT(ISNULL(s.[PrivilegesCode], ''), 5) OR
 				BRS_Customer.[ApplyFreightInd] <> ISNULL(s.[ApplyFreightInd], '') OR
-				BRS_Customer.[ApplySmallOrderChargesInd] <> ISNULL(s.[ApplySmallOrderChargesInd], '')
+				BRS_Customer.[ApplySmallOrderChargesInd] <> ISNULL(s.[ApplySmallOrderChargesInd], '') OR
+
+				-- add marketclass
+				BRS_Customer.[SegCd_JDE] <> ISNULL(s.[SegCd], '') OR
+				BRS_Customer.[MarketClass_JDE] <> ISNULL(s.[MarketClass], '') 
+
 
 
 			Set @nErrorCode = @@Error
@@ -354,6 +363,8 @@ BEGIN
 				,PrivilegesCode
 				,[ApplyFreightInd]
 				,[ApplySmallOrderChargesInd]
+				,[SegCd_JDE] 
+				,[MarketClass_JDE]
 
 			)
 
@@ -390,6 +401,8 @@ BEGIN
 				,ISNULL(s.[ApplyFreightInd], '')			AS [ApplyFreightInd]
 				,ISNULL(s.[ApplySmallOrderChargesInd], '')	AS [ApplySmallOrderChargesInd]
 
+				,ISNULL(s.[SegCd], '')						AS SegCd_JDE
+				,ISNULL(s.[MarketClass], '')				AS MarketClass_JDE
 
 			FROM         
 				STAGE_BRS_CustomerFull AS s

@@ -531,3 +531,19 @@ FROM
 --
 
 
+SELECT top 10 * from OPENQUERY (ESYS_PROD, '	
+	SELECT
+		*
+ 	FROM
+--		ARCPDTA71.W564101Z -- not same
+--		HSIPDTA71.IV0031 -- works
+		ARCPDTA71.IV0031 -- works
+--		HSIPCORDTA.IV0031 -- old
+--		ARCPCORDTA.IV0031 -- old
+
+	WHERE 
+	QILITM like ''BAY%''
+--	QI$ACC = ''''
+--	order by QICADT desc
+	-- VA$CN2 = 1732065
+')
