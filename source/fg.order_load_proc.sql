@@ -346,7 +346,7 @@ Begin
 		,[WKUOM__um]
 		,[WKALPH_billto_name]
 		,[WKNAME_shipto_name]
-		,[WK$HGS_status_code_high]
+		,ISNULL([WK$HGS_status_code_high],'')
 		,ISNULL([WKFRGD_from_grade],'')
 		,ISNULL([WKTHGD_thru_grade],'')
 		,ISNULL([WKDL01_promo_description],'')

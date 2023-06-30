@@ -547,3 +547,249 @@ SELECT top 10 * from OPENQUERY (ESYS_PROD, '
 --	order by QICADT desc
 	-- VA$CN2 = 1732065
 ')
+
+--
+
+select 
+[WKDOCO_salesorder_number] 
+,[WKDCTO_order_type]
+,[line_id]
+FROM 
+[Integration].[F5554240_fg_redeem_Staging]
+
+-- add new dummy orders
+
+			INSERT INTO 
+				BRS_TransactionDW_Ext (
+					SalesOrderNumber, 
+					DocType, 
+					CustomerPOText1
+				)
+			SELECT     distinct 
+				s.[WKDOCO_salesorder_number] AS SalesOrderNumber, 
+				s.[WKDCTO_order_type] AS DocType,
+				'FGDUMMY' as po
+			FROM         
+	[Integration].[F5554240_fg_redeem_Staging] s
+			WHERE     NOT EXISTS
+			(
+				Select 
+					* 
+				From 
+					BRS_TransactionDW_Ext s
+				Where 
+					[WKDOCO_salesorder_number] = s.SalesOrderNumber And
+					[WKDCTO_order_type] = s.DocType 
+			)
+
+-- add new dummy lines
+			INSERT INTO BRS_TransactionDW
+			(
+				SalesOrderNumber, 
+				DocType, 
+				LineNumber, 
+				CalMonth, 
+				Date, 
+				Shipto, 
+				Item, 
+
+				EnteredBy, 
+				OrderTakenBy, 
+				OrderSourceCode, 
+				CustomerPOText1, 
+				PriceMethod, 
+				VPA, 
+
+				LineTypeOrder, 
+				SalesDivision, 
+				MajorProductClass, 
+
+				ChargebackContractNumber, 
+				GLBusinessUnit, 
+				OrderFirstShipDate, 
+				InvoiceNumber, 
+
+				--  09 Dec 16	tmc		Update Metrics load logic
+				ShippedQty, 
+				GPAmt, 
+				GPAtFileCostAmt, 
+				GPAtCommCostAmt, 
+				ExtChargebackAmt, 
+				NetSalesAmt, 
+				PromotionCode,
+				OrderPromotionCode,
+
+				-- Custom Logic Section BEGIN -----------------------------------------
+
+				ExtPriceORG,                    
+				ExtListPriceORG, 
+               
+				BackorderInd,                 
+				FreeGoodsRedeemedInd,
+
+				[OriginalSalesOrderNumber],		-- [OORN]		
+				[OriginalOrderDocumentType],	-- [OORTY]		
+				[OriginalOrderLineNumber],		-- [OORLINO]	
+
+				FreeGoodsInvoicedInd,   
+				FreeGoodsEstInd,  
+              
+				ExtListPrice,
+				ExtPrice,
+
+				ExtDiscAmt,                     
+
+
+				-- Custom Logic Section END -------------------------------------------
+
+				[PricingAdjustmentLine],		-- [PCADLINO]	
+				[SalesOrderBilltoNumber],		-- [BTADNO]	
+				[EssCode],						-- [ESSCD]		
+				[CcsCode],						-- [CCSCD]		
+				[EstCode],						-- [ESTCD]		
+				[TssCode],						-- [TSSCD]		
+				[CagCode],						-- [CAGREPCD]	
+				[EquipmentOrderNumber],			-- [EQORDNO]	
+				[EquipmentOrderType]			-- [EQORDTYCD]	
+
+				)
+				SELECT     
+
+				s.[WKDOCO_salesorder_number] AS SalesOrderNumber, 
+				s.[WKDCTO_order_type] AS DocType, 
+				ROUND(s.[line_id] * 1000,0) AS LineNumber, 
+
+				202306 AS CalMonth, 
+				CONVERT(DATE,s.WKDATE_order_date_text) AS Date, 
+				s.[WKSHAN_shipto] AS Shipto, 
+				s.[WKLITM_item_number] AS Item, 
+
+				'' AS EnteredBy, 
+				'' AS OrderTakenBy, 
+				'' AS OrderSourceCode, 
+				LEFT(s.[WKDSC1_description],25) AS CustomerPOText1, 
+				'' AS PriceMethod, 
+				'' AS VPA, 
+
+				'' AS LineTypeOrder, 
+				s.[WKAC10_division_code] AS SalesDivision, 
+				'' AS MajorProductClass, 
+
+				--  16 Jan 17   tmc     Fixed Chargeback Number load so * maps to 0
+				CASE WHEN s.[WK$ODN_free_goods_contract_number] = '*' THEN 0 ELSE ISNULL(s.[WK$ODN_free_goods_contract_number],0) END AS ChargebackContractNumber, 
+		--		ISNULL(s.CBCONTRNO,0) AS ChargebackContractNumber, 
+				'' AS GLBusinessUnit, 
+				'1980-01-10' AS OrderFirstShipDate, 
+				-- ISNULL(s.ORFISHDT, '1 Jan 1980') AS OrderFirstShipDate, 
+				'' AS InvoiceNumber, 
+
+				--  09 Dec 16	tmc		Update Metrics load logic
+				s.[WKUORG_quantity] AS ShippedQty, 
+
+				0 AS GPAmt, 
+				0 AS GPAtFileCostAmt, 
+				0 AS GPAtCommCostAmt, 
+				0 AS ExtChargebackAmt, 
+				0 AS NetSalesAmt,
+				'' AS PromotionCode, 
+				'' AS OrderPromotionCode,
+
+				-- Custom Logic Section BEGIN 
+
+				-- store ORG, ~ORG will be modified to follow
+				0                                       AS ExtPriceORG,         
+				0                                       AS ExtListPriceORG,     
+
+				0                                              AS BackorderInd,		
+				0                                               AS FreeGoodsRedeemedInd,
+
+				-- Copy SO where Original SO missing to make Credit rebill matching easy
+				0                                             AS OriginalSalesOrderNumber,		 
+
+				'' 	                                            AS OriginalOrderDocumentType,	 
+
+				0 	                                            AS OriginalOrderLineNumber,	
+
+				0                                             AS FreeGoodsInvoicedInd,
+		--      CASE WHEN ShippedQty <> 0 AND NetSalesAmt = 0 AND ABS(GPAtFileCostAmt) > 0.02 * ShippedQty THEN 1 ELSE 0 END AS FreeGoodsInvoicedInd
+
+				-- Free goods estimate model can be improved, 27 Jan 17
+				0                                              AS FreeGoodsEstInd,
+
+				-- Correct Ext List on price adjusmtent as the DW field incorrect
+				0                                             AS ExtListPrice,
+
+				/*
+		SET              
+			ExtListPrice    = CASE WHEN LineTypeOrder IN ('CP', 'CL', 'CE')     THEN CASE WHEN LineTypeOrder = 'CE' THEN NetSalesAmt ELSE 0 END ELSE ExtListPriceORG END	
+			, ExtPrice        = CASE WHEN OrderSourceCode IN ('A', 'L', 'K')    THEN NetSalesAmt ELSE ExtPriceORG END
+		*/
+
+				-- Correct Ext Price for non Advanced price as the DW field incorrect
+				0                                           AS ExtPrice,
+
+				-- Calc Total Discount based on correct fields.  Ugly Dup code needed?
+				-- SUM(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt) AS ExtDiscTotal,
+
+							- 
+				0                       AS ExtDiscAmt,
+
+
+				-- Custom Logic Section END 
+	 
+				''	AS	PricingAdjustmentLine,		 
+				0		AS	SalesOrderBilltoNumber,		 
+				''		AS	EssCode,						 
+				''		AS	CcsCode,						 
+				''		AS	EstCode,						 
+				''		AS	TssCode,						 
+				''	AS	CagCode,						 
+				''	AS	EquipmentOrderNumber,			 
+				''	AS	EquipmentOrderType			 
+FROM
+[Integration].[F5554240_fg_redeem_Staging] s
+
+
+			WHERE     NOT EXISTS
+			(
+				Select 
+					* 
+				From 
+					BRS_TransactionDW s2
+				Where 
+					[WKDOCO_salesorder_number] = s2.SalesOrderNumber And
+					[WKDCTO_order_type] = s2.DocType And
+					ROUND(s.[line_id] * 1000,0) = s2.LineNumber
+			)
+
+-- add CB contract
+
+INSERT INTO [fg].[chargeback]
+(
+[cb_contract_num]
+,[cb_contract_cd]
+,[note_txt]
+)
+select distinct [WK$ODN_free_goods_contract_number], 'FGCBA', 'TC CB auto'  FROM
+[Integration].[F5554240_fg_redeem_Staging] s
+where [WK$ODN_free_goods_contract_number] is not null
+
+-- hack to added test promo for RI
+insert into
+[dbo].[BRS_Promotion]
+(
+[PromotionCode]
+)
+select distinct [WKTHGD_thru_grade] FROM
+[Integration].[F5554240_fg_redeem_Staging] s
+where [WK$ODN_free_goods_contract_number] is not null and [WKTHGD_thru_grade] = 'LN'
+
+--
+
+-- Add FGCBA to exempt
+
+INSERT INTO fg.exempt_code
+                         (fg_exempt_cd, fg_exempt_desc, source_cd, active_ind, sequence_num, note_txt, show_ind)
+SELECT        'FGCBA' AS fg_exempt_cd, 'CB Autoadd' AS fg_exempt_desc, source_cd, active_ind, sequence_num, 'noManClaim' AS note_txt, show_ind
+FROM            fg.exempt_code AS exempt_code_1
+WHERE        (fg_exempt_cd = 'fgauto')
