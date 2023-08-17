@@ -3,12 +3,12 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="Major_x0020_Product_x0020_Class" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="zMajor_x0020_Product_x0020_Class" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="Major_x0020_Product_x0020_Class">
+<xsd:element name="zMajor_x0020_Product_x0020_Class">
 <xsd:annotation>
 <xsd:appinfo/>
 </xsd:annotation>

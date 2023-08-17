@@ -3,12 +3,12 @@
 <xsd:element name="dataroot">
 <xsd:complexType>
 <xsd:sequence>
-<xsd:element ref="STAGE_F56013R_U" minOccurs="0" maxOccurs="unbounded"/>
+<xsd:element ref="zSTAGE_F56013R_U" minOccurs="0" maxOccurs="unbounded"/>
 </xsd:sequence>
 <xsd:attribute name="generated" type="xsd:dateTime"/>
 </xsd:complexType>
 </xsd:element>
-<xsd:element name="STAGE_F56013R_U">
+<xsd:element name="zSTAGE_F56013R_U">
 <xsd:annotation>
 <xsd:appinfo>
 <od:index index-name="Err Code" index-key="Err_x0020_Code " primary="no" unique="no" clustered="no" order="asc"/>
