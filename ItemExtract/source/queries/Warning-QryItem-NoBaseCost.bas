@@ -14,6 +14,7 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
+dbText "Description" ="tc"
 Begin
     Begin
         dbText "Name" ="[Item Master].Major"

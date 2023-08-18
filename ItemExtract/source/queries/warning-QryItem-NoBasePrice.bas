@@ -1,20 +1,16 @@
 ﻿Operation =4
 Option =0
-Where ="((([Item Master].[Sell Prc Brk1]) Is Null) AND ((Nz([FreeGoodInd],0))=False))"
+Where ="((([Item Master].[Sell Prc Brk1]) Is Null) AND (([Item Master].Major) Not In (\""
+    "925\",\"908\",\"100\",\"904\")))"
 Begin InputTables
     Name ="0-QrySel-SetLeaders-Wholesales"
     Name ="Item Master"
-    Name ="Major Product Class"
 End
 Begin OutputColumns
     Name ="[Item Master].[Exception Message]"
     Expression ="[Item Master]![Exception Message] & \"NOPRICE \""
 End
 Begin Joins
-    LeftTable ="Item Master"
-    RightTable ="Major Product Class"
-    Expression ="[Item Master].Major = [Major Product Class].MPC"
-    Flag =2
     LeftTable ="0-QrySel-SetLeaders-Wholesales"
     RightTable ="Item Master"
     Expression ="[0-QrySel-SetLeaders-Wholesales].[Wholesale Set Leader] = [Item Master].[HSI Ite"
@@ -32,6 +28,7 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
+dbText "Description" ="tc"
 Begin
     Begin
         dbText "Name" ="[Item Master].Major"
@@ -75,15 +72,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =994
-    Bottom =609
+    State =2
+    Left =-8
+    Top =-31
+    Right =1122
+    Bottom =946
     Left =-1
     Top =-1
-    Right =976
-    Bottom =461
+    Right =1098
+    Bottom =444
     Left =0
     Top =0
     ColumnsShown =579
@@ -103,15 +100,6 @@ Begin
         Bottom =570
         Top =0
         Name ="Item Master"
-        Name =""
-    End
-    Begin
-        Left =797
-        Top =113
-        Right =941
-        Bottom =257
-        Top =0
-        Name ="Major Product Class"
         Name =""
     End
 End

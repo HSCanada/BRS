@@ -19,6 +19,7 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
+dbText "Description" ="tc"
 Begin
     Begin
         dbText "Name" ="[Item Master].[HSI Item#]"
@@ -41,8 +42,8 @@ Begin
     Bottom =1004
     Left =-1
     Top =-1
-    Right =1434
-    Bottom =204
+    Right =1428
+    Bottom =187
     Left =0
     Top =0
     ColumnsShown =579

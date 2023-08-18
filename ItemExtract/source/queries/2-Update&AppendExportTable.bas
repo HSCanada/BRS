@@ -90,29 +90,29 @@ Begin OutputColumns
     Name ="Favorite Cost"
     Expression ="[Item Master].[Favorite Cost]"
     Name ="Cost Qty Brk1"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk1]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk1_]"
     Name ="Cost Prc Brk1"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk1]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk1_]"
     Name ="Cost Qty Brk2"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk2]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk2_]"
     Name ="Cost Prc Brk2"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk2]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk2_]"
     Name ="Cost Qty Brk3"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk3]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk3_]"
     Name ="Cost Prc Brk3"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk3]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk3_]"
     Name ="Sell Qty Brk1"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk1]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk1_]"
     Name ="Sell Prc Brk1"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk1]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk1_]"
     Name ="Sell Qty Brk2"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk2]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk2_]"
     Name ="Sell Prc Brk2"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk2]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk2_]"
     Name ="Sell Qty Brk3"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk3]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk3_]"
     Name ="Sell Prc Brk3"
-    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk3]"
+    Expression ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk3_]"
     Name ="Classification Code"
     Expression ="[Item Master].[Classification Code]"
     Name ="Line Type"
@@ -214,6 +214,7 @@ dbBoolean "OrderByOn" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
+dbText "Description" ="tc"
 Begin
     Begin
         dbText "Name" ="[Item Master].[HSI Item#]"
@@ -1103,17 +1104,105 @@ Begin
         dbText "Name" ="[Item Master].[Branch Plant 5]"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk2_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr4"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk2_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr11"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk3_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk2_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr10"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk3_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr12"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk1_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk1_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr3"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk2_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr5"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Qty Brk3_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr6"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Cost Prc Brk3_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr7"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Qty Brk1_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr8"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="[0-QrySel-SetLeaders-Wholesales].[Sell Prc Brk1_]"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="Expr9"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
-    Left =46
-    Top =96
-    Right =1013
-    Bottom =653
+    Left =0
+    Top =40
+    Right =1494
+    Bottom =938
     Left =-1
     Top =-1
-    Right =949
-    Bottom =120
+    Right =1470
+    Bottom =228
     Left =96
     Top =0
     ColumnsShown =651

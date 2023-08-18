@@ -2,16 +2,15 @@
 ColumnsShown =0
 Begin
     Action ="RunCode"
-    Argument ="Cleaning_Warning_Update_Export()"
+    Argument ="Cleaning_Warning_Update_Export_Fnc()"
 End
 Begin
     Comment ="_AXL:<?xml version=\"1.0\" encoding=\"UTF-16\" standalone=\"no\"?>\015\012<UserI"
         "nterfaceMacro MinimumClientDesignVersion=\"14.0.0000.0000\" xmlns=\"http://schem"
-        "as.microsoft.com/office/accessservices/2009/11/application\" xmlns:a=\"http://sc"
-        "hemas.microsoft.com/office/acc"
+        "as.microsoft.com/office/accessservices/2009/11/application\"><Statements><Action"
+        " Name=\"RunCode\"><Argument Nam"
 End
 Begin
-    Comment ="_AXL:essservices/2009/11/forms\"><Statements><Action Name=\"RunCode\"><Argument "
-        "Name=\"FunctionName\">Cleaning_Warning_Update_Export()</Argument></Action></Stat"
-        "ements></UserInterfaceMacro>"
+    Comment ="_AXL:e=\"FunctionName\">Cleaning_Warning_Update_Export_Fnc()</Argument></Action>"
+        "</Statements></UserInterfaceMacro>"
 End

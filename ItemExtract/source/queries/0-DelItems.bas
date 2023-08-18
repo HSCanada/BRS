@@ -10,6 +10,7 @@ dbInteger "ODBCTimeout" ="60"
 dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
 dbByte "Orientation" ="0"
+dbText "Description" ="tc"
 Begin
 End
 Begin

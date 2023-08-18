@@ -48,8 +48,8 @@ Dim sLogMsg As String
 'DEV Params
 Const CONNECTIONSTRING_DEV As String = "ODBC;DRIVER=SQL Server;SERVER=CAHSIONNLSQL1;DATABASE=DEV_BRSales"
 Const INPUT_PATH_DEV As String = "S:\BR\zDev\BRS\ItemExtract\Data\"
-Const OUTPUT_PATH_DEV As String = "S:\BR\zDev\BRS\ItemExtract\Output\"
-Const EVENT_FILE_WITHPATH_DEV As String = "S:\BR\zDev\BRS\ItemExtract\ItemExtract.log"
+Const OUTPUT_PATH_DEV As String = "S:\BR\zDev\BRS\ItemExtract\Export\"
+Const EVENT_FILE_WITHPATH_DEV As String = "S:\BR\zDev\BRS\ItemExtract\ItemExtractLog.log"
 Const INPUT_FILE_COUNT_DEV = 4
 
 'S:\Shared_Everyone\Business Reporting\Shared\Item Extract\Export\
@@ -122,7 +122,7 @@ On Error GoTo eh:
     
     bSuccess = True
     
-    sOutputFilePath = GetOutputPath() & Trim(sFileName) & "_" & Trim(Format(Now, "YYYYMMDD")) & ".XLSX"
+    sOutputFilePath = GetOutputPath() & Trim(sFileName) & "_" & Trim(Format(Now, "YYYYMMDDThhnnss")) & ".XLSX"
     
     'Debug.Print sOutputFilePath
     
@@ -159,6 +159,9 @@ On Error GoTo Cleaning_Warning_Update_Export_Err
     Dim sFile As String
 
     DoCmd.SetWarnings False
+    
+    ' MUST run first to set params for logs, etc
+    InitParams
     
     sLogMsg = Now() & ":  Begin Import"
     LogEventToFile (sLogMsg)
@@ -210,10 +213,18 @@ On Error GoTo Cleaning_Warning_Update_Export_Err
     LogEventToFile (sLogMsg)
     DoCmd.OpenQuery "2-Update&AppendExportTable", acViewNormal, acEdit
 
+    sLogMsg = Now() & "......:  qupdCostFix"
+    LogEventToFile (sLogMsg)
+    DoCmd.OpenQuery "qupdCostFix", acViewNormal, acEdit
+
+    sLogMsg = Now() & "......:  qupdPriceFix"
+    LogEventToFile (sLogMsg)
+    DoCmd.OpenQuery "qupdPriceFix", acViewNormal, acEdit
+
     sLogMsg = Now() & "....:  End Scrub"
     LogEventToFile (sLogMsg)
     
-    sLogMsg = Now() & "..:  End Import"
+    sLogMsg = Now() & ":  End Import"
     LogEventToFile (sLogMsg)
 
     If Not mbDebug Then

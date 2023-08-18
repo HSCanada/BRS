@@ -37,7 +37,8 @@ AS
 -- 10 Jul 17	tmc		Fixed Item.ID to .ItemKey rename
 -- 19 Jul 17	tmc		added daily snapshot for Pricing
 -- 24 Sep 17	tmc		changed date to use lastweekly to avoid manual setting
---  23 Oct 17	tmc		Added @bClearStage option to simplify rights
+-- 23 Oct 17	tmc		Added @bClearStage option to simplify rights
+-- 18 Aug 23	tmc		stop clearing stage history so we can use for item dump
 
 **    
 *******************************************************************************/
@@ -330,7 +331,8 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
-
+/*
+	-- disable for item dump side-effect, tmc
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
@@ -340,7 +342,7 @@ BEGIN
 
 			Set @nErrorCode = @@Error
 		End
-
+*/
 
 	End -- not clear stage
 
@@ -362,7 +364,9 @@ BEGIN
 
 		Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-		RAISERROR (50060, 9, 1, @sMessage )
+		RAISERROR ('%s', 9, 1, @sMessage )
+--		RAISERROR (50060, 9, 1, @sMessage )
+
 
 		Rollback Tran mytran
 
@@ -418,6 +422,9 @@ truncate table STAGE_BRS_ItemSellPrice
 -- debug
 -- Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=0, @bDebug=1
 
+-- Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=0, @bDebug=1
+
+-- Exec [BRS_ItemBaseHistory_load_proc] @bClearStage=0, @bDebug=0
 
 
 
