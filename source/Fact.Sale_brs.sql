@@ -36,6 +36,7 @@ AS
 -- 09 Aug 21	tmc		Add hs_branded_baseline_ind for HSB reporting 
 -- 27 Oct 22	tmc		update for Free Goods modelling
 -- 09 Apr 23	tmc		fix promo tracking code to use correct flag
+-- 15 Aug 23	tmc		update datekey to work with day dimension
 **    
 *******************************************************************************/
 
@@ -48,7 +49,10 @@ SELECT
 	,sup.SupplierKey								AS BrandKey
 
 	,d.CalMonth										AS CalMonth	
-	,CAST(t.Date AS date)							AS DateKey
+
+	,d.day_key										AS DateKey
+--	,CAST(t.Date AS date)							AS DateKey
+
 	,t.SalesOrderNumber
 	,t.LineNumber
 	,t.FreeGoodsInvoicedInd
@@ -214,7 +218,7 @@ GO
 -- 25 month test
 -- 4.29; 8 399 287
 
--- SELECT CalMonth, count (*) FROM Fact.Sale_brs Group by CalMonth order by 1
+-- SELECT CalMonth, count (*) as lines, sum(SalesAmt) as sales FROM Fact.Sale_brs Group by CalMonth order by 1
 
 -- fail afer 2 min
 

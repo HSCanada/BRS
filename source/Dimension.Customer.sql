@@ -239,6 +239,10 @@ SELECT
 	,c.adhoc_model_2_text
 	,c.adhoc_model_3_text
 
+	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_1_text
+	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_2_text
+	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_3_text
+
 FROM
 	BRS_Customer AS c 
 

@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	15 Aug 23	tmc		added current date to time to allow current month reporting
 *******************************************************************************/
 
 SELECT
@@ -43,6 +44,7 @@ SELECT
 	,cal.FirstMonthSeqInQtr
 	,cal.FirstMonthSeqInYear
 
+
 FROM
 	[dbo].[BRS_CalMonth] AS cal 
 
@@ -50,7 +52,8 @@ FROM
 WHERE
 	cal.CalMonth BETWEEN 
 		(SELECT YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01) AND 
-		(SELECT PriorFiscalMonth FROM BRS_Rollup_Support01)
+		(SELECT FiscalMonth FROM BRS_Rollup_Support01)
+--		(SELECT PriorFiscalMonth FROM BRS_Rollup_Support01)
 
 GO
 
@@ -59,6 +62,6 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
+-- Select FiscalMonth, PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
 -- SELECT  * FROM Dimension.CalendarMonth

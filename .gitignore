@@ -12,6 +12,7 @@
 publish/
 working/
 Upload/
+*.log
 
 
 # Prerequisites

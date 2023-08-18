@@ -57,7 +57,7 @@ COMMIT
 
 -- DROP TABLE STAGE_JDE_F5830
 SELECT 
---	top 1000
+	top 1000
 
 	"VA$CN2" AS contract_number,
 	"VAKCOO" AS order_company,
@@ -144,7 +144,7 @@ SELECT
 	"VAUPMJ" AS date_updated,
 	"VATDAY" AS time_of_day 
 
--- INTO STAGE_JDE_F5830
+-- INTO STAGE_JDE_F5830b
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -263,8 +263,10 @@ FROM
 		VATDAY
 
 	FROM
-		ARCPDTA71.F5830
+		HSIPDTA71.F5830
 ')
+
+		ARCPDTA71.F5830
 
 --
 

@@ -11,6 +11,7 @@ SELECT 'FTAGP' as[comm_plan_id]
       ,'New FTA GP Plan' [note_txt]
       ,[active_ind]
   FROM [comm].[plan] where comm_plan_id = 'ESSGP'
+GO
 
 --2. copy CCS to FTA settings to DEV, CCS23 to FTA23
 
@@ -31,7 +32,7 @@ SELECT 'FTA23' AS [TerritoryCd]
       ,[NoteTxt]
       , '' AS [comm_salesperson_key_id]
   FROM [BRS_FSC_Rollup] where [TerritoryCd] = 'CCS23'
-
+GO
 
 INSERT INTO [comm].[salesperson_master]
 (
@@ -47,7 +48,6 @@ INSERT INTO [comm].[salesperson_master]
 ,[deficit_amt]
 
 )
-
 SELECT [employee_num]
       ,'FTA23' [master_salesperson_cd]
       ,'FTA.New' AS [salesperson_key_id]
@@ -59,7 +59,7 @@ SELECT [employee_num]
       ,0 [salary_draw_amt]
       ,0 [deficit_amt]
   FROM [comm].[salesperson_master] where [master_salesperson_cd] = 'CCS23'
-
+GO
 
 UPDATE       
 comm.transaction_F555115
@@ -93,3 +93,22 @@ GO
   (1=1)
 
 
+  -- todo
+  -- add rates
+/*
+  # comm backend - FTA rough plan idea
+add FTA rates
+update link logic
+update rate logic
+
+FTA test, new plan and rates - Link CCS -> FTA via Salerder
+1 Aug - Trevor add FTA to dev / comm model
+  Add rates
+  map cogs CCS to FTA based on order where FTA code added
+
+2 Aug - Gary & Trevor backend review data DONE
+3 Aug - Gary, David, Trevor 30, are we ready?
+  Gary, hand off test data to David?
+... share withEQ
+TBD:   details
+*/
