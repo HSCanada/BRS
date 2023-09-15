@@ -58,6 +58,7 @@ AS
 --	19 Oct 21	tmc		break wheel active into 2 parts for more flex analysis
 --	08 Apr 22	tmc		add DSO operatory count and 3 full text adhoc fields
 --	10 May 22	tmc		map FieldSales name to commission master for rollup
+--	15 Sep 25	tmc		add new segment map
 
 **    
 *******************************************************************************/
@@ -243,6 +244,9 @@ SELECT
 	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_2_text
 	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_3_text
 
+	,RTRIM(seg_new.[SegCd_map])		AS SegmentCodeNEW
+
+
 FROM
 	BRS_Customer AS c 
 
@@ -251,6 +255,9 @@ FROM
 
 	INNER JOIN [dbo].[BRS_CustomerSegment] AS seg
 	ON c.[SegCd] = seg.[SegCd]
+
+	INNER JOIN [dbo].[BRS_CustomerSegment] AS seg_new
+	ON c.[SegCd_New] = seg_new.[SegCd]
 
 	INNER JOIN BRS_SalesDivision AS div 
 	ON c.SalesDivision = div.SalesDivision 
@@ -375,7 +382,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
 
 -- SELECT  count(*) FROM Dimension.Customer
--- ORG=NEW 70318
+-- ORG= 75 249
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer

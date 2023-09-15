@@ -38,7 +38,8 @@ AS
 --	04 Jun 18	tmc		Update special Market logic 
 --	15 Mar 22	tmc		Link DS to DW to enable cross functional goodness
 --	21 Jun 22	tmc		Patch SM logic to fix ZahnSM and 123Dental priors
---  18 Jan 23	tmc		add Hearland VPA to logic
+--  18 Jan 23	tmc		add Heartland VPA to logic
+--  15 Sep 23	tmc		add new Segment logic
 **    
 *******************************************************************************/
 BEGIN
@@ -446,28 +447,54 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-/*
+
+
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '13. Patch 123Dental Prior'
+		print '13. Patch non-multisite segments'
 
-	UPDATE       
-		BRS_Customer
-	SET                
-		MarketClass_New = 'PVTPRC', 
-		SegCd_New = ''
-	WHERE        
-		(SalesDivision = 'AAD') AND 
-		(MarketClass_New <> 'PVTPRC') AND
-		(CustGrpWrk = '123 Dentist') AND
-		(VPA not in ('123DENTA', '123DENNC', '123DNST')) AND
-		(1=1)
+
+	if (@bDebug <> 0)
+		print 'PP'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='PP'  WHERE [MarketClass_New] in ('PVTPRC', 'PVTSPC')
+
+	if (@bDebug <> 0)
+		print 'PP-default'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='PP'  WHERE [MarketClass_New] = '' and [SalesDivision] = 'AAD'
+
+	if (@bDebug <> 0)
+		print 'LAB'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='LAB'  WHERE [MarketClass_New] = 'ZAHN'
+
+	if (@bDebug <> 0)
+		print 'ZDSO'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='ZDSO'  WHERE [MarketClass_New] = 'ZAHNSM'
+
+	if (@bDebug <> 0)
+		print 'VET'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='VET' WHERE [MarketClass_New] = 'ANIMAL'
+
+	if (@bDebug <> 0)
+		print 'MED'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='MED' WHERE [MarketClass_New] = 'MEDICL'
+
+	if (@bDebug <> 0)
+		print 'ZTA'
+
+	UPDATE [dbo].[BRS_Customer] SET [SegCd_New]='ZTA'  WHERE [MarketClass_New] = 'ZZEXCL'
 
 
 	Set @nErrorCode = @@Error
 End
-*/
+
 
 If (@nErrorCode = 0) 
 Begin

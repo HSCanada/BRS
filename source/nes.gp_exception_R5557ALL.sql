@@ -98,6 +98,7 @@ FROM
 
 
 /*
+	-- uncomment for audit view
 
 	INNER JOIN zzzShipto as so
 	ON t.SalesOrderNumber = so.ST
@@ -122,7 +123,9 @@ FROM
 
 WHERE
 	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
---	d.FiscalMonth between 202201 and 202209
+
+	-- uncomment for audit view
+	-- d.FiscalMonth between 202301 and 202308
 
 
 GO

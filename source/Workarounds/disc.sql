@@ -28,9 +28,10 @@ SELECT
 	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
 
 	-- test
-	--,t.Shipto
-	--,min(c.[PracticeName]) AS PracticeName
-	--,min(c.VPA) AS VPA
+	-- ,t.Shipto
+	-- ,min(c.[PracticeName]) AS PracticeName
+	-- ,min(c.VPA) AS VPA
+
 	--
 
 FROM            
@@ -53,13 +54,15 @@ WHERE
 	(t.SalesCategory = 'MERCH') AND 
 	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 202301 and 202307) OR
-		(t.FiscalMonth BETWEEN 202201 and 202207)
+		(t.FiscalMonth BETWEEN 202301 and 202308) OR
+		(t.FiscalMonth BETWEEN 202201 and 202208)
 	) AND
+
 	-- test with quote exclude
-	--(Branch = 'TORNT') AND
-	--(t.FiscalMonth in (202110, 201910)) AND
-	--([HIST_MarketClass]='MIDMKT') AND
+	-- (Branch = 'OTTWA') AND
+	-- (t.FiscalMonth in (202308, 202308)) AND
+	-- ([HIST_MarketClass]='ZAHN') AND
+
 	--
 
 	(1=1)
@@ -83,6 +86,7 @@ GROUP BY
 
 	-- test
 	-- ,t.shipto
+	--
 
 -- test
 --HAVING
