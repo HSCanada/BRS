@@ -1,12 +1,15 @@
 ﻿Operation =4
 Option =0
-Where ="((([Item Master Export].[Sell Prc Brk1])<>[CorporatePrice])) OR ((([Item Master "
-    "Export].[Sell Qty Brk2])<>[SellQtyBrk2])) OR ((([Item Master Export].[Sell Prc B"
-    "rk2])<>[SellPrcBrk2])) OR ((([Item Master Export].[Sell Qty Brk3])<>[SellQtyBrk3"
-    "])) OR ((([Item Master Export].[Sell Prc Brk3])<>[SellPrcBrk3]))"
+Where ="((([Item Master Export].[Sell Prc Brk1])<>[CorporatePrice]) AND ((STAGE_BRS_Item"
+    "BaseHistory.CalMonth)=0)) OR ((([Item Master Export].[Sell Qty Brk2])<>[SellQtyB"
+    "rk2]) AND ((STAGE_BRS_ItemBaseHistory.CalMonth)=0)) OR ((([Item Master Export].["
+    "Sell Prc Brk2])<>[SellPrcBrk2]) AND ((STAGE_BRS_ItemBaseHistory.CalMonth)=0)) OR"
+    " ((([Item Master Export].[Sell Qty Brk3])<>[SellQtyBrk3]) AND ((STAGE_BRS_ItemBa"
+    "seHistory.CalMonth)=0)) OR ((([Item Master Export].[Sell Prc Brk3])<>[SellPrcBrk"
+    "3]) AND ((STAGE_BRS_ItemBaseHistory.CalMonth)=0))"
 Begin InputTables
     Name ="Item Master Export"
-    Name ="STAGE_BRS_ItemBaseHistory_"
+    Name ="STAGE_BRS_ItemBaseHistory"
 End
 Begin OutputColumns
     Name ="[Item Master Export].[Sell Prc Brk1]"
@@ -22,8 +25,8 @@ Begin OutputColumns
 End
 Begin Joins
     LeftTable ="Item Master Export"
-    RightTable ="STAGE_BRS_ItemBaseHistory_"
-    Expression ="[Item Master Export].[HSI Item#] = STAGE_BRS_ItemBaseHistory_.Item"
+    RightTable ="STAGE_BRS_ItemBaseHistory"
+    Expression ="[Item Master Export].[HSI Item#] = STAGE_BRS_ItemBaseHistory.Item"
     Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -135,12 +138,12 @@ Begin
         Name =""
     End
     Begin
-        Left =451
-        Top =139
-        Right =758
-        Bottom =283
+        Left =480
+        Top =59
+        Right =809
+        Bottom =383
         Top =0
-        Name ="STAGE_BRS_ItemBaseHistory_"
+        Name ="STAGE_BRS_ItemBaseHistory"
         Name =""
     End
 End

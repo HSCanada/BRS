@@ -1,23 +1,21 @@
 ﻿Operation =4
 Option =0
-Where ="(((Nz([Item Master Export]!Currency,\"CAD\"))<>STAGE_BRS_ItemBaseHistory!Currenc"
-    "y) And ((STAGE_BRS_ItemBaseHistory.CalMonth)=0)) Or (((Nz([Item Master Export]!["
-    "Cost Prc Brk1],0))<>[SupplierCost]) And ((STAGE_BRS_ItemBaseHistory.CalMonth)=0)"
-    ")"
+Where ="(((Nz([Item Master Export]!Currency,\"CAD\"))<>STAGE_BRS_ItemBaseHistory_!Curren"
+    "cy)) Or (((Nz([Item Master Export]![Cost Prc Brk1],0))<>[SupplierCost]))"
 Begin InputTables
     Name ="Item Master Export"
-    Name ="STAGE_BRS_ItemBaseHistory"
+    Name ="STAGE_BRS_ItemBaseHistory_"
 End
 Begin OutputColumns
     Name ="Item Master Export.Currency"
-    Expression ="[STAGE_BRS_ItemBaseHistory]![Currency]"
+    Expression ="[STAGE_BRS_ItemBaseHistory_]![Currency]"
     Name ="Item Master Export.Cost Prc Brk1"
     Expression ="[SupplierCost]"
 End
 Begin Joins
     LeftTable ="Item Master Export"
-    RightTable ="STAGE_BRS_ItemBaseHistory"
-    Expression ="[Item Master Export].[HSI Item#] = STAGE_BRS_ItemBaseHistory.Item"
+    RightTable ="STAGE_BRS_ItemBaseHistory_"
+    Expression ="[Item Master Export].[HSI Item#] = STAGE_BRS_ItemBaseHistory_.Item"
     Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
@@ -29,7 +27,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbBoolean "UseTransaction" ="0"
+dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="-1"
 dbText "Description" ="tc"
 Begin
@@ -61,6 +59,10 @@ Begin
         dbText "Name" ="STAGE_BRS_ItemBaseHistory.CalMonth"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Nz([Item Master Export]![Cost Prc Brk1],0)"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
@@ -71,26 +73,26 @@ Begin
     Left =-1
     Top =-1
     Right =1072
-    Bottom =567
+    Bottom =533
     Left =0
     Top =0
     ColumnsShown =579
     Begin
-        Left =74
-        Top =36
-        Right =326
-        Bottom =358
+        Left =48
+        Top =12
+        Right =251
+        Bottom =362
         Top =0
         Name ="Item Master Export"
         Name =""
     End
     Begin
-        Left =480
-        Top =59
-        Right =809
-        Bottom =383
+        Left =380
+        Top =185
+        Right =524
+        Bottom =329
         Top =0
-        Name ="STAGE_BRS_ItemBaseHistory"
+        Name ="STAGE_BRS_ItemBaseHistory_"
         Name =""
     End
 End

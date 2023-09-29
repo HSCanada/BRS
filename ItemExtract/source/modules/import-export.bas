@@ -171,6 +171,16 @@ On Error GoTo Cleaning_Warning_Update_Export_Err
     LogEventToFile (sLogMsg)
     DoCmd.OpenQuery "0-DelItems", acViewNormal, acEdit
     
+    ' clear costprice
+    sLogMsg = Now() & "..:  run " & "qdel_STAGE_BRS_ItemBaseHistory_"
+    LogEventToFile (sLogMsg)
+    DoCmd.OpenQuery "qdel_STAGE_BRS_ItemBaseHistory_", acViewNormal, acEdit
+    
+    ' load costprice
+    sLogMsg = Now() & "..:  run " & "qapp_STAGE_BRS_ItemBaseHistory_ ..."
+    LogEventToFile (sLogMsg)
+    DoCmd.OpenQuery "qapp_STAGE_BRS_ItemBaseHistory_", acViewNormal, acEdit
+    
     sLogMsg = Now() & "..:  load Items"
     LogEventToFile (sLogMsg)
     
@@ -242,7 +252,7 @@ On Error GoTo Cleaning_Warning_Update_Export_Err
     LogEventToFile (sLogMsg)
     
     'NEW
-    ExportExcel "Item Master Export", "ItemDump"
+    ExportExcel "Item Master Export", "ItemDump ..."
     'ORG
     'DoCmd.TransferSpreadsheet acExport, 10, "Item Master Export", msOutputPath & "ItemDump.xlsx", True, ""
     
