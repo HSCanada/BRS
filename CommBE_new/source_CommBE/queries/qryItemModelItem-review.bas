@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_item_group_rule.MinorProductClass) Like \"372-03*\") AND ((BRS_Item.Est1"
+Where ="(((comm_item_group_rule.MinorProductClass) Like \"344-02*\") AND ((BRS_Item.Est1"
     "2MoSales)>1000))"
 Begin InputTables
     Name ="comm_item_group_rule"
@@ -23,6 +23,7 @@ Begin OutputColumns
     Expression ="BRS_Item.Est12MoSales"
     Expression ="BRS_ItemCategory.CategoryRollup"
     Expression ="BRS_Item.comm_group_cps_cd"
+    Expression ="BRS_Item.CurrentFileCost"
 End
 Begin Joins
     LeftTable ="BRS_Item"
@@ -41,12 +42,13 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[qryItemModelItem-review].[comm_group_cd]"
 Begin
     Begin
         dbText "Name" ="BRS_Item.ItemDescription"
@@ -130,17 +132,21 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_Item.CurrentFileCost"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1550
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1515
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1526
-    Bottom =423
+    Right =1221
+    Bottom =406
     Left =0
     Top =0
     ColumnsShown =539

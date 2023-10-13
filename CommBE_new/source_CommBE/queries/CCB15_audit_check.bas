@@ -86,18 +86,20 @@ Begin
         dbText "Format" ="$#,##0.00;($#,##0.00)"
         dbByte "DecimalPlaces" ="2"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2145"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1493
-    Bottom =601
+    State =0
+    Left =44
+    Top =93
+    Right =1174
+    Bottom =693
     Left =-1
     Top =-1
-    Right =1443
-    Bottom =181
+    Right =901
+    Bottom =164
     Left =0
     Top =0
     ColumnsShown =539

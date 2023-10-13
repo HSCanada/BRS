@@ -24,11 +24,11 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbMemo "OrderBy" ="[CCA43_territory_review].[Branch], [CCA43_territory_review].[comm_salesperson_ke"
-    "y_id], [CCA43_territory_review].[FSCName], [CCA43_territory_review].[FSCStatusCo"
-    "de], [CCA43_territory_review].[TerritoryCd], [CCA43_territory_review].[group_typ"
-    "e], [CCA43_territory_review].[AddedDt] DESC, [CCA43_territory_review].[order_tak"
-    "en_by]"
-dbMemo "Filter" ="([CCA43_territory_review].[order_taken_by]=\"CADA05    \")"
+    "y_id], [CCA43_territory_review].[TerritoryCd], [CCA43_territory_review].[AddedDt"
+    "] DESC, [CCA43_territory_review].[FSCName], [CCA43_territory_review].[FSCStatusC"
+    "ode], [CCA43_territory_review].[order_taken_by], [CCA43_territory_review].[group"
+    "_type]"
+dbMemo "Filter" ="([CCA43_territory_review].[Branch]=\"TORNT\")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -64,21 +64,21 @@ Begin
     End
     Begin
         dbText "Name" ="BRS_FSC_Rollup.AddedDt"
-        dbInteger "ColumnWidth" ="2040"
+        dbInteger "ColumnWidth" ="2355"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End
 Begin
     State =0
-    Left =-72
+    Left =0
     Top =40
-    Right =1478
-    Bottom =938
+    Right =1507
+    Bottom =560
     Left =-1
     Top =-1
-    Right =1526
-    Bottom =10
+    Right =1483
+    Bottom =-1
     Left =0
     Top =0
     ColumnsShown =539

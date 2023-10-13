@@ -36,12 +36,10 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[salesperson_key_id], [CCA44_salesperson_stage_"
-    "review].[territory_start_dt] DESC, [comm_salesperson_master].[FiscalMonth] DESC,"
-    " [CCA44_salesperson_stage_review].[salesperson_nm], [CCA44_salesperson_stage_rev"
-    "iew].[master_salesperson_cd], [CCA44_salesperson_stage_review].[email_ind], [CCA"
-    "44_salesperson_stage_review].[comm_plan_id]"
-dbMemo "Filter" ="([CCA44_salesperson_stage_review].[master_salesperson_cd]=\"WZ1JV\")"
+dbMemo "OrderBy" ="[CCA44_salesperson_stage_review].[comm_plan_id], [comm_salesperson_master].[Fisc"
+    "alMonth], [CCA44_salesperson_stage_review].[email_ind], [CCA44_salesperson_stage"
+    "_review].[salesperson_key_id], [CCA44_salesperson_stage_review].[territory_start"
+    "_dt] DESC"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -50,6 +48,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.comm_plan_id"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1785"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.salesperson_key_id"
@@ -86,6 +86,8 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.deficit_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2550"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.email_ind"
@@ -104,18 +106,20 @@ Begin
     Begin
         dbText "Name" ="comm_salesperson_master.deficit_amt"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3390"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
+    State =0
+    Left =0
+    Top =40
     Right =1507
-    Bottom =946
+    Bottom =543
     Left =-1
     Top =-1
-    Right =1526
-    Bottom =7
+    Right =1483
+    Bottom =-1
     Left =0
     Top =0
     ColumnsShown =539

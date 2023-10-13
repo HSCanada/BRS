@@ -58,18 +58,20 @@ Begin
     Begin
         dbText "Name" ="BRS_CustomerBT.ShipToPrimary"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1770"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1234
-    Bottom =555
+    State =0
+    Left =88
+    Top =146
+    Right =1568
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1210
-    Bottom =337
+    Right =1456
+    Bottom =320
     Left =0
     Top =0
     ColumnsShown =539

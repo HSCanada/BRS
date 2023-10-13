@@ -41,12 +41,14 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.salesperson_nm"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1935"
+        dbInteger "ColumnWidth" ="2295"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.master_salesperson_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2160"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.employee_num"
@@ -66,15 +68,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =937
+    State =2
+    Left =-8
+    Top =-31
+    Right =1332
+    Bottom =589
     Left =-1
     Top =-1
     Right =1388
-    Bottom =303
+    Bottom =269
     Left =0
     Top =0
     ColumnsShown =539

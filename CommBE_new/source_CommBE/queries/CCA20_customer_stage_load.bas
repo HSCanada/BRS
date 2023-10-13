@@ -12,7 +12,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "UseTransaction" ="-1"
@@ -20,6 +20,7 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
+dbMemo "OrderBy" ="[CCA20_customer_stage_load].[comm_note_txt] DESC"
 Begin
     Begin
         dbText "Name" ="Integration_comm_customer_Staging.comm_note_txt"
@@ -42,14 +43,14 @@ Begin
 End
 Begin
     State =0
-    Left =0
-    Top =40
-    Right =1412
-    Bottom =817
+    Left =-292
+    Top =54
+    Right =1120
+    Bottom =831
     Left =-1
     Top =-1
     Right =1388
-    Bottom =203
+    Bottom =186
     Left =0
     Top =0
     ColumnsShown =539

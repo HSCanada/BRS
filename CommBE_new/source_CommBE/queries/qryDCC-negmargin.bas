@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((comm_transaction_F555115.FiscalMonth)=202111) AND ((BRS_Customer.VPA)=\"DENCO"
+Where ="(((comm_transaction_F555115.FiscalMonth)=202212) AND ((BRS_Customer.VPA)=\"DENCO"
     "RP\") AND ((comm_transaction_F555115.FreeGoodsInvoicedInd)=False) AND ((BRS_Item"
     ".SalesCategory) In (\"MERCH\",\"SMEQU\")) AND ((comm_transaction_F555115.fsc_com"
     "m_amt)<-0.1) AND ((comm_transaction_F555115.source_cd)=\"JDE\") AND ((comm_trans"
@@ -53,8 +53,8 @@ Begin Joins
     Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
-dbInteger "ODBCTimeout" ="60"
-dbByte "RecordsetType" ="0"
+dbInteger "ODBCTimeout" ="0"
+dbByte "RecordsetType" ="2"
 dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
@@ -206,15 +206,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1493
-    Bottom =601
+    State =0
+    Left =0
+    Top =40
+    Right =1543
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1469
-    Bottom =373
+    Right =1519
+    Bottom =489
     Left =0
     Top =0
     ColumnsShown =539

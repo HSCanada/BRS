@@ -369,15 +369,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1465
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1324
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1441
-    Bottom =284
+    Right =1300
+    Bottom =233
     Left =0
     Top =0
     ColumnsShown =651

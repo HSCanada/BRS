@@ -30,13 +30,15 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
 dbMemo "OrderBy" ="[CCB60_freegoods_stage_load].[original_line_number], [CCB60_freegoods_stage_load"
-    "].[ExtFileCostCadAmt], [CCB60_freegoods_stage_load].[ItemDescription], [CCB60_fr"
-    "eegoods_stage_load].[PracticeName], [CCB60_freegoods_stage_load].[SalesOrderNumb"
-    "er]"
+    "].[SalesOrderNumber], [CCB60_freegoods_stage_load].[ExtFileCostCadAmt], [CCB60_f"
+    "reegoods_stage_load].[ItemDescription], [CCB60_freegoods_stage_load].[PracticeNa"
+    "me]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.SalesOrderNumber"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2205"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_comm_freegoods_Staging.ID"
@@ -95,12 +97,12 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1465
+    Right =1470
     Bottom =938
     Left =-1
     Top =-1
-    Right =1441
-    Bottom =230
+    Right =1446
+    Bottom =162
     Left =0
     Top =0
     ColumnsShown =539

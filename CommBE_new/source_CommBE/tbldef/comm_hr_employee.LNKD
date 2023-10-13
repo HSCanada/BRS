@@ -1,4 +1,0 @@
-﻿comm_hr_employee
-ODBC;DSN=DEV_BRSales;Description=BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
-comm.hr_employee
-employee_num

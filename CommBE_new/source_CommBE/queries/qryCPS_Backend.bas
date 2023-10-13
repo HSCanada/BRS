@@ -2,7 +2,8 @@
 Option =0
 Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
     "g)) AND ((comm_transaction_F555115.cps_comm_group_cd)<>\"\") AND ((comm_transact"
-    "ion_F555115.cps_salesperson_key_id)<>\"\"))"
+    "ion_F555115.source_cd)<>\"PAY\") AND ((comm_transaction_F555115.cps_salesperson_"
+    "key_id)<>\"\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Customer"
@@ -166,15 +167,15 @@ Begin
     End
 End
 Begin
-    State =2
-    Left =-8
-    Top =-31
-    Right =1519
-    Bottom =946
+    State =0
+    Left =0
+    Top =40
+    Right =1568
+    Bottom =938
     Left =-1
     Top =-1
-    Right =1424
-    Bottom =408
+    Right =1544
+    Bottom =374
     Left =0
     Top =0
     ColumnsShown =539

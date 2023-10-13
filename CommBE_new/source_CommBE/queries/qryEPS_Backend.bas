@@ -2,8 +2,8 @@
 Option =0
 Where ="(((comm_transaction_F555115.FiscalMonth)=(SELECT PriorFiscalMonth FROM BRS_Confi"
     "g)) AND ((comm_transaction_F555115.eps_comm_group_cd)<>\"\") AND ((comm_transact"
-    "ion_F555115.source_cd)=\"JDE\") AND ((comm_transaction_F555115.eps_salesperson_k"
-    "ey_id)<>\"\"))"
+    "ion_F555115.source_cd)=\"JDE\") AND ((BRS_Customer.VPA) Not In (\"DENCORP\",\"12"
+    "3DNST\")) AND ((comm_transaction_F555115.eps_salesperson_key_id)<>\"\"))"
 Begin InputTables
     Name ="comm_transaction_F555115"
     Name ="BRS_Customer"
@@ -194,15 +194,15 @@ Begin
     End
 End
 Begin
-    State =0
-    Left =-337
-    Top =66
-    Right =1156
-    Bottom =947
+    State =2
+    Left =-8
+    Top =-31
+    Right =1515
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1469
-    Bottom =211
+    Right =1491
+    Bottom =256
     Left =0
     Top =0
     ColumnsShown =539

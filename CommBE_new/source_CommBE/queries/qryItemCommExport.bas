@@ -54,6 +54,7 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbText "Description" ="Item dump for EQ, last reviewed 21 Jul 22"
 Begin
     Begin
         dbText "Name" ="BRS_Item.Supplier"
@@ -129,44 +130,6 @@ Begin
     End
     Begin
         dbText "Name" ="BRS_Item.ItemStatus"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_item_group_rule.comm_note_txt"
-        dbInteger "ColumnWidth" ="4185"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="s_comm_note_txt"
-        dbInteger "ColumnWidth" ="4185"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_note_txt"
-        dbInteger "ColumnWidth" ="4185"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="s_confidence_rt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_item_group_rule.confidence_rt"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_Item.comm_group_eps_cd"
-        dbInteger "ColumnWidth" ="2385"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="comm_item_group_rule.comm_group_cd"
-        dbInteger "ColumnWidth" ="4245"
-        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End

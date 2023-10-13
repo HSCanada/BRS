@@ -39,11 +39,11 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[CCA42_territory_map_new].[Branch], [CCA42_territory_map_new].[comm_salesperson_"
-    "key_id], [CCA42_territory_map_new].[FSCName], [CCA42_territory_map_new].[Territo"
-    "ryCd], [CCA42_territory_map_new].[AddedDt] DESC, [CCA42_territory_map_new].[grou"
-    "p_type]"
-dbMemo "Filter" ="([CCA42_territory_map_new].[order_taken_by]=\"CADA05    \")"
+dbMemo "OrderBy" ="[CCA42_territory_map_new].[comm_salesperson_key_id], [CCA42_territory_map_new].["
+    "group_type], [CCA42_territory_map_new].[Branch], [CCA42_territory_map_new].[Adde"
+    "dDt] DESC, [CCA42_territory_map_new].[FSCName], [CCA42_territory_map_new].[sales"
+    "person_key_id], [CCA42_territory_map_new].[TerritoryCd]"
+dbMemo "Filter" ="([CCA42_territory_map_new].[group_type]=\"DDTS\")"
 Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.comm_salesperson_key_id"
@@ -54,6 +54,8 @@ Begin
     Begin
         dbText "Name" ="BRS_FSC_Rollup.group_type"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2520"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_FSC_Rollup.order_taken_by"
@@ -91,11 +93,11 @@ Begin
     State =0
     Left =0
     Top =40
-    Right =1467
-    Bottom =593
+    Right =1507
+    Bottom =560
     Left =-1
     Top =-1
-    Right =1443
+    Right =1483
     Bottom =-1
     Left =0
     Top =0

@@ -12,17 +12,18 @@ Begin InputTables
 End
 Begin OutputColumns
     Expression ="Integration_comm_freegoods_Staging.FiscalMonth"
-    Expression ="Integration_comm_freegoods_Staging.SalesOrderNumber"
     Expression ="Integration_comm_freegoods_Staging.DocType"
-    Expression ="Integration_comm_freegoods_Staging.ShipTo"
-    Expression ="Integration_comm_freegoods_Staging.Item"
     Expression ="Integration_comm_freegoods_Staging.ItemDescription"
-    Expression ="Integration_comm_freegoods_Staging.Supplier"
     Expression ="Integration_comm_freegoods_Staging.SourceCode"
+    Expression ="Integration_comm_freegoods_Staging.ExtFileCostCadAmt"
     Expression ="Integration_comm_freegoods_Staging.ID"
+    Expression ="Integration_comm_freegoods_Staging.SalesOrderNumber"
     Expression ="BRS_TransactionDW_Ext.SalesOrderNumber"
+    Expression ="Integration_comm_freegoods_Staging.Item"
     Expression ="BRS_ItemHistory.Item"
+    Expression ="Integration_comm_freegoods_Staging.ShipTo"
     Expression ="BRS_CustomerFSC_History.Shipto"
+    Expression ="Integration_comm_freegoods_Staging.Supplier"
     Expression ="BRS_ItemSupplier.Supplier"
     Expression ="Integration_comm_freegoods_Staging.status_code"
 End
@@ -129,6 +130,8 @@ Begin
     Begin
         dbText "Name" ="BRS_ItemHistory.Item"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2460"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_CustomerFSC_History.Shipto"
@@ -136,17 +139,21 @@ Begin
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Integration_comm_freegoods_Staging.ExtFileCostCadAmt"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =2
     Left =-8
     Top =-31
-    Right =1586
+    Right =1541
     Bottom =946
     Left =-1
     Top =-1
-    Right =1562
-    Bottom =320
+    Right =1247
+    Bottom =286
     Left =0
     Top =0
     ColumnsShown =539

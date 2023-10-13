@@ -11,7 +11,7 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "UseTransaction" ="-1"
@@ -19,6 +19,7 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "FailOnError" ="0"
+dbMemo "OrderBy" ="[CCA10_item_stage_load].[fsc_comm_group_cd]"
 Begin
     Begin
         dbText "Name" ="Integration_comm_item_Staging.fsc_comm_note_txt"
@@ -41,12 +42,12 @@ Begin
     State =2
     Left =-8
     Top =-31
-    Right =1438
-    Bottom =825
+    Right =1245
+    Bottom =574
     Left =-1
     Top =-1
-    Right =1414
-    Bottom =254
+    Right =1195
+    Bottom =237
     Left =0
     Top =0
     ColumnsShown =539

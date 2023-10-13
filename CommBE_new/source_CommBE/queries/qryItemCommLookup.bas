@@ -1,9 +1,9 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_Item.Item)=\"5875350\"))"
 Begin InputTables
     Name ="BRS_Item"
     Name ="BRS_ItemCategory"
+    Name ="zzzItem"
 End
 Begin OutputColumns
     Expression ="BRS_Item.Item"
@@ -24,16 +24,21 @@ Begin Joins
     RightTable ="BRS_ItemCategory"
     Expression ="BRS_Item.MinorProductClass = BRS_ItemCategory.MinorProductClass"
     Flag =1
+    LeftTable ="BRS_Item"
+    RightTable ="zzzItem"
+    Expression ="BRS_Item.Item = zzzItem.Item"
+    Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="0"
+dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[qryItemCommLookup].[comm_note_txt] DESC"
 Begin
     Begin
         dbText "Name" ="BRS_Item.Supplier"
@@ -94,14 +99,14 @@ Begin
 End
 Begin
     State =0
-    Left =-198
-    Top =55
-    Right =1116
-    Bottom =953
+    Left =-165
+    Top =112
+    Right =1149
+    Bottom =1010
     Left =-1
     Top =-1
     Right =1290
-    Bottom =444
+    Bottom =427
     Left =0
     Top =0
     ColumnsShown =539
@@ -121,6 +126,15 @@ Begin
         Bottom =239
         Top =0
         Name ="BRS_ItemCategory"
+        Name =""
+    End
+    Begin
+        Left =540
+        Top =-9
+        Right =684
+        Bottom =135
+        Top =0
+        Name ="zzzItem"
         Name =""
     End
 End

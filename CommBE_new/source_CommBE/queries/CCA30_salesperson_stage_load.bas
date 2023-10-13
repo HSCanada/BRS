@@ -27,10 +27,11 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbMemo "OrderBy" ="[CCA30_salesperson_stage_load].[salesperson_key_id], [CCA30_salesperson_stage_lo"
-    "ad].[employee_num] DESC, [CCA30_salesperson_stage_load].[comm_plan_id], [CCA30_s"
-    "alesperson_stage_load].[deficit_amt], [CCA30_salesperson_stage_load].[email_ind]"
-    " DESC, [CCA30_salesperson_stage_load].[salesperson_nm], [CCA30_salesperson_stage"
-    "_load].[CostCenter]"
+    "ad].[territory_start_dt] DESC, [CCA30_salesperson_stage_load].[salesperson_nm], "
+    "[CCA30_salesperson_stage_load].[employee_num] DESC, [CCA30_salesperson_stage_loa"
+    "d].[CostCenter], [CCA30_salesperson_stage_load].[comm_plan_id], [CCA30_salespers"
+    "on_stage_load].[deficit_amt], [CCA30_salesperson_stage_load].[email_ind] DESC"
+dbMemo "Filter" ="([CCA30_salesperson_stage_load].[salesperson_nm] Like \"*sonia*\")"
 Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.territory_start_dt"
@@ -99,20 +100,20 @@ Begin
     Begin
         dbText "Name" ="Integration_comm_salesperson_master_Staging.comm_note_txt"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1890"
+        dbInteger "ColumnWidth" ="4965"
         dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
-    State =0
-    Left =0
-    Top =40
-    Right =1602
-    Bottom =938
+    State =2
+    Left =-8
+    Top =-31
+    Right =1245
+    Bottom =946
     Left =-1
     Top =-1
-    Right =1578
-    Bottom =221
+    Right =1221
+    Bottom =102
     Left =0
     Top =0
     ColumnsShown =539
