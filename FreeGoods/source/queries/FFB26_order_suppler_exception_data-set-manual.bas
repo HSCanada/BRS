@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_TransactionDW_Ext_1.fg_CalMonthRedeem)=202210) AND ((BRS_TransactionDW_Ex"
+Where ="(((BRS_TransactionDW_Ext_1.fg_CalMonthRedeem)=202308) AND ((BRS_TransactionDW_Ex"
     "t_1.DocType)<>\"AA\"))"
 Begin InputTables
     Name ="BRS_TransactionDW_Ext"
@@ -11,9 +11,13 @@ Begin OutputColumns
     Expression ="BRS_TransactionDW_Ext_1.fg_CalMonthRedeem"
     Expression ="fg_transaction_F5554240.WKDOCO_salesorder_number"
     Expression ="fg_transaction_F5554240.[WK$SPC_supplier_code]"
+    Alias ="fg_exempt_note_src"
     Expression ="BRS_TransactionDW_Ext_1.fg_exempt_note"
+    Alias ="fg_offer_note_dst"
     Expression ="fg_transaction_F5554240.fg_offer_note"
+    Alias ="fg_exempt_cd_src"
     Expression ="BRS_TransactionDW_Ext_1.fg_exempt_cd"
+    Alias ="fg_exempt_cd_dst"
     Expression ="fg_transaction_F5554240.fg_exempt_cd"
 End
 Begin Joins
@@ -38,36 +42,13 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbBoolean "UseTransaction" ="-1"
 dbBoolean "FailOnError" ="0"
-dbMemo "OrderBy" ="[FFB26_order_suppler_exception_data-set-manual].[WKDOCO_salesorder_number]"
-dbMemo "Filter" ="([fg_transaction_F5554240].[fg_exempt_cd]=\"FGDEAL\")"
+dbMemo "OrderBy" ="[FFB26_order_suppler_exception_data-set-manual].[fg_exempt_cd_dst], [FFB26_order"
+    "_suppler_exception_data-set-manual].[WK$SPC_supplier_code], [FFB26_order_suppler"
+    "_exception_data-set-manual].[fg_exempt_note_src]"
 Begin
     Begin
         dbText "Name" ="BRS_TransactionDW_Ext_1.fg_CalMonthRedeem"
         dbInteger "ColumnWidth" ="2385"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_TransactionDW_Ext_1.fg_exempt_cd"
-        dbInteger "ColumnWidth" ="2670"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="BRS_TransactionDW_Ext_1.fg_exempt_note"
-        dbInteger "ColumnWidth" ="5880"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.fg_exempt_cd"
-        dbInteger "ColumnWidth" ="4065"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="fg_transaction_F5554240.fg_offer_note"
-        dbInteger "ColumnWidth" ="5160"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -82,21 +63,27 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="BRS_TransactionDW_Ext_1.SalesOrderNumber"
-        dbInteger "ColumnWidth" ="2205"
+        dbText "Name" ="fg_exempt_cd_src"
+        dbInteger "ColumnWidth" ="3165"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="BRS_TransactionDW_Ext_1.DocType"
+        dbText "Name" ="fg_exempt_cd_dst"
+        dbInteger "ColumnWidth" ="2130"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="zzzShipto.Note"
+        dbText "Name" ="fg_exempt_note_src"
+        dbInteger "ColumnWidth" ="4740"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="Note"
+        dbText "Name" ="fg_offer_note_dst"
+        dbInteger "ColumnWidth" ="2445"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -104,12 +91,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1537
+    Right =1587
     Bottom =918
     Left =-1
     Top =-1
-    Right =1703
-    Bottom =401
+    Right =1034
+    Bottom =142
     Left =0
     Top =0
     ColumnsShown =539
@@ -123,10 +110,10 @@ Begin
         Name =""
     End
     Begin
-        Left =98
-        Top =108
-        Right =352
-        Bottom =435
+        Left =59
+        Top =37
+        Right =313
+        Bottom =364
         Top =0
         Name ="fg_transaction_F5554240"
         Name =""

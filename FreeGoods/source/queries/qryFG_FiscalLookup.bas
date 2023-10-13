@@ -27,15 +27,15 @@ Begin Joins
     Flag =1
 End
 dbBoolean "ReturnsRecords" ="-1"
-dbInteger "ODBCTimeout" ="60"
-dbByte "RecordsetType" ="0"
-dbMemo "OrderBy" ="[Query1].[FiscalMonth]"
+dbInteger "ODBCTimeout" ="0"
+dbByte "RecordsetType" ="2"
 dbBoolean "OrderByOn" ="-1"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
+dbMemo "OrderBy" ="[qryFG_FiscalLookup].[FiscalMonth]"
 Begin
     Begin
         dbText "Name" ="zzzShipto.ST"
@@ -58,12 +58,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1202
-    Bottom =546
+    Right =1587
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1186
-    Bottom =390
+    Right =1571
+    Bottom =322
     Left =0
     Top =0
     ColumnsShown =539
@@ -77,10 +77,10 @@ Begin
         Name =""
     End
     Begin
-        Left =201
-        Top =28
-        Right =507
-        Bottom =290
+        Left =238
+        Top =15
+        Right =544
+        Bottom =277
         Top =0
         Name ="fg_transaction_F5554240"
         Name =""

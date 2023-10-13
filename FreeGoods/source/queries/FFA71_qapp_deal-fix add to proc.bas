@@ -23,8 +23,9 @@ Begin OutputColumns
     Alias ="Expr4"
     Name ="RedeemOrg"
     Expression ="Nz([Redeem],\".\")"
+    Alias ="qtr"
     Name ="QuarterOrg"
-    Expression ="Redemptions_tbl_Main.Quarter"
+    Expression ="Nz([Quarter],\".\")"
     Name ="deal_txt"
     Expression ="Redemptions_tbl_Main.SetLeader_Name"
     Alias ="Expr5"
@@ -144,16 +145,28 @@ Begin
         dbText "Name" ="Expr5"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Expr6"
+        dbInteger "ColumnWidth" ="4230"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="qtr"
+        dbInteger "ColumnWidth" ="4230"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =988
-    Bottom =587
+    Right =1350
+    Bottom =918
     Left =-1
     Top =-1
-    Right =972
+    Right =1334
     Bottom =469
     Left =0
     Top =0

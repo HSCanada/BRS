@@ -1,12 +1,15 @@
 ﻿Operation =1
 Option =0
-Where ="(((fg_transaction_F5554240.WKDOCO_salesorder_number)=15446534))"
+Where ="(((fg_transaction_F5554240.WKDOCO_salesorder_number)=16308954)) OR (((fg_transac"
+    "tion_F5554240.WKDOCO_salesorder_number)=16261574))"
 Begin InputTables
     Name ="fg_transaction_F5554240"
 End
 Begin OutputColumns
     Expression ="fg_transaction_F5554240.CalMonthRedeem"
+    Expression ="fg_transaction_F5554240.WKAN8__billto"
     Expression ="fg_transaction_F5554240.WKDOCO_salesorder_number"
+    Expression ="fg_transaction_F5554240.WKPSN__invoice_number"
     Expression ="fg_transaction_F5554240.WKDCTO_order_type"
     Expression ="fg_transaction_F5554240.WKLNNO_line_number"
     Expression ="fg_transaction_F5554240.WKSHAN_shipto"
@@ -20,6 +23,7 @@ Begin OutputColumns
     Expression ="fg_transaction_F5554240.fg_offer_note"
     Expression ="fg_transaction_F5554240.WKECST_extended_cost"
     Expression ="fg_transaction_F5554240.Label"
+    Expression ="fg_transaction_F5554240.[WK$ODN_free_goods_contract_number]"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -48,6 +52,8 @@ Begin
     Begin
         dbText "Name" ="fg_transaction_F5554240.WKDOCO_salesorder_number"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3210"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_transaction_F5554240.CalMonthRedeem"
@@ -60,6 +66,8 @@ Begin
     Begin
         dbText "Name" ="fg_transaction_F5554240.fg_exempt_cd"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1740"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_transaction_F5554240.fg_offer_note"
@@ -97,17 +105,31 @@ Begin
         dbText "Name" ="fg_transaction_F5554240.fg_redeem_ind"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="fg_transaction_F5554240.[WK$ODN_free_goods_contract_number]"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4125"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="fg_transaction_F5554240.WKPSN__invoice_number"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="fg_transaction_F5554240.WKAN8__billto"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1450
-    Bottom =918
+    Right =1317
+    Bottom =798
     Left =-1
     Top =-1
-    Right =1164
-    Bottom =217
+    Right =1301
+    Bottom =200
     Left =0
     Top =0
     ColumnsShown =539

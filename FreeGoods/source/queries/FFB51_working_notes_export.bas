@@ -54,7 +54,7 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 dbMemo "OrderBy" ="[FFB51_working_notes_export].[fg_exempt_cd] DESC, [FFB51_working_notes_export].["
-    "OrderDate] DESC, [FFB51_working_notes_export].[Order]"
+    "OrderDate] DESC"
 Begin
     Begin
         dbText "Name" ="fg_redeem_working_notes.OrderDate"
@@ -121,20 +121,20 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1526
+    Right =1587
     Bottom =918
     Left =-1
     Top =-1
-    Right =1510
-    Bottom =132
+    Right =1571
+    Bottom =268
     Left =0
     Top =0
     ColumnsShown =539
     Begin
-        Left =81
-        Top =55
-        Right =393
-        Bottom =237
+        Left =219
+        Top =78
+        Right =531
+        Bottom =260
         Top =0
         Name ="fg_redeem_working_notes"
         Name =""

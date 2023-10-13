@@ -15,8 +15,8 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[FFA20_stage_review].[line_id], [FFA20_stage_review].[WKUNCS_unit_cost], [FFA20_"
-    "stage_review].[WK$SPC_supplier_code], [FFA20_stage_review].[order_file_name]"
+dbMemo "OrderBy" ="[FFA20_stage_review].[order_file_name], [FFA20_stage_review].[line_id], [FFA20_s"
+    "tage_review].[WKUNCS_unit_cost], [FFA20_stage_review].[WK$SPC_supplier_code]"
 Begin
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKNAME_shipto_name"
@@ -77,6 +77,8 @@ Begin
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKLNTY_line_type"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2175"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_F5554240_fg_redeem_Staging.WKUORG_quantity"
@@ -185,12 +187,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1526
+    Right =1587
     Bottom =918
     Left =-1
     Top =-1
-    Right =1510
-    Bottom =452
+    Right =1571
+    Bottom =418
     Left =0
     Top =0
     ColumnsShown =539

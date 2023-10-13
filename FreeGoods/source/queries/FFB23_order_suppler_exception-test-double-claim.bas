@@ -1,7 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((BRS_TransactionDW_Ext.DocType)<>\"AA\") AND ((BRS_TransactionDW_Ext.fg_CalMon"
-    "thRedeem)<>\"\"))"
+Where ="(((BRS_TransactionDW_Ext.DocType)<>\"AA\"))"
 Begin InputTables
     Name ="zzzShipto"
     Name ="BRS_TransactionDW_Ext"
@@ -9,7 +8,8 @@ End
 Begin OutputColumns
     Alias ="order"
     Expression ="zzzShipto.ST"
-    Expression ="zzzShipto.Note"
+    Alias ="Expr1"
+    Expression ="Trim([Note])"
     Expression ="zzzShipto.Note2"
     Expression ="BRS_TransactionDW_Ext.DocType"
     Expression ="BRS_TransactionDW_Ext.fg_CalMonthRedeem"
@@ -33,14 +33,10 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="zzzShipto.Note"
-        dbInteger "ColumnWidth" ="5790"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="zzzShipto.Note2"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2175"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="order"
@@ -49,6 +45,8 @@ Begin
     Begin
         dbText "Name" ="BRS_TransactionDW_Ext.fg_exempt_note"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="4860"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_TransactionDW_Ext.fg_exempt_cd"
@@ -62,17 +60,23 @@ Begin
         dbText "Name" ="BRS_TransactionDW_Ext.DocType"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="Expr1"
+        dbInteger "ColumnWidth" ="5790"
+        dbBoolean "ColumnHidden" ="0"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1526
+    Right =1587
     Bottom =918
     Left =-1
     Top =-1
-    Right =1510
-    Bottom =571
+    Right =1301
+    Bottom =537
     Left =0
     Top =0
     ColumnsShown =539

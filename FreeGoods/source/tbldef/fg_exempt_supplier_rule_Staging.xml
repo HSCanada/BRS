@@ -38,11 +38,18 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="active_ind" minOccurs="1" od:jetType="yesno" od:sqlSType="bit" od:nonNullable="yes" type="xsd:boolean"/>
-<xsd:element name="signoff_note_txt" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:element name="active_ind_new" minOccurs="1" od:jetType="yesno" od:sqlSType="bit" od:nonNullable="yes" type="xsd:boolean"/>
+<xsd:element name="signoff_note_txt_new" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="50"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="rule_name_txt_new" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="255"/>
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>

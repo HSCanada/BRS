@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((fg_redeem_working.Item)>\"0\") AND ((fg_redeem_working.show_ind)=1))"
+Where ="(((fg_redeem_working.Supplier)<>\"REPAIR\") AND ((fg_redeem_working.Item)>\"0\")"
+    " AND ((fg_redeem_working.show_ind)=1))"
 Begin InputTables
     Name ="fg_redeem_working"
     Name ="fg_deal"
@@ -132,6 +133,8 @@ Begin
     Begin
         dbText "Name" ="fg_redeem_working.WKECST_extended_cost"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2655"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.WKUNCS_unit_cost"
@@ -144,6 +147,8 @@ Begin
     Begin
         dbText "Name" ="fg_redeem_working.MajorProductClassDesc"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2580"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.PromotionCode"
@@ -202,10 +207,14 @@ Begin
     Begin
         dbText "Name" ="fg_redeem_working.ID_source_ref"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1710"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.status_code_high"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2040"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="fg_redeem_working.ChargebackContractNumber"
@@ -278,7 +287,7 @@ Begin
     End
     Begin
         dbText "Name" ="deal_buy"
-        dbInteger "ColumnWidth" ="3465"
+        dbInteger "ColumnWidth" ="4245"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -333,12 +342,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1466
-    Bottom =918
+    Right =1568
+    Bottom =798
     Left =-1
     Top =-1
-    Right =1450
-    Bottom =342
+    Right =1552
+    Bottom =430
     Left =0
     Top =0
     ColumnsShown =539

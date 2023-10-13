@@ -1,6 +1,6 @@
 ﻿Operation =1
 Option =0
-Where ="(((fg_redeem_working.SalesOrderNumber)=15345802) AND ((fg_redeem_working.Item)>\""
+Where ="(((fg_redeem_working.SalesOrderNumber)=15978100) AND ((fg_redeem_working.Item)>\""
     "0\"))"
 Begin InputTables
     Name ="fg_redeem_working"
@@ -91,13 +91,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[FFB30_working_review_adhoc].[Supplier]"
 Begin
     Begin
         dbText "Name" ="fg_redeem_working.Supplier"
@@ -137,7 +136,7 @@ Begin
     End
     Begin
         dbText "Name" ="Item"
-        dbInteger "ColumnWidth" ="4110"
+        dbInteger "ColumnWidth" ="1650"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
@@ -348,12 +347,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1364
-    Bottom =690
+    Right =1538
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1348
-    Bottom =211
+    Right =1522
+    Bottom =234
     Left =0
     Top =0
     ColumnsShown =539

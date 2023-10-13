@@ -1,4 +1,4 @@
 ﻿BRS_CustomerFSC_History
-ODBC;DSN=BRSales;Description=DEV_BRSales;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
+ODBC;DSN=BRSales;Description=cahsionnlsql1;Trusted_Connection=Yes;APP=Microsoft Office;DATABASE=DEV_BRSales;Network=DBMSSOCN
 dbo.BRS_CustomerFSC_History
 FiscalMonth;+Shipto
