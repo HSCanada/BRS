@@ -97,7 +97,7 @@ FROM
 	ON i.MajorProductClass = mpc.MajorProductClass
 
 
-/*
+
 	-- uncomment for audit view
 
 	INNER JOIN zzzShipto as so
@@ -119,13 +119,13 @@ FROM
 			NOT SUM(t2.[GPAmt]) / NULLIF(SUM(t2.[NetSalesAmt]), 0) between 0.2 and 0.5 
 	) so_filter
 	ON t.SalesOrderNumber = so_filter.SalesOrderNumber
-*/
+
 
 WHERE
 	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
 
 	-- uncomment for audit view
-	-- d.FiscalMonth between 202301 and 202308
+--	d.FiscalMonth between 202301 and 202309
 
 
 GO

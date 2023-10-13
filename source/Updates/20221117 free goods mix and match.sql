@@ -51,7 +51,47 @@ ALTER TABLE fg.deal SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
--- CB
+
+INSERT INTO [fg].[chargeback]
+(
+[cb_contract_num]
+,[cb_contract_cd]
+,[note_txt]
+)
+select distinct [WK$ODN_free_goods_contract_number], 'FGCBA', 'TC CB auto'  FROM
+[Integration].[F5554240_fg_redeem_Staging] s
+where [WK$ODN_free_goods_contract_number] is not null
+
+-- hack to added test promo for RI
+insert into
+[dbo].[BRS_Promotion]
+(
+[PromotionCode]
+)
+select distinct [WKTHGD_thru_grade] FROM
+[Integration].[F5554240_fg_redeem_Staging] s
+where [WK$ODN_free_goods_contract_number] is not null and [WKTHGD_thru_grade] = 'LN'
+
+--
+
+-- Add FGCBA to exempt
+
+INSERT INTO fg.exempt_code
+                         (fg_exempt_cd, fg_exempt_desc, source_cd, active_ind, sequence_num, note_txt, show_ind)
+SELECT        'FGCBA' AS fg_exempt_cd, 'CB Autoadd' AS fg_exempt_desc, source_cd, active_ind, sequence_num, 'noManClaim' AS note_txt, show_ind
+FROM            fg.exempt_code AS exempt_code_1
+WHERE        (fg_exempt_cd = 'fgauto')
+
+-- test stuff
+
+-->> CB
+
+-- TODO Add CB contract# to DW pull and think LINK to DS / Comm
+Sales Order Number	Item Number	Chargeback Contract Number	Net Sales	Ext Chargeback Amount
+16645483	5702562	*	1,119.71 	0.00 
+		01870869	0.00 	228.58 
+
+
 
 -- ** Fix date fields **
 
@@ -764,34 +804,4 @@ FROM
 					ROUND(s.[line_id] * 1000,0) = s2.LineNumber
 			)
 
--- add CB contract
-
-INSERT INTO [fg].[chargeback]
-(
-[cb_contract_num]
-,[cb_contract_cd]
-,[note_txt]
-)
-select distinct [WK$ODN_free_goods_contract_number], 'FGCBA', 'TC CB auto'  FROM
-[Integration].[F5554240_fg_redeem_Staging] s
-where [WK$ODN_free_goods_contract_number] is not null
-
--- hack to added test promo for RI
-insert into
-[dbo].[BRS_Promotion]
-(
-[PromotionCode]
-)
-select distinct [WKTHGD_thru_grade] FROM
-[Integration].[F5554240_fg_redeem_Staging] s
-where [WK$ODN_free_goods_contract_number] is not null and [WKTHGD_thru_grade] = 'LN'
-
---
-
--- Add FGCBA to exempt
-
-INSERT INTO fg.exempt_code
-                         (fg_exempt_cd, fg_exempt_desc, source_cd, active_ind, sequence_num, note_txt, show_ind)
-SELECT        'FGCBA' AS fg_exempt_cd, 'CB Autoadd' AS fg_exempt_desc, source_cd, active_ind, sequence_num, 'noManClaim' AS note_txt, show_ind
-FROM            fg.exempt_code AS exempt_code_1
-WHERE        (fg_exempt_cd = 'fgauto')
+--<< add CB contract, HERE
