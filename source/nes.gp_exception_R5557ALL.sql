@@ -99,7 +99,7 @@ FROM
 
 
 	-- uncomment for audit view
-
+/*
 	INNER JOIN zzzShipto as so
 	ON t.SalesOrderNumber = so.ST
 
@@ -119,6 +119,7 @@ FROM
 			NOT SUM(t2.[GPAmt]) / NULLIF(SUM(t2.[NetSalesAmt]), 0) between 0.2 and 0.5 
 	) so_filter
 	ON t.SalesOrderNumber = so_filter.SalesOrderNumber
+*/
 
 
 WHERE
@@ -141,4 +142,6 @@ GO
 -- SELECT  count(*) from nes.gp_exception_R5557ALL
 -- ORG 216 493
 
+-- ORG 199
+-- NEW 543323
 
