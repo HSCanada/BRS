@@ -811,3 +811,5 @@ FROM
 			)
 
 --<< add CB contract, HERE
+
+EXEC fg.order_load_proc @bDebug=1

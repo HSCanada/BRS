@@ -143,13 +143,20 @@ GO
 select top 10 * from STAGE_BRS_TransactionDW  order by PDDT desc
 GO
 
---
+--  new item
+insert into dbo.BRS_Item
+(item)
 select distinct [ITLONO] FROM STAGE_BRS_TransactionDW s
 where not exists (select * from dbo.BRS_Item d where s.[ITLONO] = d.Item)
---
+
+-- new cust
+insert into dbo.BRS_Customer
+(shipto)
+select distinct [ADNOID] FROM STAGE_BRS_TransactionDW s
+where not exists (select * from dbo.BRS_Customer d where s.[ADNOID] = d.ShipTo)
 
 select max(id) from BRS_TransactionDW
--- LAST ID = 46841101
+-- LAST ID = 47083814
 
 -- test for RI fails
 Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=1
@@ -161,7 +168,7 @@ Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=0
 
 -- review prod
 select * from BRS_TransactionDW
-where ID >46841101
+where ID >47083814
 GO
 
 
@@ -1094,4 +1101,15 @@ WO$CBA_chargeback_amount <>0 and
  abs([ExtChargebackAmt]-(WO$CBA_chargeback_amount * [ShippedQty]))>0.01 and
 
 (1=1)
+GO
+
+select s.SalesDate
+from
+[dbo].[BRS_Transaction] s
+where s.SalesDate = '2023-11-27'
+
+
+UPDATE       BRS_Transaction
+SET                SalesDate = '2023-11-24'
+WHERE        (SalesDate = '2023-11-27')
 GO

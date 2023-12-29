@@ -99,10 +99,11 @@ FROM
 
 
 	-- uncomment for audit view
-/*
+ /*
 	INNER JOIN zzzShipto as so
 	ON t.SalesOrderNumber = so.ST
-
+*/
+	/*
 	-- salesorder that with questionable GP
 	INNER JOIN (
 		SELECT SalesOrderNumber
@@ -119,14 +120,14 @@ FROM
 			NOT SUM(t2.[GPAmt]) / NULLIF(SUM(t2.[NetSalesAmt]), 0) between 0.2 and 0.5 
 	) so_filter
 	ON t.SalesOrderNumber = so_filter.SalesOrderNumber
-*/
+ */
 
 
 WHERE
 	d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])) OR d.FiscalMonth = ((SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])-100) 
 
 	-- uncomment for audit view
---	d.FiscalMonth between 202301 and 202309
+--	d.FiscalMonth between 202301 and 202306
 
 
 GO
@@ -145,3 +146,4 @@ GO
 -- ORG 199
 -- NEW 543323
 
+-- select count(*) from zzzShipto

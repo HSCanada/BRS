@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	19 Sep 22	tmc		link last backorder to month
 **	03 Feb 23	tmc		de-couple fiscal data lockin so can run FG any time
+**  07 Dec 24   tmc		removed CB update from DW trans (new Free Goods with CB)
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -205,7 +206,9 @@ Begin
 
 End
 
+/*
 
+-- this logic is not longer needed due to new Free Goods with CB, tmc, 7 Dec 23
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -229,6 +232,9 @@ Begin
 		Set @nErrorCode = @@Error
 
 End
+
+*/
+
 
 If (@nErrorCode = 0) 
 Begin

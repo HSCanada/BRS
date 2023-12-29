@@ -322,7 +322,7 @@ Begin
 		,'' AS [fg_exempt_cd]
 		,0 AS [fg_offer_id]
 		,'' AS [fg_offer_note]
-		,ISNULL([WK$ODN_free_goods_contract_number],'')
+		,CAST(ISNULL([WK$ODN_free_goods_contract_number],0) as int) as fg_contract
 		,[WKDATE_order_date]
 		,[WKSHAN_shipto]
 		,[WKLITM_item_number]

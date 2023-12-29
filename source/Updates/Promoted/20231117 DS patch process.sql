@@ -378,7 +378,20 @@ COMMIT
 select count (*) from Integration.F55520_daily_sales_order_header_detail_workfile
 -- 113774
 
+-- Create new namespace for daily sales (DS)
 
+
+/****** Object:  Schema [e3]    Script Date: 11/23/2023 10:54:23 AM ******/
+CREATE SCHEMA [ds]
+GO
+
+
+-----------------------------------------------------
+-- Stop production setup
+-----------------------------------------------------
+
+
+-- below has been moved to 2 procs
 -- LEFT([WO$SPM_secondary_promotion_code],2)
 
 -- ExtChargebackAmt = (WO$CBA_chargeback_amount * [ShippedQty])
@@ -388,24 +401,24 @@ select count (*) from Integration.F55520_daily_sales_order_header_detail_workfil
 
 INSERT INTO Integration.F55520_daily_sales_order_header_detail_workfile
 (
-WODOCO_salesorder_number
-,WODCTO_order_type
-,WOKCOO_order_number_document_company
-,WOLNID_line_number
-,WODMCT_contract_number
-,WOSHAN_shipto
-,WOTRDJ_order_date
-,WODGL__gl_date
-,WOLITM_item_number
-,WOLNTY_line_type
-,WOUORG_quantity
-,WO$CBA_chargeback_amount
-,WO$LDC_landed_cost
-,WO$FCS_file_cost
-,WOSRP6_manufacturer
-,WO$SPM_secondary_promotion_code
-,WOORBY_ordered_by
-,WOTKBY_order_taken_by 
+	WODOCO_salesorder_number
+	,WODCTO_order_type
+	,WOKCOO_order_number_document_company
+	,WOLNID_line_number
+	,WODMCT_contract_number
+	,WOSHAN_shipto
+	,WOTRDJ_order_date
+	,WODGL__gl_date
+	,WOLITM_item_number
+	,WOLNTY_line_type
+	,WOUORG_quantity
+	,WO$CBA_chargeback_amount
+	,WO$LDC_landed_cost
+	,WO$FCS_file_cost
+	,WOSRP6_manufacturer
+	,WO$SPM_secondary_promotion_code
+	,WOORBY_ordered_by
+	,WOTKBY_order_taken_by 
 )
 
 SELECT 
@@ -458,27 +471,20 @@ FROM
 	FROM
 		ARCPDTA71.F55520
     WHERE
---        DATE(DIGITS(DEC(WODGL+ 1900000,7,0))) = ''2023-11-13''
---      WODGL >= 123275
---		PROD 1 Nov 23 ***
---      WODGL >= 123303
 
 --		PROD 1 Oct 23
-      WODGL >= 123274
-	  
+--      WODGL >= 123274
+-- 546148 rows @ 4m25s
+--      WODGL >= >= trunc(sysdate-1,''DD'')
+      WODGL >= 123326
+  
 
---		PROD 6 Nov 23
---      WODGL >= 123314
-
-		-- QA xxx
---        WODGL = 123234
-	
 --    ORDER BY
 --        <insert custom code here>
 ')
 GO
 
--- 283140 rows @ 2m
+-- 546148 rows @ 4m25s
 /*
 -- join flat to DS
 UPDATE
@@ -538,22 +544,40 @@ FROM
 		d.[LineNumber] =  ROUND([WOLNID_line_number] * 1000, 0)
 
 WHERE
-	(d.FiscalMonth >= 202310) AND 
---	(d.SalesDate >== '2023-11-01') and
+--	(d.FiscalMonth >= 202310) AND 
+--	(d.SalesDate >= '2023-11-01') and
+--	(d.SalesDate = s.WODGL__gl_date) and
 --	([WODOCO_salesorder_number] is not null) and
 	-- DW CB
-	(d.ExtChargebackAmt is null ) AND 
+--	(d.ExtChargebackAmt is null ) AND 
 --	(d.ExtChargebackAmt is not null ) AND 
 
-	(s.WO$CBA_chargeback_amount <> 0) And
+--	(s.WO$CBA_chargeback_amount <> 0) And
 --	(ABS(isnull(d.ExtChargebackAmt,0) - s.WO$CBA_chargeback_amount * s.WOUORG_quantity) > 0.01)  AND
 	(1=1)
+OPTION(RECOMPILE)
+
 GO
 
 -- 11 390 rows to change DEV
 -- 13 238 rows to change Prod
 
 --
+
+/*
+UPDATE
+	BRS_Transaction
+SET
+	ExtChargebackAmt = null
+FROM
+	BRS_Transaction 
+	
+WHERE
+	(BRS_Transaction.FiscalMonth >= 202311) AND 
+	(1=1)
+GO
+
+*/
 
 UPDATE
 	BRS_Transaction
@@ -584,9 +608,19 @@ WHERE
 
 -- find missing promos
 
-SELECT         distinct [WO$SPM_secondary_promotion_code]
-FROM            Integration.F55520_daily_sales_order_header_detail_workfile w 
-where not exists (select * from BRS_Promotion p where w.[WO$SPM_secondary_promotion_code] = p.PromotionCode)
+SELECT
+	DISTINCT [WO$SPM_secondary_promotion_code]
+FROM
+	Integration.F55520_daily_sales_order_header_detail_workfile w 
+WHERE 
+	NOT EXISTS 
+		(SELECT * 
+			FROM BRS_Promotion p 
+			WHERE w.[WO$SPM_secondary_promotion_code] = p.PromotionCode
+		) AND
+	-- JDE promo can be 3, but we store 2 
+	(LEN(w.[WO$SPM_secondary_promotion_code]) = 2) AND
+	(1=1)
 
 
 INSERT INTO BRS_Promotion
@@ -627,13 +661,14 @@ FROM
 		d.[LineNumber] =  ROUND(s.[WOLNID_line_number] * 1000, 0)
 
 WHERE
-	(d.CalMonth >= 202310) AND 
+--	(d.CalMonth >= 202310) AND 
 --	(s.[WODOCO_salesorder_number] is null) and
 --	(d.SalesDate >== '2023-11-01') and
 --	([WODOCO_salesorder_number] is not null) and
 	-- DW CB
-	(d.OrderPromotionCode='') AND
-	(d.OrderPromotionCode<>[WO$SPM_secondary_promotion_code]) AND
+--	(d.OrderPromotionCode='') AND
+	([WO$SPM_secondary_promotion_code]='N4') AND
+--	(d.OrderPromotionCode<>[WO$SPM_secondary_promotion_code]) AND
 	(1=1)
 GO
 
@@ -716,3 +751,37 @@ WHERE
 GO
 
 -- File Cost (Matt), Customer VPA (Kelly)
+UPDATE
+	BRS_TransactionDW
+SET
+	GPAtFileCostAmt = 0
+FROM
+	BRS_TransactionDW 
+
+WHERE
+	(BRS_TransactionDW.CalMonth = 202311) and
+	Date >= '2023-11-16'
+
+
+print 'hello' + 1234
+
+
+print Concat( 'hello ', 1234, ' more')
+
+
+-- param test
+
+declare @jdate int
+declare @sql varchar(2000)
+
+set @jdate = 123274
+
+print @jdate
+
+select  distinct WODOCO_salesorder_number, WODCTO_order_type from Integration.F55520_daily_sales_order_header_detail_workfile where WODCTO_order_type in ('SO', 'SE')
+
+
+
+
+
+
