@@ -108,6 +108,7 @@ FROM
 
 WHERE 
 --	test
+--	(c.BillTo = c.ShipTo) and
 --	c.Billto = 1527764 AND
 	(1=1)
 
@@ -121,6 +122,10 @@ GO
 
 
 -- SELECT top 10 * FROM Dimension.Customer_qt 
+
+-- SELECT count(*) FROM Dimension.Customer_qt 
+
+
 -- where  billto = 2613256 order by 1
 
 -- integrity check

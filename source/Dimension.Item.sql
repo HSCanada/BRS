@@ -60,6 +60,7 @@ AS
 --	07 Jul 22	tmc		Add Comm bonus flags
 --	19 Jul 22	tmc		Add rebate vpa exclude codes
 --  30 Jan 23	tmc		move comm_bonus to item for more control
+--	01 Feb 24	tmc		add EPS comm for EPS trakcing and FSC bonus 
 **    
 *******************************************************************************/
 
@@ -206,6 +207,7 @@ SELECT
 
 	,CASE WHEN c.minor_adhoc_model_code1 <> '' THEN c.minor_adhoc_model_code1 ELSE 'zOther' END AS minor_adhoc_model_code1
 	,CASE WHEN c.minor_adhoc_model_code2 <> '' THEN c.minor_adhoc_model_code2 ELSE 'zOther' END AS minor_adhoc_model_code2
+	,i.comm_group_eps_cd
 
 FROM            
 	BRS_Item AS i 

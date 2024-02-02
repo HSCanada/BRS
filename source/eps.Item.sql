@@ -52,10 +52,12 @@ SELECT
 	,p.[comm_group_eps_cd]
 
 
+
 FROM
 	BRS_Item AS i
 
 --	LEFT JOIN hfm.exclusive_product_rule AS r 
+
 	INNER JOIN hfm.exclusive_product_rule AS r 
 	ON i.Supplier LIKE RTRIM(r.Supplier_WhereClauseLike) AND 
 		i.Brand LIKE RTRIM(r.Brand_WhereClauseLike) AND 

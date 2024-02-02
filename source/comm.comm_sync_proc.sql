@@ -31,7 +31,7 @@ AS
 **	29 Jan 21	tmc		add Private Label logic for 2021 plan    
 **	27 Feb 21	tmc		add Private Label exclusion logic
 **  16 Dec 21	tmc		add ISR sync logic
-**	
+**	31 Jan 24	tmc		update EPS logice for 2024 plan (will be used by FSC)
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -76,6 +76,8 @@ Else
 -- Update routines.  
 ------------------------------------------------------------------------------------------------------------
 
+/*
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -93,6 +95,8 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+
+
 
 
 If (@nErrorCode = 0) 
@@ -113,6 +117,8 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+*/
+
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -132,6 +138,7 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
+/*
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -144,44 +151,11 @@ Begin
 	WHERE
 		(comm_group_cd = 'ITMPVT') AND
 		([comm_group_eps_cd] <> comm_group_cd) AND
-		/*
-		-- eps PPE exclusion, remove for 2022 plan
-		([SubMajorProdClass]  NOT IN(
-			'008-01'
-			,'008-02'
-			,'008-03'
-			,'008-04'
-			,'008-06'
-			,'008-08'
-			,'008-99'
-			,'013-03'
-			,'013-04'
-			,'013-05'
-			,'013-06'
-			,'013-08'
-			,'013-10'
-			,'013-11'
-			,'013-20'
-			,'013-30'
-			,'013-99'
-			,'054-01'
-			,'054-02'
-			,'054-03'
-			,'054-04'
-			,'054-11'
-			,'054-99'
-			,'084-01'
-			,'084-02'
-			,'084-03'
-			,'203-50'
-			,'203-52'
-			)
-		) AND
-		*/
 		(1=1)
 
 	Set @nErrorCode = @@Error
 End
+*/
 
 --
 If (@nErrorCode = 0) 
@@ -373,3 +347,8 @@ GO
 
 -- Debug, 40s
 -- EXEC comm.comm_sync_proc @bDebug=1
+
+
+
+
+

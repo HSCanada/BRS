@@ -343,7 +343,7 @@ UPDATE
 SET 
 	BRS_Transaction.GL_Object_ChargeBack = '4730'
 WHERE 
-	(BRS_Transaction.FiscalMonth=202311) AND 
+	(BRS_Transaction.FiscalMonth=202312) AND 
 	(BRS_Transaction.ExtChargebackAmt<>0) AND 
 	(BRS_Transaction.GL_Object_ChargeBack='')
 GO
@@ -360,7 +360,7 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth = 202311)
+	(BRS_Transaction.FiscalMonth = 202312)
 GO
 
 

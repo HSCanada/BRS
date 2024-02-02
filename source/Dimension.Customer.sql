@@ -58,7 +58,8 @@ AS
 --	19 Oct 21	tmc		break wheel active into 2 parts for more flex analysis
 --	08 Apr 22	tmc		add DSO operatory count and 3 full text adhoc fields
 --	10 May 22	tmc		map FieldSales name to commission master for rollup
---	15 Sep 25	tmc		add new segment map
+--	15 Sep 23	tmc		add new segment map
+--	04 Jan 24	tmc		add HSBC to model
 
 **    
 *******************************************************************************/
@@ -245,6 +246,7 @@ SELECT
 	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_3_text
 
 	,RTRIM(seg_new.[SegCd_map])		AS SegmentCodeNEW
+	,eps_roll.FSCName eps_branch
 
 
 FROM
@@ -301,6 +303,9 @@ FROM
 	INNER JOIN BRS_FSC_Rollup sroll
 	ON terr.FSCRollup = sroll.TerritoryCd
 
+	--
+	INNER JOIN BRS_FSC_Rollup eps_roll
+	ON b.EPS_code = eps_roll.TerritoryCd
 
 	INNER JOIN BRS_Customer_FSA AS fsa 
 	ON c.FSA = fsa.FSA 
@@ -382,7 +387,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
 
 -- SELECT  count(*) FROM Dimension.Customer
--- ORG= 75 249
+-- ORG= 75810
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer

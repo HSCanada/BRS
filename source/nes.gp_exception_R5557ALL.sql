@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --  27 Jan 23	tmc		update param to for MTD vs PY MTD (full)
+--	10 Jan 24	tmc		add Marketclass 
 **    
 *******************************************************************************/
 
@@ -77,6 +78,7 @@ SELECT
 	,fsc.Branch
 	,d.CalWeek
 	,LEFT(d.FiscalMonth,4) AS year_
+	,c.MarketClass_New
 
 FROM
 	BRS_TransactionDW AS t 

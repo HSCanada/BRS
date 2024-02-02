@@ -38,6 +38,7 @@ AS
 --	13 Jan 20	tmc		Added Tortonto rule
 --	27 Feb 20	tmc		moved filter business logic to flags
 --	01 Feb 21	tmc		remove territory exception for 2021 plan
+--	31 Jan 24	tmc		refactor to source commissions, Branch, Dental, and no Elite
 **    
 *******************************************************************************/
 
@@ -70,7 +71,10 @@ SELECT
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
 	'.'						AS Field_Level_3_Description,
-	RTRIM(b.EPS_code)		AS Eps_Code
+	RTRIM(b.EPS_code)		AS Eps_Code,
+	eps.FSCName				AS Eps_Name
+
+	
 /*
 	CASE 
 		WHEN 
@@ -98,11 +102,18 @@ FROM
 	INNER JOIN [dbo].[BRS_Branch] AS b
 	ON f.Branch = b.Branch
 
+	INNER JOIN BRS_FSC_Rollup AS eps 
+	ON b.EPS_code = eps.TerritoryCd
+
+
 WHERE
 	(c.ShipTo > 0) AND
-	(c.SalesDivision IN ('AAD', 'AAL')) AND 
-	(s.PrivateLabelScopeInd = 1) AND
-	(b.PrivateLabelScopeInd = 1) AND
+	(c.ShipTo <> c.BillTo) AND
+
+	(c.SalesDivision IN ('AAD')) AND 
+	(c.MarketClass_New <> 'ELITE') AND
+--	(s.PrivateLabelScopeInd = 1) AND
+--	(b.PrivateLabelScopeInd = 1) AND
 	(1=1)
 GO
 
@@ -114,6 +125,14 @@ GO
 
 -- SELECT top 10 * FROM eps.Customer WHERE Eps_Code = 'EPONT'
 -- SELECT * FROM eps.Customer where Specialty_Discription = 'HYGEN'
+
+-- SELECT count(*) FROM eps.Customer 
+-- ORG 51 357
+-- NEW 53 411 (removed MSG filters)
+
+
+SELECT Eps_Name, count(*) FROM eps.Customer 
+group by Eps_Name
 
 -- eps_customer.txt
 

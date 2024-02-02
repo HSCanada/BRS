@@ -176,7 +176,7 @@ FROM
 -- 546148 rows @ 4m25s
 --      WODGL >= >= trunc(sysdate-1,''DD'')
 --	TC lookupdate date logic in github
-      WODGL >= (123326-10)
+      WODGL >= (124284-5)
   
 
 --    ORDER BY

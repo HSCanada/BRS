@@ -116,8 +116,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT  * from [Dimension].[Salesorder_astea_note]
+-- SELECT  top 10 * from [Dimension].[Salesorder_astea_note]
 
 -- SELECT  count(*) from [Dimension].[Salesorder_astea_note]
 
 
+-- select top 10 * from nes.order_note_D1ICMTPF
