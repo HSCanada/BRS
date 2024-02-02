@@ -62,7 +62,6 @@ INSERT INTO [fg].[chargeback]
 select distinct [WK$ODN_free_goods_contract_number], 'FGCBA', 'TC CB auto'  FROM
 [Integration].[F5554240_fg_redeem_Staging] s
 where [WK$ODN_free_goods_contract_number] is not null and 
-
 not exists (select * from  [fg].[chargeback] where  [fg].[chargeback].cb_contract_num=[WK$ODN_free_goods_contract_number])
 
 

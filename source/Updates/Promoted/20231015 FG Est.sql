@@ -64,7 +64,7 @@ WHERE
 	(vpa.freegoods_exempt_cd=0) and
 
 
-	(t.FiscalMonth = 202311)
+	(t.FiscalMonth = 202312)
 
 
 

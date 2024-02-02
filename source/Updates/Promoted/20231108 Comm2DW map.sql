@@ -178,10 +178,10 @@ GO
 -- JDE pull from Kurt
 
 --------------------------------------------------------------------------------
--- DROP TABLE Integration.F55520_daily_sales_order_header_detail_workfile
+-- DROP TABLE Integration.F55520_daily_sales_order_header_detail_workfile2
 --------------------------------------------------------------------------------
 
--- truncate table Integration.F55520_daily_sales_order_header_detail_workfile
+-- truncate table Integration.F55520_daily_sales_order_header_detail_workfile2
 
 select count(*) from Integration.F55520_daily_sales_order_header_detail_workfile
 
@@ -490,7 +490,7 @@ SELECT
 	, "WOORBY" AS WOORBY_ordered_by
 	, "WOTKBY" AS WOTKBY_order_taken_by 
 
--- INTO Integration.F55520_daily_sales_order_header_detail_workfile
+ INTO Integration.F55520_daily_sales_order_header_detail_workfile2
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -836,15 +836,8 @@ FROM
 	FROM
 		ARCPDTA71.F55520
     WHERE
---        DATE(DIGITS(DEC(WODGL+ 1900000,7,0))) = ''2023-11-13''
-
---      WODGL >= 123275
-
---		PROD 6 Nov 23
---      WODGL >= 123314
-
-		-- QA xxx
-        WODGL = 123274
+        WODGL >= 123274 and
+		WOSRP6 = ''SOUDEN''
 	
 --    ORDER BY
 --        <insert custom code here>
@@ -854,8 +847,8 @@ FROM
 
 BEGIN TRANSACTION
 GO
-ALTER TABLE Integration.F55520_daily_sales_order_header_detail_workfile ADD CONSTRAINT
-	PK_F55520_daily_sales_order_header_detail_workfile PRIMARY KEY CLUSTERED 
+ALTER TABLE Integration.F55520_daily_sales_order_header_detail_workfile2 ADD CONSTRAINT
+	PK_F55520_daily_sales_order_header_detail_workfile2 PRIMARY KEY CLUSTERED 
 	(
 	WODOCO_salesorder_number,
 	WODCTO_order_type,
@@ -863,11 +856,13 @@ ALTER TABLE Integration.F55520_daily_sales_order_header_detail_workfile ADD CONS
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
 
 GO
-ALTER TABLE Integration.F55520_daily_sales_order_header_detail_workfile SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE Integration.F55520_daily_sales_order_header_detail_workfile2 SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
 --
+
+select * from Integration.F55520_daily_sales_order_header_detail_workfile2
 
 BEGIN TRANSACTION
 GO

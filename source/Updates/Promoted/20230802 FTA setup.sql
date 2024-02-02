@@ -61,6 +61,7 @@ SELECT [employee_num]
   FROM [comm].[salesperson_master] where [master_salesperson_cd] = 'CCS23'
 GO
 
+/*
 UPDATE       
 comm.transaction_F555115
 SET
@@ -74,7 +75,7 @@ cps_code = 'FTA23'
 WHERE
 (FiscalMonth >= 202201) AND (ess_salesperson_key_id = 'ELISE.POIRIER') AND (1 = 1)
 GO
-
+*/
 
   SELECT  [FiscalMonth]
       ,[cps_code]
@@ -98,7 +99,7 @@ GO
 /*
   # comm backend - FTA rough plan idea
 add FTA rates
-update link logic
+update link logic   
 update rate logic
 
 FTA test, new plan and rates - Link CCS -> FTA via Salerder
