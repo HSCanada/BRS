@@ -10,6 +10,7 @@ End
 Begin OutputColumns
     Expression ="BRS_Customer.ShipTo"
     Expression ="BRS_Customer.DSO_ParentShipTo"
+    Expression ="BRS_Customer.BillTo"
     Expression ="BRS_Customer.Est12MoMerch"
     Expression ="BRS_Customer.Est12MoTotal"
     Expression ="BRS_Customer.CustGrpWrk"
@@ -96,7 +97,7 @@ Begin
     Begin
         dbText "Name" ="BRS_Customer.CustGrpWrk"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="2805"
+        dbInteger "ColumnWidth" ="3015"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -132,6 +133,8 @@ Begin
     Begin
         dbText "Name" ="BRS_Customer.MailingName"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1785"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.AddressLine1"
@@ -144,12 +147,14 @@ Begin
     Begin
         dbText "Name" ="BRS_Customer.AddressLine3"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="1830"
+        dbInteger "ColumnWidth" ="2400"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.AddressLine4"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2445"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="BRS_Customer.AccountType"
@@ -181,17 +186,21 @@ Begin
         dbText "Name" ="BRS_FSC_Rollup.Branch"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_Customer.BillTo"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1721
-    Bottom =918
+    Right =1582
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1705
-    Bottom =494
+    Right =1566
+    Bottom =443
     Left =0
     Top =0
     ColumnsShown =539

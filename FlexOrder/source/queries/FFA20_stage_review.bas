@@ -15,11 +15,15 @@ dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[FFA20_stage_review].[line_id], [FFA20_stage_review].[ACCOUNT]"
+dbMemo "OrderBy" ="[FFA20_stage_review].[order_file_name], [FFA20_stage_review].[line_id], [FFA20_s"
+    "tage_review].[ACCOUNT]"
+dbMemo "Filter" ="([FFA20_stage_review].[ACCOUNT]=\"2003266031\")"
 Begin
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.order_file_name"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3165"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.status_code"
@@ -44,6 +48,8 @@ Begin
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.ACCOUNT"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2400"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.ORDERNO"
@@ -62,10 +68,14 @@ Begin
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.ITEMDESC"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3660"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.UPC"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2835"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="Integration_flex_order_lines_Staging.PRICE"
@@ -144,12 +154,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1474
-    Bottom =918
+    Right =1582
+    Bottom =798
     Left =-1
     Top =-1
-    Right =1458
-    Bottom =639
+    Right =1566
+    Bottom =571
     Left =0
     Top =0
     ColumnsShown =539

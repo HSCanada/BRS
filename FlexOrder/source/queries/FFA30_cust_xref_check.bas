@@ -26,13 +26,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[FFA30_cust_xref_check].[ACCOUNT]"
 Begin
     Begin
         dbText "Name" ="flex_customer_xref.COUNTRY"
@@ -41,7 +40,7 @@ Begin
     Begin
         dbText "Name" ="flex_customer_xref.COMPANY"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="3420"
+        dbInteger "ColumnWidth" ="3435"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -121,12 +120,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1721
-    Bottom =918
+    Right =1582
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1592
-    Bottom =486
+    Right =1566
+    Bottom =401
     Left =0
     Top =0
     ColumnsShown =539

@@ -10,7 +10,9 @@
 </xsd:element>
 <xsd:element name="STAGE_flex_customer_x005F_xref">
 <xsd:annotation>
-<xsd:appinfo/>
+<xsd:appinfo>
+<od:index index-name="PrimaryKey" index-key="ACCOUNT " primary="yes" unique="yes" clustered="no" order="asc"/>
+</xsd:appinfo>
 </xsd:annotation>
 <xsd:complexType>
 <xsd:sequence>
@@ -21,7 +23,7 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="ACCOUNT" minOccurs="0" od:jetType="longinteger" od:sqlSType="int" type="xsd:int"/>
+<xsd:element name="ACCOUNT" minOccurs="1" od:jetType="longinteger" od:sqlSType="int" od:nonNullable="yes" type="xsd:int"/>
 <xsd:element name="status_code" minOccurs="0" od:jetType="integer" od:sqlSType="smallint" type="xsd:short"/>
 <xsd:element name="ShipTo" minOccurs="0" od:jetType="longinteger" od:sqlSType="int" type="xsd:int"/>
 <xsd:element name="ShipTo_Suggest" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">

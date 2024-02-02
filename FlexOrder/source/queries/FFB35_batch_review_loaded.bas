@@ -29,6 +29,8 @@ Begin
     Begin
         dbText "Name" ="flex_order_file.note"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="3225"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_order_file.order_file_name"
@@ -57,12 +59,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1697
-    Bottom =918
+    Right =1312
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1681
-    Bottom =571
+    Right =1566
+    Bottom =537
     Left =0
     Top =0
     ColumnsShown =539

@@ -1,6 +1,7 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_item_xref.status_code)=1))"
+Where ="(((flex_item_xref.status_code)=0) AND (([ITEMNO] & [ITEMDESC] & [Item]) Like \"*"
+    "\" & [item lookup] & \"*\"))"
 Begin InputTables
     Name ="flex_item_xref"
 End
@@ -52,12 +53,14 @@ Begin
     Begin
         dbText "Name" ="flex_item_xref.note"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="2070"
+        dbInteger "ColumnWidth" ="3195"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_item_xref.Item"
         dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1050"
+        dbBoolean "ColumnHidden" ="0"
     End
     Begin
         dbText "Name" ="flex_item_xref.create_date"
@@ -73,10 +76,10 @@ Begin
     Left =0
     Top =0
     Right =1582
-    Bottom =833
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1566
+    Right =1296
     Bottom =147
     Left =0
     Top =0

@@ -142,12 +142,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1215
-    Bottom =565
+    Right =1518
+    Bottom =918
     Left =-1
     Top =-1
-    Right =1199
-    Bottom =429
+    Right =1502
+    Bottom =395
     Left =0
     Top =0
     ColumnsShown =539

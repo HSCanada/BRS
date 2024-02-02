@@ -8,7 +8,6 @@ Begin OutputColumns
     Expression ="flex_order_file.order_file_name"
     Expression ="flex_order_file.flex_code"
     Expression ="flex_order_file.Supplier"
-    Expression ="flex_order_file.note"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -21,13 +20,9 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="flex_order_file.note"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
         dbText "Name" ="flex_order_file.order_file_name"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="3555"
+        dbInteger "ColumnWidth" ="4620"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
@@ -43,12 +38,12 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1616
-    Bottom =918
+    Right =1582
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1600
-    Bottom =605
+    Right =1566
+    Bottom =520
     Left =0
     Top =0
     ColumnsShown =539

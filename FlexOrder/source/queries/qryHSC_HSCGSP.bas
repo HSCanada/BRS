@@ -16,17 +16,61 @@ dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
+    Begin
+        dbText "Name" ="FFB11_GSP_review.A_Ship_To"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.D_Unit_Price"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.C_Qty"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.B_Item_number"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.F_Customer_PO"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.E_Line_price_Override"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.H_Order_Taken_By"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.G_Refer_order"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.I_Ordered_By"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.J_Refer_Order"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="FFB11_GSP_review.K_Order_Pend"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1518
-    Bottom =918
+    Right =1582
+    Bottom =798
     Left =-1
     Top =-1
-    Right =1502
-    Bottom =385
+    Right =1566
+    Bottom =334
     Left =0
     Top =0
     ColumnsShown =539

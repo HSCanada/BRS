@@ -14,26 +14,28 @@ Begin OutputColumns
     Expression ="flex_order_header.ShipTo"
     Alias ="B_Document_Type"
     Expression ="flex_batch_template.DocType"
-    Alias ="C_Item_number"
+    Alias ="C_Source_of_Order"
+    Expression ="flex_batch_template.OrderSourceCode"
+    Alias ="D_Item_number"
     Expression ="flex_order_detail.Item"
-    Alias ="D_Line_Type"
+    Alias ="E_Line_Type"
     Expression ="flex_batch_template.LineTypeOrder"
-    Alias ="E_Qty"
+    Alias ="F_Qty"
     Expression ="flex_order_detail.QTY"
-    Alias ="F_Unit_Price"
+    Alias ="G_Unit_Price"
     Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,CLng([PRICE]*10000),\"\")"
-    Alias ="G_Line_price_Override"
+    Alias ="H_Line_price_Override"
     Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,\"\")"
-    Alias ="H_Customer_PO"
+    Alias ="I_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
-    Alias ="I_Refer_order"
+    Alias ="J_Refer_order"
     Expression ="flex_order_header.ORDERNO"
-    Alias ="J_Order_Taken_By"
+    Alias ="K_Order_Taken_By"
     Expression ="flex_batch_template.OrderTakenBy"
-    Alias ="K_Ordered_By"
+    Alias ="L_Ordered_By"
     Expression ="flex_batch_template.OrderTakenBy"
-    Alias ="L_Refer_Order"
+    Alias ="M_Refer_Order"
     Expression ="flex_batch_template.refer_order"
 End
 Begin Joins
@@ -92,47 +94,53 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="H_Customer_PO"
-        dbInteger "ColumnWidth" ="2850"
+        dbText "Name" ="E_Line_Type"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="C_Source_of_Order"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2220"
         dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="E_Qty"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="J_Order_Taken_By"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="G_Line_price_Override"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="C_Item_number"
+        dbText "Name" ="D_Item_number"
         dbInteger "ColumnWidth" ="1920"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="L_Refer_Order"
+        dbText "Name" ="F_Qty"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="D_Line_Type"
+        dbText "Name" ="G_Unit_Price"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="F_Unit_Price"
+        dbText "Name" ="H_Line_price_Override"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="I_Refer_order"
+        dbText "Name" ="I_Customer_PO"
+        dbInteger "ColumnWidth" ="2850"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="K_Ordered_By"
+        dbText "Name" ="J_Refer_order"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="K_Order_Taken_By"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="L_Ordered_By"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="M_Refer_Order"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -145,7 +153,7 @@ Begin
     Left =-1
     Top =-1
     Right =1566
-    Bottom =327
+    Bottom =344
     Left =0
     Top =0
     ColumnsShown =539

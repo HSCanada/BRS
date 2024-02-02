@@ -10,7 +10,9 @@
 </xsd:element>
 <xsd:element name="STAGE_flex_item_x005F_xref">
 <xsd:annotation>
-<xsd:appinfo/>
+<xsd:appinfo>
+<od:index index-name="PrimaryKey" index-key="ITEMNO " primary="yes" unique="yes" clustered="no" order="asc"/>
+</xsd:appinfo>
 </xsd:annotation>
 <xsd:complexType>
 <xsd:sequence>
@@ -21,7 +23,7 @@
 </xsd:restriction>
 </xsd:simpleType>
 </xsd:element>
-<xsd:element name="ITEMNO" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:element name="ITEMNO" minOccurs="1" od:jetType="text" od:sqlSType="nvarchar" od:nonNullable="yes">
 <xsd:simpleType>
 <xsd:restriction base="xsd:string">
 <xsd:maxLength value="15"/>

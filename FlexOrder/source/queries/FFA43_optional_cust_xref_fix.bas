@@ -1,26 +1,23 @@
 ﻿Operation =1
 Option =0
-Where ="(((flex_order_header.ACCOUNT) Is Null))"
+Where ="(((flex_customer_xref.status_code)=0) AND (([ACCOUNT] & [ShipTo] & [ShipTo_Sugge"
+    "st] & [Company]) Like \"*\" & [cust  lookup] & \"*\"))"
 Begin InputTables
     Name ="flex_customer_xref"
-    Name ="flex_order_header"
 End
 Begin OutputColumns
     Expression ="flex_customer_xref.Supplier"
     Expression ="flex_customer_xref.ACCOUNT"
     Expression ="flex_customer_xref.COMPANY"
-    Expression ="flex_customer_xref.POSTALCODE"
-    Expression ="flex_customer_xref.PHONE"
-    Expression ="flex_customer_xref.status_code"
+    Expression ="flex_customer_xref.FIRSTLAST"
+    Alias ="ShipToNEW"
     Expression ="flex_customer_xref.ShipTo"
+    Expression ="flex_customer_xref.ShipTo_Suggest"
+    Expression ="flex_customer_xref.status_code"
+    Alias ="noteNEW"
     Expression ="flex_customer_xref.note"
-    Expression ="flex_order_header.ACCOUNT"
-End
-Begin Joins
-    LeftTable ="flex_customer_xref"
-    RightTable ="flex_order_header"
-    Expression ="flex_customer_xref.ACCOUNT = flex_order_header.ACCOUNT"
-    Flag =2
+    Expression ="flex_customer_xref.create_date"
+    Expression ="flex_customer_xref.PHONE"
 End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
@@ -33,9 +30,11 @@ dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
 Begin
     Begin
-        dbText "Name" ="flex_customer_xref.COMPANY"
-        dbInteger "ColumnWidth" ="3915"
-        dbBoolean "ColumnHidden" ="0"
+        dbText "Name" ="flex_customer_xref.ShipTo_Suggest"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="flex_customer_xref.PHONE"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -43,17 +42,7 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="flex_order_header.ACCOUNT"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="flex_customer_xref.note"
-        dbInteger "ColumnWidth" ="2760"
-        dbBoolean "ColumnHidden" ="0"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="flex_customer_xref.ShipTo"
+        dbText "Name" ="flex_customer_xref.ACCOUNT"
         dbLong "AggregateType" ="-1"
     End
     Begin
@@ -61,17 +50,27 @@ Begin
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="flex_customer_xref.ACCOUNT"
-        dbInteger "ColumnWidth" ="1335"
+        dbText "Name" ="flex_customer_xref.FIRSTLAST"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="flex_customer_xref.create_date"
+        dbLong "AggregateType" ="-1"
+    End
+    Begin
+        dbText "Name" ="flex_customer_xref.COMPANY"
+        dbInteger "ColumnWidth" ="4005"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="flex_customer_xref.POSTALCODE"
+        dbText "Name" ="ShipToNEW"
+        dbInteger "ColumnWidth" ="1500"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="flex_customer_xref.PHONE"
+        dbText "Name" ="noteNEW"
         dbLong "AggregateType" ="-1"
     End
 End
@@ -79,31 +78,22 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1474
-    Bottom =918
+    Right =1582
+    Bottom =851
     Left =-1
     Top =-1
-    Right =1188
-    Bottom =673
+    Right =1296
+    Bottom =253
     Left =0
     Top =0
     ColumnsShown =539
     Begin
-        Left =57
-        Top =53
-        Right =201
-        Bottom =197
+        Left =353
+        Top =72
+        Right =497
+        Bottom =216
         Top =0
         Name ="flex_customer_xref"
-        Name =""
-    End
-    Begin
-        Left =314
-        Top =55
-        Right =458
-        Bottom =199
-        Top =0
-        Name ="flex_order_header"
         Name =""
     End
 End
