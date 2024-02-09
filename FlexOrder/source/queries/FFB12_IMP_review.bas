@@ -21,9 +21,10 @@ Begin OutputColumns
     Alias ="E_Qty"
     Expression ="flex_order_detail.QTY"
     Alias ="F_Unit_Price"
-    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,CLng([PRICE]*10000),\"\")"
+    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),CLng([PRICE]*10000),\"\""
+        ")"
     Alias ="G_Line_price_Override"
-    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,\"\")"
+    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),1,\"\")"
     Alias ="H_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
@@ -135,17 +136,21 @@ Begin
         dbText "Name" ="K_Ordered_By"
         dbLong "AggregateType" ="-1"
     End
+    Begin
+        dbText "Name" ="BRS_Customer.VPA"
+        dbLong "AggregateType" ="-1"
+    End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1582
+    Right =1312
     Bottom =918
     Left =-1
     Top =-1
-    Right =1566
-    Bottom =327
+    Right =1296
+    Bottom =441
     Left =0
     Top =0
     ColumnsShown =539

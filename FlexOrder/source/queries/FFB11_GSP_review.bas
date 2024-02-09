@@ -17,9 +17,10 @@ Begin OutputColumns
     Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
     Alias ="D_Unit_Price"
-    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,CLng([PRICE]*10000),\"\")"
+    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),CLng([PRICE]*10000),\"\""
+        ")"
     Alias ="E_Line_price_Override"
-    Expression ="IIf([PRICE]=0 Or [BillTo]<>2613256,1,\"\")"
+    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),1,\"\")"
     Alias ="F_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
@@ -74,13 +75,12 @@ End
 dbBoolean "ReturnsRecords" ="-1"
 dbInteger "ODBCTimeout" ="60"
 dbByte "RecordsetType" ="0"
-dbBoolean "OrderByOn" ="-1"
+dbBoolean "OrderByOn" ="0"
 dbByte "Orientation" ="0"
 dbByte "DefaultView" ="2"
 dbBoolean "FilterOnLoad" ="0"
 dbBoolean "OrderByOnLoad" ="-1"
 dbBoolean "TotalsRow" ="0"
-dbMemo "OrderBy" ="[FFB11_GSP_review].[A_Ship_To]"
 Begin
     Begin
         dbText "Name" ="A_Ship_To"
@@ -153,56 +153,56 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1582
-    Bottom =798
+    Right =1038
+    Bottom =516
     Left =-1
     Top =-1
-    Right =1566
-    Bottom =306
-    Left =0
+    Right =1022
+    Bottom =289
+    Left =480
     Top =0
     ColumnsShown =539
     Begin
-        Left =324
+        Left =-156
         Top =109
-        Right =523
+        Right =43
         Bottom =364
         Top =0
         Name ="flex_order_header"
         Name =""
     End
     Begin
-        Left =881
+        Left =401
         Top =0
-        Right =1301
+        Right =821
         Bottom =367
         Top =0
         Name ="flex_order_detail"
         Name =""
     End
     Begin
-        Left =102
+        Left =-378
         Top =13
-        Right =285
+        Right =-195
         Bottom =311
         Top =0
         Name ="flex_order_file"
         Name =""
     End
     Begin
-        Left =548
+        Left =68
         Top =11
-        Right =885
+        Right =405
         Bottom =218
         Top =0
         Name ="flex_batch_template"
         Name =""
     End
     Begin
-        Left =607
-        Top =254
-        Right =751
-        Bottom =398
+        Left =127
+        Top =30
+        Right =271
+        Bottom =174
         Top =0
         Name ="BRS_Customer"
         Name =""
