@@ -253,61 +253,61 @@ GO
  /*
 
 print ('T01: missing ENTITY_sales')
-SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0 and PERIOD = 202401
 -- ok
 
 print ('T02: missing ACCOUNT_sales')
-SELECT * FROM [hfm].global_cube where ACCOUNT_sales is null and sales <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ACCOUNT_sales is null and sales <> 0.0 and PERIOD = 202401
 -- ok
 
 print ('T03: missing ENTITY_cost')
-SELECT * FROM [hfm].global_cube where ENTITY_cost is null and ext_cost <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ENTITY_cost is null and ext_cost <> 0.0 and PERIOD = 202401
 -- ok
 
 print ('T04: missing ACCOUNT_cost')
-SELECT * FROM [hfm].global_cube where ACCOUNT_cost is null and ext_cost <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ACCOUNT_cost is null and ext_cost <> 0.0 and PERIOD = 202401
 -- ok
 
 -- xxx
 print ('T05: missing ENTITY_cb') 
-SELECT * FROM [hfm].global_cube where ENTITY_cb is null and ext_chargeback <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ENTITY_cb is null and ext_chargeback <> 0.0 and PERIOD = 202401
 -- ok
 
 print ('T06: missing ACCOUNT_cb')
-SELECT * FROM [hfm].global_cube where ACCOUNT_cb is null and ext_chargeback <> 0.0 and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where ACCOUNT_cb is null and ext_chargeback <> 0.0 and PERIOD = 202401
 -- ok
 
 print ('T07: missing PRODUCT')
-SELECT distinct Item, MinorProductClass FROM [hfm].global_cube where PRODUCT = '' and MinorProductClass <> '' and PERIOD = 202310
+SELECT distinct Item, MinorProductClass FROM [hfm].global_cube where PRODUCT = '' and MinorProductClass <> '' and PERIOD = 202401
 -- check global mapping by product / defaults
 
 print ('T08: missing SUPPLIER')
-SELECT * FROM [hfm].global_cube where SUPPLIER = '' and Item not in ('', '+ Delivery','FREIGHT','105ZZZZ') and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where SUPPLIER = '' and Item not in ('', '+ Delivery','FREIGHT','105ZZZZ') and PERIOD = 202401
 -- ok
 
 print ('T09: missing BRAND_EQUITY')
-SELECT * FROM [hfm].global_cube where BRAND_EQUITY = '' and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where BRAND_EQUITY = '' and PERIOD = 202401
 -- ok
 
 print ('T10: missing BRAND_LINE')
-SELECT * FROM [hfm].global_cube where BRAND_LINE = ''and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where BRAND_LINE = ''and PERIOD = 202401
 -- ok
 
 print ('T11: missing CUSTOMER')
-SELECT * FROM [hfm].global_cube where CUSTOMER = '' and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where CUSTOMER = '' and PERIOD = 202401
 -- ok
 
 print ('T12: missing CUSTOMER_SPECIALTY')
-SELECT * FROM [hfm].global_cube where CUSTOMER_SPECIALTY = '' and PERIOD = 202310
+SELECT * FROM [hfm].global_cube where CUSTOMER_SPECIALTY = '' and PERIOD = 202401
 -- ok
 
 print ('T13: missing ANALYSIS')
-SELECT distinct ANALYSIS FROM [hfm].global_cube where PERIOD = 202310
+SELECT distinct ANALYSIS FROM [hfm].global_cube where PERIOD = 202401
 -- compare list with excel final GPS
 
 
 print ('T14: missing SourceCd')
-SELECT * FROM [hfm].global_cube WHERE SourceCd is null and PERIOD = 202310
+SELECT * FROM [hfm].global_cube WHERE SourceCd is null and PERIOD = 202401
 -- add next text to source 	'GL_Input', 'Manual_Entry' 
 
 
@@ -343,7 +343,7 @@ UPDATE
 SET 
 	BRS_Transaction.GL_Object_ChargeBack = '4730'
 WHERE 
-	(BRS_Transaction.FiscalMonth=202312) AND 
+	(BRS_Transaction.FiscalMonth=202401) AND 
 	(BRS_Transaction.ExtChargebackAmt<>0) AND 
 	(BRS_Transaction.GL_Object_ChargeBack='')
 GO
@@ -360,7 +360,10 @@ FROM
 		a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 WHERE
 	ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-	(BRS_Transaction.FiscalMonth = 202312)
+	(BRS_Transaction.FiscalMonth = 202401)
 GO
 
 
+--  Thrive fix
+
+select * from [hfm].[account_master_F0901] where [GMOBJ__object_account] in ('4332', '4320') or [GMDL01_description] like '%priv%' order by GMOBJ__object_account -- [GMDL01_description]
