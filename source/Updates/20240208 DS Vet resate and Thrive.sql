@@ -255,3 +255,33 @@ UPDATE       hfm.account_master_F0901
 SET                HFM_Account = N'PrivPoints'
 WHERE        (GMOBJ__object_account IN ('4332'))
 --
+
+-- fix Branch
+
+UPDATE       BRS_Transaction
+SET                Branch = 'MEDIC', BranchORG = [Branch]
+WHERE        (GL_BusinessUnit = '020040000000') AND (GLBU_Class IN ('MEDIC')) AND (Branch <> 'MEDIC') AND (FiscalMonth >= 202301) AND (1 = 1)
+
+
+-- test
+SELECT  [FiscalMonth]
+	  ,[DocType] 
+      ,[GLBU_Class]
+	  ,[Branch]
+	  ,[BranchORG]
+      ,[NetSalesAmt]
+      ,[ExtendedCostAmt]
+      ,[GLClass]
+	  ,SalesDivision
+      ,[GL_BusinessUnit]
+
+  FROM 
+  [dbo].[BRS_Transaction] 
+  where 
+  [GL_BusinessUnit] = '020040000000' and 
+   GLBU_Class in ('MEDIC') and 
+   Branch <> 'MEDIC' and
+   [FiscalMonth] >= 202301  and
+--   [ID] >= 36955018 and
+  (1=1)
+order by SalesDate

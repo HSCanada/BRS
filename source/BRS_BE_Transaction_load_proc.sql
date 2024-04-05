@@ -51,6 +51,7 @@ AS
 --	30 Nov 17	tmc		Update TransExt Salesorder for RI
 **	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
 **							Marking init PO for DWTrans process fix
+**	04 Apr 24	tmc		Free Goods fix, remove Private Label from Est
 **    
 *******************************************************************************/
 BEGIN
@@ -512,10 +513,12 @@ Begin
 		SUBSTRING(GLAcctNumberObjSales,6,4), 
 		SUBSTRING(GLAcctNumberObjCost,6,4),
 
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 1 ELSE 0 END AS FreeGoodsEstInd,
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjCode,
+		-- exclude private label FG as of 4 Apr 24
+		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 1 ELSE 0 END AS FreeGoodsEstInd,
+		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 'XXXFGE' ELSE '' END AS AdjCode,
 		--	13 Dec 16	tmc		Extend FG tag to adjust note (consistent reporting)
-		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 THEN 'XXXFGE' ELSE '' END AS AdjNote
+		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 'XXXFGE' ELSE '' END AS AdjNote
+
 
 	FROM         
 		STAGE_BRS_Transaction_Load as l
@@ -528,6 +531,9 @@ Begin
 
 		INNER JOIN BRS_ItemMPC AS mpc 
 		ON l.MajorProductClass= mpc.MajorProductClass
+
+		LEFT JOIN BRS_Item i
+		ON l.Item = i.Item	
 
 --  12 Feb 16	tmc		Clean up and Speed up load via sort & Truncate
 
@@ -586,7 +592,8 @@ Begin
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @nRunMode)
 	Set @sMessage = @sMessage +  ', ' + convert(varchar, @bDebug)
 
-	RAISERROR (50060, 9, 1, @sMessage )
+	RAISERROR ('%s', 9, 1, @sMessage )
+
 
 	Rollback Tran mytran
 
@@ -632,6 +639,26 @@ GROUP BY SalesDate
 -- prod run
 -- [BRS_BE_Transaction_load_proc] 0, 0
 
+-- ORG 13 083
 
+/*
+-- fix FG Private label retro
 
+SELECT        BRS_Transaction.FiscalMonth, BRS_Transaction.SalesOrderNumberKEY, BRS_Transaction.DocType, BRS_Transaction.LineNumber, BRS_Transaction.Item, BRS_Item.Label, BRS_Transaction.FreeGoodsEstInd
+FROM            BRS_Transaction INNER JOIN
+                         BRS_Item ON BRS_Transaction.Item = BRS_Item.Item
+where FreeGoodsEstInd <> 0 and label = 'P' 
 
+-- DEV
+-- 108 690 org
+-- 108 690 upd
+
+-- PROD
+-- 111 685 org
+
+UPDATE       BRS_Transaction
+SET                FreeGoodsEstInd = 0
+FROM            BRS_Transaction INNER JOIN
+                         BRS_Item ON BRS_Transaction.Item = BRS_Item.Item
+WHERE        (BRS_Transaction.FreeGoodsEstInd <> 0) AND (BRS_Item.Label = 'P')
+*/

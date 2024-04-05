@@ -79,6 +79,8 @@ FROM
 
 WHERE
 	t.SalesDate = config.[SalesDateLastWeekly] AND
+--	t.SalesDate = (SELECT max(SalesDate) FROM nes.open_order_opordrpt) AND
+
 	t.item_status NOT in ('CANCELLED', 'CLOSED') AND
 --	[SalesDate] = (SELECT [PY_SalesDateLastWeekly] FROM [dbo].[BRS_Config])
 	(1=1)
@@ -94,6 +96,7 @@ GO
 
 -- SELECT TOP 10 * FROM nes.order_open_equipment_current
 -- SELECT * FROM nes.order_open_equipment_current
+-- ORG 4577
 
 
 

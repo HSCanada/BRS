@@ -38,76 +38,57 @@ AS
 *******************************************************************************/
 
 SELECT
-	RTRIM(t.[branch_code])			AS branch
-
-	,RTRIM(CASE 
-		WHEN u.user_name <> '' 
-		THEN u.user_name 
-		ELSE u.[user_id] 
-	END)							AS user_name
-
-	,RTRIM(CASE 
-		WHEN e.FSCName <> '' 
-		THEN e.FSCName 
-		ELSE t.[est_code] 
-	END)							AS bench_tech
+	t.[work_order_num]				AS workorder
+	,RTRIM(t.[branch_code])			AS branch
+	,RTRIM(t.[cause_code])	 + ' | '
+	+ c.cause_descr					AS cause
 
 	,RTRIM(age.aging_display)		AS aging
-	,RTRIM(ISNULL(std.next_action, '***Undefined***')) AS next_action
 
-	,r.[rma_name]					AS rma
+	,CASE when c.[owner] = '' AND t.branch_code <>''  THEN 'SC' ELSE c.owner END as [owner]
+	,c.[work_flow]
 
-	,RTRIM(t.[order_status_code])	AS st
-
-	,t.[work_order_num]				AS workorder
-
-	,t.[last_update_date]			AS [Last Update]
 	,t.[order_received_date]		AS [Order Recv]
 	,t.[estimate_complete_date]		AS [Est Compl]
 	,t.[approved_date]				AS [Appr/Decl]
 	,t.[approved_part_release_date] AS [Appr Part]
 	,t.[order_complete_date]		AS [Order Comp]
 
-	,cust.PracticeName + ' | '
-	+CAST(t.[shipto] as varchar(7)) AS customer
 	,RTRIM(cust.PracticeName)		AS PracticeName
 	,t.[shipto]
-
 	,RTRIM(t.[privileges_code])		AS priv
 	,RTRIM(t.[model_number])		AS model_number
 
-	,RTRIM(ct.call_type_descr) 		AS call_type
+
+	,r.[rma_name]					AS rma
 	,RTRIM(t.call_type_code) 		AS call_type_code
-
+	,ct.call_type_descr
 	,RTRIM(prob.problem_descr)		AS problem
-
-	,RTRIM(t.[cause_code])	 + ' | '
-	+ c.cause_descr					AS cause
 
 
 
 	,t.[fact_id]
-	
-	,c.[work_flow]
-	,c.[owner]
-	,ISNULL(std.est_value_amt,0)	AS est_value
+	,RTRIM(e.FSCName + ' | ' + t.[est_code] ) AS bench_tech
+	,RTRIM(user_name + ' | ' + u.[user_id])	AS user_name
+
 	,DateDiff("d",[order_received_date],[SalesDate]) AS days_outstanding
 	,c.turnaround_time				AS days_outstanding_limit
-	,priv.priority_code
 
-	,s.order_status_descr + ' | ' 
-	+ RTRIM(t.[order_status_code])	AS order_status
+	,RTRIM(f.FSCName)				AS fsc
+	,RTRIM(ec.FSCName)				AS est
 
+	, 'D'
+	+CASE WHEN t.[estimate_complete_date] is null THEN 'x' ELSE '1' END 
+	+ CASE WHEN t.[approved_date] is null THEN 'x' ELSE '2' END 
+	+ CASE WHEN t.[approved_part_release_date] is null THEN 'x' ELSE '3' END 
+	+ CASE WHEN t.[order_complete_date] is null then 'x' ELSE '4' END as date_map
+	,CAST(t.[SalesDate] as date)	AS sales_date
 	,CASE 
 		WHEN e.Branch <> ''
---		WHEN e.Branch In ('MNTRL','QUEBC','TORNT','VACVR') 
 		THEN e.Branch
 		ELSE 'OTHER'
 	END	as branch_hub
-	,f.Branch						AS branch_fsc
-	,CAST(t.[SalesDate] as date)	AS sales_date
-	,RTRIM(f.FSCName)				AS fsc
-	,RTRIM(ec.FSCName)				AS est
+
 
 FROM 
 	nes.order_open_prorepr t
@@ -155,8 +136,16 @@ FROM
 		(t.order_status_code = std.order_status_code) AND
 		(t.rma_code = std.rma_code)
 
-	CROSS JOIN nes.aging age
+	LEFT JOIN nes.aging age
+	ON DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
+
+--	CROSS JOIN nes.aging age
 WHERE
+		[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.order_open_prorepr) OR
+		-- dummy date to ensure at least 1 row per branch
+		[SalesDate] = '2012-01-01' AND
+
+/*
 	(
 		[SalesDate] = (SELECT MAX([SalesDate]) FROM nes.order_open_prorepr) AND
 		DateDiff("d",[order_received_date],[SalesDate]) BETWEEN age.day_from AND age.day_to
@@ -165,6 +154,7 @@ WHERE
 		[SalesDate] = '2012-01-01' AND
 		age.aging_key = 1
 	) AND
+*/
 	1=1
 
 
@@ -178,12 +168,16 @@ GO
 
 -- SELECT top 100 * FROM nes.order_open_prorepr_current order by sales_date desc
 
+--SELECT distinct SalesDate FROM nes.order_open_prorepr order by SalesDate desc
+
 /*
-SELECT  * FROM nes.order_open_prorepr_current
+SELECT  * FROM nes.order_open_prorepr_current order by [Order Recv] 
 where 
 --bench_tech like '%DO NOT%' AND
 user_name In ('51924','41724','41725') AND
 (1=1)
 */
 
+SELECT  * FROM nes.order_open_prorepr_current order by cause -- [Order Recv] 
+-- 2 047 rows 2m
 
