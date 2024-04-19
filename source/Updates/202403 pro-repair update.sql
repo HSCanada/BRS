@@ -20,7 +20,7 @@ WHERE        (cause_code BETWEEN '40PR' AND '50PR')
 GO
 
 UPDATE       nes.cause
-SET                owner ='Tech', work_flow = '4.Fixing'
+SET                owner ='SC', work_flow = '4.Billing'
 WHERE        (cause_code BETWEEN '60PR' AND '62PR')
 GO
 
