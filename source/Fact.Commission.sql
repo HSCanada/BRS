@@ -124,6 +124,8 @@ SELECT
 		ELSE 1 
 	END												AS backorder_ind
 
+--	,ISNULL(fsc_.salesperson_master_key, 2) 			AS FSC_SalespersonKey
+--	,ISNULL(isr_bonus.salesperson_master_key, 2) 			AS ISR_SalespersonKey
 
 
 FROM            
@@ -131,6 +133,19 @@ FROM
 
 	INNER JOIN BRS_SalesDay AS d 
 	ON d.SalesDate = t.WSDGL__gl_date 
+
+	-- filter facts through inner period join
+	INNER JOIN [Dimension].[Period] p 
+	ON t.FiscalMonth = p.FiscalMonth
+
+	-- lookup retro bonus quarter month map
+	LEFT JOIN Dimension.Period pp 
+	ON p.RetroFirstMonthSeqInQtr = pp.MonthSeq
+
+	LEFT JOIN [dbo].[BRS_CustomerFSC_History] fsc_hist
+	ON fsc_hist.Shipto = t.WSSHAN_shipto AND
+		fsc_hist.FiscalMonth = pp.FiscalMonth
+ 	--
 
 	INNER JOIN BRS_Item AS i 
 	ON i.Item = t.[WSLITM_item_number]
@@ -148,6 +163,13 @@ FROM
 	-- Dim Customer
 	LEFT JOIN [comm].[salesperson_master] as fsc
 	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
+
+	-- lookup retro bonus quarter month map
+	-- XXX
+--	LEFT JOIN [comm].[salesperson_master] as fsc
+--	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
+	--
+
 
 	LEFT JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
 	ON fsc_code.[TerritoryCd] = t.fsc_code
@@ -232,8 +254,7 @@ FROM
 
 
 WHERE        
-	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
-
+--	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
 	-- test
 
 	(1 = 1)
@@ -248,3 +269,5 @@ GO
 
 -- SELECT * FROM Fact.Commission where FiscalMonth = 201901
 
+-- SELECT count(*) FROM Fact.Commission 
+-- 7 325 156  @ 17s

@@ -32,6 +32,7 @@ AS
 **	31 Jul 17	tmc		change from daily to monthly    
 **	29 Aug 17	tmc		change to dynamic dat
 **  14 Sep 17	tmc		renamed to Period
+**	24 Apr 24	tmc		add inside sales quarter gowth support
 *******************************************************************************/
 
 SELECT
@@ -47,6 +48,9 @@ SELECT
 	,fm.FirstMonthSeqInQtr
 	,fm.FirstMonthSeqInYear
 	,CAST(fm.LastWorkingDt as date)		AS LastWorkingDay
+
+	-- this code maps prior year quarters to current quarter so that we can compare QoQ using current ISR reps
+	,(((select PriorFiscalMonth / 100 from BRS_Rollup_Support01) - fm.YearNum) * 12) + fm.FirstMonthSeqInQtr  as RetroFirstMonthSeqInQtr
 
 FROM
 	BRS_FiscalMonth AS fm 
@@ -66,4 +70,13 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
--- SELECT  * FROM Dimension.Period order by 1 desc
+ SELECT  * FROM Dimension.Period order by 1 desc
+
+ update BRS_Config set PriorFiscalMonth = 202404
+
+ -- test retro logic
+ SELECT  * FROM Dimension.Period p
+ left join Dimension.Period pp on p.RetroFirstMonthSeqInQtr = pp.MonthSeq
+ order by 1 desc
+
+--select * from BRS_Rollup_Support01
