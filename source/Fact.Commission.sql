@@ -124,8 +124,8 @@ SELECT
 		ELSE 1 
 	END												AS backorder_ind
 
---	,ISNULL(fsc_.salesperson_master_key, 2) 			AS FSC_SalespersonKey
---	,ISNULL(isr_bonus.salesperson_master_key, 2) 			AS ISR_SalespersonKey
+	,ISNULL(fsc_hist.salesperson_master_key, 2) 	AS FSC_SalespersonKey_QtrGrowth
+	,ISNULL(isr_hist.salesperson_master_key, 2) 	AS ISR_SalespersonKey_QtrGrowth
 
 
 FROM            
@@ -142,9 +142,18 @@ FROM
 	LEFT JOIN Dimension.Period pp 
 	ON p.RetroFirstMonthSeqInQtr = pp.MonthSeq
 
-	LEFT JOIN [dbo].[BRS_CustomerFSC_History] fsc_hist
-	ON fsc_hist.Shipto = t.WSSHAN_shipto AND
-		fsc_hist.FiscalMonth = pp.FiscalMonth
+	LEFT JOIN [dbo].[BRS_CustomerFSC_History] cust_hist
+	ON cust_hist.Shipto = t.WSSHAN_shipto AND
+		cust_hist.FiscalMonth = pp.FiscalMonth
+
+
+	LEFT JOIN [comm].[salesperson_master] fsc_hist
+	ON cust_hist.[HIST_fsc_salesperson_key_id] = fsc_hist.salesperson_key_id
+
+	LEFT JOIN [comm].[salesperson_master] isr_hist
+	ON cust_hist.[HIST_isr_salesperson_key_id] = isr_hist.salesperson_key_id
+/*
+*/
  	--
 
 	INNER JOIN BRS_Item AS i 
@@ -163,13 +172,6 @@ FROM
 	-- Dim Customer
 	LEFT JOIN [comm].[salesperson_master] as fsc
 	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
-
-	-- lookup retro bonus quarter month map
-	-- XXX
---	LEFT JOIN [comm].[salesperson_master] as fsc
---	ON fsc.salesperson_key_id = t.[fsc_salesperson_key_id]
-	--
-
 
 	LEFT JOIN [dbo].[BRS_FSC_Rollup] as fsc_code
 	ON fsc_code.[TerritoryCd] = t.fsc_code
@@ -270,4 +272,4 @@ GO
 -- SELECT * FROM Fact.Commission where FiscalMonth = 201901
 
 -- SELECT count(*) FROM Fact.Commission 
--- 7 325 156  @ 17s
+-- 7 325 156  @ 17s, 6s 

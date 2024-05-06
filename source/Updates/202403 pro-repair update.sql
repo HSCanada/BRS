@@ -1,7 +1,7 @@
 -- pro-repair update, tmc 19 Mar 24
 
 
-select * from [nes].[cause] where cause_code between '10PR' and 'C99'
+select * from [nes].[cause] where cause_code between '10PR' and 'C99' order by 1
 
 
 UPDATE       nes.cause

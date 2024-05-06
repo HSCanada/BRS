@@ -70,13 +70,14 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
- SELECT  * FROM Dimension.Period order by 1 desc
+-- SELECT  * FROM Dimension.Period order by 1 desc
 
- update BRS_Config set PriorFiscalMonth = 202404
+ -- update BRS_Config set PriorFiscalMonth = 202404
 
  -- test retro logic
+ /*
  SELECT  * FROM Dimension.Period p
  left join Dimension.Period pp on p.RetroFirstMonthSeqInQtr = pp.MonthSeq
  order by 1 desc
-
+ */
 --select * from BRS_Rollup_Support01
