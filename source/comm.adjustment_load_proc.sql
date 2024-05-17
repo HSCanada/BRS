@@ -301,6 +301,8 @@ Begin
 		if (@bDebug <> 0)
 			print '11. load new data source'
 
+			-- handle FTA
+
 		INSERT INTO comm.transaction_F555115
 		(
 			[FiscalMonth]

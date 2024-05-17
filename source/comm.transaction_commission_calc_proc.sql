@@ -33,6 +33,7 @@ AS
 **	27 Oct 20	tmc		Fix ISR commission locic bug, use seperate comm_group
 **  20 Nov 20	tmc		setup table-driven parts promotion logic
 **  16 Dec 21	tmc		add ISR logic
+**	14 May 24	mtc		add FTA logic to replace PMTS
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -225,9 +226,10 @@ Begin
 			,fsc_salesperson_key_id = s.HIST_fsc_salesperson_key_id
 			,fsc_comm_plan_id = s.HIST_fsc_comm_plan_id
 
-			,cps_code = s.HIST_cps_code
-			,cps_salesperson_key_id = s.HIST_cps_salesperson_key_id
-			,cps_comm_plan_id = s.HIST_cps_comm_plan_id
+			-- migrate from PMTS to FSA
+			,cps_code = [WSCAG__cagess_code]
+			,cps_salesperson_key_id = ''
+			,cps_comm_plan_id = ''
 
 			,eps_code = s.HIST_eps_code
 			,eps_salesperson_key_id = s.HIST_eps_salesperson_key_id
@@ -756,18 +758,46 @@ Begin
 	End
 
 ------------------------------------------------------------------------------------------------------
--- New & Legacy - CPS
+-- New & Legacy - FTA
 ------------------------------------------------------------------------------------------------------
-
-	If (@nErrorCode = 0) 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18. CPS update item commgroup - JDE'
+			print '18a. FTA update update plan & salesperson_key'
 
 		UPDATE
 			comm.transaction_F555115
 		SET
-			cps_comm_group_cd = s.HIST_comm_group_cps_cd
+			-- cps_code is supplied by JDE feed, history lookup not needed
+			cps_salesperson_key_id = s.salesperson_key_id, 
+			cps_comm_plan_id = s.comm_plan_id
+		FROM
+			comm.salesperson_master AS s 
+
+			INNER JOIN BRS_FSC_Rollup AS f ON 
+			s.salesperson_key_id = f.comm_salesperson_key_id 
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (f.TerritoryCd = d.cps_code) AND
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+			(d.source_cd = 'JDE')
+		WHERE
+			-- do not calc comm for PMTS, only Fast Track Assistent plan
+			s.comm_plan_id like 'FTA%'
+
+		Set @nErrorCode = @@Error
+	End
+
+
+	If (@nErrorCode = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '18b. FTA update item commgroup - JDE'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			cps_comm_group_cd = s.HIST_comm_group_cd
 		FROM
 			[dbo].[BRS_ItemHistory] AS s
 
@@ -776,7 +806,7 @@ Begin
 			(d.FiscalMonth = s.FiscalMonth) AND
 			(d.source_cd = 'JDE') AND
 			(d.cps_comm_plan_id <> '') AND
-			(s.HIST_comm_group_cps_cd <> '') AND
+			(s.HIST_comm_group_cd <> '') AND
 			(1 = 1)
 		WHERE        
 			(s.FiscalMonth = @nCurrentFiscalYearmoNum)
@@ -784,10 +814,67 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '18c. FTA update commgroup - ITMPAR -> ITMFO3 promotion'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			cps_comm_group_cd = CASE 
+									WHEN t.WSSRP6_manufacturer = @sCommPartpromSupplier 
+									THEN @sCommPartpromGroupFocus
+									ELSE @sCommPartpromGroup
+								END
+		FROM
+			comm.transaction_F555115 t 
+		WHERE        
+			(t.cps_comm_plan_id <> '') AND
+			(t.source_cd = 'JDE') AND
+			(t.WS$OSC_order_source_code IN ('A', 'L')) AND		-- Astea  EQ and Service
+			(t.cps_code <> '') AND								-- Exclude Tech billing (No ESS code)
+			(t.cps_comm_group_cd = 'ITMPAR') AND				-- ONLY effect Parts 
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '18d. fta update commgroup - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			cps_comm_group_cd = s.HIST_comm_group_cd
+		-- SELECT t.* 
+		FROM
+			[dbo].[BRS_ItemHistory] s
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (d.WSLITM_item_number = s.Item ) AND
+			(d.FiscalMonth = s.FiscalMonth)
+		WHERE        
+			(d.cps_comm_plan_id <> '') AND
+			(d.source_cd = 'IMP') AND
+			(s.HIST_comm_group_cd <> '') AND
+			-- If Source IMP, and the CommCode is supplied, do not override.
+			(d.WSLITM_item_number <> '') AND
+			(ISNULL(d.cps_comm_group_cd,'') = '') AND
+			(d.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '19. CPS update comm - non-booking -new'
+			print '19. FTA update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -825,7 +912,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '20. CPS update comm - booking - new'
+			print '20a. FTA update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -845,7 +932,7 @@ Begin
 
 			INNER JOIN [comm].[plan_group_rate] AS r 
 			ON t.cps_comm_plan_id = r.comm_plan_id AND
-				t.ess_comm_group_cd = r.item_comm_group_cd AND
+				t.cps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
 				t.[source_cd] = r.[source_cd]
 		WHERE        
@@ -858,6 +945,41 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '20b. fta update comm - pay'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[cps_calc_key] = r.calc_key
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.cps_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.cps_comm_plan_id = r.comm_plan_id AND
+				t.cps_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd]
+		WHERE        
+			(t.cps_comm_plan_id <> '') AND
+			(t.cps_comm_group_cd <> '') AND 
+			(t.source_cd = 'PAY') AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
 
 ------------------------------------------------------------------------------------------------------
 -- New & Legacy - EPS
@@ -1373,3 +1495,87 @@ GO
 -- 1.14m - set IMP codes
 -- 1.21m - calc rates
 
+
+-- test cps / FTA
+
+-- EXEC comm.comm_stage_update_proc @bDebug=1
+-- EXEC comm.comm_stage_update_proc @bDebug=0
+
+/*
+
+-- test
+SELECT        
+FiscalMonth
+,WSDOCO_salesorder_number
+,WSDCTO_order_type
+,WSENTB_entered_by
+,fsc_code
+,WS$ESS_equipment_specialist_code
+,WSCAG__cagess_code
+,cps_code
+,WSEST__employment_status
+,WS$TSS_tech_specialist_code
+,transaction_amt
+,gp_ext_amt
+,cps_calc_key
+,cps_salesperson_key_id 
+,cps_comm_plan_id
+,cps_comm_group_cd
+,[cps_comm_rt]
+,[cps_comm_amt]
+
+FROM            comm.transaction_F555115
+WHERE        (FiscalMonth = 202404) AND (WSDOCO_salesorder_number IN (17120823, 17124797, 17148187, 17128141))
+GO
+
+-- patch
+
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT [FiscalMonth]
+      ,[WSCO___company]
+      ,[WSDOCO_salesorder_number]
+      ,[WSDCTO_order_type]
+      ,[ID]
+      ,[transaction_amt]
+      ,[gp_ext_amt]
+      ,[cps_salesperson_key_id]
+      ,[cps_comm_plan_id]
+      ,[cps_comm_group_cd]
+      ,[cps_comm_rt]
+      ,[cps_comm_amt]
+      ,[cps_calc_key]
+  FROM [comm].[transaction_F555115]
+  where 
+   [FiscalMonth] >= 202301 AND
+  [cps_calc_key] is not null
+  order by 1
+
+/****** Script for SelectTopNRows command from SSMS  ******/
+
+UPDATE       comm.transaction_F555115
+SET                cps_salesperson_key_id = '', cps_comm_plan_id = '', cps_comm_group_cd = '', cps_comm_rt = 0, cps_comm_amt = 0, cps_calc_key = NULL
+WHERE        (FiscalMonth >= 202301) AND (cps_calc_key IS NOT NULL)
+
+
+-- test all CPS
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT [FiscalMonth]
+      ,[WSCO___company]
+      ,[WSDOCO_salesorder_number]
+      ,[WSDCTO_order_type]
+      ,[ID]
+      ,[transaction_amt]
+      ,[gp_ext_amt]
+      ,[cps_salesperson_key_id]
+      ,[cps_comm_plan_id]
+      ,[cps_comm_group_cd]
+      ,[cps_comm_rt]
+      ,[cps_comm_amt]
+      ,[cps_calc_key]
+  FROM [comm].[transaction_F555115]
+  where 
+   [FiscalMonth] >= 202301 AND
+  [cps_calc_key] is not null
+  order by 1
+
+  */

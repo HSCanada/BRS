@@ -30,7 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	31 Jan 21	tmc		update field order to match adjustment    
-**    
+**	16 May 24	mtc		add FTA logic to replace PMTS
 *******************************************************************************/
 
 -- draw
@@ -82,9 +82,9 @@ SELECT
 	,IIF(LEFT([comm_plan_id],3)='EST', 'SALD30', '')				AS [est_comm_group_cd]
 	,IIF(LEFT([comm_plan_id],3)='EST', salesperson_key_id, '')		AS [est_salesperson_key_id]
 
-	,IIF(LEFT([comm_plan_id],3)='CPS', [master_salesperson_cd], '') AS [cps_code]
-	,IIF(LEFT([comm_plan_id],3)='CPS', 'SALD30', '')				AS [cps_comm_group_cd]
-	,IIF(LEFT([comm_plan_id],3)='CPS', salesperson_key_id, '')		AS [cps_salesperson_key_id]
+	,IIF(LEFT([comm_plan_id],3)='FTA', [master_salesperson_cd], '') AS [cps_code]
+	,IIF(LEFT([comm_plan_id],3)='FTA', 'SALD30', '')				AS [cps_comm_group_cd]
+	,IIF(LEFT([comm_plan_id],3)='FTA', salesperson_key_id, '')		AS [cps_salesperson_key_id]
 
  FROM 
 	[comm].[salesperson_master] s
@@ -146,9 +146,9 @@ SELECT
 	,IIF(LEFT([comm_plan_id],3)='EST', 'STMPBA', '')				AS [est_comm_group_cd]
 	,IIF(LEFT([comm_plan_id],3)='EST', salesperson_key_id, '')		AS [est_salesperson_key_id]
 
-	,IIF(LEFT([comm_plan_id],3)='CPS', [master_salesperson_cd], '') AS [cps_code]
-	,IIF(LEFT([comm_plan_id],3)='CPS', 'STMPBA', '')				AS [cps_comm_group_cd]
-	,IIF(LEFT([comm_plan_id],3)='CPS', salesperson_key_id, '')		AS [cps_salesperson_key_id]
+	,IIF(LEFT([comm_plan_id],3)='FTA', [master_salesperson_cd], '') AS [cps_code]
+	,IIF(LEFT([comm_plan_id],3)='FTA', 'STMPBA', '')				AS [cps_comm_group_cd]
+	,IIF(LEFT([comm_plan_id],3)='FTA', salesperson_key_id, '')		AS [cps_salesperson_key_id]
 
  FROM 
 	[comm].[salesperson_master] s
@@ -172,9 +172,9 @@ SELECT  * FROM [comm].[customer_rebate_export] where [teeth_share_rt] > 1.0 or [
 */
 
 -- test details
---SELECT  top 10      * FROM comm.[salesperson_export]
+-- SELECT  top 10      * FROM comm.[salesperson_export]
 --SELECT  * FROM comm.[salesperson_export] order by comm_plan_id
---SELECT  * FROM comm.[salesperson_export] order by master_salesperson_cd
+-- SELECT  * FROM [comm].[salesperson_export] order by [cps_code]
 
 
 

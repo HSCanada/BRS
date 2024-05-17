@@ -30,6 +30,7 @@ AS
 **	-----	----------	--------------------------------------------
 **	23 Dec 20	tmc		add new commission mapping
 **	01 Feb 21	tmc		small rebate default fix to remove Ref Integrity issue
+**	14 May 24	tmc		add FTA logic to replace PMTS
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -561,9 +562,13 @@ Begin
 	UPDATE
 		Integration.comm_adjustment_Staging
 	SET
+
 		cust_comm_group_cd = [HIST_cust_comm_group_cd]
-		, cps_salesperson_key_id = [HIST_cps_salesperson_key_id]
-		, cps_code = [HIST_cps_code]
+
+		-- add FTA logic to replace PMTS
+		-- cps code not complete.   It needs to reference the FTA / cps on the Order (not saved) 
+		, cps_salesperson_key_id = ''
+		, cps_code = ''
 
 		, eps_salesperson_key_id = [HIST_eps_salesperson_key_id]
 		, eps_code = [HIST_eps_code]
