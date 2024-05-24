@@ -3,12 +3,14 @@
 # 16 Nov 18, tmc, added Calgary, Edmonton, Ottawa to set
 # 12 Dec 18, tmc, added FSC, EST to detail
 # 14 Mar 22, tmc, moved template to daily folder
+# 23 Apr 24, tmc, rolled out v2.0 for 2024
 
 #$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20201023.xlsm'
 
 # This is the template.  Can be anything
-$File_in = 'S:\BR\RegularReports\Daily\Prorepair_Pipeline_KPI\template\ProRepair-20181212.xlsm'
-#$File_in = 'S:\BR\Projects\service_automation\working\ProRepair-20181212.xlsm'
+
+$File_in = 'S:\BR\RegularReports\Daily\Prorepair_Pipeline_KPI\template\ProRepair-20240523-prod.xlsm'
+#$File_in = 'S:\BR\RegularReports\Daily\Prorepair_Pipeline_KPI\template\ProRepair-20181212.xlsm'
 
 # Part 1 - Pull data into 1 template
 

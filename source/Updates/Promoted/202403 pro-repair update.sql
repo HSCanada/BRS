@@ -98,6 +98,9 @@ SET                owner ='Tech', work_flow = 'Branch Repair (non-Hub)'
 WHERE        (cause_code BETWEEN 'C00' AND 'C99')
 GO
 
+--
+
+-- update view nes.order_open_prorepr_current
 
 SELECT * FROM nes.order_open_prorepr_current
 

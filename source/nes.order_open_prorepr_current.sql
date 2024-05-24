@@ -35,6 +35,7 @@ AS
 **	30 Oct 18	tmc		Fixed INNER JOIN bug on [order_open_prorepr_standards]
 **	16 Nov 18	tmc		Remove Other from hardcode logic
 **	12 Dec 18	tmc		Add EST and FSC to pull, fix branch_fsc bug
+**	23 May 24	tmc		new pro-repair, faster, better, cheaper!
 *******************************************************************************/
 
 SELECT
@@ -178,6 +179,6 @@ user_name In ('51924','41724','41725') AND
 (1=1)
 */
 
-SELECT  * FROM nes.order_open_prorepr_current order by cause -- [Order Recv] 
+-- SELECT  * FROM nes.order_open_prorepr_current order by cause -- [Order Recv] 
 -- 2 047 rows 2m
 
