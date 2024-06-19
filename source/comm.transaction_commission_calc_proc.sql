@@ -33,7 +33,8 @@ AS
 **	27 Oct 20	tmc		Fix ISR commission locic bug, use seperate comm_group
 **  20 Nov 20	tmc		setup table-driven parts promotion logic
 **  16 Dec 21	tmc		add ISR logic
-**	14 May 24	mtc		add FTA logic to replace PMTS
+**	14 May 24	tmc		add FTA logic to replace PMTS
+**  17 Jun 24	tmc		add Medical Threshold logic, based in GM
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -124,88 +125,6 @@ End
 If (@nBatchStatus >= 10 and @nBatchStatus < 999)
 Begin
 
-------------------------------------------------------------------------------------------------------
--- Legacy - FSC
-------------------------------------------------------------------------------------------------------
-	If (@nErrorCode = 0 AND @bLegacy = 1) 
-	Begin
-		if (@bDebug <> 0)
-			print '1. FSC legacy - set calc_key'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			[fsc_calc_key] = r.calc_key
---		test 1 of 2
---		SELECT TOP 10 t.FiscalMonth, t.WSSHAN_shipto, r.comm_plan_id, r.item_comm_group_cd, r.cust_comm_group_cd
---
-		FROM
-			comm.transaction_F555115 t
-
-			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
-			ON t.WSSHAN_shipto = c.ShipTo AND
-				t.FiscalMonth = c.FiscalMonth
-
-			-- potential gap here, check?  or assume R updated
-			INNER JOIN [comm].[plan_group_rate] AS r 
-			ON t.fsc_comm_plan_id = r.comm_plan_id AND
-				t.fsc_comm_group_cd = r.item_comm_group_cd AND
-				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
-		WHERE        
-			-- FSC must have a territory and item groupcode to lookup
-			(t.fsc_code <> '') AND
-			(t.fsc_comm_group_cd <> '') AND 
-			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			ISNULL(t.[fsc_calc_key],0) <> r.calc_key AND
---			test 2 of 2
---			(t.FiscalMonth = 201909 ) AND
---			(t.ID_legacy = 57534231) AND
---			(r.calc_key is null) AND
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
-
-------------------------------------------------------------------------------------------------------
--- Legacy - ESS/CCS
-------------------------------------------------------------------------------------------------------
-	If (@nErrorCode = 0 AND @bLegacy = 1) 
-	Begin
-		if (@bDebug <> 0)
-			print '2. Ess/CCS legacy - set calc_key'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			[ess_calc_key] = r.calc_key
-
---		SELECT top 10 * 
-		FROM
-			comm.transaction_F555115 t
-
-			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
-			ON t.WSSHAN_shipto = c.ShipTo AND
-				t.FiscalMonth = c.FiscalMonth
-
-			INNER JOIN [comm].[plan_group_rate] AS r 
-			ON t.ess_comm_plan_id = r.comm_plan_id AND
-				t.ess_comm_group_cd = r.item_comm_group_cd AND
-				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
-		WHERE        
-			(t.ess_code <> '') AND
-			-- relax ESS comm filter so if bad (blank), gets assigned to a key for auditing
---			(t.ess_comm_group_cd <> '') AND 
-			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			(ISNULL(t.[ess_calc_key],0) <> r.calc_key ) AND
---			test
---			(t.FiscalMonth >= 201901 ) AND
---			(r.calc_key is null) AND
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
 
 ------------------------------------------------------------------------------------------------------
 -- New - FSC
@@ -214,7 +133,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '3. FSC, CPS, EPS, ISR, EST update plan & terr - JDE'
+			print '1. FSC, CPS, EPS, ISR, EST update plan & terr - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -276,7 +195,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '4. transfer - directed (1 of 2)'
+			print '2. transfer - directed (1 of 2)'
 
 		UPDATE
 			comm.transaction_F555115
@@ -308,7 +227,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '5. transfer - rule-based (2 of 2)'
+			print '3. transfer - rule-based (2 of 2)'
 
 		UPDATE
 			comm.transaction_F555115
@@ -338,39 +257,11 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
-
-	If (@nErrorCode = 0 AND @bLegacy = 0) 
-	Begin
-		if (@bDebug <> 0)
-			print '5b. Ken transfer - work-around'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			-- mark unassign, as this is a work-around not supported by rules
-			xfer_key = 1, 
-
-			xfer_ess_code_org = ess_code,
-			ess_code = 'ESS33'
-		FROM
-			[dbo].[BRS_FSC_Rollup] f
-		WHERE    
-			(fsc_code = f.TerritoryCd) AND
-			(source_cd = 'JDE') AND 
-			(xfer_key is null) AND		-- only run once
-			([ess_code] = 'ESS32') AND
-			(f.Branch <> 'TORNT') AND
---			(FiscalMonth = 202002) AND
-			(FiscalMonth = @nCurrentFiscalYearmoNum) AND
-			(1=1)
-
-		Set @nErrorCode = @@Error
-	End
 ---
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '6. FSC Post transfer update plan & salesperson_key update'
+			print '4. FSC Post transfer update plan & salesperson_key update'
 
 		UPDATE
 			comm.transaction_F555115
@@ -404,7 +295,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '7. FSC update item commgroup - JDE'
+			print '5. FSC update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -439,7 +330,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '8. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
+			print '6. FSC update commgroup - ITMPAR -> ITMFO3 promotion'
 		
 		UPDATE
 			comm.transaction_F555115
@@ -466,7 +357,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '9. FSC update commgroup - IMP'
+			print '7. FSC update commgroup - IMP'
 
 		UPDATE
 			comm.transaction_F555115
@@ -500,11 +391,11 @@ Begin
 		Set @nErrorCode = @@Error
 	End
 
---
+-- FSC standard
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '10. FSC update comm - non-booking -new'
+			print '8. FSC update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -527,13 +418,115 @@ Begin
 			ON t.fsc_comm_plan_id = r.comm_plan_id AND
 				t.fsc_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.fsc_comm_plan_id <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
 --			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+-- FSC threshold model, new tmc 18 Jun 24
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '9. FSC update comm - threshold with defined GM'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[fsc_comm_rt] = r.comm_rt,
+			[fsc_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[fsc_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd] AND
+
+				--r.[comm_gm_threshold_cd] = '' AND
+				-- threshold WITH defined GM
+				(r.[comm_gm_threshold_ind] = 1) AND
+				(t.transaction_amt <> 0) AND
+				(r.[comm_gm_threshold_min] <= (t.gp_ext_amt / t.transaction_amt)*100.0) AND
+				(r.[comm_gm_threshold_max] > (t.gp_ext_amt / t.transaction_amt)*100.0) AND
+				(1=1)
+		WHERE        
+			(t.fsc_comm_plan_id <> '') AND
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+--			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+-- FSC threshold model, new tmc 18 Jun 24
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '10. FSC update comm - threshold with UNDEFINED GM'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[fsc_comm_rt] = r.comm_rt,
+			[fsc_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[fsc_calc_key] = r.calc_key
+
+		-- Select t.*
+		FROM
+			comm.transaction_F555115 t
+
+			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			ON t.WSSHAN_shipto = c.ShipTo AND
+				t.FiscalMonth = c.FiscalMonth
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+			
+			--test
+			--LEFT JOIN [comm].[plan_group_rate] AS r 
+			--
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				t.fsc_comm_group_cd = r.item_comm_group_cd AND
+				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
+				t.[source_cd] = r.[source_cd] AND
+
+				-- threshold with UNDEFINED GM
+				(r.[comm_gm_threshold_ind] = 1) AND
+				(t.transaction_amt = 0) AND
+				(r.[comm_gm_threshold_cd] = '') AND
+				(1=1)
+		WHERE        
+			(t.fsc_comm_plan_id <> '') AND
+			(t.fsc_comm_group_cd <> '') AND 
+			(t.source_cd <> 'PAY') AND
+
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			-- test
+			-- (t.FiscalMonth = 202405 ) AND
+			-- (t.ID = 18239600) AND
+			--
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -562,7 +555,11 @@ Begin
 			ON t.fsc_comm_plan_id = r.comm_plan_id AND
 				t.fsc_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				-- payroll will work for both threshold and non
+				-- r.[comm_gm_threshold_ind] = 0 
+				(1=1)
 		WHERE        
 			(t.fsc_comm_plan_id <> '') AND
 			(t.fsc_comm_group_cd <> '') AND 
@@ -711,7 +708,9 @@ Begin
 			ON t.ess_comm_plan_id = r.comm_plan_id AND
 				t.ess_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.ess_comm_plan_id <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
@@ -746,7 +745,9 @@ Begin
 			ON t.ess_comm_plan_id = r.comm_plan_id AND
 				t.ess_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.ess_comm_plan_id <> '') AND
 			(t.ess_comm_group_cd <> '') AND 
@@ -763,7 +764,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18a. FTA update update plan & salesperson_key'
+			print '18. FTA update update plan & salesperson_key'
 
 		UPDATE
 			comm.transaction_F555115
@@ -792,7 +793,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18b. FTA update item commgroup - JDE'
+			print '19. FTA update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -817,7 +818,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18c. FTA update commgroup - ITMPAR -> ITMFO3 promotion'
+			print '20. FTA update commgroup - ITMPAR -> ITMFO3 promotion'
 
 		UPDATE
 			comm.transaction_F555115
@@ -844,7 +845,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '18d. fta update commgroup - IMP'
+			print '21. fta update commgroup - IMP'
 
 		UPDATE
 			comm.transaction_F555115
@@ -874,7 +875,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '19. FTA update comm - non-booking -new'
+			print '22. FTA update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -897,7 +898,9 @@ Begin
 			ON t.cps_comm_plan_id = r.comm_plan_id AND
 				t.cps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.cps_comm_plan_id <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
@@ -912,7 +915,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '20a. FTA update comm - booking - new'
+			print '23. FTA update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -934,7 +937,9 @@ Begin
 			ON t.cps_comm_plan_id = r.comm_plan_id AND
 				t.cps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.cps_comm_plan_id <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
@@ -949,7 +954,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '20b. fta update comm - pay'
+			print '24. fta update comm - pay'
 
 		UPDATE
 			comm.transaction_F555115
@@ -969,7 +974,9 @@ Begin
 			ON t.cps_comm_plan_id = r.comm_plan_id AND
 				t.cps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.cps_comm_plan_id <> '') AND
 			(t.cps_comm_group_cd <> '') AND 
@@ -988,7 +995,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '21. EPS update item commgroup - JDE'
+			print '25. EPS update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1015,7 +1022,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '22. EPS update comm - non-booking -new'
+			print '26. EPS update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1038,7 +1045,9 @@ Begin
 			ON t.eps_comm_plan_id = r.comm_plan_id AND
 				t.eps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.eps_comm_plan_id <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
@@ -1053,7 +1062,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '23. EPS update comm - booking - new'
+			print '27. EPS update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1075,7 +1084,9 @@ Begin
 			ON t.eps_comm_plan_id = r.comm_plan_id AND
 				t.eps_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.eps_comm_plan_id <> '') AND
 			(t.eps_comm_group_cd <> '') AND 
@@ -1094,7 +1105,7 @@ Begin
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '24. ISR update item commgroup - JDE'
+			print '28. ISR update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1124,51 +1135,12 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
-/*
-	-- not needed, replaced by prior block of code
-	--
-	If (@nErrorCode = 0 AND @bLegacy = 0) 
-	Begin
-		if (@bDebug <> 0)
-			print '8a. ISR clone FSC commgroup - JDE'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			isr_comm_group_cd = fsc_comm_group_cd
-		-- SELECT t.isr_comm_plan_id, t.fsc_comm_plan_id, t.isr_comm_group_cd
----- XXX
-		FROM
-			comm.transaction_F555115 t
-
-			INNER JOIN [comm].[plan_group_rate] AS r 
-			ON t.isr_comm_plan_id = r.comm_plan_id AND
-				t.fsc_comm_group_cd = r.item_comm_group_cd AND
-				t.[cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
-----
-		WHERE 
-			-- active isr plan and rate
-			(t.isr_comm_plan_id <> '') AND
-			(r.active_ind = 1) AND
-			-- fsc code is avail (assume isr subset of fsc)
-			(t.fsc_comm_group_cd <> '') AND 
-			(t.source_cd = 'JDE') AND
-			(FiscalMonth = @nCurrentFiscalYearmoNum ) AND
-			-- test
-			--(FiscalMonth = 202111 ) AND
-			--
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
-*/
 --
 
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '25. ISR update commgroup - IMP'
+			print '29. ISR update commgroup - IMP'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1199,7 +1171,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '26. ISR update comm - non-booking -new'
+			print '30. ISR update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1223,7 +1195,9 @@ Begin
 			ON t.isr_comm_plan_id = r.comm_plan_id AND
 				t.isr_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.isr_comm_plan_id <> '') AND
 			(t.isr_comm_group_cd <> '') AND 
@@ -1242,46 +1216,6 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
-/*
-	-- not needed
-	If (@nErrorCode = 0) 
-	Begin
-		if (@bDebug <> 0)
-			print '24. ISR update comm - booking - new'
-
-		UPDATE
-			comm.transaction_F555115
-		SET
-			[isr_comm_rt] = g.booking_rt,
-			[isr_comm_amt] =  t.transaction_amt * (g.booking_rt / 100.0) * (r.comm_rt / 100.0),
-			[isr_calc_key] = r.calc_key
-		FROM
-			comm.transaction_F555115 t
-
-			INNER JOIN [dbo].[BRS_CustomerFSC_History] c
-			ON t.WSSHAN_shipto = c.ShipTo AND
-				t.FiscalMonth = c.FiscalMonth
-
-			INNER JOIN [comm].[group] g
-			ON t.isr_comm_group_cd = g.comm_group_cd
-
-			INNER JOIN [comm].[plan_group_rate] AS r 
-			ON t.isr_comm_plan_id = r.comm_plan_id AND
-				t.isr_comm_group_cd = r.item_comm_group_cd AND
-				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
-		WHERE        
-			(t.isr_comm_plan_id <> '') AND
-			(t.isr_comm_group_cd <> '') AND 
-			(t.source_cd <> 'PAY') AND
-			(g.booking_rt <> 0) AND
-			(r.active_ind = 1) AND
-			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
-			(1 = 1)
-
-		Set @nErrorCode = @@Error
-	End
-*/
 ------------------------------------------------------------------------------------------------------
 -- ESS history populate
 ------------------------------------------------------------------------------------------------------
@@ -1289,7 +1223,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '27. ESS history populate'
+			print '31. ESS history populate'
 
 
 		UPDATE [dbo].[BRS_TransactionDW_Ext]
@@ -1322,7 +1256,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '28. EST update item commgroup - JDE'
+			print '32. EST update item commgroup - JDE'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1348,7 +1282,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '29. EST update comm - non-booking -new'
+			print '33. EST update comm - non-booking -new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1372,7 +1306,9 @@ Begin
 			ON t.est_comm_plan_id = r.comm_plan_id AND
 				t.est_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.est_comm_plan_id <> '') AND
 			(t.est_comm_group_cd <> '') AND 
@@ -1394,7 +1330,7 @@ Begin
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			print '30. EST update comm - booking - new'
+			print '34. EST update comm - booking - new'
 
 		UPDATE
 			comm.transaction_F555115
@@ -1416,7 +1352,9 @@ Begin
 			ON t.est_comm_plan_id = r.comm_plan_id AND
 				t.est_comm_group_cd = r.item_comm_group_cd AND
 				c.[HIST_cust_comm_group_cd] = r.cust_comm_group_cd AND
-				t.[source_cd] = r.[source_cd]
+				t.[source_cd] = r.[source_cd] AND
+				r.[comm_gm_threshold_cd] = '' AND
+				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.est_comm_plan_id <> '') AND
 			(t.est_comm_group_cd <> '') AND 

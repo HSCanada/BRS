@@ -40,11 +40,10 @@ AS
 **	09 Aug 21	tmc		disable HS Branded Baseline flag (set to 0)
 **							Commisssion GLBU is not accurate at line level
 **	14 Oct 21	tmc		add backorder for small order analysis
+**	18 Jun 24	tmc		add GM line for new plan Threshold analysis
 *******************************************************************************/
 
 SELECT        
---	top 10
-
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 
@@ -55,6 +54,9 @@ SELECT
 	,ISNULL(fsc.salesperson_master_key, 2) 			AS FSC_SalespersonKey
 	,ISNULL(fsc_code.[FscKey], 2) 					AS FSC_SalespersonCodeKey
 	,ISNULL(comm_group_fsc.comm_group_key, 1) 		AS FSC_CommGroupKey
+
+	-- add the rate key here for FSC
+	,ISNULL(t.fsc_calc_key, 0)						AS FSC_CalcKey
 
 	,ISNULL(isr.salesperson_master_key, 2) 			AS ISR_SalespersonKey
 	,ISNULL(comm_group_isr.comm_group_key, 1) 		AS ISR_CommGroupKey
@@ -127,6 +129,8 @@ SELECT
 	,ISNULL(fsc_hist.salesperson_master_key, 2) 	AS FSC_SalespersonKey_QtrGrowth
 	,ISNULL(isr_hist.salesperson_master_key, 2) 	AS ISR_SalespersonKey_QtrGrowth
 
+	,gp_ext_amt / NULLIF(transaction_amt,0) gm_line_rt
+
 
 FROM            
 	[comm].[transaction_F555115] AS t 
@@ -152,8 +156,7 @@ FROM
 
 	LEFT JOIN [comm].[salesperson_master] isr_hist
 	ON cust_hist.[HIST_isr_salesperson_key_id] = isr_hist.salesperson_key_id
-/*
-*/
+
  	--
 
 	INNER JOIN BRS_Item AS i 
@@ -269,7 +272,7 @@ GO
 
 -- 30s
 
--- SELECT * FROM Fact.Commission where FiscalMonth = 201901
+-- SELECT * FROM Fact.Commission where FiscalMonth = 202305 and FSC_CalcKey is null
 
 -- SELECT count(*) FROM Fact.Commission 
 -- 7 325 156  @ 17s, 6s 

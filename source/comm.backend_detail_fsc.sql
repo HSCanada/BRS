@@ -37,6 +37,7 @@ GO
 **	08 Feb 21	tmc	Add Doctype
 **  09 Feb 21	tmc replace ESS with master code
 --	20 Oct 21	tmc	add Free goods to details with opt out for back compatible
+--  18 Jun 24	tmc	add med threshold support fields
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -94,6 +95,12 @@ SELECT
 	t.ID_legacy
 	,pr.show_ind					AS show_ind
 
+	,gp_ext_amt / nullif(transaction_amt,0) gm_rt
+	,pr.[comm_gm_threshold_ind]
+	,pr.[disp_comm_group_cd]
+	,pr.[comm_gm_threshold_cd]
+	,ISNULL(pr.[comm_gm_threshold_descr],'') as comm_gm_threshold_descr
+
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -136,6 +143,9 @@ GO
 
 -- SELECT top 10 * FROM [comm].[backend_detail_fsc]
 
+-- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'PAIGE.DALLEY'
+
+
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new
 
 --SELECT top 10 * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'ESS32'
@@ -143,7 +153,6 @@ GO
 
 -- ORG 3868
 
---SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'JACK.FREEBORN'
 
 /*  test
 SELECT
