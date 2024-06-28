@@ -44,6 +44,8 @@ AS
 *******************************************************************************/
 
 SELECT        
+-- use top 10 for model deploy, fast turn around
+--	top 10 
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 

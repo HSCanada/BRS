@@ -100,6 +100,7 @@ SELECT
 	,pr.[disp_comm_group_cd]
 	,pr.[comm_gm_threshold_cd]
 	,ISNULL(pr.[comm_gm_threshold_descr],'') as comm_gm_threshold_descr
+	,t.fsc_calc_key
 
 
 FROM         
@@ -143,7 +144,7 @@ GO
 
 -- SELECT top 10 * FROM [comm].[backend_detail_fsc]
 
--- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'PAIGE.DALLEY'
+-- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'PAIGE.DALLEY' 
 
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new

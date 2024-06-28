@@ -87,19 +87,21 @@ update  [dbo].[BRS_Config]  set [PriorFiscalMonth] = 202405
 
 -- debug review
 
--- Prod
--- EXEC comm.comm_stage_update_proc @bDebug=0
 
 -- Debug
 -- EXEC comm.comm_stage_update_proc @bDebug=1
+
+-- Prod
+-- EXEC comm.comm_stage_update_proc @bDebug=0
+
 
 Exec comm.transaction_commission_calc_proc @bDebug=1
 
 Exec comm.transaction_commission_calc_proc @bDebug=0
 
--- test calc
+-- test calc, should work
 
-SELECT   TOP (10) FiscalMonth, fsc_calc_key
+SELECT   TOP (10) FiscalMonth, [WSDCTO_order_type], fsc_calc_key
 FROM     comm.transaction_F555115
 WHERE   (FiscalMonth = 202405) AND (fsc_comm_plan_id = 'FSCMT02') and fsc_calc_key is not null
 
@@ -254,9 +256,11 @@ ALTER TABLE comm.plan_group_rate SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--> TC oopsy here.   manual review, OK
 BEGIN TRANSACTION
 GO
 ALTER TABLE comm.plan_group_rate ADD
+
 	BEGIN TRANSACTION
 GO
 ALTER TABLE comm.plan_group_rate ADD
@@ -265,11 +269,13 @@ GO
 ALTER TABLE comm.plan_group_rate SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
- varchar(30) NULL
+-- varchar(30) NULL
 GO
 ALTER TABLE comm.plan_group_rate SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+--< TC oopsy here.   manual review, OK
+
 
 -- enable threhold for all
 UPDATE  comm.plan_group_rate
@@ -284,7 +290,7 @@ WHERE   (comm_plan_id = 'FSCMT02') and source_cd = 'PAY'
 
 -- fix new Med IMP transations -- clear old plan so new plan gets set
 
---xx
+--
 SELECT   FiscalMonth, WSDOCO_salesorder_number, WSLNID_line_number, fsc_comm_plan_id, fsc_comm_group_cd, source_cd, WSDCTO_order_type, WSLITM_item_number, WSDSC1_description, fsc_comm_group_cd, fsc_comm_rt, FreeGoodsInvoicedInd, gp_ext_amt, transaction_amt, gp_ext_amt / nullif(transaction_amt,0) gm
 FROM     comm.transaction_F555115
 WHERE   (FiscalMonth >= 202301) AND (source_cd='IMP') AND fsc_code='MZ1PD' and
@@ -297,10 +303,13 @@ SET        fsc_comm_plan_id = 'FSCMT02'
 --, fsc_comm_group_cd =
 WHERE   (FiscalMonth >= 202301) AND (source_cd = 'IMP') AND (fsc_code = 'MZ1PD') AND (1 = 1)
 
--- Calc Commission
+-- Calc Commission, pre and post calc proc update
 
 print 202405
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202405
+
+-- update calc, pre prod test
+
 Exec comm.transaction_commission_calc_proc @bDebug=1
 -- DEV 1m
 -- PROD 1m
@@ -317,6 +326,8 @@ FROM            comm.transaction_F555115 AS s INNER JOIN
 WHERE        (s.FiscalMonth = 202405)
 order by d.fsc_calc_key
 GO
+
+--< skip prod
 
 -- 170 rowdiff, baseline
 
@@ -531,11 +542,11 @@ WHERE   (comm_plan_id = 'FSCMT02') AND (active_ind <> 0) AND (source_cd <> 'PAY'
 GO
 
 
--- GM by line
+-- GM by line, test null
 SELECT   FiscalMonth, WSDOCO_salesorder_number, WSLNID_line_number, fsc_comm_plan_id, fsc_comm_group_cd, source_cd, WSDCTO_order_type, WSLITM_item_number, WSDSC1_description, fsc_comm_group_cd, fsc_comm_rt, FreeGoodsInvoicedInd, gp_ext_amt, transaction_amt, gp_ext_amt / nullif(transaction_amt,0) gm
 
 FROM     comm.transaction_F555115
-WHERE   (FiscalMonth >= 202301) AND (fsc_comm_plan_id LIKE 'FSCGPM%') AND (source_cd IN ('JDE', 'IMP')) AND 
+WHERE   (FiscalMonth >= 202301) AND (fsc_comm_plan_id LIKE 'FSC%') AND (source_cd IN ('JDE', 'IMP')) AND 
 (WSDOCO_salesorder_number=17260811) and
 (transaction_amt = 0) AND
 (source_cd='IMP') AND
@@ -543,12 +554,79 @@ WHERE   (FiscalMonth >= 202301) AND (fsc_comm_plan_id LIKE 'FSCGPM%') AND (sourc
 order by gm
 
 
---
-
-
+-- review
 SELECT   calc_key, disp_comm_group_cd, comm_gm_threshold_cd + ' ' + ISNULL(comm_gm_threshold_descr,'na') rate_level_display
 FROM     comm.plan_group_rate
 WHERE   (comm_plan_id = 'FSCMT02') AND (active_ind <> 0) AND (source_cd <> 'PAY')
 ORDER BY rate_level_display
 
+GO
+
+--
+-- update calc, post prod test
+
+Exec comm.transaction_commission_calc_proc @bDebug=1
+-- DEV 1m
+-- PROD 1m
+Exec comm.transaction_commission_calc_proc @bDebug=0
+
+GO
+
+-- test calc QA vs PROD
+
+SELECT        s.FiscalMonth, s.fsc_comm_plan_id, d.fsc_comm_plan_id, s.fsc_salesperson_key_id, d.fsc_salesperson_key_id, s.WSCO___company, s.source_cd, s.WSDOCO_salesorder_number, s.WSDCTO_order_type, s.WSLNTY_line_type, s.WSLNID_line_number, s.WS$OSC_order_source_code, s.WSAN8__billto, s.WSSHAN_shipto, 
+                         s.WSDGL__gl_date, s.fsc_calc_key, d.fsc_calc_key AS fsc_calc_key_prod, s.fsc_code, d.fsc_code AS fsc_code_prod, s.fsc_comm_group_cd, d.fsc_comm_group_cd, s.fsc_comm_amt, d.fsc_comm_amt, s.gp_ext_amt, d.gp_ext_amt, s.id, d.id
+FROM            comm.transaction_F555115 AS s INNER JOIN
+                         BRSales.comm.transaction_F555115 AS d ON s.ID = d.ID AND ISNULL(s.fsc_calc_key,0) <> ISNULL(d.fsc_calc_key,0)
+WHERE
+(s.FiscalMonth = 202405) and
+(d.fsc_salesperson_key_id = 'PAIGE.DALLEY') 
+--order by 4
+order by d.fsc_calc_key
+GO
+
+--< skip prod
+
+--
+
+--< Stop prod here
+
+--  testing, in IN QA only...
+
+-- move from Med to new Med
+
+-- 2. Assign FSC to new plan, current and history
+
+SELECT   BRS_FSC_Rollup.TerritoryCd, comm.salesperson_master.comm_plan_id
+FROM     BRS_FSC_Rollup INNER JOIN
+             comm.salesperson_master ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id
+where comm_plan_id like 'FSCGPM%'
+
+UPDATE  comm.salesperson_master
+SET        comm_plan_id = 'FSCMT02'
+WHERE   (comm_plan_id LIKE 'FSCGPM%')
+-- xx
+
+--history review
+select * from [dbo].[BRS_CustomerFSC_History]
+where 
+FiscalMonth = 202405 AND
+HIST_fsc_comm_plan_id LIKE 'FSCGPM%'
+
+--history update
+UPDATE  BRS_CustomerFSC_History
+SET        HIST_fsc_comm_plan_id = 'FSCMT02'
+WHERE   (FiscalMonth = 202405) AND (HIST_fsc_comm_plan_id LIKE 'FSCGPM%')
+
+UPDATE  comm.transaction_F555115
+SET        fsc_comm_plan_id = 'FSCMT02'
+WHERE   (FiscalMonth >= 202301) AND (source_cd = 'IMP') AND (fsc_comm_plan_id LIKE 'FSCGPM%') AND (1 = 1)
+
+-- div test
+select * from [comm].[salesperson_master] where [master_salesperson_cd] in ('CZ25T', 'WZ2CV' )
+
+SELECT   comm.transaction_F555115.FiscalMonth, comm.transaction_F555115.WSDOCO_salesorder_number, comm.transaction_F555115.WSDCTO_order_type, comm.transaction_F555115.WSLNTY_line_type, comm.transaction_F555115.WSLNID_line_number, comm.transaction_F555115.WSSHAN_shipto, BRS_Customer.SalesDivision
+FROM     comm.transaction_F555115 INNER JOIN
+             BRS_Customer ON comm.transaction_F555115.WSSHAN_shipto = BRS_Customer.ShipTo
+WHERE   (comm.transaction_F555115.FiscalMonth = 202405) AND (comm.transaction_F555115.ID IN (18144316, 18131821, 18149524))
 GO

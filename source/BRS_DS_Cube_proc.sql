@@ -47,6 +47,7 @@ AS
 --	18 Jul 22	tmc		refactored Mulitsite to show DCC and 123 for Elite
 --	09 Sep 22	tmc		refactored Mulitsite to show CLP and Alitma for Midmarket
 --  15 Dec 22	tmc		break out Heartland dental
+--  25 Jun 24	tmc		add PPE KEY
 
 **    
 *******************************************************************************/
@@ -115,7 +116,8 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.DAY.ACT' AS Status,
 
@@ -144,6 +146,9 @@ FROM
 
 	INNER JOIN [dbo].[BRS_ItemCategory] cat
 	ON cat.[MinorProductClass] = i.[MinorProductClass]
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = cat.CategoryRollupPPE
 	--
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -175,7 +180,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 
 
@@ -202,7 +207,9 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
+
 
 
 	'PY.DAY.ACT' AS Status,
@@ -233,6 +240,10 @@ FROM
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
 
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
+
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -261,7 +272,7 @@ GROUP BY
 	,c.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -283,7 +294,9 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
+
 
 	'CY.DAY.EST' AS Status,
                       
@@ -314,6 +327,10 @@ FROM
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
+
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -345,7 +362,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -368,7 +385,9 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
+
 
 	'PY.DAY.PRO' AS Status,
 
@@ -398,6 +417,9 @@ FROM
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -428,7 +450,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -454,7 +476,8 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.MTD.ACT' AS Status,
 
@@ -487,6 +510,10 @@ FROM
 
 	INNER JOIN [dbo].[BRS_ItemCategory] cat
 	ON cat.[MinorProductClass] = i.[MinorProductClass]
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = cat.CategoryRollupPPE
+
 	--
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
@@ -522,7 +549,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -546,7 +573,8 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'PY.MTD.ACT' AS Status,
 	                      
@@ -575,6 +603,10 @@ FROM
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -607,7 +639,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -634,7 +666,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.ME.ACT' AS Status,
 
@@ -656,6 +689,9 @@ FROM
 
 	INNER JOIN BRS_Customer AS cc 
 	ON t.Shipto = cc.ShipTo 
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -688,7 +724,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -712,7 +748,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'PY.ME.ACT' AS Status,
 	                      
@@ -737,6 +774,9 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -767,7 +807,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -794,7 +834,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.MTD.EST' AS Status,
 	                      
@@ -826,6 +867,9 @@ FROM
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -857,7 +901,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -881,7 +925,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'PY.MTD.PRO' AS Status,
 
@@ -910,6 +955,9 @@ FROM
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
 
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
 	ON t.ShipTo = af.ShipTo AND 
@@ -941,7 +989,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -967,7 +1015,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.YTD.ACT' AS Status,
 
@@ -989,6 +1038,9 @@ FROM
 
 	INNER JOIN BRS_Customer AS cc 
 	ON t.Shipto = cc.ShipTo 
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -1021,7 +1073,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -1047,7 +1099,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'PY.YTD.ACT' AS Status,
 
@@ -1073,6 +1126,9 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -1104,7 +1160,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -1131,7 +1187,8 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	[CategoryRollupPPE],
+	ppe.[CategoryRollupPPE],
+	MIN(ppe.[ppe_key]) as ppe_key,
 
 	'CY.PMTD.EST' AS Status,
 	                      
@@ -1162,6 +1219,9 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
+
+	INNER JOIN [dbo].[BRS_DS_PPE] ppe
+	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
 
 	-- Add Acquistion rates, tmc, 13 Oct 16
 	LEFT JOIN BRS_Aqu_Sales_Factor AS af
@@ -1196,7 +1256,7 @@ GROUP BY
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,[CategoryRollupPPE]
+	,ppe.[CategoryRollupPPE]
 
 END
 
@@ -1207,9 +1267,8 @@ GO
 
 -- Prod
 -- BRS_DS_Cube_proc 0
--- pre 18,863 @ 22s
--- pos 18,751. test1, failed, need to break out new group
--- pos 18,920. test2, passed.  
+-- DEV 17 325 in 2m50s
+-- DEV 17 325 in   35s
 
 -- Dev
 -- Exec BRS_DS_Cube_proc @bDebug=1
