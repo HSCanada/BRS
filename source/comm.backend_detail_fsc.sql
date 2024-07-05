@@ -38,6 +38,8 @@ GO
 **  09 Feb 21	tmc replace ESS with master code
 --	20 Oct 21	tmc	add Free goods to details with opt out for back compatible
 --  18 Jun 24	tmc	add med threshold support fields
+--  04 Jul 24	tmc reverse: add Free goods to details with opt out for back compatible
+
 *******************************************************************************/
 
 ALTER VIEW [comm].[backend_detail_fsc]
@@ -130,8 +132,9 @@ FROM
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
 	t.source_cd in ('JDE', 'IMP') AND
-	-- the free goods exception is to allow two reports from the same source
-	((pr.show_ind = 1) OR pr.disp_comm_group_cd in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')) AND
+--	-- the free goods exception is to allow two reports from the same source
+--	((pr.show_ind = 1) OR pr.disp_comm_group_cd in('FRESEQ', 'FRESND', 'SPMFGE', 'SPMFGS')) AND
+	(pr.show_ind = 1)  AND
 	-- test
 	-- t.ID = 8211296 AND
 	1=1
@@ -145,6 +148,8 @@ GO
 -- SELECT top 10 * FROM [comm].[backend_detail_fsc]
 
 -- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'PAIGE.DALLEY' 
+-- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'JANET.SQUIRES' and show_ind = 0 order by item_comm_group_cd 
+-- SELECT * FROM [comm].[backend_detail_fsc] where show_ind = 0 order by item_comm_group_cd 
 
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new

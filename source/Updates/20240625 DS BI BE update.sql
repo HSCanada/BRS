@@ -5,8 +5,23 @@
 
 BEGIN TRANSACTION
 GO
+ALTER TABLE dbo.BRS_BusinessUnitClass
+	DROP CONSTRAINT DF_BRS_BusinessUnitClass_planning_ro_amt
+GO
+ALTER TABLE dbo.BRS_BusinessUnitClass
+	DROP COLUMN planning_ro_amt, planning_ro_text
+GO
+ALTER TABLE dbo.BRS_BusinessUnitClass SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+BEGIN TRANSACTION
+GO
 ALTER TABLE dbo.BRS_BusinessUnitClass ADD
-	planning_ro_amt money NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_planning_ro_amt DEFAULT 0,
+	planning_ro_sales_amt money NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_planning_ro_sales_amt DEFAULT 0,
+	planning_ro_gp_amt money NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_planning_ro_gp_amt DEFAULT 0,
+
 	planning_ro_text varchar(50) NULL
 GO
 ALTER TABLE dbo.BRS_BusinessUnitClass SET (LOCK_ESCALATION = TABLE)
@@ -130,92 +145,92 @@ where ppe_descr is null
 
 
 -- pop RO for Jun
-SELECT   GLBU_Class, ReportingClass, planning_ro_amt, planning_ro_text
+SELECT   GLBU_Class, ReportingClass, planning_ro_sales_amt, planning_ro_gp_amt, planning_ro_text
 FROM     BRS_BusinessUnitClass 
 order by 2, 1
 -- where ReportingClass = 'NSA' and planning_ro_text is null
 
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 27635000, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 27635000, planning_ro_gp_amt = 10629928, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'MERCH')
 GO
 	
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 8487220, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 8487220, planning_ro_gp_amt = 2826244, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'EQUIP')
 GO
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 2512780, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 2512780, planning_ro_gp_amt = 809115, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'HITEC')
 GO
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 2291422, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 2291422, planning_ro_gp_amt= 2180758 , planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'LABOU')
 GO
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 2268025, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 2268025, planning_ro_gp_amt= 1028467 ,planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'PARTS')
 GO
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 1300000, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 1300000, planning_ro_gp_amt= 479700, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'TEETH')
 GO
 	
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 514999, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 514999, planning_ro_gp_amt= 417580, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'DTXSP')
 GO
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 371658, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 371658, planning_ro_gp_amt= 146954, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'MEDIC')
 GO
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 231899, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 231899, planning_ro_gp_amt= 100181, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'DTXHW')
 GO
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 80069, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 80069, planning_ro_gp_amt= 80069, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'LEASE')
 GO
 	
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 71531, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 71531 , planning_ro_gp_amt=71531, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'FRTEQ')
 GO
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 63776, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 63776, planning_ro_gp_amt=63776, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'FREIG')
 GO
 		
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 4962, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 4962, planning_ro_gp_amt=4962, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'ALLOM')
 GO
 	
 
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = 3505, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = 3505, planning_ro_gp_amt=3505, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'BSOLN')
 GO
 	
 
 	
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = -691689, planning_ro_text = 'RO202406'
+SET        planning_ro_sales_amt = -691689, planning_ro_gp_amt= -691689, planning_ro_text = 'RO202406'
 WHERE   (GLBU_Class = 'REBAT')
 GO
 
@@ -223,27 +238,40 @@ GO
 
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = -41555, planning_ro_text = 'RO202406gw'
+SET        planning_ro_sales_amt = -41555, planning_ro_gp_amt=-41555 , planning_ro_text = 'RO202406gw'
 WHERE   (GLBU_Class = 'PROMM')
 GO
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = -27159, planning_ro_text = 'RO202406gw'
+SET        planning_ro_sales_amt = -27159, planning_ro_gp_amt= -27159, planning_ro_text = 'RO202406gw'
 WHERE   (GLBU_Class = 'PROME')
 GO
 	
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = -37722 , planning_ro_text = 'RO202406gw'
+SET        planning_ro_sales_amt = -37722 , planning_ro_gp_amt= -37722, planning_ro_text = 'RO202406gw'
 WHERE   (GLBU_Class = 'THRVM')
 GO
 
 UPDATE  BRS_BusinessUnitClass
-SET        planning_ro_amt = -24654, planning_ro_text = 'RO202406gw'
+SET        planning_ro_sales_amt = -24654, planning_ro_gp_amt=  -24654, planning_ro_text = 'RO202406gw'
 WHERE   (GLBU_Class = 'THRVE')
 GO
 
-	
+UPDATE  BRS_BusinessUnitClass
+SET        planning_ro_sales_amt = 0, planning_ro_gp_amt=  0, planning_ro_text = 'RO202406gw'
+WHERE   (GLBU_Class in ('ALLOE'
+,'ALLOT'
+,'PROMC'
+,'PROML'
+,'PROMX'
+,'CAMLG'
+,'EXNSW'
+,'ZZZZZ'
+
+))
+GO
+
 
 
 

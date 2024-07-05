@@ -48,6 +48,7 @@ AS
 --	09 Sep 22	tmc		refactored Mulitsite to show CLP and Alitma for Midmarket
 --  15 Dec 22	tmc		break out Heartland dental
 --  25 Jun 24	tmc		add PPE KEY
+--  04 Jul 24	tmc		add new Est logic and refactor; remove aquistion logic
 
 **    
 *******************************************************************************/
@@ -91,6 +92,12 @@ Select
 FROM
 	BRS_Rollup_Support01 g
 
+-- TC updates:
+-- remove P & F from DEV; 
+-- add the Keys to summary for speed
+-- add the workdays (1 o 2); 
+-- add the est calc below; 
+
 
 --PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT) - OK'
 
@@ -125,11 +132,12 @@ SELECT
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID) as UniqueID,
-
+	MIN(t.ID) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+*/
 
 FROM         
 	BRS_Transaction AS t 
@@ -218,11 +226,12 @@ SELECT
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( GPAmt ) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -305,12 +314,13 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 1 * 1024 as UniqueID,	
+	MIN(t.ID_MAX) * 7 + 1 * 1024 as UniqueID	
 
+/*
 	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
 	SUM(t.GPAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt
-
+*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -367,7 +377,7 @@ GROUP BY
 UNION ALL
 
 --PRINT '4. Current Day PY - Pro-rated from LY Aggregate - (PY.DAY.PRO) - OK'
-
+/*
 SELECT     
 	'PY' AS TimePeriod, 
 	'DAY' AS DAY, 
@@ -453,7 +463,7 @@ GROUP BY
 	,ppe.[CategoryRollupPPE]
 
 UNION ALL
-
+*/
 
 --PRINT '5. MTD CY - Actual from Detail - (CY.MTD.ACT) - OK'
 SELECT     
@@ -485,11 +495,12 @@ SELECT
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID) as UniqueID,
-
+	MIN(t.ID) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+*/
 
 FROM         
 	BRS_Transaction AS t 
@@ -582,11 +593,12 @@ SELECT
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM(GPAmt) END AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
 	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
+*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -675,11 +687,12 @@ SELECT
 	SUM(t.GPAmt) AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+*/
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -757,11 +770,12 @@ SELECT
 	SUM(t.GPAmt) AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -845,11 +859,12 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID,
-
+	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS SalesAcqAmt, 
 	SUM(t.GPAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS GPAcqAmt 
+*/
 
 
 FROM         
@@ -906,7 +921,7 @@ GROUP BY
 UNION ALL
 
 --PRINT '8. MTD PY - Pro-rated from LY Aggregate - (PY.MTD.PRO) - OK'
-
+/*
 SELECT     
 	'PY' AS TimePeriod, 
 	'' AS DAY, 
@@ -992,7 +1007,7 @@ GROUP BY
 	,ppe.[CategoryRollupPPE]
 
 UNION ALL
-
+*/
 
 --PRINT '9. YTD CY - Actual from Aggregate - (CY.YTD.ACT) - OK'
 
@@ -1024,11 +1039,12 @@ SELECT
 	SUM(t.GPAmt) AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+*/
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -1108,11 +1124,12 @@ SELECT
 	SUM(t.GPAmt) AS GPAmt, 
 
 	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) as UniqueID,
-
+	MIN(t.ID_MAX) as UniqueID
+/*
 	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
 	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
 	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
+*/
 
 
 FROM         
@@ -1161,6 +1178,8 @@ GROUP BY
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,ppe.[CategoryRollupPPE]
+
+/*
 
 UNION ALL
 
@@ -1245,6 +1264,7 @@ WHERE
 	(1=1)
 
 
+
 GROUP BY 
 	m.FiscalMonth_LY
 	,t.Branch
@@ -1257,8 +1277,10 @@ GROUP BY
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
 	,ppe.[CategoryRollupPPE]
+*/
 
 END
+
 
 GO
 
