@@ -272,7 +272,64 @@ WHERE   (GLBU_Class in ('ALLOE'
 ))
 GO
 
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX BRS_DS_PPE_u_idx ON dbo.BRS_DS_PPE
+	(
+	ppe_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE dbo.BRS_DS_PPE SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_AGG_CDBGAD_Sales ADD CONSTRAINT
+	FK_BRS_AGG_CDBGAD_Sales_BRS_ppe2 FOREIGN KEY
+	(
+	ppe_key
+	) REFERENCES dbo.BRS_DS_PPE
+	(
+	ppe_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_AGG_CDBGAD_Sales SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+UPDATE  BRS_AGG_CDBGAD_Sales
+SET        ppe_key = BRS_DS_PPE.ppe_key
+FROM     BRS_AGG_CDBGAD_Sales INNER JOIN
+             BRS_DS_PPE ON BRS_AGG_CDBGAD_Sales.CategoryRollupPPE = BRS_DS_PPE.CategoryRollupPPE
+
+
+
+
+-- create DS GL reporing rollup
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_BusinessUnitClass ADD
+	GLBU_ClassDS_L1_desc varchar(50) NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L1_desc DEFAULT '',
+	GLBU_ClassDS_L2_desc varchar(50) NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L2_desc DEFAULT '',
+	GLBU_ClassDS_L3_desc varchar(50) NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L3_desc DEFAULT '',
+	GLBU_ClassDS_Reporting_desc varchar(50) NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_Reporting_desc DEFAULT '',
+	GLBU_ClassDS_L1_sort smallint NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L1_sort DEFAULT 0,
+	GLBU_ClassDS_L2_sort smallint NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L2_sort DEFAULT 0,
+	GLBU_ClassDS_L3_sort smallint NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_L3_sort1 DEFAULT 0,
+	GLBU_ClassDS_Reporting_sort smallint NOT NULL CONSTRAINT DF_BRS_BusinessUnitClass_GLBU_ClassDS_Reporting_sort DEFAULT 0
+GO
+ALTER TABLE dbo.BRS_BusinessUnitClass SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- update GL hiearchy based on below
+
+SELECT   GLBU_Class, GLBU_ClassNm, ReportingClass, GLBU_ClassDS_L1_desc, GLBU_ClassDS_L1_sort, GLBU_ClassDS_L2_desc, GLBU_ClassDS_L2_sort, GLBU_ClassDS_L3_desc, GLBU_ClassDS_L3_sort, GLBU_ClassDS_Reporting_desc, GLBU_ClassDS_Reporting_sort
+FROM     BRS_BusinessUnitClass
 
 
 

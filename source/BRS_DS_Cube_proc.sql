@@ -92,11 +92,11 @@ Select
 FROM
 	BRS_Rollup_Support01 g
 
--- TC updates:
--- remove P & F from DEV; 
--- add the Keys to summary for speed
+-- TC BI updates:
+-- remove P & F from DEV; DONE
 -- add the workdays (1 o 2); 
 -- add the est calc below; 
+-- add the Keys to summary for speed
 
 
 --PRINT '1. Current Day CY - Actual from Detail - (CY.DAY.ACT) - OK'
@@ -123,8 +123,7 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'CY.DAY.ACT' AS Status,
 
@@ -133,11 +132,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
-*/
 
 FROM         
 	BRS_Transaction AS t 
@@ -158,12 +152,6 @@ FROM
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = cat.CategoryRollupPPE
 	--
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
 	-- Enabled when NOT in monthend mode
@@ -183,12 +171,12 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,ppe.ppe_key
 
 	,cc.MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 
 
@@ -215,8 +203,7 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 
 
@@ -227,11 +214,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
-*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -248,17 +230,11 @@ FROM
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+*/
 
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE
 	-- Enabled when NOT in monthend mode
@@ -278,10 +254,11 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
+
 	,c.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -303,8 +280,7 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 
 	'CY.DAY.EST' AS Status,
@@ -316,12 +292,6 @@ SELECT
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 1 * 1024 as UniqueID	
 
-/*
-	-- Add Acquistion rate logic: value * rate (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
-	SUM(t.GPAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt
-*/
-
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
 
@@ -336,17 +306,10 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
+*/
 
 WHERE     
 	-- Enabled when NOT in monthend mode
@@ -367,103 +330,17 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
 --PRINT '4. Current Day PY - Pro-rated from LY Aggregate - (PY.DAY.PRO) - OK'
-/*
-SELECT     
-	'PY' AS TimePeriod, 
-	'DAY' AS DAY, 
-	'' AS MTD, -- avoid double day counting, tmc, 29 Jan 15
-	'' AS QTD, -- avoid double day counting, tmc, 29 Jan 15
-	'' AS YTD, -- avoid double day counting, tmc, 30 Jan 15
-	m.FiscalMonth_LY, 
-	t.Branch, 
-	t.GLBU_Class, 
-	t.AdjCode,
-	t.SalesDivision, 
-	'P' AS TrxSrc, 
-
-	t.HIST_MarketClass AS MarketClass, 
-	-- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
-
-
-	'PY.DAY.PRO' AS Status,
-
-	SUM(t.SalesAmt) * (1.0 / @nWorkingDaysMonth) AS SalesAmt, 
-	SUM(t.GPAmt) * (1.0 / @nWorkingDaysMonth) AS GPAmt, 
-
-	@dtSalesDate AS SalesDate,
-	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 3 * 1024 as UniqueID,	
-
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
-
-FROM         
-	BRS_AGG_CDBGAD_Sales AS t 
-
-    INNER JOIN BRS_DS_Day_Yoy AS m 
-    ON t.SalesDate = m.SalesDate_LY
-
-	INNER JOIN BRS_AdjCode AS a 
-	ON t.AdjCode = a.AdjCode
-
-	INNER JOIN BRS_Customer AS cc 
-	ON t.Shipto = cc.ShipTo 
-
-	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = m.FiscalMonth_LY
-
-	INNER JOIN [dbo].[BRS_DS_PPE] ppe
-	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
-
-WHERE     
-	-- Enabled when NOT in monthend mode
-	(@nFiscalMonth <> @nPriorFiscalMonth) AND
-
-	m.FiscalMonth = @nFiscalMonth AND
-	(a.MTDEstInd = 1) AND
-
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
-	(1=1)
-
-GROUP BY 
-	m.FiscalMonth_LY
-	,t.Branch
-	,t.GLBU_Class
-	,t.AdjCode
-	,t.SalesDivision
-
-	,t.HIST_MarketClass
-	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
---	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
-
-UNION ALL
-*/
+-- removed
 
 --PRINT '5. MTD CY - Actual from Detail - (CY.MTD.ACT) - OK'
 SELECT     
@@ -496,11 +373,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.NetSalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (NetSalesAmt - (ExtendedCostAmt - ISNULL([ExtChargebackAmt],0))) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
-*/
 
 FROM         
 	BRS_Transaction AS t 
@@ -526,14 +398,6 @@ FROM
 	on ppe.[CategoryRollupPPE] = cat.CategoryRollupPPE
 
 	--
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
-
 
 WHERE
 	-- Enabled when NOT in monthend mode
@@ -584,8 +448,7 @@ SELECT
 	-- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'PY.MTD.ACT' AS Status,
 	                      
@@ -594,11 +457,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0) ) AS SalesAcqAmt, 
-	CASE WHEN MIN(glru.ReportingClass) = 'NSA' THEN 0 ELSE SUM( (GPAmt) * ISNULL(af.Aqu_sales_rt, 0) )   END AS GPAcqAmt
-*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -615,17 +473,11 @@ FROM
 
 	INNER JOIN BRS_DS_GLBU_Rollup AS glru
 	ON	t.GLBU_Class = glru.GLBU_Class
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
+*/
 
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
 
 WHERE 
 	-- Enabled when NOT in monthend mode
@@ -646,12 +498,12 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,c.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -678,8 +530,7 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	--	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'CY.ME.ACT' AS Status,
 
@@ -688,11 +539,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
-*/
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -702,18 +548,10 @@ FROM
 
 	INNER JOIN BRS_Customer AS cc 
 	ON t.Shipto = cc.ShipTo 
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
-
-
+*/
 
 WHERE
 	-- Enabled when IN monthend mode
@@ -732,12 +570,12 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -761,8 +599,7 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'PY.ME.ACT' AS Status,
 	                      
@@ -771,11 +608,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
-*/
 
 FROM         
 	BRS_AGG_CDBGAD_Sales AS t 
@@ -788,16 +620,10 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
+*/
 
 WHERE 
 	-- Enabled when IN monthend mode
@@ -816,12 +642,12 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -848,8 +674,7 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'CY.MTD.EST' AS Status,
 	                      
@@ -860,11 +685,6 @@ SELECT
 	@dtSalesDate AS SalesDate,
 	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
 	MIN(t.ID_MAX) * 7 + 2 * 1024 as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS SalesAcqAmt, 
-	SUM(t.GPAmt * a.MTDEst_rt  * ISNULL(af.Aqu_sales_rt, 0)) * ((@nDayNumber * 1.0) / @nWorkingDaysMonth) AS GPAcqAmt 
-*/
 
 
 FROM         
@@ -881,16 +701,10 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
+*/
 
 WHERE     
 	-- Enabled when NOT in monthend mode
@@ -911,103 +725,18 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
 --PRINT '8. MTD PY - Pro-rated from LY Aggregate - (PY.MTD.PRO) - OK'
-/*
-SELECT     
-	'PY' AS TimePeriod, 
-	'' AS DAY, 
-	'MTD' AS MTD, 
-	'QTD' AS QTD, 
-	'YTD' AS YTD, 
+-- removed
 
-	m.FiscalMonth_LY, 
-	t.Branch, 
-	t.GLBU_Class, 
-	t.AdjCode,
-	t.SalesDivision, 
-	'P' AS TrxSrc, 
-
-	t.HIST_MarketClass AS MarketClass, 
--- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
-
-	'PY.MTD.PRO' AS Status,
-
-	SUM(t.SalesAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS SalesAmt, 
-	SUM(t.GPAmt) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAmt, 
-
-	@dtSalesDate AS SalesDate,
-	MIN(t.ID_MAX) * 7 + 4 * 1024 as UniqueID,	
-
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) * (@nDayNumber * 1.0 / @nWorkingDaysMonth) AS GPAcqAmt 
-
-FROM         
-	BRS_AGG_CDBGAD_Sales AS t 
-
-    INNER JOIN BRS_DS_Day_Yoy AS m 
-    ON t.SalesDate = m.SalesDate_LY
-
-	INNER JOIN dbo.BRS_AdjCode AS a 
-	ON t.AdjCode = a.AdjCode
-
-	INNER JOIN BRS_Customer AS cc 
-	ON t.Shipto = cc.ShipTo 
-
-	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = m.FiscalMonth_LY
-
-	INNER JOIN [dbo].[BRS_DS_PPE] ppe
-	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
-
-WHERE     
-	-- Enabled when NOT in monthend mode
-	(@nFiscalMonth <> @nPriorFiscalMonth) AND
-
-	m.FiscalMonth = @nFiscalMonth AND
-
-	(a.MTDEstInd = 1) AND
-
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
-	(1=1)
-
-GROUP BY 
-	m.FiscalMonth_LY
-	,t.Branch
-	,t.GLBU_Class
-	,t.AdjCode
-	,t.SalesDivision
-
-	,t.HIST_MarketClass
-	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
---	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
-
-UNION ALL
-*/
 
 --PRINT '9. YTD CY - Actual from Aggregate - (CY.YTD.ACT) - OK'
 
@@ -1030,8 +759,7 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'CY.YTD.ACT' AS Status,
 
@@ -1040,11 +768,7 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
-*/
+
 
 FROM         
 	BRS_AGG_CMBGAD_Sales AS t 
@@ -1054,17 +778,10 @@ FROM
 
 	INNER JOIN BRS_Customer AS cc 
 	ON t.Shipto = cc.ShipTo 
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (t.FiscalMonth >= 201609) OR ((t.FiscalMonth = 201608) AND (t.Branch = 'NWFLD')) )
-
+*/
 
 WHERE
 	t.FiscalMonth < @nFiscalMonth AND 
@@ -1084,12 +801,12 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
 UNION ALL
 
@@ -1115,8 +832,7 @@ SELECT
 -- new front
 	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
 --	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
+	[ppe_key] as ppe_key,
 
 	'PY.YTD.ACT' AS Status,
 
@@ -1125,11 +841,6 @@ SELECT
 
 	@dtSalesDate AS SalesDate,
 	MIN(t.ID_MAX) as UniqueID
-/*
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * ISNULL(af.Aqu_sales_rt, 0)) AS SalesAcqAmt, 
-	SUM(t.GPAmt * ISNULL(af.Aqu_sales_rt, 0)) AS GPAcqAmt
-*/
 
 
 FROM         
@@ -1143,16 +854,10 @@ FROM
 
 	INNER JOIN BRS_FiscalMonth as fm
 	ON fm.FiscalMonth = m.FiscalMonth_LY
-
+/*
 	INNER JOIN [dbo].[BRS_DS_PPE] ppe
 	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
+*/
 
 WHERE
 	m.FiscalMonth < @nFiscalMonth AND 
@@ -1172,112 +877,18 @@ GROUP BY
 	,t.GLBU_Class
 	,t.AdjCode
 	,t.SalesDivision
+	,t.ppe_key
 
 	,t.HIST_MarketClass
 	-- new back
 	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
 --	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
 
-/*
-
-UNION ALL
 
 --	24 Feb 16	tmc		Added Prior Month Estimate to catch an estimate gap between day 1 and ME final adj load
 
 -- 11. MTD-1 CY - Estimate from LY Aggregate - (CY.PMTD.EST) - FIX from LY to MTD-1
-SELECT     
-	'CY' AS TimePeriod, 
-	'' AS DAY, 
-	'' AS MTD, 
---  PM logic:  pull the last year's monthend - 1 data and set the appropriate quarter logic
-	CASE WHEN (((m.FiscalMonth_LY % 100 - 1) / 3) + 1) = (((@nFiscalMonth_LY % 100 - 1) / 3) + 1) AND 
-		m.FiscalMonth_LY <= @nFiscalMonth_LY THEN 'QTD' ELSE '' END AS QTD, 
-	'YTD' AS YTD, 
-
-	m.FiscalMonth_LY, 
-	t.Branch, 
-	t.GLBU_Class, 
-	t.AdjCode,
-	t.SalesDivision, 
-	'F' AS TrxSrc, 
-
-	t.HIST_MarketClass AS MarketClass, 
--- new front
-	CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
---	CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END as SegCd,
-	ppe.[CategoryRollupPPE],
-	MIN(ppe.[ppe_key]) as ppe_key,
-
-	'CY.PMTD.EST' AS Status,
-	                      
-	SUM(t.SalesAmt * a.MTDEst_rt)  AS SalesAmt, 
-	SUM(t.GPAmt * a.MTDEst_rt)  AS GPAmt, 
-
-
-	@dtSalesDate AS SalesDate,
-	-- id x 7  to avoid collision between CD & MTD Estimate (using same data source by design -- prorate and per day)
-	MIN(t.ID_MAX) * 7 + 5 * 1024 as UniqueID,	
-
-	-- Add Acquistion rate logic: Sum(amount * rate) (0 rate where null), tmc, 13 Oct 16
-	SUM(t.SalesAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0))  AS SalesAcqAmt, 
-	SUM(t.GPAmt * a.MTDEst_rt * ISNULL(af.Aqu_sales_rt, 0))  AS GPAcqAmt 
-
-
-FROM         
-	BRS_AGG_CDBGAD_Sales AS t 
-
-    INNER JOIN BRS_DS_Day_Yoy AS m 
-    ON t.SalesDate = m.SalesDate
-
-	INNER JOIN BRS_Customer AS cc 
-	ON t.Shipto = cc.ShipTo 
-
-	INNER JOIN BRS_AdjCode AS a 
-	ON t.AdjCode = a.AdjCode 
-
-	INNER JOIN BRS_FiscalMonth as fm
-	ON fm.FiscalMonth = m.FiscalMonth_LY
-
-	INNER JOIN [dbo].[BRS_DS_PPE] ppe
-	on ppe.[CategoryRollupPPE] = t.CategoryRollupPPE
-
-	-- Add Acquistion rates, tmc, 13 Oct 16
-	LEFT JOIN BRS_Aqu_Sales_Factor AS af
-	ON t.ShipTo = af.ShipTo AND 
-		t.GLBU_Class = af.GLBU_Class  AND 
-		af.Aqu_cd = 'DSL' AND
-		( (m.FiscalMonth_LY >= 201609) OR ((m.FiscalMonth_LY = 201608) AND (t.Branch = 'NWFLD')) )
-
-WHERE    
-	-- Enabled when NOT in monthend mode
-	(@nFiscalMonth <> @nPriorFiscalMonth) AND
-
-	-- Note (Month - 1) logic is ok for Jan -> N/A, as the year is reset and no estimates are needed, tmc, 24 Feb 16
-	m.FiscalMonth = (@nFiscalMonth-1) AND
-
-	(a.MTDEstInd = 1) AND
-
---	17 May 16	tmc		Add Free Good Estimate vs Actual logic:  History NO, Prior=Conditional, Current=YES
-	(t.FreeGoodsEstInd = CASE WHEN fm.ME_FreeGoodsAct_LoadedInd = 0 THEN 0 ELSE t.FreeGoodsEstInd END ) AND
-
-	(1=1)
-
-
-
-GROUP BY 
-	m.FiscalMonth_LY
-	,t.Branch
-	,t.GLBU_Class
-	,t.AdjCode
-	,t.SalesDivision
-
-	,t.HIST_MarketClass
-	-- new back
-	,(CASE WHEN cc.MarketClass In ('ELITE','MIDMKT') AND cc.VPA in ('123DENNC', '123DNST', '123DENTA', 'ALT03', 'CENLAPT', 'DENCORP')  THEN cc.CustGrpWrk ELSE cc.MarketClass END) 
---	,CASE WHEN cc.MarketClass = 'ELITE' THEN cc.CustGrpWrk ELSE cc.MarketClass END
-	,ppe.[CategoryRollupPPE]
-*/
+-- remove
 
 END
 
@@ -1289,7 +900,7 @@ GO
 
 -- Prod
 -- BRS_DS_Cube_proc 0
--- DEV 17 325 in 2m50s
+-- DEV 15 191 in 3m36s
 -- DEV 17 325 in   35s
 
 -- Dev
