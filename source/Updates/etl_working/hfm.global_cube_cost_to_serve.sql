@@ -11,15 +11,19 @@
 --		,RTRIM(LEFT(ih.MinorProductClass,9))	AS PRODUCT
 		,RTRIM(excl.BrandEquityCategory)		AS BRAND_EQUITY
 		,RTRIM(excl.Excl_Code_Public)			AS BRAND_LINE
-		,RTRIM(MIN(ch.HIST_MarketClass))				AS CUSTOMER
+		,RTRIM(ch.HIST_MarketClass)				AS CUSTOMER
+		-- test
+		-- ,RTRIM(MAX(ch.HIST_MarketClass))				AS CUSTOMER_max
+		--
+
 		,CASE WHEN ch.HIST_MarketClass = 'ELITE' THEN cust.CustGrpWrk ELSE '' END	AS CUSTOMER_GROUP
-		,CASE WHEN sup.MELP_code = '' THEN '' ELSE ih.Supplier END AS SUPPLIER
-		,CASE WHEN sup.MELP_code = '' THEN '' ELSE sup.CountryGroup END AS SUPPLIER_GLOBAL
+		,RTRIM(ih.Supplier)						AS SUPPLIER
+		,RTRIM(sup.CountryGroup)				AS SUPPLIER_GLOBAL
 		,MIN(sup.MELP_code)						AS MELP
 --		,RTRIM(ih.Supplier)						AS SUPPLIER
 
 --		,RTRIM(br.Branch)						AS BRANCH
-		,t.AdjCode
+		,RTRIM(t.AdjCode)						AS AdjCode
 
 		,CASE 
 			WHEN doct.SourceCd = 'JDE' 
@@ -82,12 +86,12 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202404 AND 202406)  AND
+		(t.FiscalMonth between 202301 AND 202406)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
-		(
-			(ch.HIST_MarketClass = 'ELITE') OR
-			(sup.MELP_code <> '')
-		) AND
+--		(
+--			(ch.HIST_MarketClass = 'ELITE') OR
+--			(sup.MELP_code <> '')
+--		) AND
 --		test
 --		glru.ReportingClass = 'NSA' AND
 --		t.SalesOrderNumber = 1109883 AND
@@ -101,11 +105,13 @@
 		,t.GLBU_Class
 		,cc.[Entity]	
 --		,hfm.[HFM_Account]
-		,CASE WHEN sup.MELP_code = '' THEN '' ELSE ih.Supplier END
-		,CASE WHEN sup.MELP_code = '' THEN '' ELSE sup.CountryGroup END
+		,ih.Supplier
+		,sup.CountryGroup
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
---		,ch.HIST_MarketClass
+
+		,ch.HIST_MarketClass
+
 		,CASE WHEN ch.HIST_MarketClass = 'ELITE' THEN cust.CustGrpWrk ELSE '' END
 --		,br.Branch
 		,doct.SourceCd
