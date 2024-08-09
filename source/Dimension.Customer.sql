@@ -60,7 +60,7 @@ AS
 --	10 May 22	tmc		map FieldSales name to commission master for rollup
 --	15 Sep 23	tmc		add new segment map
 --	04 Jan 24	tmc		add HSBC to model
-
+--	08 Aug 24	tmc		add Commission Branch, and Plan for leaderboards
 **    
 *******************************************************************************/
 
@@ -248,6 +248,10 @@ SELECT
 	,RTRIM(seg_new.[SegCd_map])		AS SegmentCodeNEW
 	,eps_roll.FSCName eps_branch
 
+	,RTRIM(fsc_master.comm_plan_id)					AS FieldSalesCommPlan
+	,RTRIM(fsc_master_branch.BranchName)			AS FieldSalesBranchName
+
+
 
 FROM
 	BRS_Customer AS c 
@@ -282,6 +286,12 @@ FROM
 
 	INNER JOIN [comm].[salesperson_master] fsc_master
 	ON terr.comm_salesperson_key_id = fsc_master.salesperson_key_id
+
+	INNER JOIN BRS_FSC_Rollup fsc_master_terr
+	ON fsc_master.master_salesperson_cd = fsc_master_terr.TerritoryCd
+
+	INNER JOIN BRS_Branch AS fsc_master_branch
+	ON fsc_master_terr.Branch = fsc_master_branch.Branch
 	
 	INNER JOIN BRS_FSC_Rollup AS terr_ess
 	ON c.est_code = terr_ess.[TerritoryCd]
@@ -387,7 +397,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
 
 -- SELECT  count(*) FROM Dimension.Customer
--- ORG= 75810
+-- ORG= 134509
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
