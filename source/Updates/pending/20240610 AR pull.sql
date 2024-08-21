@@ -51,7 +51,7 @@ SELECT
 ,"ABAC03" AS ABAC03_category_code_03
 ,"QB$RPC" AS QB$RPC_representative_preference_code 
 
- INTO Integration.F56CUSA2_CUSINF2A
+-- INTO Integration.F56CUSA2_CUSINF2A
 
 FROM 
     OPENQUERY (ESYS_PROD, '
@@ -113,7 +113,8 @@ FROM
 
 	FROM
 		ARCUSRFLE.F56CUSA2
---    WHERE
+    WHERE
+		A5BADT = ''B''
 --        A5AN8 = 1677735
     ORDER BY
         1
