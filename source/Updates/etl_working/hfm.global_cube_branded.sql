@@ -1,4 +1,4 @@
-use BRSales
+--use BRSales
 
 	-- Sales 1 of 3
 	SELECT   
@@ -19,6 +19,10 @@ use BRSales
 			THEN 'GL_Input' 
 			ELSE 'Manual_Entry' 
 		END									AS REPORTING_SOURCE
+
+		-- add customer segment for Private Label DS analysis, tmc, 21 Aug 24
+		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
+
 		,SUM(t.[NetSalesAmt])				AS sales_amt
 
 		-- make GP
@@ -44,6 +48,7 @@ use BRSales
 		ON t.Shipto = ch.[Shipto] AND
 			t.[FiscalMonth] = ch.[FiscalMonth]
 
+
 		INNER JOIN [dbo].[BRS_FSC_Rollup] fsc
 		ON ch.HIST_TerritoryCd = fsc.TerritoryCd
 
@@ -61,7 +66,7 @@ use BRSales
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202407 AND 202407)  AND
+		(t.FiscalMonth between 202301 AND 202407)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
@@ -79,10 +84,12 @@ use BRSales
 		,excl.Excl_Code_Public
 		,br.Branch
 		,doct.SourceCd
+		,RTRIM(ch.HIST_MarketClass)
 
 -- Jen can help
 -- 1. set date
 -- 2. set to tab text 
 -- 3. run script
 
--- ORG 302 rows
+-- ORG 310 rows @ 1s
+-- NEW 1 158 @ 1s
