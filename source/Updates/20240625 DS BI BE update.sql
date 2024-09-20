@@ -334,3 +334,58 @@ FROM     BRS_BusinessUnitClass
 
 
 
+-- rollup data for BRS_BusinessUnitClass
+
+SELECT  [GLBU_Class]
+      ,[planning_ro_sales_amt]
+      ,[planning_ro_gp_amt]
+      ,[planning_ro_text]
+	  ,(REPLACE(REPLACE(REPLACE(GLBU_ClassDS_L1_desc, CHAR(13), ''), CHAR(10), ''), ' ', '')) AS GLBU_ClassDS_L1_desc
+	  ,(REPLACE(REPLACE(REPLACE(GLBU_ClassDS_L2_desc, CHAR(13), ''), CHAR(10), ''), ' ', '')) AS GLBU_ClassDS_L2_desc
+	  ,(REPLACE(REPLACE(REPLACE(GLBU_ClassDS_L3_desc, CHAR(13), ''), CHAR(10), ''), ' ', '')) AS GLBU_ClassDS_L3_desc
+
+      ,[GLBU_ClassDS_Reporting_desc]
+      ,[GLBU_ClassDS_L1_sort]
+      ,[GLBU_ClassDS_L2_sort]
+      ,[GLBU_ClassDS_L3_sort]
+      ,[GLBU_ClassDS_Reporting_sort]
+  FROM [DEV_BRSales].[dbo].[BRS_BusinessUnitClass]
+
+/*
+GLBU_Class|planning_ro_sales_amt|planning_ro_gp_amt|planning_ro_text|GLBU_ClassDS_L1_desc|GLBU_ClassDS_L2_desc|GLBU_ClassDS_L3_desc|GLBU_ClassDS_Reporting_desc|GLBU_ClassDS_L1_sort|GLBU_ClassDS_L2_sort|GLBU_ClassDS_L3_sort|GLBU_ClassDS_Reporting_sort
+     |0.00|0.00|NULL|.||||0|0|0|0
+ALLOE|0.00|0.00|RO202406gw|AllowanceEquip|AllowanceforReturns|TotalEquipment|Net Sales|584|580|200|200
+ALLOM|4962.00|4962.00|RO202406|AllowanceMerch|AllowanceforReturns|TotalMerch&SmallEquipment|Net Sales|580|580|100|200
+ALLOT|0.00|0.00|RO202406gw|AllowanceTeeth|AllowanceforReturns|Teeth,beforerebates|Net Sales|582|580|580|200
+BSOLN|3505.00|3505.00|RO202406|BusinessSolutions|BusinessSolutions|BusinessSolutions|Gross Sales|150|150|150|100
+CAMLG|0.00|0.00|RO202406gw|.|zExcluded|zExcluded|Gross Sales|145|999|999|100
+DTXHW|231899.00|100181.00|RO202406|ComputerEquipment|ComputerEquipment|TotalEquipment|Gross Sales|430|430|200|100
+DTXSP|514999.00|417580.00|RO202406|HSOneSupport|HSOneSoftware&Support|HSOneSoftware&Support|Gross Sales|400|400|400|100
+DTXSW|0.00|0.00|NULL|HSOneSoftware|HSOneSoftware&Support|HSOneSoftware&Support|Gross Sales|410|400|400|100
+EQDIG|0.00|0.00|NULL|HiTechDigitalEquip|HiTechDigital/OtherEquip|TotalEquipment|Gross Sales|200|200|200|100
+EQUIP|8487220.00|2826244.00|RO202406|LargeEquipment|LargeEquipment|TotalEquipment|Gross Sales|230|230|200|100
+EXNSW|0.00|0.00|RO202406gw|Exan|Exan|HSOneSoftware&Support|Gross Sales|420|420|400|100
+FREIG|63776.00|63776.00|RO202406|DeliveryRecovery(Merch/Teeth)|DeliveryRecovery(Merch/Teeth)|TotalMerch&SmallEquipment|Gross Sales|500|500|100|100
+FRTEQ|71531.00|71531.00|RO202406|DeliveryRecovery(Equip)|DeliveryRecovery(Equip)|TotalEquipment|Gross Sales|510|510|200|100
+HICAD|0.00|0.00|NULL|HiTechCadCam|HiTechDigital/OtherEquip|TotalEquipment|Gross Sales|210|200|200|100
+HITEC|2512780.00|809115.00|RO202406|HiTechEquipment|HiTechEquipment|TotalEquipment|Gross Sales|220|220|200|100
+LABOU|2291422.00|2180758.00|RO202406|Labour|Parts&Service|Parts&Service|Gross Sales|310|300|300|100
+LEASE|80069.00|80069.00|RO202406|HSFSLeasing|HSFSLeasing|TotalEquipment|Gross Sales|440|440|200|100
+MECAD|0.00|0.00|NULL|Merchandise-HiTec|Merchandise,beforerebates|TotalMerch&SmallEquipment|Gross Sales|110|100|100|100
+MECAZ|0.00|0.00|NULL|Merchandise-HiTecZahn|Merchandise,beforerebates|TotalMerch&SmallEquipment|Gross Sales|120|100|100|100
+MEDIC|371658.00|146954.00|RO202406|MedicalCustomers(Merchandise)|MedicalCustomers(Merchandise)|MedicalCustomers(Merchandise)|Gross Sales|160|160|160|100
+MERCH|27635000.00|10629928.00|RO202406|Merchandise|Merchandise,beforerebates|TotalMerch&SmallEquipment|Gross Sales|100|100|100|100
+PARTS|2268025.00|1028467.00|RO202406|Parts|Parts&Service|Parts&Service|Gross Sales|300|300|300|100
+PROMC|0.00|0.00|RO202406gw|.|zExcluded|zExcluded|Net Sales|0|999|999|200
+PROME|-27159.00|-27159.00|RO202406gw|PromoEquip|SalesPromotions|TotalEquipment|Net Sales|530|550|200|200
+PROML|0.00|0.00|RO202406gw|PromoLease|SalesPromotions|TotalEquipment|Net Sales|540|550|200|200
+PROMM|-41555.00|-41555.00|RO202406gw|PromoMerch|SalesPromotions|TotalMerch&SmallEquipment|Net Sales|550|550|100|200
+PROMX|0.00|0.00|RO202406gw|.|zExcluded|zExcluded|Net Sales|0|999|999|200
+REBAT|-691689.00|-691689.00|RO202406|RebateProvision|RebateProvision|TotalMerch&SmallEquipment|Net Sales|520|520|100|200
+SMEQU|0.00|0.00|NULL|SmallEquipment(SE)|SmallEquipment(SE)|TotalMerch&SmallEquipment|Gross Sales|130|130|100|100
+TEETH|1300000.00|479700.00|RO202406|Teeth,beforerebates|Teeth,beforerebates|Teeth,beforerebates|Gross Sales|140|140|580|100
+THRVE|-24654.00|-24654.00|RO202406gw|ThriveEquip|ThriveRewards|TotalEquipment|Net Sales|570|560|200|200
+THRVM|-37722.00|-37722.00|RO202406gw|ThriveMerch|ThriveRewards|TotalMerch&SmallEquipment|Net Sales|560|560|100|200
+VETER|0.00|0.00|NULL|MedicalVet|MedicalCustomers(Merchandise)|MedicalCustomers(Merchandise)|Gross Sales|165|160|160|100
+ZZZZZ|0.00|0.00|RO202406gw|zExcluded|zExcluded|zExcluded|Gross Sales|999|999|999|100
+*/

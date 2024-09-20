@@ -66,7 +66,7 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202301 AND 202407)  AND
+		(t.FiscalMonth between 202408 AND 202408)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
