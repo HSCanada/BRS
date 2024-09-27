@@ -3,6 +3,14 @@
 SET DB_DST=DEV_BRSales
 IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
 
+:: new
+:: ECHO Load Integration.siebel_export_email to %BRS_SQLSERVER%.%DB_DST% 
+:: PAUSE
+:: BCP %DB_DST%.Integration.siebel_export_email in ../Upload/CanadaSiebelExport.TXT -c -T -S %BRS_SQLSERVER% -e CanadaSiebelExport_ERR.txt -F 5
+:: ECHO Stop!!
+:: PAUSE
+::
+
 ECHO Load BRS_BE_Transaction_DW_load_proc to %BRS_SQLSERVER%.%DB_DST% 
 PAUSE
 
