@@ -32,6 +32,7 @@ AS
 --	20 Sep 17	tmc		fixed ambiguous market class join 
 --	22 Sep 17	tmc		added static content as per Jen testing
 --	3 Oct 17	tmc		Merge supplier family to use Supplier dimension
+--  25 Oct 24	tmc		add ID to help with recon
 **    
 *******************************************************************************/
 SELECT        
@@ -51,6 +52,7 @@ SELECT
 	,t.GPAmt						AS TotalGPAmt
 	,t.GP_Org_Amt					AS TotalGPExclCBAmt
 	,ISNULL(t.ExtChargebackAmt, 0)	AS ExtChargebackAmt
+	,t.ID_MAX
 
 FROM            
 
@@ -92,6 +94,9 @@ GO
 
 /*
 
+-- BI test
+select top 10 * from [Fact].[SaleVendor] 
+
 -- Testing
 
 -- adhoc look at the data
@@ -104,8 +109,6 @@ WHERE
 GROUP BY HIST_MarketClassKey
 ORDER BY 1
 
--- old market test
-select top 10 * from [Fact].[SaleVendor] where HIST_MarketClassKey not in (8,20)
 
 
 -- row count testing2 -- success

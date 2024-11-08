@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 **  19 Dec 22	tmc		relaxed historical lookups to allow mid-month run
 **	15 Apr 23	tmc		add backorder to feed
+**	10 Oct 24	tmc		add invoice date (for testing)
 *******************************************************************************/
 
 -- Buy section
@@ -88,6 +89,7 @@ SELECT
 	,t.CreditMinorReasonCode
 	,t.CreditTypeCode
 	,1 AS show_ind
+	,t.Date as invoice_date
 
 FROM
 	[dbo].[BRS_TransactionDW] t
@@ -206,6 +208,7 @@ SELECT
 	,tt.CreditMinorReasonCode
 	,tt.CreditTypeCode
 	,ex.show_ind
+	,tt.Date as invoice_date
 
 FROM
 	fg.transaction_F5554240 t
@@ -300,6 +303,7 @@ SELECT
 	,'.'									AS CreditMinorReasonCode
 	,'.'									AS CreditTypeCode
 	,1										AS show_ind
+	,t.SalesDay as invoice_date
 
 FROM
 	[fg].[backorder_FBACKRPT1_history] t
@@ -351,14 +355,16 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
--- SELECT TOP 100 * FROM fg.redeem_working
+-- SELECT TOP 100 * FROM fg.redeem_working where src = 'GET' and DocType = 'SE' order by 1
 -- SELECT * FROM fg.redeem_working
 -- 20 sec
 
 -- SELECT count (*) FROM fg.redeem_working
 
--- ORG 80 293
--- all 103 885
+-- ORG 122 703
+-- NEW 122 703
 
---SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 15846091
+--SELECT * FROM fg.redeem_working WHERE SalesOrderNumber = 17278123
+
 --SELECT * FROM fg.redeem_working WHERE order_file_name = 'backorder'
+

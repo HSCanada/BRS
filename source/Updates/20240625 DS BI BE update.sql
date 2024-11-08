@@ -1,4 +1,5 @@
 -- DS BI BE update, tmc, 25 Jun 24
+-- updated 24 Oct 24
 
 
 -- GLBU net sales calc
@@ -62,8 +63,6 @@ BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_DS_PPE ADD
 	ppe_key int  NOT NULL Identity(1,1)
-GO
-
 GO
 ALTER TABLE dbo.BRS_DS_PPE SET (LOCK_ESCALATION = TABLE)
 GO
@@ -236,7 +235,6 @@ GO
 
 -- Gary math
 
-
 UPDATE  BRS_BusinessUnitClass
 SET        planning_ro_sales_amt = -41555, planning_ro_gp_amt=-41555 , planning_ro_text = 'RO202406gw'
 WHERE   (GLBU_Class = 'PROMM')
@@ -283,6 +281,7 @@ ALTER TABLE dbo.BRS_DS_PPE SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+--> broken?
 BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.BRS_AGG_CDBGAD_Sales ADD CONSTRAINT
@@ -304,7 +303,7 @@ UPDATE  BRS_AGG_CDBGAD_Sales
 SET        ppe_key = BRS_DS_PPE.ppe_key
 FROM     BRS_AGG_CDBGAD_Sales INNER JOIN
              BRS_DS_PPE ON BRS_AGG_CDBGAD_Sales.CategoryRollupPPE = BRS_DS_PPE.CategoryRollupPPE
-
+--< broken?
 
 
 
@@ -351,7 +350,13 @@ SELECT  [GLBU_Class]
       ,[GLBU_ClassDS_Reporting_sort]
   FROM [DEV_BRSales].[dbo].[BRS_BusinessUnitClass]
 
+
 /*
+
+select top 10 * from [BRS_BusinessUnitClass]
+
+-- setting the rolllups, manually
+-- tbd
 GLBU_Class|planning_ro_sales_amt|planning_ro_gp_amt|planning_ro_text|GLBU_ClassDS_L1_desc|GLBU_ClassDS_L2_desc|GLBU_ClassDS_L3_desc|GLBU_ClassDS_Reporting_desc|GLBU_ClassDS_L1_sort|GLBU_ClassDS_L2_sort|GLBU_ClassDS_L3_sort|GLBU_ClassDS_Reporting_sort
      |0.00|0.00|NULL|.||||0|0|0|0
 ALLOE|0.00|0.00|RO202406gw|AllowanceEquip|AllowanceforReturns|TotalEquipment|Net Sales|584|580|200|200
@@ -389,3 +394,30 @@ THRVM|-37722.00|-37722.00|RO202406gw|ThriveMerch|ThriveRewards|TotalMerch&SmallE
 VETER|0.00|0.00|NULL|MedicalVet|MedicalCustomers(Merchandise)|MedicalCustomers(Merchandise)|Gross Sales|165|160|160|100
 ZZZZZ|0.00|0.00|RO202406gw|zExcluded|zExcluded|zExcluded|Gross Sales|999|999|999|100
 */
+
+-- Phase2 begins!
+
+---- updated 24 Oct 24
+
+-- Test1: [dbo].[BRS_TransactionDW] vs [dbo].[BRS_TransactionDW_Ext] RI
+
+select count(*) from [dbo].[BRS_TransactionDW] t where not exists (SELECT * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType)
+-- ORG 11 405 599
+-- Missing = 0
+
+-- test2: [dbo].[BRS_Transaction] vs [dbo].[BRS_TransactionDW_Ext] RI
+select count(*) from [dbo].[BRS_Transaction] t where not exists (SELECT * from [dbo].[BRS_TransactionDW_Ext] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType)
+-- ORG 11 572 531
+-- Missing = 0
+
+-- test3: [dbo].[BRS_TransactionDW] vs [dbo].[BRS_Transaction]
+
+select count(*), min(t.date), max(t.date) from [dbo].[BRS_TransactionDW] t where t.date >= '2024-01-01' and t.date <= '2024-01-30' and not exists (SELECT * from [dbo].[BRS_Transaction] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType and t.LineNumber = ext.LineNumber)
+
+select t.*  from [dbo].[BRS_TransactionDW] t where t.date >= '2021-01-01' and t.date <= '2024-09-18' and t.item > '0' and t.GLBusinessUnit not in( '020099990000') and linetypeorder<>'M2' and not exists (SELECT * from [dbo].[BRS_Transaction] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType and t.LineNumber = ext.LineNumber) order by 9 desc
+
+
+-- test4: [dbo].[BRS_Transaction] vs [dbo].[BRS_TransactionDW], less DS adj
+--select count(*), min(t.salesdate), max(t.salesdate) from [dbo].[BRS_Transaction] t where t.doctype <> 'AA' AND t.SalesDate >= '2021-01-01' and t.SalesDate <= '2021-08-30' and exists (SELECT * from [dbo].[BRS_TransactionDW] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType  and t.LineNumber = ext.LineNumber)
+
+select top 1000 t.* from [dbo].[BRS_Transaction] t where t.SalesDate >= '2022-01-01' and t.SalesDate <= '2021-08-30' and t.doctype <> 'AA' and t.GLBU_Class not in ('FREIG') AND exists (SELECT * from [dbo].[BRS_TransactionDW] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType and t.LineNumber = ext.LineNumber)

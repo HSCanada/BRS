@@ -49,7 +49,8 @@ AS
 **	14 Oct 21	tmc		add pma and freight ind for commission modelling
 **	19 Sep 22	tmc		add privileges code for business review model
 **	04 Jan 23	tmc		add trims to correct for cloud backend escapes, @gt
-**	19 Jun 23	mtc		add JDE marketclass to allow synch
+**	19 Jun 23	tmc		add JDE marketclass to allow synch
+**	29 Oct 24	tmc		add AR clear table [Integration].[F564201_AgingBillto]
 *******************************************************************************/
 
 BEGIN
@@ -90,6 +91,8 @@ BEGIN
 
 		TRUNCATE TABLE STAGE_BRS_CustomerFull
 		TRUNCATE TABLE STAGE_BRS_ItemFull
+
+		TRUNCATE TABLE [Integration].[F564201_AgingBillto]
 
 		Set @nErrorCode = @@Error
 
@@ -689,6 +692,9 @@ GO
 -- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0
 
 -- Debug
+
+-- Exec BRS_BE_Dimension_load_proc @bClearStage=1, @bDebug=1
+
 -- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=1
 
 

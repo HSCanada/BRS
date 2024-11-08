@@ -252,6 +252,9 @@ GO
 
  /*
 
+ -- BI test
+ SELECT * FROM [hfm].global_cube where PERIOD = 202408
+
 print ('T01: missing ENTITY_sales')
 SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0 and PERIOD = 202401
 -- ok
@@ -332,7 +335,7 @@ total = 23865576.5511
 
 --SELECT  count(*) from [hfm].global_cube 
 
-SELECT * FROM [hfm].global_cube where PERIOD = 202212 and adjcode like 'CUTOFF%'
+-- SELECT * FROM [hfm].global_cube where PERIOD = 202308 and PRODUCT = '850-30-10'  order by sales desc
 
  /*
 

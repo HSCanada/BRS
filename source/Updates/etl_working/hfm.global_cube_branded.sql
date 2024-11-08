@@ -23,6 +23,8 @@
 		-- add customer segment for Private Label DS analysis, tmc, 21 Aug 24
 		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
 
+		,t.GLBU_Class						AS TEST_GLBU_Class
+
 		,SUM(t.[NetSalesAmt])				AS sales_amt
 
 		-- make GP
@@ -36,7 +38,6 @@
 --		,t.GL_BusinessUnit					AS TEST_BusinessUnit
 --		,t.GL_Object_Sales					AS TEST_Object
 --		,t.SalesDivision					AS TEST_SalesDivision
---		,t.GLBU_Class						AS TEST_GLBU_Class
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -66,7 +67,7 @@
 		ON t.DocType = doct.DocType
 
 	WHERE
-		(t.FiscalMonth between 202408 AND 202408)  AND
+		(t.FiscalMonth between 202301 AND 202409)  AND
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 --		test
 --		t.SalesOrderNumber = 1109883 AND
@@ -78,7 +79,7 @@
 		t.FiscalMonth
 		,t.AdjCode
 		--
-		--,t.GLBU_Class
+		,t.GLBU_Class
 		--
 		,excl.BrandEquityCategory
 		,excl.Excl_Code_Public
@@ -93,3 +94,4 @@
 
 -- ORG 310 rows @ 1s
 -- NEW 1 158 @ 1s
+

@@ -895,6 +895,8 @@ END
 
 GO
 
+
+-- BI test
 -- BRS_DS_Cube_proc 
 
 

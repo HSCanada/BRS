@@ -148,9 +148,13 @@ END
 GO
 
 
+-- BI Test
+-- BRS_PL_SM_Cube_proc 
+
 -- Select YearFirstFiscalMonth_LY, PriorFiscalMonth  FROM BRS_Rollup_Support01
 
 -- Run with PrioBRS_PL_SM_Cube_procr Fiscal Month ref (results to text)
+
 -- BRS_PL_SM_Cube_proc 202212, 1
 
 -- ORG = 29323 rows, 11 sec
