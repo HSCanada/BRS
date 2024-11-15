@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	29 Jun 22	tmc		add temp 
+**	14 Oct 24	tmc		add PPE to model for planning
 **    
 *******************************************************************************/
 
@@ -136,6 +137,22 @@ AS
 		,t.Shipto
 		,ch.HIST_MarketClass
 		,t.FiscalMonth / 100	AS fiscal_year
+		,t.SalesOrderNumber
+		,t.LineNumber
+		,t.Branch
+		,icat.CategoryRollup
+		,icat.CategoryRollupPPE
+		,ih.Label  AS hist_label	
+
+		,dw.Item  item_dw
+		,i.size_unit_rate
+		,ISNULL(dw.ShippedQty,0) AS ShippedQty
+		,ISNULL(dw.ShippedQty * size_unit_rate,0) AS QuantityUnit
+
+		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt - ISNULL(t.[ExtChargebackAmt],0)) END AS GPAmt
+
+
+
 
 
 	FROM         
@@ -212,6 +229,10 @@ AS
 		LEFT JOIN [hfm].[exclusive_product] as excl
 		ON ih.Excl_key = excl.Excl_Key
 
+		-- ppe
+		LEFT JOIN [dbo].[BRS_ItemCategory] as icat
+		ON ih.MinorProductClass = icat.MinorProductClass
+
 		-- GPS
 		LEFT JOIN [hfm].[gps_code] as gps
 		ON t.GpsKey = gps.GpsKey
@@ -219,9 +240,23 @@ AS
 		LEFT JOIN [dbo].[BRS_BusinessUnitClass] as gps_bu
 		ON gps_bu.[GLBU_Class] = gps.[GLBU_Class_map]
 
+		-- qty
+
+		LEFT JOIN [dbo].[BRS_Item] i
+		ON t.Item = i.Item
+
+		LEFT JOIN [dbo].[BRS_TransactionDW] dw
+		ON t.SalesOrderNumberKEY = dw.SalesOrderNumber AND
+			t.DocType = dw.DocType AND
+			t.LineNumber = dw.LineNumber AND
+			doct.SourceCd = 'JDE' AND
+			-- test
+			(1=1)
+
 
 	WHERE
 		(t.FiscalMonth between 201901 and (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]))  AND
+
 --		(t.FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]))  AND
 --		(t.FiscalMonth between 202108 and 202108)  AND
 
@@ -236,6 +271,9 @@ AS
 --		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 		--
 --		test
+--		i.size_unit_rate > 0 and 
+--		t.Item <> dw.Item AND
+--		t.Shipto <> dw.Shipto AND
 --		(t.DocType <> 'AA') AND
 --		(t.GLBU_Class like 'PRO%') AND
 --		(t.GpsKey is not null) AND
@@ -250,11 +288,19 @@ AS
 
 GO
 
- /*
+ 
 
  -- BI test
- SELECT * FROM [hfm].global_cube where PERIOD = 202408
+ SELECT top 10 * FROM [hfm].global_cube where PERIOD = 202408
+ -- SELECT * FROM [hfm].global_cube where PERIOD = (SELECT PriorFiscalMonth from BRS_Config)
 
+ SELECT PriorFiscalMonth from BRS_Config
+ 
+ -- ORG 222 284 @ 11s
+ -- NEW 222 284 @ 26s
+
+ -- PROD 313 988 @ 43
+ /*
 print ('T01: missing ENTITY_sales')
 SELECT * FROM [hfm].global_cube where ENTITY_sales is null and sales <> 0.0 and PERIOD = 202401
 -- ok
@@ -335,7 +381,7 @@ total = 23865576.5511
 
 --SELECT  count(*) from [hfm].global_cube 
 
--- SELECT * FROM [hfm].global_cube where PERIOD = 202308 and PRODUCT = '850-30-10'  order by sales desc
+-- SELECT * FROM [hfm].global_cube where PERIOD = 202408 and PRODUCT = '850-30-10'  order by sales desc
 
  /*
 
@@ -370,3 +416,4 @@ GO
 --  Thrive fix
 
 select * from [hfm].[account_master_F0901] where [GMOBJ__object_account] in ('4332', '4320') or [GMDL01_description] like '%priv%' order by GMOBJ__object_account -- [GMDL01_description]
+*/

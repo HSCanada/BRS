@@ -62,7 +62,7 @@ GO
 --
 -- truncate table Integration.F56CUSA2_CUSINF2A
 
-select * from [Integration].[F56CUSA2_CUSINF2A]
+-- select * from [Integration].[F56CUSA2_CUSINF2A]
 
 INSERT INTO [Integration].[F56CUSA2_CUSINF2A]
 (
