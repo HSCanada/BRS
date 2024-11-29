@@ -61,6 +61,7 @@ AS
 --	15 Sep 23	tmc		add new segment map
 --	04 Jan 24	tmc		add HSBC to model
 --	08 Aug 24	tmc		add Commission Branch, and Plan for leaderboards
+--	19 Nov 24	tmc		add segment new for modelling
 **    
 *******************************************************************************/
 
@@ -250,6 +251,8 @@ SELECT
 
 	,RTRIM(fsc_master.comm_plan_id)					AS FieldSalesCommPlan
 	,RTRIM(fsc_master_branch.BranchName)			AS FieldSalesBranchName
+
+	,RTRIM(seg_new.SegName)	+ ' | ' + RTRIM(seg_new.SegCd)		AS SegmentNew
 
 
 
