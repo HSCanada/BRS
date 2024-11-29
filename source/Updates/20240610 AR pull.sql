@@ -59,10 +59,13 @@ CREATE TABLE [Integration].[F56CUSA2_CUSINF2A](
 GO
 
 
+-- select top 10 * from [Integration].[F56CUSA2_CUSINF2A]
+-- select count (*) from [Integration].[F56CUSA2_CUSINF2A]
+-- 65 811
+
 --
 -- truncate table Integration.F56CUSA2_CUSINF2A
 
--- select * from [Integration].[F56CUSA2_CUSINF2A]
 
 INSERT INTO [Integration].[F56CUSA2_CUSINF2A]
 (
@@ -531,4 +534,75 @@ select * from ar.credit_rep
 
 -- truncate table [Integration].[F564201_AgingBillto]
 -- truncate table [Integration].[F564201_aging_detail]
+
+
+select * 
+FROM 
+    OPENQUERY (ESYS_PROD, '
+
+	SELECT
+		*
+	FROM
+--		ARCPDTA71.F0315
+		HSIPDTA71.F0315
+    WHERE
+--	A5BADT = ''B'' AND
+--        RTAN8 = 1676080 AND
+		RTCO = ''01000''
+--		1=1
+    ORDER BY
+        1
+')
+
+
+select top 10 * 
+FROM 
+    OPENQUERY (ESYS_PROD, '
+
+	SELECT
+		*
+	FROM
+		ARCPDTA71.F0301
+    WHERE
+--	A5BADT = ''B'' AND
+        A5AN8 = 1676080 AND
+--		RTCO = ''02000''
+		1=1
+    ORDER BY
+        1
+')
+
+select top 100 * 
+FROM 
+    OPENQUERY (ESYS_PROD, '
+
+	SELECT
+		*
+	FROM
+		ARCPDTA71.F0311
+    WHERE
+--	A5BADT = ''B'' AND
+        RPAN8 = 1676080 AND
+--		RTCO = ''02000''
+		1=1
+    ORDER BY
+        1
+')
+
+select top 10 * 
+FROM 
+    OPENQUERY (ESYS_PROD, '
+
+	SELECT
+		*
+	FROM
+		ARCPDTA71.F0113
+    WHERE
+--	A5BADT = ''B'' AND
+--        RPAN8 = 1676080 AND
+--		RTCO = ''02000''
+		1=1
+    ORDER BY
+        1
+')
 
