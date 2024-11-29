@@ -31,11 +31,31 @@ AS
 **	-----	----------	--------------------------------------------
 **	29 Jun 22	tmc		add temp 
 **	14 Oct 24	tmc		add PPE to model for planning
+**	28 Nov 24	tmc		refactor to serve as planning backend, base on VendorCat
+**	29 Nov 24	tmc		add new features for Planning
 **    
 *******************************************************************************/
 
 	SELECT   
-		cc_sales.[Entity]							AS ENTITY_sales
+
+		-- core
+		t.FiscalMonth								
+		,t.FiscalMonth								AS PERIOD
+		,br.BranchKey								AS HIST_BranchKey
+		,cmarket.MarketClassKey						AS HIST_MarketClassKey
+		,isup.SupplierKey							AS HIST_SupplierKey
+		,gl_bu.GLBU_ClassKey
+		,adj.AdjCodeKey
+		,t.Shipto
+		,c.BillTo
+		,i.ItemKey
+
+		-- extra
+		,t.ID										
+		,dw.ID										AS ID_DW
+
+		--xx
+		,cc_sales.[Entity]							AS ENTITY_sales
 		,cc_cost.[Entity]							AS ENTITY_cost
 		,cc_cb.[Entity]								AS ENTITY_cb
 		,hfm_sales.[HFM_Account]					AS ACCOUNT_sales
@@ -85,17 +105,11 @@ AS
 
 		,doc_source.source_global_desc				AS REPORTING_SOURCE
 
-		,t.FiscalMonth								AS PERIOD
 		,'WRKNG'									AS VERSION
 
-		,(t.[NetSalesAmt])							AS sales
-		,(t.[ExtendedCostAmt])						AS ext_cost
-		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
-		,-(t.[ExtChargebackAmt])					AS ext_chargeback
 
 		-- extra
 		-- remove NSA for costs
-		,t.ID
 		,cc_sales.[CostCenterKey]					AS ENTITY_sales_key
 		,cc_cost.[CostCenterKey]					AS ENTITY_cost_key
 		,cc_cb.[CostCenterKey]						AS ENTITY_cb_key
@@ -104,8 +118,7 @@ AS
 		,hfm_account_cb.[HFM_Account_key]			AS ACCOUNT_cb_key
 
 		,iglob.global_product_class_key
-		,isup.SupplierKey
-		,cmarket.MarketClassKey
+
 		,cspec.specialty_key
 		,doc_source.source_key
 
@@ -121,7 +134,7 @@ AS
 		,gl_bu.ReportingClass 
 		,t.SalesDivision
 
-		-- test
+		-- extra
 		,t.MajorProductClass
 		,t.GLBU_Class			AS GLBU_Class_trans
 		,iglob_bu.GLBU_Class	AS GLBU_Class_global
@@ -134,7 +147,6 @@ AS
 		,t.AdjCode
 		,t.Item
 		,ih.MinorProductClass
-		,t.Shipto
 		,ch.HIST_MarketClass
 		,t.FiscalMonth / 100	AS fiscal_year
 		,t.SalesOrderNumber
@@ -146,14 +158,36 @@ AS
 
 		,dw.Item  item_dw
 		,i.size_unit_rate
-		,ISNULL(dw.ShippedQty,0) AS ShippedQty
+
+		,t.FreeGoodsEstInd
+
+		,sales_day.day_key
+		,excl.Excl_Key
+		,icat.MinorProductClassKey
+		,gps.GpsKey
+		,sdiv.SalesDivision_key
+
+		,hfm_sales.gl_account_key   hfm_gl_account_sales_key
+		,hfm_cost.gl_account_key	hfm_gl_account_cost_key
+		,hfm_cb.gl_account_key		hfm_gl_account_cb_key
+
+
+		-- metrics core
+		,(t.[NetSalesAmt])																												AS NetSalesAmt
+		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt - ISNULL(t.[ExtChargebackAmt],0)) END	AS GPAmt
+		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt) END										AS GPExclCBAmt
+
+		-- metrics extra
+		,ISNULL(dw.ShippedQty,0)																										AS ShippedQty
+
+		-- dup sales for legacy support
+		,(t.[NetSalesAmt])																												AS sales
+
+		,(t.[ExtendedCostAmt])						AS ext_cost
+		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
+		,-(ISNULL(t.[ExtChargebackAmt],0))			AS ext_chargeback
 		,ISNULL(dw.ShippedQty * size_unit_rate,0) AS QuantityUnit
-
-		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt - ISNULL(t.[ExtChargebackAmt],0)) END AS GPAmt
-
-
-
-
+-- xx
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -174,6 +208,13 @@ AS
 
 		INNER JOIN [dbo].[BRS_CustomerSpecialty] cspec
 		ON ch.HIST_Specialty = cspec.Specialty
+
+		INNER JOIN [dbo].[BRS_Customer] c
+		ON t.Shipto = c.ShipTo
+
+		-- branch
+		INNER JOIN [dbo].[BRS_Branch] br
+		ON t.Branch = br.Branch
 
 		-- item history
 		INNER JOIN [dbo].[BRS_ItemHistory] as ih
@@ -225,6 +266,10 @@ AS
 		LEFT JOIN [dbo].[BRS_BusinessUnitClass] as iglob_bu
 		ON iglob_bu.[GLBU_Class] = iglob.[GLBU_Class_map]
 
+		-- adjuments
+		INNER JOIN [dbo].[BRS_AdjCode] adj
+		on t.AdjCode = adj.AdjCode
+
 		-- exclusive	
 		LEFT JOIN [hfm].[exclusive_product] as excl
 		ON ih.Excl_key = excl.Excl_Key
@@ -253,6 +298,14 @@ AS
 			-- test
 			(1=1)
 
+		-- day
+		INNER JOIN [dbo].[BRS_SalesDay] sales_day
+		ON t.[SalesDate] = sales_day.SalesDate
+
+		-- salesdiv history
+		INNER JOIN [dbo].[BRS_SalesDivision] sdiv
+		ON t.SalesDivision = sdiv.SalesDivision
+
 
 	WHERE
 		(t.FiscalMonth between 201901 and (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config]))  AND
@@ -264,7 +317,7 @@ AS
 		(t.SalesDivision < 'AZA') AND 
 		(gl_bu.[GLBU_ClassUS_L1] < 'ZZZZZ') AND
 		-- temp fix, active Feb 2022 going forward
-		(AdjCode <> 'XXXFGE') AND
+		(t.AdjCode <> 'XXXFGE') AND
 
 		--(AdjCode = 'XXXFGE') AND
 		--
@@ -291,10 +344,10 @@ GO
  
 
  -- BI test
- SELECT top 10 * FROM [hfm].global_cube where PERIOD = 202408
+-- SELECT top 10 * FROM [hfm].global_cube where PERIOD = 202408
  -- SELECT * FROM [hfm].global_cube where PERIOD = (SELECT PriorFiscalMonth from BRS_Config)
 
- SELECT PriorFiscalMonth from BRS_Config
+ -- SELECT PriorFiscalMonth from BRS_Config
  
  -- ORG 222 284 @ 11s
  -- NEW 222 284 @ 26s
@@ -417,3 +470,33 @@ GO
 
 select * from [hfm].[account_master_F0901] where [GMOBJ__object_account] in ('4332', '4320') or [GMDL01_description] like '%priv%' order by GMOBJ__object_account -- [GMDL01_description]
 */
+
+-- BI test
+/*
+SELECT
+	MIN(t.FiscalMonth) as FiscalMonth
+	,COUNT (*)  AS line_count
+	,SUM(NetSalesAmt) TotalSalesAmt
+	,SUM(GPAmt) TotalGPAmt
+	,SUM(GPExclCBAmt) TotalGPExclCBAmt
+	,-SUM(ext_chargeback)  ExtChargebackAmt
+
+FROM            [hfm].global_cube AS t
+WHERE        
+	PERIOD =  202411
+*/
+ 
+/*
+-- [Fact].[SaleVendor]
+FiscalMonth line_count  TotalSalesAmt         TotalGPAmt            TotalGPExclCBAmt      ExtChargebackAmt
+----------- ----------- --------------------- --------------------- --------------------- ---------------------
+202408      178678      38770645.5091         16225771.1266         14973246.0366         1252525.09
+
+-- [hfm].global_cube
+FiscalMonth line_count  TotalSalesAmt         TotalGPAmt            TotalGPExclCBAmt      ExtChargebackAmt
+----------- ----------- --------------------- --------------------- --------------------- ---------------------
+202408      222284      38770645.5091         16225771.1266         14973246.0366         1252525.09
+
+*/
+
+SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202410
