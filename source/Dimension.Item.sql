@@ -10,7 +10,7 @@ AS
 /******************************************************************************
 **	File: 
 **	Name: Item
-**	Desc:  
+**	Desc: Item Current
 **		
 **
 **              
@@ -62,6 +62,7 @@ AS
 --  30 Jan 23	tmc		move comm_bonus to item for more control
 --	01 Feb 24	tmc		add EPS comm for EPS trakcing and FSC bonus 
 --	14 Aug 24	tmc		add glove unit conversion for PPE growth tracking
+--	06 Dec 24	tmc		temp remove supplier cost info for speedup
 **    
 *******************************************************************************/
 
@@ -112,6 +113,8 @@ SELECT
 	,RTRIM(mpc.CategoryManager)			AS CategorySpecialist
 
 	,RTRIM(s.Supplier)					AS Current_SupplierCode
+/*
+	-- temp remove due to bad speed: 27m -> 17s
 	,RTRIM(ISNULL(b.Currency, ''))		AS Current_CurrencyCode
 	,ISNULL(b.SupplierCost,0)			AS Current_SupplierCost
 	,ISNULL(b.FX_per_CAD_mrk_rt,0)		AS Current_FxMarketing
@@ -130,7 +133,16 @@ SELECT
 			/ISNULL(b.CorporatePrice, 0)
 		ELSE 0
 	END 								AS Current_PriceGM
-
+*/
+	,'zNA'								AS Current_CurrencyCode
+	,NULL									AS Current_SupplierCost
+	,NULL									AS Current_FxMarketing
+	,NULL									AS Current_FxFinance
+	,NULL									As Current_FreightFactor
+	,NULL									AS Current_BasePrice
+ 	,NULL 									AS Current_LandedCostMrk
+	,NULL 									AS Current_PriceGM
+--
 	,icomp.ItemKey						AS CompetitiveMatchKey
 	,i.[Item_Competitive_Conversion_rt]
 
@@ -251,9 +263,11 @@ FROM
 
 	INNER JOIN [comm].[group] commgrp
 	ON i.comm_group_cd = commgrp.comm_group_cd
-
+/*
+	-- temp remove for pref reasons, 6 Dec 24
 	LEFT OUTER JOIN BRS_ItemBaseHistory AS b 
 	ON b.Item = i.Item AND b.CalMonth = 0
+*/
 
 	LEFT JOIN BRS_ItemSupplier AS sbrand 
 	ON i.brand = sbrand.Supplier 
@@ -264,7 +278,7 @@ FROM
 	LEFT JOIN [hfm].[global_product] glob
 	ON c.global_product_class = glob.global_product_class
 
-	-- equity graft on last month results
+	-- equity graft on last month results (bad design, use history dim)
 	LEFT JOIN 
 	(
 		SELECT [Item]

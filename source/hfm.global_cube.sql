@@ -32,36 +32,95 @@ AS
 **	29 Jun 22	tmc		add temp 
 **	14 Oct 24	tmc		add PPE to model for planning
 **	28 Nov 24	tmc		refactor to serve as planning backend, base on VendorCat
-**	29 Nov 24	tmc		add new features for Planning
+**	29 Nov 24	tmc		add facts for Planning
+**  06 Dec 24	tmc		org dimensions for Planning 
 **    
 *******************************************************************************/
 
 	SELECT   
 
-		-- core
-		t.FiscalMonth								
-		,t.FiscalMonth								AS PERIOD
-		,br.BranchKey								AS HIST_BranchKey
-		,cmarket.MarketClassKey						AS HIST_MarketClassKey
-		,isup.SupplierKey							AS HIST_SupplierKey
-		,gl_bu.GLBU_ClassKey
-		,adj.AdjCodeKey
-		,t.Shipto
-		,c.BillTo
-		,i.ItemKey
+	-- Metrics ->
 
-		-- extra
-		,t.ID										
+	-- ID
+		t.ID										
 		,dw.ID										AS ID_DW
 
-		--xx
-		,cc_sales.[Entity]							AS ENTITY_sales
-		,cc_cost.[Entity]							AS ENTITY_cost
-		,cc_cb.[Entity]								AS ENTITY_cb
-		,hfm_sales.[HFM_Account]					AS ACCOUNT_sales
-		,hfm_cost.[HFM_Account]						AS ACCOUNT_cost
-		,hfm_cb.[HFM_Account]						AS ACCOUNT_cb
+	-- Orders and flags ->
+		,t.SalesOrderNumber
+		,t.LineNumber
+		,doc_source.source_key
+		,doct.SourceCd
+		,gl_bu.ReportingClass 
+		,doc_source.source_global_desc				AS REPORTING_SOURCE
+		,t.FreeGoodsEstInd
+		-- reminder that FG invoiced is from the DW (qty) and if left joined to the DS
+		,ISNULL(dw.FreeGoodsInvoicedInd, 0) AS FreeGoodsInvoicedInd
+		,'LOC'										AS CURRENCY
+		,'WRKNG'									AS VERSION
 
+		-- metrics core
+		,(t.[NetSalesAmt])																												AS NetSalesAmt
+		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt - ISNULL(t.[ExtChargebackAmt],0)) END	AS GPAmt
+		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt) END										AS GPExclCBAmt
+		,ISNULL(dw.ShippedQty,0)																										AS ShippedQty
+		-- dup sales for legacy support
+		,(t.[NetSalesAmt])																												AS sales
+		,(t.[ExtendedCostAmt])						AS ext_cost
+		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
+		,-(ISNULL(t.[ExtChargebackAmt],0))			AS ext_chargeback
+		,ISNULL(dw.ShippedQty * size_unit_rate,0) AS QuantityUnit
+	-- Metrics <-
+
+	-- Time ->
+		,t.FiscalMonth								
+		,t.FiscalMonth								AS PERIOD
+		,sales_day.day_key
+--		,t.FiscalMonth / 100	AS fiscal_year
+	-- Time <-
+
+	-- Customer Historic ->
+		,t.Shipto
+		,c.BillTo
+
+		,cmarket.MarketClassKey						AS HIST_MarketClassKey
+		,ch.HIST_MarketClass
+		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
+		,cspec.specialty_key
+		,RTRIM(ch.HIST_Specialty)					AS CUSTOMER_SPECIALTY
+
+		,sdiv.SalesDivision_key
+		,t.SalesDivision
+
+		,br.BranchKey								AS HIST_BranchKey
+		,t.Branch
+
+	-- Customer Historic? YES <-
+
+	-- Item Historic ->
+
+		-- item
+		,i.ItemKey
+		,t.Item
+		,dw.Item  item_dw
+
+		-- supplier
+		,isup.SupplierKey							AS HIST_SupplierKey
+		-- break out wand supplier
+		,CASE 
+			WHEN excl.Excl_Code_Public = 'COMPUDENT' 
+			THEN 'COMP'
+			ELSE RTRIM(ISNULL(ih.Supplier,''))
+		END											AS SUPPLIER
+
+		-- minor
+		,icat.MinorProductClassKey
+		,ih.MinorProductClass
+		,t.MajorProductClass
+		,icat.CategoryRollup
+		,icat.CategoryRollupPPE
+
+		-- global
+		,iglob.global_product_class_key
 		-- break out Dentrix from other software using special codes
 		,CASE
 			WHEN t.GLBU_Class ='DTXSP'
@@ -74,10 +133,10 @@ AS
 				END
 			ELSE RTRIM(LEFT(ISNULL(iglob.[global_product_class],''),9))
 --			ELSE RTRIM(LEFT(ih.[global_product_class],9))
-			
-
 		END											AS PRODUCT
 
+		-- label hist (dim item hist)
+		,ih.Label  AS hist_label	
 		-- set adjustment drive owned product
 		,CASE 
 			WHEN t.GLBU_Class in ('BSOLN', 'DTXSP', 'LEASE') 
@@ -91,38 +150,44 @@ AS
 			ELSE RTRIM(ISNULL(excl.Excl_Code_Public,''))
 		END											AS BRAND_LINE
 
-		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
-		,'LOC'										AS CURRENCY
+		,excl.Excl_Key
+
+		-- glove units (dim item curr)
+		,i.size_unit_rate
+
+	-- Item Historic <-
+
+	--> GPS new dim to to GLBU rules
+		,gps.GpsKey
 		,RTRIM(ISNULL(gps.GpsCode, 'NoAnalysis'))	AS ANALYSIS
 
-		-- break out wand supplier
-		,CASE 
-			WHEN excl.Excl_Code_Public = 'COMPUDENT' 
-			THEN 'COMP'
-			ELSE RTRIM(ISNULL(ih.Supplier,''))
-		END											AS SUPPLIER
-		,RTRIM(ch.HIST_Specialty)					AS CUSTOMER_SPECIALTY
+	--< GPS new dim to to GLBU rules
 
-		,doc_source.source_global_desc				AS REPORTING_SOURCE
+		-- adj ->
+		,adj.AdjCodeKey
+		,t.AdjCode
+		-- adj <-
 
-		,'WRKNG'									AS VERSION
+		-- GL ->
+		,gl_bu.GLBU_ClassKey
 
+		,cc_sales.[Entity]							AS ENTITY_sales
+		,cc_cost.[Entity]							AS ENTITY_cost
+		,cc_cb.[Entity]								AS ENTITY_cb
 
-		-- extra
+		,hfm_sales.[HFM_Account]					AS ACCOUNT_sales
+		,hfm_cost.[HFM_Account]						AS ACCOUNT_cost
+		,hfm_cb.[HFM_Account]						AS ACCOUNT_cb
+
 		-- remove NSA for costs
 		,cc_sales.[CostCenterKey]					AS ENTITY_sales_key
 		,cc_cost.[CostCenterKey]					AS ENTITY_cost_key
 		,cc_cb.[CostCenterKey]						AS ENTITY_cb_key
+
 		,hfm_account_sales.[HFM_Account_key]		AS ACCOUNT_sales_key
 		,hfm_account_cost.[HFM_Account_key]			AS ACCOUNT_cost_key
 		,hfm_account_cb.[HFM_Account_key]			AS ACCOUNT_cb_key
 
-		,iglob.global_product_class_key
-
-		,cspec.specialty_key
-		,doc_source.source_key
-
-		,doct.SourceCd
 		,t.[GL_BusinessUnit]
 		,t.[GL_Object_Sales]
 		,t.[GL_Subsidiary_Sales]
@@ -131,11 +196,6 @@ AS
 		,t.[GL_Object_ChargeBack]
 		,t.[GL_Subsidiary_ChargeBack]
 
-		,gl_bu.ReportingClass 
-		,t.SalesDivision
-
-		-- extra
-		,t.MajorProductClass
 		,t.GLBU_Class			AS GLBU_Class_trans
 		,iglob_bu.GLBU_Class	AS GLBU_Class_global
 		,gps.GLBU_Class_map		AS GLBU_Class_gps
@@ -143,51 +203,12 @@ AS
 		,gl_bu.[GLBU_Class_map]	AS GLBU_Class_trans_map
 		,iglob_bu.GLBU_Class_map	AS GLBU_Class_global_map
 		,gps_bu.GLBU_Class_map	AS GLBU_Class_gps_map
-
-		,t.AdjCode
-		,t.Item
-		,ih.MinorProductClass
-		,ch.HIST_MarketClass
-		,t.FiscalMonth / 100	AS fiscal_year
-		,t.SalesOrderNumber
-		,t.LineNumber
-		,t.Branch
-		,icat.CategoryRollup
-		,icat.CategoryRollupPPE
-		,ih.Label  AS hist_label	
-
-		,dw.Item  item_dw
-		,i.size_unit_rate
-
-		,t.FreeGoodsEstInd
-
-		,sales_day.day_key
-		,excl.Excl_Key
-		,icat.MinorProductClassKey
-		,gps.GpsKey
-		,sdiv.SalesDivision_key
-
+		
 		,hfm_sales.gl_account_key   hfm_gl_account_sales_key
 		,hfm_cost.gl_account_key	hfm_gl_account_cost_key
 		,hfm_cb.gl_account_key		hfm_gl_account_cb_key
 
-
-		-- metrics core
-		,(t.[NetSalesAmt])																												AS NetSalesAmt
-		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt - ISNULL(t.[ExtChargebackAmt],0)) END	AS GPAmt
-		,CASE WHEN gl_bu.ReportingClass = 'NSA' THEN 0 ELSE t.NetSalesAmt - (t.ExtendedCostAmt) END										AS GPExclCBAmt
-
-		-- metrics extra
-		,ISNULL(dw.ShippedQty,0)																										AS ShippedQty
-
-		-- dup sales for legacy support
-		,(t.[NetSalesAmt])																												AS sales
-
-		,(t.[ExtendedCostAmt])						AS ext_cost
-		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
-		,-(ISNULL(t.[ExtChargebackAmt],0))			AS ext_chargeback
-		,ISNULL(dw.ShippedQty * size_unit_rate,0) AS QuantityUnit
--- xx
+		-- GL <-
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -471,7 +492,8 @@ GO
 select * from [hfm].[account_master_F0901] where [GMOBJ__object_account] in ('4332', '4320') or [GMDL01_description] like '%priv%' order by GMOBJ__object_account -- [GMDL01_description]
 */
 
--- BI test
+-- BI test - NEW
+-- note: set to text output
 /*
 SELECT
 	MIN(t.FiscalMonth) as FiscalMonth
@@ -483,20 +505,10 @@ SELECT
 
 FROM            [hfm].global_cube AS t
 WHERE        
-	PERIOD =  202411
+	PERIOD =  202410
 */
  
-/*
--- [Fact].[SaleVendor]
-FiscalMonth line_count  TotalSalesAmt         TotalGPAmt            TotalGPExclCBAmt      ExtChargebackAmt
------------ ----------- --------------------- --------------------- --------------------- ---------------------
-202408      178678      38770645.5091         16225771.1266         14973246.0366         1252525.09
 
--- [hfm].global_cube
-FiscalMonth line_count  TotalSalesAmt         TotalGPAmt            TotalGPExclCBAmt      ExtChargebackAmt
------------ ----------- --------------------- --------------------- --------------------- ---------------------
-202408      222284      38770645.5091         16225771.1266         14973246.0366         1252525.09
+SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
 
-*/
 
-SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202410

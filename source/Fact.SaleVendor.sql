@@ -35,7 +35,8 @@ AS
 --  25 Oct 24	tmc		add ID to help with recon
 --	19 Nov 24	tmc		add BT for analysis
 --	28 Nov 24	tmc		swap out backend for financial BI cube (more detail)
---  29 Nov 24	tmc		add new features for Planning
+--  29 Nov 24	tmc		add facts for Planning
+--	05 Dec 24	tmc	    add dimensions for Planning 
 **    
 *******************************************************************************/
 
@@ -43,26 +44,22 @@ AS
 
 SELECT        
 
+	-- Metrics ->
+
 	-- ID
 	t.ID							AS ID_DS
 	-- not all DS trans map to the DW (freight, adj, etc)
 	,ISNULL(t.ID_DW, 0)				AS ID_DW
 
-	-- Time ->
-	,t.FiscalMonth
-	-- cal month in day
-	,t.day_key
-	-- Time <-
-
 	-- Orders and flags ->
 	,t.SalesOrderNumber
+	,t.LineNumber
 	-- doctype in source_key
 	,t.source_key
-	,t.LineNumber
+	,t.FreeGoodsEstInd
+	,t.FreeGoodsInvoicedInd
 
-	-- Orders and flags <-
-
-	-- Metrics ->
+	-- metrics core
 	,t.NetSalesAmt
 	,t.GPAmt
 	,t.GPExclCBAmt
@@ -71,15 +68,52 @@ SELECT
 	-- keep max name for consistency (is trans level)
 	,t.ShippedQty
 	,t.QuantityUnit
-
-	,t.FreeGoodsEstInd
-
 	-- Metrics <-
+
+
+	-- Time ->
+	,t.FiscalMonth
+	-- cal month in day
+	,t.day_key
+	-- Time <-
+
+	-- Customer Historic ->
+	,t.ShipTo
+	-- for BT metric counting (multisite)
+	,t.BillTo
+
+	,t.HIST_MarketClassKey
+	,t.SalesDivision_key
+	,t.HIST_BranchKey
+	-- add FSC, ISR, terr? or commm model NO, use commModel (Gary reservation, 5 Dec 24)
+	-- add the current / hist FSC code to the dim for auditing but now reporting
+	-- Customer Historic? YES <-
+
+	-- Item Historic ->
+	,t.ItemKey
+
+	,t.HIST_SupplierKey
+	,t.MinorProductClassKey
+	,ISNULL(t.global_product_class_key,0) AS global_product_class_key
+
+	,t.Excl_Key
+	-- Item Historic <-
+
+	-- GPS new dim to to GLBU rules
+	-- *** MISSING FROM EXCEL MODEL.   ADD TBD ***
+	,ISNULL(t.GpsKey, 0) AS GpsKey
+	-- *** MISSING FROM EXCEL MODEL.   ADD TBD ***
+	
 
 -- add new features for Planning ->
 -- only History feature key here.   if Current s/b in Dim
 -- two passes, bring over data, then map to Key where needed 
 -- fix null -> 0 | '' here
+
+		-- adj ->
+		,t.AdjCodeKey
+		-- adj detail dim?   TBD
+		-- adj <-
 
 		-- GL ->
 		-- DS GLBU
@@ -100,29 +134,7 @@ SELECT
 		,ISNULL(t.ENTITY_cb_key, 0) AS ENTITY_cb_key
 		-- GL <-
 
-		-- adj ->
-		,t.AdjCodeKey
-		-- adj detail dim?   TBD
-		-- adj <-
 
-		-- Item Historic ->
-		,t.ItemKey
-		,t.HIST_SupplierKey
-		,t.MinorProductClassKey
-		,ISNULL(t.global_product_class_key,0) AS global_product_class_key
-		,t.Excl_Key
-		,ISNULL(t.GpsKey, 0) AS GpsKey
-		-- Item Historic <-
-
-		-- Customer Historic ->
-		,t.ShipTo
-		-- for BT metric counting (multisite)
-		,t.BillTo
-		,t.HIST_MarketClassKey
-		,t.SalesDivision_key
-		,t.HIST_BranchKey
-		-- add FSC, ISR, terr?   or commm model
-		-- Customer Historic <-
 
 FROM        
 	[hfm].global_cube AS t
@@ -138,10 +150,11 @@ WHERE
 GO
 
 
+-- BI test
+select top 10 * from [Fact].[SaleVendor] where FiscalMonth = 202410
+
 /*
 
--- BI test
-select top 10 * from [Fact].[SaleVendor] 
 
 -- Testing
 
@@ -198,6 +211,9 @@ GROUP BY FiscalMonth
 */
 
 /*
+-- BI test - Legacy (ORG)
+-- note: set DB to BRSales (Prod) and set results to text output
+
 SELECT    
 	MIN(FiscalMonth) as FiscalMonth
 	,COUNT (*)  AS line_count
@@ -208,7 +224,9 @@ SELECT
 
 FROM            [Fact].[SaleVendor] AS t
 WHERE        
-	FiscalMonth =  202408
+	FiscalMonth =  202410
+GO
+
 */
 
 
@@ -264,7 +282,7 @@ NULL        0           NULL                  NULL                  NULL        
 
 */
 
-Select top 1000 * from [Fact].[SaleVendor] where FiscalMonth = 202410 and ExtChargebackAmt <> 0
+-- Select top 1000 * from [Fact].[SaleVendor] where FiscalMonth = 202410 and ExtChargebackAmt <> 0
 /*
 and ( 
 		hfm_gl_account_sales_key  is null OR
@@ -284,6 +302,8 @@ and (
 SELECT        FiscalMonth, HIST_BranchKey, HIST_MarketClassKey, HIST_SupplierKey, GLBU_ClassKey, AdjCodeKey, ShipTo, ItemKey, TotalSalesAmt, TotalGPAmt, TotalGPExclCBAmt, ExtChargebackAmt, ID_DS, BillTo
 FROM            Fact.SaleVendor
 */
+/*
+
 SELECT   
 TOP (10) 
 	ID_DS
@@ -300,6 +320,7 @@ TOP (10)
 	,ShippedQty
 	,QuantityUnit
 	,FreeGoodsEstInd
+	,FreeGoodsInvoicedInd
 	,GLBU_ClassKey
 	,hfm_gl_account_sales_key
 	,hfm_gl_account_cost_key
@@ -321,8 +342,8 @@ TOP (10)
 	,HIST_MarketClassKey
 	,SalesDivision_key
 	,HIST_BranchKey
-
 FROM
-
 	Fact.SaleVendor
+GO
 
+*/

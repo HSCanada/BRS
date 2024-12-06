@@ -8,8 +8,8 @@ ALTER VIEW [Dimension].[Customer]
 AS
 
 /******************************************************************************
-**	File: 
-**	Name: Customer
+**	File: [Dimension].[Customer]
+**	Name: Customer Current
 **	Desc:  
 **		
 **
