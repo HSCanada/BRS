@@ -1,4 +1,7 @@
 -- update discount to enable quick filter, tmc, 13 Mar 18
+-- add Private Label FG 
+-- add Private Label breakout, 13 Dec 24
+
 SET NOCOUNT ON;
 GO
 
@@ -10,7 +13,10 @@ SELECT
 	RTRIM(f.Branch)		AS Branch, 
 	RTRIM(i.SalesCategory) AS SalesCategory, 
 	t.OrderSourceCode, 
-	t.PriceMethod, 
+
+	CASE WHEN t.FreeGoodsInvoicedInd = 1 AND i.Label = 'P' THEN 'F' ELSE t.PriceMethod END as PriceMethod,
+--	t.PriceMethod, 
+
 	c.SalesDivision, 
 
 	RTRIM(t.HIST_SegCd)		AS SegCd,
@@ -25,7 +31,8 @@ SELECT
 	SUM(t.GPAtCommCostAmt) AS GPAtCommCostAmt,
 	SUM(t.GPAmt)		AS GPAmt,
 	RTRIM(MIN([HIST_MarketClass]))  AS MarketClass,
-	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
+	CASE WHEN i.Label = 'P' THEN 'P' ELSE 'B' END AS LabelShow
+--	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END AS DentalCorpInd
 
 	-- test
 	-- ,t.Shipto
@@ -52,11 +59,14 @@ FROM
 
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
-	(t.FreeGoodsInvoicedInd = 0)  And 
 	(
-		(t.FiscalMonth BETWEEN 202401 and 202410) OR
-		(t.FiscalMonth BETWEEN 202301 and 202310)
+		(t.FiscalMonth BETWEEN 202401 and 202411) OR
+		(t.FiscalMonth BETWEEN 202301 and 202311)
 	) AND
+	(
+		t.FreeGoodsInvoicedInd = 0 OR
+		(t.FreeGoodsInvoicedInd = 1 AND i.Label = 'P')
+	)  AND 
 
 	-- test with quote exclude
 	-- (Branch = 'OTTWA') AND
@@ -75,14 +85,20 @@ GROUP BY
 	f.Branch, 
 	i.SalesCategory, 
 	t.OrderSourceCode, 
-	t.PriceMethod, 
+
+	-- break out private label Free goods as these are not redeemed
+	CASE WHEN t.FreeGoodsInvoicedInd = 1 AND i.Label = 'P' THEN 'F' ELSE t.PriceMethod END,
+--	t.PriceMethod, 
+
 	c.SalesDivision, 
 
 	-- fixed 12 Nov 21
 	t.HIST_SegCd,
 	--	c.SegCd,
 
-	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END 
+	-- replace DCC rollup with HSB to show Private Label discount
+	CASE WHEN i.Label = 'P' THEN 'P' ELSE 'B' END
+--	CASE WHEN c.billto = 2613256 THEN 1 ELSE 0 END 
 
 	-- test
 	-- ,t.shipto
@@ -100,3 +116,6 @@ ORDER BY 1
 -- Use BRSales 
 -- Update end dates; set Results to Text, tab-delim
 -- run!
+
+-- ORG 35 902 rows, 16s
+-- NEW 54 171, 17s

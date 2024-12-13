@@ -254,6 +254,8 @@ SELECT
 
 	,RTRIM(seg_new.SegName)	+ ' | ' + RTRIM(seg_new.SegCd)		AS SegmentNew
 
+	,ISNULL(last_dec.[HIST_MarketClass], '')		AS LastDec_MarketClass
+	,ISNULL(last_dec.[HIST_SegCd], '')				AS LastDec_SegCd
 
 
 FROM
@@ -343,7 +345,7 @@ FROM
 	)  padj
 	ON c.BillTo = padj.BillTo
 
-	-- wheel graft on last month results
+	-- wheel graft on last month results (USED?)
 	LEFT JOIN 
 	(
 		SELECT [Shipto]
@@ -363,6 +365,17 @@ FROM
 	) cwheel
 	ON c.ShipTo = cwheel.Shipto
 
+	-- add last Dec Market to current for Planning organic vs reclass segment growth
+	LEFT JOIN 
+	(
+		SELECT 
+		  [Shipto]
+		  ,[HIST_MarketClass]
+		  ,[HIST_SegCd]
+	  FROM [dbo].[BRS_CustomerFSC_History]
+	  WHERE FiscalMonth = (SELECT ROUND(PriorFiscalMonth - 100, -2)+12 FROM BRS_Config) --202312 -- (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
+	) last_dec
+	ON c.ShipTo = last_dec.Shipto
 
 --	CROSS JOIN BRS_Customer_Spend_Category AS spend
 
@@ -407,3 +420,5 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 -- SELECT  * FROM Dimension.Customer where ShipTo = 1667465
  --SELECT  * FROM Dimension.Customer where FscTerritoryCd = 'CZ1LG'
+
+ SELECT  top 10 * FROM Dimension.Customer

@@ -421,3 +421,214 @@ select t.*  from [dbo].[BRS_TransactionDW] t where t.date >= '2021-01-01' and t.
 --select count(*), min(t.salesdate), max(t.salesdate) from [dbo].[BRS_Transaction] t where t.doctype <> 'AA' AND t.SalesDate >= '2021-01-01' and t.SalesDate <= '2021-08-30' and exists (SELECT * from [dbo].[BRS_TransactionDW] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType  and t.LineNumber = ext.LineNumber)
 
 select top 1000 t.* from [dbo].[BRS_Transaction] t where t.SalesDate >= '2022-01-01' and t.SalesDate <= '2021-08-30' and t.doctype <> 'AA' and t.GLBU_Class not in ('FREIG') AND exists (SELECT * from [dbo].[BRS_TransactionDW] ext where t.SalesOrderNumber = ext.SalesOrderNumber and t.DocType = ext.DocType and t.LineNumber = ext.LineNumber)
+
+
+-- BI Planning, tmc,  6 Dec 24 adds
+
+-- cust hist key
+-- 1min
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD
+	cust_hist_key int NOT NULL Identity(1,1)
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History ADD CONSTRAINT
+	BRS_CustomerFSC_History_u_idx3 UNIQUE NONCLUSTERED 
+	(
+	cust_hist_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE dbo.BRS_CustomerFSC_History SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- item hist
+BEGIN TRANSACTION
+GO
+EXECUTE sp_rename N'dbo.BRS_ItemHistory.ID', N'Tmp_item_hist_key', 'COLUMN' 
+GO
+EXECUTE sp_rename N'dbo.BRS_ItemHistory.Tmp_item_hist_key', N'item_hist_key', 'COLUMN' 
+GO
+ALTER TABLE dbo.BRS_ItemHistory SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--34s
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_ItemHistory ADD CONSTRAINT
+	BRS_ItemHistory_u_idx_3 UNIQUE NONCLUSTERED 
+	(
+	item_hist_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE dbo.BRS_ItemHistory SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- support for salesorder DIM
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD
+	ID_DS_xref int NULL
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext ADD CONSTRAINT
+	FK_BRS_TransactionDW_Ext_BRS_Transaction FOREIGN KEY
+	(
+	ID_DS_xref
+	) REFERENCES dbo.BRS_Transaction
+	(
+	ID
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+CREATE NONCLUSTERED INDEX BRS_TransactionDW_Ext_idx_03 ON dbo.BRS_TransactionDW_Ext
+	(
+	ID_DS_xref
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE dbo.BRS_TransactionDW_Ext SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- pre-populdate data, move code to DS ME commission
+
+truncate table zzzshipto
+
+insert into [dbo].[zzzShipto] ([ST], note)
+
+select 
+--top 10 
+SalesOrderNumber
+--, LineNumber
+, DocType
+--, ID 
+--, count (*)
+from BRS_Transaction t
+inner join zzzShipto
+ON t.SalesOrderNumber = st
+
+where
+--	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
+	t.SalesOrderNumber <>0 and
+	t.SalesOrdernumber = 15145412 and
+--	t.DocType = 'AA' AND
+	(1=1)
+group by 
+SalesOrderNumber
+--, LineNumber
+, DocType
+
+--having doctype = 'aa'
+
+-- update
+
+
+select 
+-- top 10
+SalesOrderNumber
+, DocType
+, MIN(ID) first_line
+from BRS_Transaction t
+where
+--	t.fiscalmonth = 202401 and
+	t.SalesOrderNumber <>0 and
+	t.SalesOrdernumber = 14146847 AND
+	 t.DocType <> 'AA' AND
+	(1=1)
+group by 
+SalesOrderNumber
+, DocType
+
+
+SELECT   TOP (10) SalesOrderNumber, DocType, ID_DS_xref
+FROM     BRS_TransactionDW_Ext ext
+inner join 
+(
+	select 
+	-- top 10
+	SalesOrderNumber
+	, DocType
+	, MIN(ID) first_line
+	from BRS_Transaction t
+	where
+	--	t.fiscalmonth = 202401 and
+		t.SalesOrderNumber <>0 and
+		 t.DocType <> 'AA' AND
+		(1=1)
+	group by 
+	SalesOrderNumber
+	, DocType
+) upd
+on ext.SalesOrderNumber = upd.SalesOrderNumber and ext.DocType = upd.DocType
+
+
+UPDATE  BRS_TransactionDW_Ext
+SET        ID_DS_xref = NULL
+where ID_DS_xref is not NULL
+
+-- map salesorder to the FIRST line of the order from the Daily Sales Transactions - 1
+UPDATE  BRS_TransactionDW_Ext
+SET        ID_DS_xref = upd.first_line
+FROM     BRS_TransactionDW_Ext INNER JOIN
+        (SELECT   SalesOrderNumber, DocType, MIN(ID) AS first_line
+        FROM     BRS_Transaction AS t
+        WHERE   (SalesOrderNumber <> 0) AND (DocType <> 'AA') AND (1 = 1)
+        GROUP BY SalesOrderNumber, DocType) AS upd ON BRS_TransactionDW_Ext.SalesOrderNumber = upd.SalesOrderNumber AND BRS_TransactionDW_Ext.DocType = upd.DocType
+WHERE ID_DS_xref is NULL
+
+-- map salesorder to the FIRST line of the order from the Daily Sales Transactions - 2
+UPDATE  BRS_TransactionDW_Ext
+SET        ID_DS_xref = upd.first_line
+FROM     BRS_TransactionDW_Ext INNER JOIN
+        (SELECT   SalesOrderNumber, DocType, MIN(ID) AS first_line
+        FROM     BRS_Transaction AS t
+        WHERE   (SalesOrderNumber <> 0) AND (DocType <> 'AA') AND (1 = 1)
+        GROUP BY SalesOrderNumber, DocType) AS upd ON BRS_TransactionDW_Ext.SalesOrderNumber = upd.SalesOrderNumber 
+WHERE 
+BRS_TransactionDW_Ext.[DocType] = 'AA' AND
+ID_DS_xref is NULL
+
+
+select * from BRS_TransactionDW_Ext where SalesOrderNumber = 14146847
+
+SELECT [Shipto]
+	--,[wheel_active_ind]
+	,wheel_thresh1_sales_ind
+	,wheel_thresh2_recent_order_ind
+
+	,[wheel_seg1_merchandise_ind]
+	,[wheel_seg2_hs_branded_ind]
+	,[wheel_seg3_equip_hitech_ind]
+	,[wheel_seg4_digital_restoration_ind]
+	,[wheel_seg5_henry_schein_one_ind]
+	,[wheel_seg6_equipment_services_ind]
+	,[wheel_seg7_business_solutions_ind]
+FROM [dbo].[BRS_CustomerFSC_History]
+WHERE FiscalMonth = 202410
+
+
+select PriorFiscalMonth, ROUND(PriorFiscalMonth - 100, -2)+12 from BRS_Config
+
+
+
+SELECT   item_hist_key, ItemCode, FiscalMonth, SupplierCode, Supplier, MinorProductClass, Major, SubMajor, Minor, label, LabelDesc, Excl_key, Excl_Code, Excl_Name, BrandEquityCategory, ProductCategory, EffectivePeriod, ExpiredPeriod, Excl_Code_Public
+FROM     Dimension.ItemHistory

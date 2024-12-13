@@ -34,12 +34,13 @@ AS
 **	28 Nov 24	tmc		refactor to serve as planning backend, base on VendorCat
 **	29 Nov 24	tmc		add facts for Planning
 **  06 Dec 24	tmc		org dimensions for Planning 
+**	10 Dec 24	tmc		add salesorder xref for SO dimension
 **    
 *******************************************************************************/
 
 	SELECT   
 
-	-- Metrics ->
+	--> Metrics
 
 	-- ID
 		t.ID										
@@ -48,13 +49,28 @@ AS
 	-- Orders and flags ->
 		,t.SalesOrderNumber
 		,t.LineNumber
-		,doc_source.source_key
+		,t.DocType
+
+		-- ds source
 		,doct.SourceCd
+		-- comm source
+		,doc_source.source_key
 		,gl_bu.ReportingClass 
 		,doc_source.source_global_desc				AS REPORTING_SOURCE
 		,t.FreeGoodsEstInd
+		,dw.OrderPromotionCode
+		,dw.PromotionCode
+		,t.OrderSourceCode
+		,dw.EnteredBy
+		,dw.OrderTakenBy
+
+		,dw.[CustomerPOText1]
+		,dw.EquipmentOrderType
+		,dw.EquipmentOrderNumber
+
 		-- reminder that FG invoiced is from the DW (qty) and if left joined to the DS
 		,ISNULL(dw.FreeGoodsInvoicedInd, 0) AS FreeGoodsInvoicedInd
+		,ext.[ID_DS_xref]
 		,'LOC'										AS CURRENCY
 		,'WRKNG'									AS VERSION
 
@@ -69,42 +85,47 @@ AS
 		-- invert the sign intentional:  CBs lower costs, 31 Mar 18
 		,-(ISNULL(t.[ExtChargebackAmt],0))			AS ext_chargeback
 		,ISNULL(dw.ShippedQty * size_unit_rate,0) AS QuantityUnit
-	-- Metrics <-
+	--< Metrics
 
-	-- Time ->
+	--> Time
 		,t.FiscalMonth								
 		,t.FiscalMonth								AS PERIOD
 		,sales_day.day_key
 --		,t.FiscalMonth / 100	AS fiscal_year
-	-- Time <-
+	--< Time
 
-	-- Customer Historic ->
+	--> Customer Historic 
 		,t.Shipto
 		,c.BillTo
 
-		,cmarket.MarketClassKey						AS HIST_MarketClassKey
-		,ch.HIST_MarketClass
-		,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
-		,cspec.specialty_key
-		,RTRIM(ch.HIST_Specialty)					AS CUSTOMER_SPECIALTY
+		,ch.cust_hist_key
 
-		,sdiv.SalesDivision_key
-		,t.SalesDivision
+			,cmarket.MarketClassKey						AS HIST_MarketClassKey
+			,ch.HIST_MarketClass
+			,RTRIM(ch.HIST_MarketClass)					AS CUSTOMER
+			,cspec.specialty_key
+			,RTRIM(ch.HIST_Specialty)					AS CUSTOMER_SPECIALTY
 
-		,br.BranchKey								AS HIST_BranchKey
-		,t.Branch
+			,sdiv.SalesDivision_key
+			,t.SalesDivision
 
-	-- Customer Historic? YES <-
+			,br.BranchKey								AS HIST_BranchKey
+			,t.Branch
 
-	-- Item Historic ->
+	--< Customer Historic
+
+	--> Item Historic
 
 		-- item
 		,i.ItemKey
+		,ih.item_hist_key
+
 		,t.Item
-		,dw.Item  item_dw
+		--,dw.Item  item_dw
 
 		-- supplier
 		,isup.SupplierKey							AS HIST_SupplierKey
+
 		-- break out wand supplier
 		,CASE 
 			WHEN excl.Excl_Code_Public = 'COMPUDENT' 
@@ -155,7 +176,8 @@ AS
 		-- glove units (dim item curr)
 		,i.size_unit_rate
 
-	-- Item Historic <-
+	--< Item Historic
+
 
 	--> GPS new dim to to GLBU rules
 		,gps.GpsKey
@@ -163,14 +185,30 @@ AS
 
 	--< GPS new dim to to GLBU rules
 
-		-- adj ->
+	-- fin adj segmented (DS)->
+		,t.[SalesOrderNumberKEY]	AS  AdjBatchNum
+		,t.[AdjNum]
+		,t.[AdjCode]
+		,t.[AdjNote]
+		,t.[Warehouse]				AS AdjRemark
+		,t.[CustomerPOText1]		AS AdjSource
+		,t.[AdditionalWarehouse]	AS AdjOwner
+		,t.[ARInvoiceDocType]		AS AdjGLDocType
 		,adj.AdjCodeKey
-		,t.AdjCode
-		-- adj <-
+		,adj.AdjType
+		,adj.AdjCodeDesc
+		,adj.AdjLevel
+		,adj.AdjClass
+
+		-- fin adj segmented (DS) <-
+
+		-- promo
+		,promo_line.promotion_key	AS promoline_promotion_key
 
 		-- GL ->
 		,gl_bu.GLBU_ClassKey
 
+		-- phase2
 		,cc_sales.[Entity]							AS ENTITY_sales
 		,cc_cost.[Entity]							AS ENTITY_cost
 		,cc_cb.[Entity]								AS ENTITY_cb
@@ -209,6 +247,8 @@ AS
 		,hfm_cb.gl_account_key		hfm_gl_account_cb_key
 
 		-- GL <-
+
+
 
 	FROM         
 		[dbo].[BRS_Transaction] AS t 
@@ -319,6 +359,11 @@ AS
 			-- test
 			(1=1)
 
+		-- salesorder
+		LEFT JOIN [dbo].[BRS_TransactionDW_Ext] ext
+		ON t.[SalesOrderNumber] = ext.[SalesOrderNumber] AND
+		t.DocType = ext.doctype
+
 		-- day
 		INNER JOIN [dbo].[BRS_SalesDay] sales_day
 		ON t.[SalesDate] = sales_day.SalesDate
@@ -326,6 +371,10 @@ AS
 		-- salesdiv history
 		INNER JOIN [dbo].[BRS_SalesDivision] sdiv
 		ON t.SalesDivision = sdiv.SalesDivision
+
+		-- promo line
+		LEFT JOIN [dbo].[BRS_Promotion] promo_line
+		ON dw.PromotionCode = promo_line.PromotionCode
 
 
 	WHERE
@@ -511,4 +560,6 @@ WHERE
 
 SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
 
+-- SELECT count (*) FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
+-- ORG 313 988
 

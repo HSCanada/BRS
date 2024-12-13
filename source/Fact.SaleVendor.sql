@@ -9,8 +9,9 @@ AS
 
 /******************************************************************************
 **	File: 
-**	Name: Sale
-**	Desc:  
+**	Name: [Fact].[SaleVendor] (i)
+**	Desc:  used for Planning Cube (BI backend)
+** (i) add financial info here and rename later
 **		
 **
 **              
@@ -37,12 +38,14 @@ AS
 --	28 Nov 24	tmc		swap out backend for financial BI cube (more detail)
 --  29 Nov 24	tmc		add facts for Planning
 --	05 Dec 24	tmc	    add dimensions for Planning 
+--	06 Dec 24	tmc		migrate needed info from [hfm].global_cube_proc 
 **    
 *******************************************************************************/
 
--- add financial info here and rename later
 
 SELECT        
+	-- for dev speedup
+--	top 100
 
 	-- Metrics ->
 
@@ -54,10 +57,23 @@ SELECT
 	-- Orders and flags ->
 	,t.SalesOrderNumber
 	,t.LineNumber
+	,t.DocType
+	-- xref used for salesorder dimension
+	,ISNULL(t.[ID_DS_xref], 0)		AS ID_DS_xref
 	-- doctype in source_key
 	,t.source_key
+
 	,t.FreeGoodsEstInd
 	,t.FreeGoodsInvoicedInd
+
+	,t.OrderPromotionCode
+	,t.PromotionCode
+	,t.OrderSourceCode
+	,t.EnteredBy
+	,t.OrderTakenBy
+	,t.[CustomerPOText1]
+	,t.EquipmentOrderType
+	,t.EquipmentOrderNumber
 
 	-- metrics core
 	,t.NetSalesAmt
@@ -79,22 +95,24 @@ SELECT
 
 	-- Customer Historic ->
 	,t.ShipTo
-	-- for BT metric counting (multisite)
+	-- for BT metric counting (multisite lines by billto)
 	,t.BillTo
+	,t.cust_hist_key
 
-	,t.HIST_MarketClassKey
-	,t.SalesDivision_key
-	,t.HIST_BranchKey
-	-- add FSC, ISR, terr? or commm model NO, use commModel (Gary reservation, 5 Dec 24)
-	-- add the current / hist FSC code to the dim for auditing but now reporting
-	-- Customer Historic? YES <-
+		-- pull this from the customer historical
+		,t.HIST_MarketClassKey
+		,t.SalesDivision_key
+		,t.HIST_BranchKey
+
+		-- add FSC, ISR, terr? or commm model NO, use commModel (Gary reservation, 5 Dec 24)
+		-- add the current / hist FSC code to the dim for auditing but now reporting
+		-- Customer Historic? YES <-
 
 	-- Item Historic ->
 	,t.ItemKey
-
-	,t.HIST_SupplierKey
-	,t.MinorProductClassKey
-	,ISNULL(t.global_product_class_key,0) AS global_product_class_key
+	,t.item_hist_key
+		,t.HIST_SupplierKey
+		,t.MinorProductClassKey
 
 	,t.Excl_Key
 	-- Item Historic <-
@@ -103,17 +121,29 @@ SELECT
 	-- *** MISSING FROM EXCEL MODEL.   ADD TBD ***
 	,ISNULL(t.GpsKey, 0) AS GpsKey
 	-- *** MISSING FROM EXCEL MODEL.   ADD TBD ***
-	
 
--- add new features for Planning ->
--- only History feature key here.   if Current s/b in Dim
--- two passes, bring over data, then map to Key where needed 
--- fix null -> 0 | '' here
+	-- this is at the fact level due to Equpment CadCAm unit sales
+	-- product A & B need to be sold on same order to be counted C
+	,ISNULL(t.global_product_class_key,0) AS global_product_class_key
 
 		-- adj ->
-		,t.AdjCodeKey
-		-- adj detail dim?   TBD
+	,t.AdjBatchNum
+	,t.[AdjNum]
+	,t.[AdjCode]
+	,t.[AdjNote]
+	,t.[AdjRemark]
+	,t.[AdjSource]
+	,t.[AdjOwner]
+	,t.AdjGLDocType
+	,t.AdjCodeKey
+	,t.AdjType
+	,t.AdjCodeDesc
+	,t.AdjLevel
+	,t.AdjClass
+		
 		-- adj <-
+
+	,t.promoline_promotion_key
 
 		-- GL ->
 		-- DS GLBU
@@ -123,7 +153,7 @@ SELECT
 		,ISNULL(t.hfm_gl_account_sales_key, 0) AS hfm_gl_account_sales_key
 		,ISNULL(t.hfm_gl_account_cost_key, 0) AS hfm_gl_account_cost_key
 		,ISNULL(t.hfm_gl_account_cb_key, 0) AS hfm_gl_account_cb_key
-
+		/*
 		,ISNULL(t.ACCOUNT_sales_key, 0) AS ACCOUNT_sales_key
 		,ISNULL(t.ACCOUNT_cost_key, 0) AS ACCOUNT_cost_key
 		,ISNULL(t.ACCOUNT_cb_key, 0) AS ACCOUNT_cb_key
@@ -132,6 +162,7 @@ SELECT
 		,ISNULL(t.ENTITY_sales_key, 0) AS ENTITY_sales_key
 		,ISNULL(t.ENTITY_cost_key, 0) AS ENTITY_cost_key
 		,ISNULL(t.ENTITY_cb_key, 0) AS ENTITY_cb_key
+		*/
 		-- GL <-
 
 
@@ -144,6 +175,8 @@ WHERE
 	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
 
 	(t.FreeGoodsEstInd = 0) AND 
+
+
 	(1 = 1)
 
 
@@ -151,7 +184,10 @@ GO
 
 
 -- BI test
-select top 10 * from [Fact].[SaleVendor] where FiscalMonth = 202410
+-- select top 10 * from [Fact].[SaleVendor] where FiscalMonth = 202410
+
+-- select count (*) from [Fact].[SaleVendor] where FiscalMonth = 202410
+-- ORG 8 776 614 @ 21s
 
 /*
 
@@ -302,48 +338,68 @@ and (
 SELECT        FiscalMonth, HIST_BranchKey, HIST_MarketClassKey, HIST_SupplierKey, GLBU_ClassKey, AdjCodeKey, ShipTo, ItemKey, TotalSalesAmt, TotalGPAmt, TotalGPExclCBAmt, ExtChargebackAmt, ID_DS, BillTo
 FROM            Fact.SaleVendor
 */
-/*
 
+-- BI source
 SELECT   
-TOP (10) 
+
+	top 10 
 	ID_DS
 	,ID_DW
-	,FiscalMonth
-	,day_key
+
 	,SalesOrderNumber
-	,source_key
 	,LineNumber
+	,source_key
+
+	,FreeGoodsEstInd
+	,FreeGoodsInvoicedInd
+
 	,NetSalesAmt
 	,GPAmt
 	,GPExclCBAmt
 	,ExtChargebackAmt
 	,ShippedQty
 	,QuantityUnit
-	,FreeGoodsEstInd
-	,FreeGoodsInvoicedInd
-	,GLBU_ClassKey
-	,hfm_gl_account_sales_key
-	,hfm_gl_account_cost_key
-	,hfm_gl_account_cb_key
-	,ACCOUNT_sales_key
-	,ACCOUNT_cost_key
-	,ACCOUNT_cb_key
-	,ENTITY_sales_key
-	,ENTITY_cost_key
-	,ENTITY_cb_key
-	,AdjCodeKey
+
+	,FiscalMonth
+	,day_key
+
+
+-- xx
+	,ShipTo
+	,Billto
+	,cust_hist_key
+		,HIST_MarketClassKey
+		,SalesDivision_key
+		,HIST_BranchKey
+
+
 	,ItemKey
-	,HIST_SupplierKey
-	,MinorProductClassKey
+	,item_hist_key
+		,HIST_SupplierKey
+		,MinorProductClassKey
 	,global_product_class_key
 	,Excl_Key
 	,GpsKey
-	,ShipTo
-	,HIST_MarketClassKey
-	,SalesDivision_key
-	,HIST_BranchKey
+
+	,AdjCodeKey
+
+	,GLBU_ClassKey
+
+	-- phase 2 (9 new dim)
+	,hfm_gl_account_sales_key
+	,hfm_gl_account_cost_key
+	,hfm_gl_account_cb_key
+
+
 FROM
 	Fact.SaleVendor
-GO
+WHERE
+	-- test
+--	SalesOrderNumber <> 0 AND
+	FiscalMonth = 202410 AND
+--	[ID_DS_xref] = 0
+	(1=1)
+	--
 
-*/
+
+-- SELECT   distinct FiscalMonth FROM 	Fact.SaleVendor

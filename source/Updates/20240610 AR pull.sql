@@ -61,12 +61,12 @@ GO
 
 -- select top 10 * from [Integration].[F56CUSA2_CUSINF2A]
 -- select count (*) from [Integration].[F56CUSA2_CUSINF2A]
--- 65 811
+-- 65 874
 
 --
 -- truncate table Integration.F56CUSA2_CUSINF2A
 
-
+-- 40s
 INSERT INTO [Integration].[F56CUSA2_CUSINF2A]
 (
 		[A5AN8__billto]

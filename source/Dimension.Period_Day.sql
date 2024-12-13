@@ -4,13 +4,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER VIEW [Dimension].[Period]
+ALTER VIEW [Dimension].[Day]
 AS
 
 /******************************************************************************
 **	File: 
-**	Name: Date
-**	Desc:  
+**	Name: [Dimension].[Day]
+**	Desc: Fiscal Day with Fiscal month rollups (add cal, re US?)
 **		
 **
 **              
@@ -32,34 +32,43 @@ AS
 **	31 Jul 17	tmc		change from daily to monthly    
 **	29 Aug 17	tmc		change to dynamic dat
 **  14 Sep 17	tmc		renamed to Period
-**	24 Apr 24	tmc		add inside sales quarter gowth support
+--	22 Feb 18	tmc		copied from Period and converted to day
+--	15 Nov 18	tmc		Add fiscal week logic
 *******************************************************************************/
 
 SELECT
-
-	fm.FiscalMonth
+	CAST(d.SalesDate as Date) as SalesDate
+	,[SalesDay]
+	,d.SalesDate SalesDate_ORG
+	,[day_key]
+	,d.DaySeq
+	,d.DayNumber
+	,d.DayType
+	,fm.FiscalMonth
 	,RTRIM(fm.MonthName) AS MonthName
 	,fm.MonthNum
-	,'Q' + CAST(fm.QuarterNum AS char) AS QuarterName
+	,'Q' + CAST(fm.QuarterNum AS char)	AS QuarterName
 	,fm.YearNum
 
 	,fm.WorkingDaysMonth
 	,fm.MonthSeq
 	,fm.FirstMonthSeqInQtr
 	,fm.FirstMonthSeqInYear
-	,CAST(fm.LastWorkingDt as date)		AS LastWorkingDay
-
-	-- this code maps prior year quarters to current quarter so that we can compare QoQ using current ISR reps
-	,(((select PriorFiscalMonth / 100 from BRS_Rollup_Support01) - fm.YearNum) * 12) + fm.FirstMonthSeqInQtr  as RetroFirstMonthSeqInQtr
+	,d.FiscalWeek						AS FirstWeekSeqInDay
+	,[CalWeek]
+	,[FiscWeekName]
 
 FROM
-	BRS_FiscalMonth AS fm 
+	BRS_SalesDay d
+
+	INNER JOIN BRS_FiscalMonth AS fm 
+	on d.FiscalMonth = fm.FiscalMonth
 
 
 WHERE
-	fm.FiscalMonth BETWEEN 
-		(SELECT YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01) AND 
-		(SELECT PriorFiscalMonth FROM BRS_Rollup_Support01)
+	d.FiscalMonth >= (SELECT YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01) AND 
+	d.salesdate <= (SELECT [SalesDateLastWeekly] FROM [dbo].[BRS_Config]) AND
+	(1=1)
 
 GO
 
@@ -70,14 +79,5 @@ GO
 
 -- Select PriorFiscalMonth, YearFirstFiscalMonth_HIST FROM BRS_Rollup_Support01
 
--- SELECT  * FROM Dimension.Period order by 1 desc
-
- -- update BRS_Config set PriorFiscalMonth = 202404
-
- -- test retro logic
- /*
- SELECT  * FROM Dimension.Period p
- left join Dimension.Period pp on p.RetroFirstMonthSeqInQtr = pp.MonthSeq
- order by 1 desc
- */
---select * from BRS_Rollup_Support01
+-- SELECT  top 10 * FROM Dimension.Day order by 1 desc
+-- SELECT  * FROM Dimension.Day where FirstWeekSeqInDay = 12499
