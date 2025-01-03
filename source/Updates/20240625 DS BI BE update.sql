@@ -632,3 +632,15 @@ select PriorFiscalMonth, ROUND(PriorFiscalMonth - 100, -2)+12 from BRS_Config
 
 SELECT   item_hist_key, ItemCode, FiscalMonth, SupplierCode, Supplier, MinorProductClass, Major, SubMajor, Minor, label, LabelDesc, Excl_key, Excl_Code, Excl_Name, BrandEquityCategory, ProductCategory, EffectivePeriod, ExpiredPeriod, Excl_Code_Public
 FROM     Dimension.ItemHistory
+
+
+-- add CB backup for DS FG  work-around
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Transaction ADD
+	ExtChargebackAmtORG money NULL
+GO
+ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT

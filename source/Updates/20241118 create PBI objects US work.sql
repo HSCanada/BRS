@@ -7,37 +7,264 @@ CREATE SCHEMA [pbi] AUTHORIZATION [dbo]
 GO
 
 
---drop  VIEW [pbi].[RLS_Users]
-
-CREATE VIEW [pbi].[RLS_Users]
-AS
-SELECT        SamAccountName, EmailAddress
-FROM            dbo.BRS_Employee
-WHERE        (SamAccountName <> '')
-GO
-
-
---
+-- ISR Master Accounts (1 of 3)
+-- 14 accounts
 
 -- drop VIEW [pbi].[RLS_TBL_Telesales]
+-- we need a row for every territory, ensure the Names are the same for dups
 
-CREATE VIEW [pbi].[RLS_TBL_Telesales]
+-- copy this for each business, FSC, Branch, ISR
+
+ALTER VIEW [pbi].[RLS_TBL_Telesales]
 AS
-SELECT        comm_salesperson_key_id AS [Rep Name], TerritoryCd, 'T_LEVEL4_CD' AS [Filter Field], { fn CONCAT('T_LEVEL4_CD', TerritoryCd) } AS [Permission Level], order_taken_by
-FROM            dbo.BRS_FSC_Rollup
-WHERE        (TerritoryCd LIKE 'D%') AND (SamAccountName <> '') AND (order_taken_by <> '')
+SELECT
+	sm.salesperson_nm AS [Rep Name], TerritoryCd, 'T_LEVEL4_CD' AS [Filter Field], { fn CONCAT('T_LEVEL4_CD', TerritoryCd) } AS [Permission Level], order_taken_by, sm.comm_plan_id, sm.salesperson_key_id, sm.master_salesperson_cd, f.SamAccountName
+FROM
+	dbo.BRS_FSC_Rollup f
+	INNER JOIN [comm].[salesperson_master] sm
+	ON sm.salesperson_key_id = comm_salesperson_key_id
+WHERE
+	EXISTS (SELECT * FROM [dbo].[BRS_Customer] c WHERE f.TerritoryCd = c.TsTerritoryCd) AND
+--	(TerritoryCd LIKE 'D%') AND 
+--	(sm.comm_plan_id like 'ISRGP%') AND (sm.comm_plan_id <> 'ISRGP00') AND
+	-- cleanup (should be in comm Plan)
+--	(SamAccountName <> '') AND 
+--	(order_taken_by <> '') AND
+	(1=1)
 GO
+
+
+-- Cassandra - how to we handle Branches and duplicate FSCs?  (set FSC = Master to remove dups)
+-- FSC Master Accounts (1 of 3)
+-- x accounts
+
+-- drop VIEW [pbi].[FSC_TBL_Fieldsales]
+
+ALTER VIEW [pbi].[RLS_TBL_Fieldsales]
+AS
+SELECT
+	sm.salesperson_nm AS [Rep Name],
+	TerritoryCd,
+	'F_LEVEL4_CD' AS [Filter Field],
+	{ fn CONCAT('F_LEVEL4_CD',
+	TerritoryCd) } AS [Permission Level],
+	order_taken_by,
+	sm.comm_plan_id,
+	sm.salesperson_key_id,
+	sm.master_salesperson_cd,
+	f.[SamAccountName]
+FROM
+	dbo.BRS_FSC_Rollup f
+
+	INNER JOIN [comm].[salesperson_master] sm
+	ON sm.salesperson_key_id = comm_salesperson_key_id
+WHERE
+	EXISTS (SELECT * FROM [dbo].[BRS_Customer] c WHERE f.TerritoryCd = c.TerritoryCd) AND
+	-- remove CORP from FSC where same as Branch
+	NOT EXISTS (SELECT * FROM [dbo].[BRS_Branch] b WHERE f.TerritoryCd = b.Branch) AND
+
+--	(TerritoryCd LIKE 'D%') AND 
+--	(sm.comm_plan_id like 'ISRGP%') AND (sm.comm_plan_id <> 'ISRGP00') AND
+	-- cleanup (should be in comm Plan)
+--	(SamAccountName <> '') AND 
+--	(order_taken_by <> '') AND
+	(1=1)
+-- ORDER BY 1
+
+UNION ALL
+
+SELECT
+	f.FSCName  AS [Rep Name],
+	b.branch as TerritoryCd,
+	'F_LEVEL2_CD' AS [Filter Field],
+	{ fn CONCAT('F_LEVEL2_CD',
+	b.branch) } AS [Permission Level],
+	RTrim(f.order_taken_by) as order_taken_by,
+	'.' AS comm_plan_id,
+	'.' AS salesperson_key_id,
+	'.' AS master_salesperson_cd,
+	f.[SamAccountName]
+
+FROM
+	[dbo].[BRS_Branch] b
+
+	INNER JOIN [dbo].[BRS_FSC_Rollup] f 
+	ON b.branch = f.branch AND
+	f.TerritoryCd = f.Branch
+WHERE
+--	EXISTS (SELECT * FROM [dbo].[BRS_Customer] c WHERE f.TerritoryCd = c.TerritoryCd) AND
+	(1=1)
+-- ORDER BY 1
+
+GO
+
+select TerritoryCd, count(*) from [pbi].[RLS_TBL_Fieldsales]
+group by TerritoryCd
+having count(*) > 1
+
+
+-- add Branch to FSC to help with BI permiss hierachy
+
+INSERT INTO BRS_FSC_Rollup
+             (TerritoryCd, FSCName, group_type, Branch)
+SELECT   Branch, BranchName, 'AAFS' AS group_type, Branch AS Expr1
+FROM     BRS_Branch AS b
+WHERE   (Branch NOT IN ('CORP', '', 'EDMOM', 'SJOHN'))
+
+
+SELECT   b.Branch, b.BranchName,  'AAFS' AS group_type
+FROM     BRS_Branch AS b 
+where b.branch not in ('CORP', '', 'EDMOM', 'SJOHN')
+
+
+
+-- ISR Sam / email (2 of 3)
+--14 Accounts
+
+--drop  VIEW [pbi].[RLS_Users]
+
+-- Add add users to Row Level Secity -- TC Fix
+-- SAM is the PK
+
+ALTER VIEW [pbi].[RLS_Users]
+AS
+SELECT
+	SamAccountName, e.[LoginId], e.[EmailAddress], [office], [EmployeeKey] 
+FROM
+	dbo.BRS_Employee e
+WHERE
+	(
+		(EXISTS (SELECT * from [pbi].[RLS_TBL_Telesales] t where t.SamAccountName  = e.SamAccountName)) OR
+		(EXISTS (SELECT * from [pbi].[RLS_TBL_Fieldsales] f where f.SamAccountName  = e.SamAccountName)) OR
+		(EXISTS (SELECT * from [pbi].[RLS_Permission_Commision] c where c.SamAccountName  = e.SamAccountName)) 
+
+	) AND
+	(1=1)
+GO
+
+-- ISR map (3 of 3)
+-- drop VIEW [pbi].[RLS_Permission] (3 of 3)
+
+--  ALL Row level securt, ALL Telesales (T lvl4), Fieldsales (F lvv4), UNION Branch (F lvl 2)
+ALTER VIEW [pbi].[RLS_Permission]
+AS
+SELECT
+	t.TerritoryCd, t.[Permission Level], t.[Rep Name], t.SamAccountName
+FROM
+	[pbi].[RLS_TBL_Telesales] t
+WHERE
+	-- (TerritoryCd LIKE 'D%') AND (SamAccountName <> '') AND
+	(1=1)
+
+UNION ALL 
+
+SELECT
+	t.TerritoryCd, t.[Permission Level], t.[Rep Name], t.SamAccountName
+FROM
+	[pbi].[RLS_TBL_Fieldsales] t
+WHERE
+	-- (TerritoryCd LIKE 'D%') AND (SamAccountName <> '') AND
+	(1=1)
+
+-- UNION ALL for Exec & Branch+1
+-- good / bad?   defer to CV
+
+GO
+
+
+ALTER VIEW [pbi].[RLS_Permission_Commision]
+AS
+
+SELECT 'VACVR' AS TerritoryCd, 'F_LEVEL2_CDVACVR' AS [Permission Level],  'VACVR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee], WHERE [pbi_VACVR_comm_perm_ind] = 1
+UNION ALL
+SELECT 'VICTR' AS TerritoryCd, 'F_LEVEL2_CDVICTR' AS [Permission Level],  'VICTR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_VICTR_comm_perm_ind] = 1
+UNION ALL
+SELECT 'MEDIC' AS TerritoryCd, 'F_LEVEL2_CDMEDIC' AS [Permission Level],  'MEDIC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MEDIC_comm_perm_ind] = 1
+UNION ALL
+SELECT 'CALGY' AS TerritoryCd, 'F_LEVEL2_CDCALGY' AS [Permission Level],  'CALGY Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_CALGY_comm_perm_ind] = 1
+UNION ALL
+SELECT 'EDMON' AS TerritoryCd, 'F_LEVEL2_CDEDMON' AS [Permission Level],  'EDMON Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_EDMON_comm_perm_ind] = 1
+UNION ALL
+SELECT 'REGIN' AS TerritoryCd, 'F_LEVEL2_CDREGIN' AS [Permission Level],  'REGIN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_REGIN_comm_perm_ind] = 1
+UNION ALL
+SELECT 'WINPG' AS TerritoryCd, 'F_LEVEL2_CDWINPG' AS [Permission Level],  'WINPG Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_WINPG_comm_perm_ind] = 1
+UNION ALL
+SELECT 'LONDN' AS TerritoryCd, 'F_LEVEL2_CDLONDN' AS [Permission Level],  'LONDN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_LONDN_comm_perm_ind] = 1
+UNION ALL
+SELECT 'TORNT' AS TerritoryCd, 'F_LEVEL2_CDTORNT' AS [Permission Level],  'TORNT Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_TORNT_comm_perm_ind] = 1
+UNION ALL
+SELECT 'OTTWA' AS TerritoryCd, 'F_LEVEL2_CDOTTWA' AS [Permission Level],  'OTTWA Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_OTTWA_comm_perm_ind] = 1
+UNION ALL
+SELECT 'MNTRL' AS TerritoryCd, 'F_LEVEL2_CDMNTRL' AS [Permission Level],  'MNTRL Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MNTRL_comm_perm_ind] = 1
+UNION ALL
+SELECT 'QUEBC' AS TerritoryCd, 'F_LEVEL2_CDQUEBC' AS [Permission Level],  'QUEBC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_QUEBC_comm_perm_ind] = 1
+UNION ALL
+SELECT 'NWFLD' AS TerritoryCd, 'F_LEVEL2_CDNWFLD' AS [Permission Level],  'NWFLD Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_NWFLD_comm_perm_ind] = 1
+UNION ALL
+SELECT 'HALFX' AS TerritoryCd, 'F_LEVEL2_CDHALFX' AS [Permission Level],  'HALFX Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_HALFX_comm_perm_ind] = 1
+
+UNION ALL
+SELECT 'ZCORP' AS TerritoryCd, 'F_LEVEL2_CDZCORP' AS [Permission Level],  'ZCORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+UNION ALL
+SELECT 'CORP' AS TerritoryCd, 'F_LEVEL2_CDCORP' AS [Permission Level],  'CORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+-- let BI ID no branch?
+-- UNION ALL SELECT ' ' AS TerritoryCd, 'F_LEVEL2_CD ' AS [Permission Level],  'Unassigned Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+
+GO
+
+
+-- select * from [pbi].[RLS_Permission_Commision]
+
+select top 10 * from [Dimension].[SalespersonCommission]
+
+select count(*) from [Dimension].[SalespersonCommission]
+
+-- test RI
+select f.[Permission Level], d.* 
+from [Dimension].[SalespersonCommission] d
+INNER JOIN [pbi].[RLS_TBL_Fieldsales] f
+on d.BranchCode = f.[TerritoryCd]
+
+INNER  JOIN [pbi].[RLS_Permission_Commision] c
+ON f.[Permission Level] = c.[Permission Level]
+--WHERE c.[TerritoryCd] is null
+ORDER BY 1
+
+-- ORG 625
+
+--VACVR       F_LEVEL2_CDVACVR BC                             Adam.Jones    
+--
+/*
+SELECT TOP (1000) [SamAccountName]
+      ,[pbi_VACVR_comm_perm_ind]
+      ,[pbi_VICTR_comm_perm_ind]
+      ,[pbi_MEDIC_comm_perm_ind]
+      ,[pbi_CALGY_comm_perm_ind]
+      ,[pbi_EDMON_comm_perm_ind]
+      ,[pbi_REGIN_comm_perm_ind]
+      ,[pbi_WINPG_comm_perm_ind]
+      ,[pbi_LONDN_comm_perm_ind]
+      ,[pbi_TORNT_comm_perm_ind]
+      ,[pbi_OTTWA_comm_perm_ind]
+      ,[pbi_MNTRL_comm_perm_ind]
+      ,[pbi_QUEBC_comm_perm_ind]
+      ,[pbi_NWFLD_comm_perm_ind]
+      ,[pbi_HALFX_comm_perm_ind]
+  FROM [dbo].[BRS_Employee]
+*/
+
+
+-- Cassandra - how to we handle Branches and duplicate FSCs?  (set FSC = Master to remove dups)
+-- Branch Master Accounts (1 of 3)
+-- x accounts
+
+-- drop VIEW [pbi].[FSC_TBL_Fieldsales]
+
+-- Cassandra - missing FSC to email mapping.   do this at the saleperson master level?
+-- Branch Sam / email (2 of 3)
+--14 Accounts
 
 --
-
--- drop VIEW [pbi].[RLS_Permission]
-
-CREATE VIEW [pbi].[RLS_Permission]
-AS
-SELECT        TerritoryCd, { fn CONCAT('T_LEVEL4_CD', TerritoryCd) } AS [Permission Level], comm_salesperson_key_id AS [Rep Name], SamAccountName
-FROM            dbo.BRS_FSC_Rollup
-WHERE        (TerritoryCd LIKE 'D%') AND (SamAccountName <> '')
-GO
 
 
 --
@@ -1784,4 +2011,51 @@ ItemNumber|CampaignGroup|CampaignName|PromoCode|StartDate|EndDate
 
 */
 
+-- add commission branch permission support 
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee ADD
+	pbi_VACVR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VACVR_comm_perm_ind DEFAULT 0,
+	pbi_VICTR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VICTR_comm_perm_ind DEFAULT 0,
+	pbi_MEDIC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MEDIC_comm_perm_ind DEFAULT 0,
+
+	pbi_CALGY_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_CALGY_comm_perm_ind DEFAULT 0,
+	pbi_EDMON_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_EDMON_comm_perm_ind DEFAULT 0,
+
+	pbi_REGIN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_REGIN_comm_perm_ind DEFAULT 0,
+	pbi_WINPG_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_WINPG_comm_perm_ind DEFAULT 0,
+
+	pbi_LONDN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_LONDN_comm_perm_ind DEFAULT 0,
+	pbi_TORNT_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_TORNT_comm_perm_ind DEFAULT 0,
+
+	pbi_OTTWA_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_OTTWA_comm_perm_ind DEFAULT 0,
+	pbi_MNTRL_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MNTRL_comm_perm_ind DEFAULT 0,
+	pbi_QUEBC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_QUEBC_comm_perm_ind DEFAULT 0,
+
+	pbi_NWFLD_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_NWFLD_comm_perm_ind DEFAULT 0,
+	pbi_HALFX_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_HALFX_comm_perm_ind DEFAULT 0
+
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee ADD
+	pbi_ZCORP_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_ZCORP_comm_perm_ind DEFAULT 0
+
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- add branch emp
+
+SELECT * FROM BRS_Employee where
+EmailAddress in('<hsc email list>')
+
+-- MA test
+-- select item, ItemDescription, SalesCategory, FreightAdjPct, CorporateMarketAdjustmentPct from BRS_item where item in ('1044648', '5855464')
