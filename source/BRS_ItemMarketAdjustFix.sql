@@ -98,11 +98,114 @@ GO
 
 -- SELECT SalesCategory, COUNT(*) AS cnt FROM BRS_ItemMarketAdjustFix GROUP BY SalesCategory
 
+/*
+-- ORG
+SalesCategory cnt
+------------- -----------
+MERCH         341
+
+-- NEW
+SalesCategory cnt
+------------- -----------
+MERCH         69888
+SMEQU         2833
+TEETH         509
+
+
+*/
+
+-- ORG 517 in MERCH
+/*
+-- 1% all
+SalesCategory cnt
+------------- -----------
+MERCH         69553
+SMEQU         2839
+TEETH         513 ??
+*/
+
 -- SELECT top 10 * FROM BRS_ItemMarketAdjustFix where ma_heavy_ind = 0
 -- SELECT * FROM BRS_ItemMarketAdjustFix order by 	Est12MoSales desc 
+-- SELECT * FROM BRS_ItemMarketAdjustFix order by 	ItemCreationDate desc 
 -- SELECT count(*) FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
 -- SELECT * FROM BRS_ItemMarketAdjustFix where SalesCategory = 'TEETH'
 -- SELECT * FROM BRS_ItemMarketAdjustFix where item = '5854180'
 -- ORG 76206, with EXLUDE 76165
 
 -- SELECT  * FROM BRS_ItemMarketAdjustFix order by CorporateMarketAdjustmentPct desc
+
+
+
+-- 1. add 1% to base MA
+
+SELECT  [Label]
+      ,[ma_base_factor]
+  FROM [dbo].[BRS_ItemLabel] 
+
+/*
+-- ORG
+Label ma_base_factor
+----- ----------------------
+      1.092
+*     1.092
+B     1.092
+E     1.092
+G     1.092
+P     1.123
+-- NEW
+Label ma_base_factor
+----- ----------------------
+      1.102
+*     1.102
+B     1.102
+E     1.102
+G     1.102
+P     1.133
+
+*/
+
+UPDATE [dbo].[BRS_ItemLabel]
+SET [ma_base_factor] = 1.102
+  WHERE label <> 'P'
+
+UPDATE [dbo].[BRS_ItemLabel]
+SET [ma_base_factor] = 1.133
+  WHERE label = 'P'
+
+
+SELECT BRS_ItemSupplier.Supplier, BRS_ItemSupplier.ma_supplier_factor
+FROM BRS_ItemSupplier
+WHERE (((BRS_ItemSupplier.Supplier) In ('VIDENT','DENTPL','IVOCLA','KULZER','ZAHNDT','MYRSON','ZAHNDL','AMRTOO')))
+
+/*
+-- ORG
+Supplier ma_supplier_factor
+-------- ----------------------
+AMRTOO   0
+DENTPL   0
+IVOCLA   0
+KULZER   0
+MYRSON   0
+VIDENT   0
+ZAHNDL   0
+ZAHNDT   0
+
+-- NEW
+
+Supplier ma_supplier_factor
+-------- ----------------------
+AMRTOO   0.01
+DENTPL   0.01
+IVOCLA   0.01
+KULZER   0.01
+MYRSON   0.01
+VIDENT   0.01
+ZAHNDL   0.01
+ZAHNDT   0.01
+*/
+
+-- 2. add 1% to Teeth (effectively 2%, when base 1% included)
+UPDATE  BRS_ItemSupplier
+SET        ma_supplier_factor = 0.01
+WHERE   (Supplier IN ('VIDENT', 'DENTPL', 'IVOCLA', 'KULZER', 'ZAHNDT', 'MYRSON', 'ZAHNDL', 'AMRTOO'))
+

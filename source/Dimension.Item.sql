@@ -63,6 +63,7 @@ AS
 --	01 Feb 24	tmc		add EPS comm for EPS trakcing and FSC bonus 
 --	14 Aug 24	tmc		add glove unit conversion for PPE growth tracking
 --	06 Dec 24	tmc		temp remove supplier cost info for speedup
+--  16 Dec 24	tmc		patch the above fix, BusSol using (should not be...)
 **    
 *******************************************************************************/
 
@@ -135,13 +136,13 @@ SELECT
 	END 								AS Current_PriceGM
 */
 	,'zNA'								AS Current_CurrencyCode
-	,NULL									AS Current_SupplierCost
-	,NULL									AS Current_FxMarketing
-	,NULL									AS Current_FxFinance
-	,NULL									As Current_FreightFactor
-	,NULL									AS Current_BasePrice
- 	,NULL 									AS Current_LandedCostMrk
-	,NULL 									AS Current_PriceGM
+	,i.[CurrentFileCost]				AS Current_SupplierCost
+	,NULL								AS Current_FxMarketing
+	,NULL								AS Current_FxFinance
+	,i.FreightAdjPct					As Current_FreightFactor
+	,i.CurrentCorporatePrice			AS Current_BasePrice
+ 	,NULL 								AS Current_LandedCostMrk
+	,NULL 								AS Current_PriceGM
 --
 	,icomp.ItemKey						AS CompetitiveMatchKey
 	,i.[Item_Competitive_Conversion_rt]
@@ -328,7 +329,7 @@ set SalesCategoryName = LEFT(SalesCategoryName, LEN(SalesCategoryName)-2)
 WHERE SalesCategory <> ''
 */
 
--- SELECT top 10 * FROM Dimension.Item where ManufPartNumber = '' 
+-- SELECT top 10 * FROM Dimension.Item where item like '100%'
 -- SELECT count(*) FROM Dimension.Item 
 -- ORG 235840
 
