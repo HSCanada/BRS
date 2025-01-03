@@ -6,7 +6,7 @@ SET DB_DST=DEV_BRSales
 IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
 
 ECHO RUN SSIS_br_d1_weekly_etl on %BRS_SQLSERVER%.%DB_DST% 
-PAUSE
+
 
 :: PAUSE
 

@@ -1,9 +1,11 @@
-@ECHO OFF
+ @ECHO OFF
 
 SET DB_DST=DEV_BRSales
-IF %BRS_MODE% EQU PROD SET DB_DST=BRSales
+ IF "%BRS_MODE%" EQU "PROD" SET DB_DST=BRSales
+
 
 ECHO Load BRS_BE_Dimension_load_proc to %BRS_SQLSERVER%.%DB_DST% 
+::PAUSE
 
 ECHO CLEAR STAGE CUST, ITEM DIMENSION...
 
@@ -13,11 +15,8 @@ ECHO LOAD [Integration].[F564201_AgingBillto]...
 bcp %DB_DST%.[Integration].[F564201_AgingBillto] in ../Upload/HSC_AgingBillto.txt -c -T -S %BRS_SQLSERVER% -e HSC_AgingBillto_ERR.txt  -F 2
 ::bcp %DB_DST%.[Integration].[F564201_aging_detail] in ../Upload/HSC_Aging_Detail.txt -c -T -S %BRS_SQLSERVER% -e HSC_Aging_Detail_ERR.txt  -F 2 
 
-:: temp
-::PAUSE
-
 ECHO LOAD STAGE_BRS_CustomerFull...
-bcp %DB_DST%..STAGE_BRS_CustomerFull in ../Upload/BRSCustomerFull.txt -w -T -S %BRS_SQLSERVER% -e BRSCustomerFull_ERR.txt  -F 2
+bcp %DB_DST%..STAGE_BRS_CustomerFull in ../Upload/BRSCustomerFull.txt -w -T -S "%BRS_SQLSERVER%" -e BRSCustomerFull_ERR.txt  -F 2
 ::PAUSE
 
 ECHO LOAD STAGE_BRS_ItemFull...
