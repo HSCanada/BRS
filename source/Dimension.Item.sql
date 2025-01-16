@@ -64,6 +64,7 @@ AS
 --	14 Aug 24	tmc		add glove unit conversion for PPE growth tracking
 --	06 Dec 24	tmc		temp remove supplier cost info for speedup
 --  16 Dec 24	tmc		patch the above fix, BusSol using (should not be...)
+--	14 Jan 25	tmc		add marketing Tags for QuoteTracker
 **    
 *******************************************************************************/
 
@@ -226,6 +227,12 @@ SELECT
 	,ISNULL(i.size_unit_rate, 0) AS size_unit_rate
 	,ISNULL(i.size_unit_rate_note, '') AS size_unit_rate_note
 
+	,ISNULL(ext.[tag_01_cd], '') as tag_01_cd
+	,ISNULL(ext.[tag_02_cd], '') as tag_02_cd
+	,ISNULL(ext.[tag_03_cd], '') as tag_03_cd
+	,ISNULL(ext.[tag_04_cd], '') as tag_04_cd
+	,ISNULL(ext.[tag_05_cd], '') as tag_05_cd
+
 FROM            
 	BRS_Item AS i 
 
@@ -261,6 +268,10 @@ FROM
 
 	INNER JOIN BRS_Item AS ifs
 	ON i.FamilySetLeader = ifs.Item
+
+	LEFT JOIN [Pricing].[item_family_marketing_ext] AS ext
+	ON i.FamilySetLeader = ext.[FamilySetLeader]
+
 
 	INNER JOIN [comm].[group] commgrp
 	ON i.comm_group_cd = commgrp.comm_group_cd

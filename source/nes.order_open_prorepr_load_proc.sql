@@ -30,7 +30,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**  21 Aut 19	tmc		add auto [call_type_code] load 
+**  21 Aug 19	tmc		add auto [call_type_code] load 
+**	13 Jan 25	tmc		add better audit to D1 load to assist scrubbing 
 *******************************************************************************/
 BEGIN
 
@@ -47,7 +48,7 @@ BEGIN
 		Print '---------------------------------------------------------'
 		Print 'Proc: [nes].[order_open_prorepr_load_proc]'
 		Print 'Desc: Update prorepair snapshot'
-		Print 'Mode: DEBUG'
+		Print 'Mode: DEBUG (7 steps)'
 		Print '---------------------------------------------------------'
 	End
 
@@ -74,7 +75,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new workorder...'
+			Print '1. Add new workorder...'
 
 			-- order
 			INSERT INTO [nes].[order]
@@ -92,7 +93,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new user...'
+			Print '2. Add new user...'
 		-- user
 		INSERT INTO [nes].[user_login]
 		SELECT 
@@ -109,12 +110,13 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new EST...'
+			Print '3. Add new EST...'
 		-- EST
 		INSERT INTO [dbo].[BRS_FSC_Rollup]
 		([TerritoryCd], [Branch],[group_type] )
 		SELECT 
 		DISTINCT [est_num], '', 'DEST'
+		-- SELECT s.*
 		FROM [Integration].[open_order_prorepr] s
 		WHERE NOT EXISTS(
 		  SELECT * FROM [dbo].[BRS_FSC_Rollup] f where f.TerritoryCd = s.est_num
@@ -128,7 +130,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new order_status...'
+			Print '4. Add new order_status...'
 
 		-- order status
 		INSERT INTO [nes].[order_status]
@@ -148,7 +150,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Add new call_type...'
+			Print '5. Add new call_type...'
 
 		-- order status
 		INSERT INTO [nes].[call_type]
@@ -167,7 +169,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'LOAD nes.order_open_prorepr'
+			Print '6. LOAD nes.order_open_prorepr'
 
 		INSERT INTO 
 			nes.order_open_prorepr 
@@ -233,7 +235,7 @@ BEGIN
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
-			Print 'Clear Integration.open_order_prorepr'	
+			Print '7. Clear Integration.open_order_prorepr'	
 
 		Delete FROM Integration.open_order_prorepr
 
@@ -284,6 +286,7 @@ GO
 -- prod run 
 -- [nes].[order_open_prorepr_load_proc] @bDebug=0
 
+-- test run
 -- [nes].[order_open_prorepr_load_proc] @bDebug=1
 
 

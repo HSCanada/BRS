@@ -33,7 +33,31 @@ AS
 **    
 *******************************************************************************/
 
-SELECT        	i.Item	,i.ItemDescription	,i.Size	,i.Strength	,i.ManufPartNumber	,cat.submajor_desc	,i.Supplier	,i.comm_group_cd	,i.comm_note_txt	,i.Brand	,i.CurrentFileCost	,CASE WHEN i.FreightAdjPct = 0 THEN 1 ELSE i.FreightAdjPct END as FreightAdjPct	,i.CorporateMarketAdjustmentPct	,i.CurrentFileCost *		(CASE WHEN i.FreightAdjPct = 0 THEN 1 ELSE i.FreightAdjPct END) *		i.CorporateMarketAdjustmentPct as CurrentLandedCost	,i.CurrentCorporatePrice	,i.Est12MoSales
+SELECT        
+	i.Item
+	,i.ItemDescription
+	,i.Size
+	,i.Strength
+	,i.ManufPartNumber
+
+	,cat.submajor_desc
+	,i.Supplier
+	,i.comm_group_cd
+	,i.comm_note_txt
+
+
+	,i.Brand
+	,i.CurrentFileCost
+	,CASE WHEN i.FreightAdjPct = 0 THEN 1 ELSE i.FreightAdjPct END as FreightAdjPct
+	,i.CorporateMarketAdjustmentPct
+
+	,i.CurrentFileCost *
+		(CASE WHEN i.FreightAdjPct = 0 THEN 1 ELSE i.FreightAdjPct END) *
+		i.CorporateMarketAdjustmentPct as CurrentLandedCost
+
+
+	,i.CurrentCorporatePrice
+	,i.Est12MoSales
 
 	,ISNULL(ss.deal_source_cd,'') AS deal_source_cd
 	,ss.CalMonthRedeem
@@ -80,7 +104,8 @@ FROM
 	ON i.Item = ss.item
  
 
-WHERE	(i.MajorProductClass IN ('011','023')) AND 
+WHERE
+	(i.MajorProductClass IN ('011','023')) AND 
 	(i.ItemStatus <> 'P') AND
 	(1=1)
 
@@ -95,11 +120,10 @@ GO
 
 
 select  
--- top 10
+ top 10
 * from [pricing].item_quote
 ORDER BY 1
 --	CorporateMarketAdjustmentPct DESC
-	FreightAdjPct DESC
 
 
 /*
