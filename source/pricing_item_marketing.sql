@@ -71,6 +71,7 @@ SELECT
 
 	-- DW
 	,i.CurrentCorporatePrice
+	,i.ItemCreationDate
 
 	,i.ItemKey
 

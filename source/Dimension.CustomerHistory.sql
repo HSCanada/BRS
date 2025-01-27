@@ -186,12 +186,12 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 -- SELECT  * FROM Dimension.Customer where ShipTo = 1667465
  --SELECT  * FROM Dimension.Customer where FscTerritoryCd = 'CZ1LG'
-
+/*
  SELECT top 10 * from [Dimension].[CustomerHistory]
  SELECT count (*) from [Dimension].[CustomerHistory]
 
 
  SELECT   cust_hist_key, ShipTo, FiscalMonth, HIST_SalesDivision, HIST_MarketClass, HIST_SegCd, HIST_VPA, HIST_TerritoryCd, FSCName, Branch
 FROM     Dimension.CustomerHistory
-
+*/
 

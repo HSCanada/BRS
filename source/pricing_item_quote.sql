@@ -29,7 +29,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	14 Sep 17	tmc		Simplified model
+**	14 Sep 24	tmc		Simplified model
+**  17 Jan 24	tmc		added create date to help with new item testing
 **    
 *******************************************************************************/
 
@@ -58,7 +59,9 @@ SELECT
 
 	,i.CurrentCorporatePrice
 	,i.Est12MoSales
+	,i.ItemCreationDate
 
+/*
 	,ISNULL(ss.deal_source_cd,'') AS deal_source_cd
 	,ss.CalMonthRedeem
 	,ss.effDate
@@ -67,6 +70,7 @@ SELECT
 	,ISNULL(ss.GetOrg,'' ) AS get_txt
 	,ISNULL(ss.RedeemOrg, '') AS redeem_method_txt
 	,ISNULL(ss.QuarterOrg, '') AS deal_period
+*/
 
 FROM
 
@@ -120,7 +124,7 @@ GO
 
 
 select  
- top 10
+-- top 10
 * from [pricing].item_quote
 ORDER BY 1
 --	CorporateMarketAdjustmentPct DESC

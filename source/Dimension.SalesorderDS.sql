@@ -104,5 +104,5 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.Salesorder 
+-- SELECT top 10 * FROM Dimension.Salesorder 
 -- where SalesOrderNumber = 0
