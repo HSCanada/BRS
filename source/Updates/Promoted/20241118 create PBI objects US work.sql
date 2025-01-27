@@ -98,13 +98,23 @@ WHERE
 
 GO
 
+select * from [pbi].[RLS_TBL_Fieldsales] where   [Filter Field] = 'F_LEVEL2_CD'
+
 select TerritoryCd, count(*) from [pbi].[RLS_TBL_Fieldsales]
 group by TerritoryCd
 having count(*) > 1
 
+SELECT   pbi.RLS_Users.SamAccountName, pbi.RLS_Users.LoginId, pbi.RLS_Users.EmailAddress, pbi.RLS_Users.office, pbi.RLS_Users.EmployeeKey, pbi.RLS_Permission_Commision.[Permission Level], pbi.RLS_TBL_Fieldsales.TerritoryCd, pbi.RLS_TBL_Fieldsales.[Rep Name], BRS_Branch.BranchName
+FROM     pbi.RLS_Users INNER JOIN
+             pbi.RLS_Permission_Commision ON pbi.RLS_Users.SamAccountName = pbi.RLS_Permission_Commision.SamAccountName INNER JOIN
+             pbi.RLS_TBL_Fieldsales ON pbi.RLS_Permission_Commision.[Permission Level] = pbi.RLS_TBL_Fieldsales.[Permission Level] INNER JOIN
+             BRS_Branch ON pbi.RLS_TBL_Fieldsales.TerritoryCd = BRS_Branch.Branch
+WHERE   (pbi.RLS_Users.LoginId = 'CAHSI\TCrowley')
+
 
 -- add Branch to FSC to help with BI permiss hierachy
 
+/*
 INSERT INTO BRS_FSC_Rollup
              (TerritoryCd, FSCName, group_type, Branch)
 SELECT   Branch, BranchName, 'AAFS' AS group_type, Branch AS Expr1
@@ -116,10 +126,96 @@ SELECT   b.Branch, b.BranchName,  'AAFS' AS group_type
 FROM     BRS_Branch AS b 
 where b.branch not in ('CORP', '', 'EDMOM', 'SJOHN')
 
+*/
+
 
 
 -- ISR Sam / email (2 of 3)
 --14 Accounts
+
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee ADD
+	pbi_VACVR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VACVR_comm_perm_ind DEFAULT 0,
+	pbi_VICTR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VICTR_comm_perm_ind DEFAULT 0,
+	pbi_MEDIC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MEDIC_comm_perm_ind DEFAULT 0,
+
+	pbi_CALGY_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_CALGY_comm_perm_ind DEFAULT 0,
+	pbi_EDMON_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_EDMON_comm_perm_ind DEFAULT 0,
+
+	pbi_REGIN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_REGIN_comm_perm_ind DEFAULT 0,
+	pbi_WINPG_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_WINPG_comm_perm_ind DEFAULT 0,
+
+	pbi_LONDN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_LONDN_comm_perm_ind DEFAULT 0,
+	pbi_TORNT_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_TORNT_comm_perm_ind DEFAULT 0,
+
+	pbi_OTTWA_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_OTTWA_comm_perm_ind DEFAULT 0,
+	pbi_MNTRL_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MNTRL_comm_perm_ind DEFAULT 0,
+	pbi_QUEBC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_QUEBC_comm_perm_ind DEFAULT 0,
+
+	pbi_NWFLD_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_NWFLD_comm_perm_ind DEFAULT 0,
+	pbi_HALFX_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_HALFX_comm_perm_ind DEFAULT 0
+
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Employee ADD
+	pbi_ZCORP_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_ZCORP_comm_perm_ind DEFAULT 0
+
+GO
+ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+ALTER VIEW [pbi].[RLS_Permission_Commision]
+AS
+
+SELECT 'VACVR' AS TerritoryCd, 'F_LEVEL2_CDVACVR' AS [Permission Level],  'VACVR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_VACVR_comm_perm_ind] = 1
+UNION ALL
+SELECT 'VICTR' AS TerritoryCd, 'F_LEVEL2_CDVICTR' AS [Permission Level],  'VICTR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_VICTR_comm_perm_ind] = 1
+UNION ALL
+SELECT 'MEDIC' AS TerritoryCd, 'F_LEVEL2_CDMEDIC' AS [Permission Level],  'MEDIC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MEDIC_comm_perm_ind] = 1
+UNION ALL
+SELECT 'CALGY' AS TerritoryCd, 'F_LEVEL2_CDCALGY' AS [Permission Level],  'CALGY Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_CALGY_comm_perm_ind] = 1
+UNION ALL
+SELECT 'EDMON' AS TerritoryCd, 'F_LEVEL2_CDEDMON' AS [Permission Level],  'EDMON Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_EDMON_comm_perm_ind] = 1
+UNION ALL
+SELECT 'REGIN' AS TerritoryCd, 'F_LEVEL2_CDREGIN' AS [Permission Level],  'REGIN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_REGIN_comm_perm_ind] = 1
+UNION ALL
+SELECT 'WINPG' AS TerritoryCd, 'F_LEVEL2_CDWINPG' AS [Permission Level],  'WINPG Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_WINPG_comm_perm_ind] = 1
+UNION ALL
+SELECT 'LONDN' AS TerritoryCd, 'F_LEVEL2_CDLONDN' AS [Permission Level],  'LONDN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_LONDN_comm_perm_ind] = 1
+UNION ALL
+SELECT 'TORNT' AS TerritoryCd, 'F_LEVEL2_CDTORNT' AS [Permission Level],  'TORNT Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_TORNT_comm_perm_ind] = 1
+UNION ALL
+SELECT 'OTTWA' AS TerritoryCd, 'F_LEVEL2_CDOTTWA' AS [Permission Level],  'OTTWA Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_OTTWA_comm_perm_ind] = 1
+UNION ALL
+SELECT 'MNTRL' AS TerritoryCd, 'F_LEVEL2_CDMNTRL' AS [Permission Level],  'MNTRL Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MNTRL_comm_perm_ind] = 1
+UNION ALL
+SELECT 'QUEBC' AS TerritoryCd, 'F_LEVEL2_CDQUEBC' AS [Permission Level],  'QUEBC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_QUEBC_comm_perm_ind] = 1
+UNION ALL
+SELECT 'NWFLD' AS TerritoryCd, 'F_LEVEL2_CDNWFLD' AS [Permission Level],  'NWFLD Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_NWFLD_comm_perm_ind] = 1
+UNION ALL
+SELECT 'HALFX' AS TerritoryCd, 'F_LEVEL2_CDHALFX' AS [Permission Level],  'HALFX Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_HALFX_comm_perm_ind] = 1
+
+UNION ALL
+SELECT 'ZCORP' AS TerritoryCd, 'F_LEVEL2_CDZCORP' AS [Permission Level],  'ZCORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+UNION ALL
+SELECT 'CORP' AS TerritoryCd, 'F_LEVEL2_CDCORP' AS [Permission Level],  'CORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+-- let BI ID no branch?
+-- UNION ALL SELECT ' ' AS TerritoryCd, 'F_LEVEL2_CD ' AS [Permission Level],  'Unassigned Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
+
+GO
+
+
+--
+--> xxx
 
 --drop  VIEW [pbi].[RLS_Users]
 
@@ -171,46 +267,6 @@ WHERE
 
 GO
 
-
-ALTER VIEW [pbi].[RLS_Permission_Commision]
-AS
-
-SELECT 'VACVR' AS TerritoryCd, 'F_LEVEL2_CDVACVR' AS [Permission Level],  'VACVR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee], WHERE [pbi_VACVR_comm_perm_ind] = 1
-UNION ALL
-SELECT 'VICTR' AS TerritoryCd, 'F_LEVEL2_CDVICTR' AS [Permission Level],  'VICTR Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_VICTR_comm_perm_ind] = 1
-UNION ALL
-SELECT 'MEDIC' AS TerritoryCd, 'F_LEVEL2_CDMEDIC' AS [Permission Level],  'MEDIC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MEDIC_comm_perm_ind] = 1
-UNION ALL
-SELECT 'CALGY' AS TerritoryCd, 'F_LEVEL2_CDCALGY' AS [Permission Level],  'CALGY Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_CALGY_comm_perm_ind] = 1
-UNION ALL
-SELECT 'EDMON' AS TerritoryCd, 'F_LEVEL2_CDEDMON' AS [Permission Level],  'EDMON Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_EDMON_comm_perm_ind] = 1
-UNION ALL
-SELECT 'REGIN' AS TerritoryCd, 'F_LEVEL2_CDREGIN' AS [Permission Level],  'REGIN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_REGIN_comm_perm_ind] = 1
-UNION ALL
-SELECT 'WINPG' AS TerritoryCd, 'F_LEVEL2_CDWINPG' AS [Permission Level],  'WINPG Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_WINPG_comm_perm_ind] = 1
-UNION ALL
-SELECT 'LONDN' AS TerritoryCd, 'F_LEVEL2_CDLONDN' AS [Permission Level],  'LONDN Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_LONDN_comm_perm_ind] = 1
-UNION ALL
-SELECT 'TORNT' AS TerritoryCd, 'F_LEVEL2_CDTORNT' AS [Permission Level],  'TORNT Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_TORNT_comm_perm_ind] = 1
-UNION ALL
-SELECT 'OTTWA' AS TerritoryCd, 'F_LEVEL2_CDOTTWA' AS [Permission Level],  'OTTWA Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_OTTWA_comm_perm_ind] = 1
-UNION ALL
-SELECT 'MNTRL' AS TerritoryCd, 'F_LEVEL2_CDMNTRL' AS [Permission Level],  'MNTRL Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_MNTRL_comm_perm_ind] = 1
-UNION ALL
-SELECT 'QUEBC' AS TerritoryCd, 'F_LEVEL2_CDQUEBC' AS [Permission Level],  'QUEBC Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_QUEBC_comm_perm_ind] = 1
-UNION ALL
-SELECT 'NWFLD' AS TerritoryCd, 'F_LEVEL2_CDNWFLD' AS [Permission Level],  'NWFLD Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_NWFLD_comm_perm_ind] = 1
-UNION ALL
-SELECT 'HALFX' AS TerritoryCd, 'F_LEVEL2_CDHALFX' AS [Permission Level],  'HALFX Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_HALFX_comm_perm_ind] = 1
-
-UNION ALL
-SELECT 'ZCORP' AS TerritoryCd, 'F_LEVEL2_CDZCORP' AS [Permission Level],  'ZCORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
-UNION ALL
-SELECT 'CORP' AS TerritoryCd, 'F_LEVEL2_CDCORP' AS [Permission Level],  'CORP Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
--- let BI ID no branch?
--- UNION ALL SELECT ' ' AS TerritoryCd, 'F_LEVEL2_CD ' AS [Permission Level],  'Unassigned Branch' AS [Rep Name], SamAccountName FROM [BRS_Employee] WHERE [pbi_ZCORP_comm_perm_ind] = 1
-
-GO
 
 
 -- select * from [pbi].[RLS_Permission_Commision]
@@ -404,6 +460,18 @@ SELECT        Cal_Month, Cal_Month_Number, Cal_Quarter, Cal_Quarter_Number, Cal_
                          Selling_Day, Sequential_Day_Number
 FROM            pbi.DateDay AS PBI_Date
 GO
+
+select * from DEV_BRSales.pbi.DateDay
+
+INSERT INTO pbi.DateDay
+             (Cal_Month, Cal_Month_Number, Cal_Quarter, Cal_Quarter_Number, Cal_Year, Cal_Year_Month, Cal_Year_Month_Number, Cal_Year_Quarter, Cal_Year_Quarter_Number, Cal_Year_Week, Cal_Year_Week_Number, Date, Day_of_Fiscal_Month_Number, Day_of_Fiscal_Quarter_Number, Day_of_Fiscal_Year_Number, Day_of_Week, 
+             Day_of_Week_Number, Fiscal_Month, Fiscal_Month_Number, Fiscal_Quarter, Fiscal_Quarter_Number, Fiscal_Week, Fiscal_Week_Number, Fiscal_Year, Fiscal_Year_Month, Fiscal_Year_Month_Number, Fiscal_Year_Number, Fiscal_Year_Quarter, Fiscal_Year_Quarter_Number, Fiscal_Year_Week, Fiscal_Year_Week_Number, Selling_Day, 
+             Sequential_Day_Number, CalMonth, FiscalMonth)
+SELECT   Cal_Month, Cal_Month_Number, Cal_Quarter, Cal_Quarter_Number, Cal_Year, Cal_Year_Month, Cal_Year_Month_Number, Cal_Year_Quarter, Cal_Year_Quarter_Number, Cal_Year_Week, Cal_Year_Week_Number, Date, Day_of_Fiscal_Month_Number, Day_of_Fiscal_Quarter_Number, Day_of_Fiscal_Year_Number, Day_of_Week, 
+             Day_of_Week_Number, Fiscal_Month, Fiscal_Month_Number, Fiscal_Quarter, Fiscal_Quarter_Number, Fiscal_Week, Fiscal_Week_Number, Fiscal_Year, Fiscal_Year_Month, Fiscal_Year_Month_Number, Fiscal_Year_Number, Fiscal_Year_Quarter, Fiscal_Year_Quarter_Number, Fiscal_Year_Week, Fiscal_Year_Week_Number, Selling_Day, 
+             Sequential_Day_Number, CalMonth, FiscalMonth
+FROM     DEV_BRSales.pbi.DateDay AS DateDay_1
+
 
 -- pbi.PBI_Date -> data
 /*
@@ -1994,6 +2062,10 @@ GO
 
 select * from [pbi].[Campaign_Product_Lists]
 
+insert into [pbi].[Campaign_Product_Lists] (ItemNumber, CampaignGroup, CampaignName, PromoCode, StartDate, EndDate)
+SELECT   ItemNumber, CampaignGroup, CampaignName, PromoCode, StartDate, EndDate
+FROM     DEV_BRSales.pbi.Campaign_Product_Lists
+
 
 -- [pbi].[Campaign_Product_Lists] -> data
 /*
@@ -2013,43 +2085,6 @@ ItemNumber|CampaignGroup|CampaignName|PromoCode|StartDate|EndDate
 
 -- add commission branch permission support 
 
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_Employee ADD
-	pbi_VACVR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VACVR_comm_perm_ind DEFAULT 0,
-	pbi_VICTR_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_VICTR_comm_perm_ind DEFAULT 0,
-	pbi_MEDIC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MEDIC_comm_perm_ind DEFAULT 0,
-
-	pbi_CALGY_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_CALGY_comm_perm_ind DEFAULT 0,
-	pbi_EDMON_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_EDMON_comm_perm_ind DEFAULT 0,
-
-	pbi_REGIN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_REGIN_comm_perm_ind DEFAULT 0,
-	pbi_WINPG_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_WINPG_comm_perm_ind DEFAULT 0,
-
-	pbi_LONDN_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_LONDN_comm_perm_ind DEFAULT 0,
-	pbi_TORNT_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_TORNT_comm_perm_ind DEFAULT 0,
-
-	pbi_OTTWA_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_OTTWA_comm_perm_ind DEFAULT 0,
-	pbi_MNTRL_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_MNTRL_comm_perm_ind DEFAULT 0,
-	pbi_QUEBC_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_QUEBC_comm_perm_ind DEFAULT 0,
-
-	pbi_NWFLD_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_NWFLD_comm_perm_ind DEFAULT 0,
-	pbi_HALFX_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_HALFX_comm_perm_ind DEFAULT 0
-
-GO
-ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-
-BEGIN TRANSACTION
-GO
-ALTER TABLE dbo.BRS_Employee ADD
-	pbi_ZCORP_comm_perm_ind bit NOT NULL CONSTRAINT DF_BRS_Employee_pbi_ZCORP_comm_perm_ind DEFAULT 0
-
-GO
-ALTER TABLE dbo.BRS_Employee SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
 
 
 -- add branch emp

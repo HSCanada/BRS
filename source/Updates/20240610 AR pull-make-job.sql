@@ -61,7 +61,7 @@ GO
 
 -- select top 10 * from [Integration].[F56CUSA2_CUSINF2A]
 -- select count (*) from [Integration].[F56CUSA2_CUSINF2A]
--- 65 977
+-- 66 023
 
 --
 -- truncate table Integration.F56CUSA2_CUSINF2A
