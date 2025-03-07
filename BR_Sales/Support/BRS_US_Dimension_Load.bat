@@ -14,7 +14,7 @@ SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec usd.BRS_BE_Dimension_load_pr
 
 ECHO LOAD STAGE_BRS_ItemFull...
 
-bcp %DB_DST%..STAGE_BRS_ItemFull in ../Upload/BRSItemFull-US.txt -c -T -S %BRS_SQLSERVER% -e BRSItemFull-US_ERR.txt -F 2 -m 40
+bcp %DB_DST%..STAGE_BRS_ItemFull in ../Upload/BRSItemFull-US.txt -w -T -S %BRS_SQLSERVER% -e BRSItemFull-US_ERR.txt -F 4 -m 40
 
 
 ECHO LOAD Prod...
