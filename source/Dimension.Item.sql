@@ -65,6 +65,8 @@ AS
 --	06 Dec 24	tmc		temp remove supplier cost info for speedup
 --  16 Dec 24	tmc		patch the above fix, BusSol using (should not be...)
 --	14 Jan 25	tmc		add marketing Tags for QuoteTracker
+--	31 Jan 25	tmc		add rollup_hsb_code for US PPE HSB tracking
+--	05 Mar 25	tmc		add hsb brand equity for fin planning
 **    
 *******************************************************************************/
 
@@ -201,6 +203,8 @@ SELECT
 	,RTRIM(c.global_product_class) 
 		+ ' | ' + RTRIM(glob.global_product_class_descr) AS global_product
 
+	,ISNULL(glob.rollup_hsb_code, '')  AS rollup_hsb_code
+
 	,i.pchg_active_ind 
 	,i.pchg_active_dt
 	,i.pchg_price_old
@@ -232,6 +236,7 @@ SELECT
 	,ISNULL(ext.[tag_03_cd], '') as tag_03_cd
 	,ISNULL(ext.[tag_04_cd], '') as tag_04_cd
 	,ISNULL(ext.[tag_05_cd], '') as tag_05_cd
+
 
 FROM            
 	BRS_Item AS i 
@@ -290,6 +295,10 @@ FROM
 	LEFT JOIN [hfm].[global_product] glob
 	ON c.global_product_class = glob.global_product_class
 
+	LEFT JOIN [hfm].[exclusive_product_rule_item] equity
+	ON i.Item = equity.Item
+
+/*
 	-- equity graft on last month results (bad design, use history dim)
 	LEFT JOIN 
 	(
@@ -304,7 +313,7 @@ FROM
 			FiscalMonth = (SELECT [PriorFiscalMonth] FROM [dbo].[BRS_Config])
 	) equity
 	ON i.Item = equity.Item
-
+*/
 
 WHERE
 -- test case
@@ -321,6 +330,8 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+
+SELECT top 10 * FROM Dimension.Item where item like '100%' or rollup_hsb_code <>''
 
 
 -- SELECT * FROM Dimension.Item where Current_FxMarketing = -1
@@ -341,8 +352,10 @@ WHERE SalesCategory <> ''
 */
 
 -- SELECT top 10 * FROM Dimension.Item where item like '100%'
--- SELECT count(*) FROM Dimension.Item 
--- ORG 235840
+ -- SELECT count(*) FROM Dimension.Item where CompetitiveMatchKey > 1
+-- ORG 252 122
+-- prd = 9933
+-- dev = 9434
 
 /*
 -- finance vs opts vs comm consistency check

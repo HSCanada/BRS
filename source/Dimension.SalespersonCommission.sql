@@ -105,3 +105,7 @@ GO
 -- SELECT  top 10 * FROM Dimension.SalespersonCommission where branchcode = 'NWFLD'
 
 -- SELECT  * FROM Dimension.SalespersonCommission where SalespersonName like '%laura%'
+
+SELECT        TOP (10) SalespersonKey, SalespersonName, BranchCode, BranchName, CommPlanCode
+FROM            Dimension.SalespersonCommission AS s
+WHERE        (BranchCode = 'NWFLD')

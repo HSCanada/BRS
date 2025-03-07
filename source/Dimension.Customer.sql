@@ -62,6 +62,8 @@ AS
 --	04 Jan 24	tmc		add HSBC to model
 --	08 Aug 24	tmc		add Commission Branch, and Plan for leaderboards
 --	19 Nov 24	tmc		add segment new for modelling
+--	19 Feb 25	tmc		add FSC as of last fiscal for FSC growth modelling
+--  06 Mar 25	tmc		add FSC MasterCode to help with analysis
 **    
 *******************************************************************************/
 
@@ -83,6 +85,10 @@ SELECT
 		ELSE RTRIM(padj.[EnrollSource])
 	END													AS SalesPlanType
 	,RTRIM(fsc_master.salesperson_nm)					AS FieldSales
+	,RTRIM(cust_hist.FSCName)							AS FieldSales_LastMonthEnd
+	,RTRIM(cust_hist.FSCMaster)							AS FieldSales_LastMonthEnd_Master
+
+
 --	,RTRIM(sroll.FSCName)								AS FieldSales
 	,RTRIM(b.BranchName)								AS Branch
 	,RTRIM(fsa.FSA)										AS FSA
@@ -289,6 +295,7 @@ FROM
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
 
+	-- current (could be updated any time)
 	INNER JOIN [comm].[salesperson_master] fsc_master
 	ON terr.comm_salesperson_key_id = fsc_master.salesperson_key_id
 
@@ -377,6 +384,19 @@ FROM
 	) last_dec
 	ON c.ShipTo = last_dec.Shipto
 
+	-- add FSC as of last fiscal for FSC growth modelling, 19 Feb 25
+	LEFT JOIN [Dimension].[CustomerHistory] cust_hist
+	ON c.ShipTo = cust_hist.ShipTo AND
+	cust_hist.FiscalMonth = (
+		-- this finds the month prior to fiscal monthend, i.e. 202501 -> 2022412
+		SELECT        m2.FiscalMonth
+		FROM            BRS_Config AS conf INNER JOIN
+								 BRS_FiscalMonth AS m1 ON conf.PriorFiscalMonth = m1.FiscalMonth INNER JOIN
+								 BRS_FiscalMonth AS m2 ON m1.MonthSeq - 1 = m2.MonthSeq
+		
+		)
+
+
 --	CROSS JOIN BRS_Customer_Spend_Category AS spend
 
 
@@ -413,12 +433,17 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
 
 -- SELECT  count(*) FROM Dimension.Customer
--- ORG= 134509
+-- ORG= 139 147
+-- new= 139 147 (ok)
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
 
 -- SELECT  * FROM Dimension.Customer where ShipTo = 1667465
- --SELECT  * FROM Dimension.Customer where FscTerritoryCd = 'CZ1LG'
+ --SELECT  * FROM Dimension.Customer where FscTerritoryCd = 'AZ1CM'
 
- SELECT  top 10 * FROM Dimension.Customer
+ SELECT   TOP (10) ShipTo, FieldSales, FieldSales_LastMonthEnd, FieldSales_LastMonthEnd_Master
+FROM            Dimension.Customer AS c
+WHERE 
+	FieldSales <> FieldSales_LastMonthEnd
+-- (FscTerritoryCd = 'AZ1CM')

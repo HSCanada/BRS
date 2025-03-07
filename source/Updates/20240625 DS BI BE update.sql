@@ -645,3 +645,61 @@ GO
 ALTER TABLE dbo.BRS_Transaction SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
+
+
+/*
+SELECT        
+
+TOP (10) global_product_class, parent, level_num, global_product_class_key, counting_sku_ind
+,SUBSTRING(global_product_class,1,3) as global_product_class3
+,SUBSTRING(global_product_class,1,6) as global_product_class6
+,SUBSTRING(global_product_class,1,9) as global_product_class9
+
+
+, rtrim(global_product_class) + ' | ' + global_product_class_descr as global_product_descr
+FROM            hfm.global_product
+
+where global_product_class like '810%'
+*/
+
+-- add fin HSB code, 05 Mar 25
+
+-- add new HSG to item
+
+--> move to prod 05 Mar 25
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_Item ADD
+	Excl_Code nchar(20) NOT NULL CONSTRAINT DF_BRS_Item_Excl_Code DEFAULT ''
+GO
+ALTER TABLE dbo.BRS_Item ADD CONSTRAINT
+	FK_BRS_Item_exclusive_product FOREIGN KEY
+	(
+	Excl_Code
+	) REFERENCES hfm.exclusive_product
+	(
+	Excl_Code
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_Item SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- update
+
+UPDATE       BRS_Item
+SET                Excl_Code =  h.Excl_Code
+FROM            BRS_Item i INNER JOIN
+                         hfm.exclusive_product_rule_item AS h ON i.Item = h.item
+WHERE
+	i.Excl_Code <>  h.Excl_Code
+GO
+
+SELECT        TOP (10) i.Item, i.Excl_Code, h.Excl_Code
+FROM            BRS_Item AS i INNER JOIN
+                         hfm.exclusive_product_rule_item AS h ON i.Item = h.item
+
+

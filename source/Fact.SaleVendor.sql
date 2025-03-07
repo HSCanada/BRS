@@ -39,13 +39,14 @@ AS
 --  29 Nov 24	tmc		add facts for Planning
 --	05 Dec 24	tmc	    add dimensions for Planning 
 --	06 Dec 24	tmc		migrate needed info from [hfm].global_cube_proc 
+--	04 Feb 25	tmc		add alias for old model work-around
 **    
 *******************************************************************************/
 
 
 SELECT        
 	-- for dev speedup
---	top 100
+	-- top 100
 
 	-- Metrics ->
 
@@ -165,6 +166,12 @@ SELECT
 		*/
 		-- GL <-
 
+		-- add alias for old model work-around
+
+		, t.ID			AS ID_MAX
+		, t.GPExclCBAmt AS TotalGPExclCBAmt
+		, t.GPAmt		AS TotalGPAmt
+		, t.NetSalesAmt AS TotalSalesAmt
 
 
 FROM        
@@ -340,6 +347,7 @@ FROM            Fact.SaleVendor
 */
 
 -- BI source
+/*
 SELECT   
 
 	top 10 
@@ -403,3 +411,8 @@ WHERE
 
 
 -- SELECT   distinct FiscalMonth FROM 	Fact.SaleVendor
+
+*/
+
+select top 10 * from Fact.SaleVendor
+GO

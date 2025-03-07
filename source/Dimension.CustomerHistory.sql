@@ -29,6 +29,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	19 Feb 25	tmc		add FSC MasterName (last fiscal) for FSC cur vs hist 
+--  06 Mar 25	tmc		add FSC MasterCode to help with analysis
 **    
 *******************************************************************************/
 
@@ -42,7 +44,8 @@ SELECT
 	,ch.[HIST_SegCd]
 	,ch.[HIST_VPA]
 	,ch.HIST_TerritoryCd
-	,terr.FSCName
+	,ISNULL(fsc_master_LME.salesperson_nm, '.') AS FSCName
+	,ISNULL(fsc_master_LME.master_salesperson_cd, '.') AS FSCMaster
 	,terr.Branch
 
 
@@ -68,6 +71,11 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON ch.HIST_TerritoryCd = terr.[TerritoryCd]
+
+	-- pull master code so that the FSC names can be rolled up and compared
+	LEFT JOIN [comm].[salesperson_master] fsc_master_LME
+	ON terr.comm_salesperson_key_id = fsc_master_LME.salesperson_key_id
+
 
 /*
 	INNER JOIN BRS_SalesDivision AS div 
@@ -189,9 +197,13 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 /*
  SELECT top 10 * from [Dimension].[CustomerHistory]
  SELECT count (*) from [Dimension].[CustomerHistory]
+ -- ORG 2 827 395
 
 
  SELECT   cust_hist_key, ShipTo, FiscalMonth, HIST_SalesDivision, HIST_MarketClass, HIST_SegCd, HIST_VPA, HIST_TerritoryCd, FSCName, Branch
 FROM     Dimension.CustomerHistory
 */
 
+
+ SELECT   cust_hist_key, ShipTo, FiscalMonth, HIST_SalesDivision, HIST_MarketClass, HIST_SegCd, HIST_VPA, HIST_TerritoryCd, FSCName, Branch, FSCMaster
+FROM     Dimension.CustomerHistory where shipto = 1654380
