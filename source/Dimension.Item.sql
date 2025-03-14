@@ -67,6 +67,7 @@ AS
 --	14 Jan 25	tmc		add marketing Tags for QuoteTracker
 --	31 Jan 25	tmc		add rollup_hsb_code for US PPE HSB tracking
 --	05 Mar 25	tmc		add hsb brand equity for fin planning
+--	10 Mar 25	tmc		add global item current so we can compare hsb_brand curr
 **    
 *******************************************************************************/
 
@@ -200,11 +201,6 @@ SELECT
 	,CASE WHEN i.adhoc_model_code4 <> '' THEN i.adhoc_model_code4 ELSE 'Other' END adhoc_model_code4
 	,CASE WHEN i.adhoc_model_code5 <> '' THEN i.adhoc_model_code5 ELSE 'Other' END adhoc_model_code5
 
-	,RTRIM(c.global_product_class) 
-		+ ' | ' + RTRIM(glob.global_product_class_descr) AS global_product
-
-	,ISNULL(glob.rollup_hsb_code, '')  AS rollup_hsb_code
-
 	,i.pchg_active_ind 
 	,i.pchg_active_dt
 	,i.pchg_price_old
@@ -236,6 +232,21 @@ SELECT
 	,ISNULL(ext.[tag_03_cd], '') as tag_03_cd
 	,ISNULL(ext.[tag_04_cd], '') as tag_04_cd
 	,ISNULL(ext.[tag_05_cd], '') as tag_05_cd
+
+-- globl groups xxx
+
+,ISNULL(glob.global_product_class,'')					as glob_prod_curr_class
+,ISNULL( glob.level_num, 0)								as glob_prod_curr_level
+,ISNULL( glob.counting_sku_ind, 0)						as glob_prod_curr_counting_sku_ind
+,ISNULL(SUBSTRING(glob.global_product_class,1,3),'')	as glob_prod_curr_class3
+,ISNULL(SUBSTRING(glob.global_product_class,1,6),'')	as glob_prod_curr_class6
+,ISNULL(SUBSTRING(glob.global_product_class,1,9),'')	as glob_prod_curr_class9
+,rtrim(glob.global_product_class) + ' | ' 
+	+ glob.global_product_class_descr					as glob_prod_curr_descr
+
+,ISNULL(glob.rollup_hsb_code, '')						AS glob_prod_curr_rollup_hsb_code
+
+--
 
 
 FROM            
@@ -331,8 +342,15 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-SELECT top 10 * FROM Dimension.Item where item like '100%' or rollup_hsb_code <>''
+-- SELECT top 10 * FROM Dimension.Item where item like '100%' or rollup_hsb_code <>''
 
+-- SELECT top 10 * FROM Dimension.Item where itemcode = '1000179'
+
+
+select * from [dbo].[BRS_Item] i 
+where not exists (select * from Dimension.Item d where d.itemCode = i.item)
+
+where i.item = '1127015'
 
 -- SELECT * FROM Dimension.Item where Current_FxMarketing = -1
 
