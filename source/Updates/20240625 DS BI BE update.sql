@@ -688,6 +688,40 @@ ALTER TABLE dbo.BRS_Item SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add not logic to allow sub-divide brands
+
+BEGIN TRANSACTION
+GO
+ALTER TABLE hfm.exclusive_product_rule ADD
+	MinorProductClass_Not_WhereClauseLike varchar(30) NOT NULL CONSTRAINT DF_exclusive_product_rule_MinorProductClass_WhereClauseLike1 DEFAULT ('xxx')
+GO
+ALTER TABLE hfm.exclusive_product_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+BEGIN TRANSACTION
+GO
+ALTER TABLE hfm.exclusive_product_rule
+	DROP CONSTRAINT exclusive_product_rule_c_pk
+GO
+ALTER TABLE hfm.exclusive_product_rule ADD CONSTRAINT
+	exclusive_product_rule_c_pk PRIMARY KEY CLUSTERED 
+	(
+	Supplier_WhereClauseLike,
+	Brand_WhereClauseLike,
+	MinorProductClass_WhereClauseLike,
+	Item_WhereClauseLike,
+	MinorProductClass_Not_WhereClauseLike
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+
+GO
+ALTER TABLE hfm.exclusive_product_rule SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+--
+
 -- update
 
 UPDATE       BRS_Item
@@ -701,5 +735,21 @@ GO
 SELECT        TOP (10) i.Item, i.Excl_Code, h.Excl_Code
 FROM            BRS_Item AS i INNER JOIN
                          hfm.exclusive_product_rule_item AS h ON i.Item = h.item
+
+
+SELECT        Item, ItemDescription, Supplier, Label, MinorProductClass
+FROM            BRS_Item
+WHERE        (Supplier = 'HANDPH') and 
+--(MinorProductClass like '%') and 
+--(MinorProductClass not like '845-04%') AND
+
+(MinorProductClass like '845-04%') and 
+--(MinorProductClass not like 'xxx') AND
+
+1=1
+
+-- total = 973
+-- other = 971
+
 
 
