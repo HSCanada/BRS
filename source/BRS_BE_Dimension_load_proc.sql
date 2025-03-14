@@ -51,6 +51,7 @@ AS
 **	04 Jan 23	tmc		add trims to correct for cloud backend escapes, @gt
 **	19 Jun 23	tmc		add JDE marketclass to allow synch
 **	29 Oct 24	tmc		add AR clear table [Integration].[F564201_AgingBillto]
+**	14 Mar 25	tmc		synch HS Global rules for finance and commissions
 *******************************************************************************/
 
 BEGIN
@@ -649,6 +650,21 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+
+	If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '16. synch HS Global rules for finance and commissions'
+
+			UPDATE       BRS_Item
+			SET                Excl_Code =  h.Excl_Code
+			FROM            BRS_Item i INNER JOIN
+									 hfm.exclusive_product_rule_item AS h ON i.Item = h.item
+			WHERE
+				i.Excl_Code <>  h.Excl_Code
+
+			Set @nErrorCode = @@Error
+		End
 
 
 
