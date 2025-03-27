@@ -39,6 +39,7 @@ AS
 **	16 Mar 22	tmc		fix PPE potial problem by lowering thersh to 0.001
 **	28 Nov 22	tmc		added minor and sub-minor
 **	16 Jan 23	tmc		added Med EQ flag 
+**	25 Mar 25	tmc		add tarif exclusion logic to allow FF change without offset
 **    
 *******************************************************************************/
 
@@ -86,6 +87,9 @@ WHERE
 	-- exclude PPE overrides
 	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.001 AND 0.99) AND i.Supplier <> 'ACESUR') AND
 --	NOT ((CorporateMarketAdjustmentPct BETWEEN 0.10 AND 0.99) AND i.Supplier <> 'ACESUR') AND
+
+	-- exclude tariff changes
+	NOT EXISTS (SELECT NULL FROM [Pricing].[item_tariff] t where i.Item = t.item and t.[active_ind] = 1) and
 
 	(1=1) 
 
@@ -137,10 +141,11 @@ TEETH         513 ??
 
 
 -- 1. add 1% to base MA
-
+/*
 SELECT  [Label]
       ,[ma_base_factor]
   FROM [dbo].[BRS_ItemLabel] 
+*/
 
 /*
 -- ORG
@@ -163,7 +168,7 @@ G     1.102
 P     1.133
 
 */
-
+/*
 UPDATE [dbo].[BRS_ItemLabel]
 SET [ma_base_factor] = 1.102
   WHERE label <> 'P'
@@ -176,7 +181,7 @@ SET [ma_base_factor] = 1.133
 SELECT BRS_ItemSupplier.Supplier, BRS_ItemSupplier.ma_supplier_factor
 FROM BRS_ItemSupplier
 WHERE (((BRS_ItemSupplier.Supplier) In ('VIDENT','DENTPL','IVOCLA','KULZER','ZAHNDT','MYRSON','ZAHNDL','AMRTOO')))
-
+*/
 /*
 -- ORG
 Supplier ma_supplier_factor
@@ -205,7 +210,12 @@ ZAHNDT   0.01
 */
 
 -- 2. add 1% to Teeth (effectively 2%, when base 1% included)
+/*
 UPDATE  BRS_ItemSupplier
 SET        ma_supplier_factor = 0.01
 WHERE   (Supplier IN ('VIDENT', 'DENTPL', 'IVOCLA', 'KULZER', 'ZAHNDT', 'MYRSON', 'ZAHNDL', 'AMRTOO'))
+*/
 
+-- 
+
+SELECT        Item, FreightAdjPct, CorporateMarketAdjustmentPct,10, 'test_file', 'test note' FROM            BRS_ItemMarketAdjustFix
