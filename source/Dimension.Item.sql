@@ -246,6 +246,11 @@ SELECT
 
 ,ISNULL(glob.rollup_hsb_code, '')						AS glob_prod_curr_rollup_hsb_code
 
+-- add for comm model (remove), 31 Mar 25
+,rtrim(glob.global_product_class) + ' | ' 
+	+ glob.global_product_class_descr					as global_product
+
+
 --
 
 
@@ -346,11 +351,12 @@ GO
 
 -- SELECT top 10 * FROM Dimension.Item where itemcode = '1000179'
 
-
+/*
 select * from [dbo].[BRS_Item] i 
 where not exists (select * from Dimension.Item d where d.itemCode = i.item)
 
 where i.item = '1127015'
+*/
 
 -- SELECT * FROM Dimension.Item where Current_FxMarketing = -1
 
@@ -382,8 +388,9 @@ FROM            Dimension.Item
 GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 */
 
--- SELECT * FROM Dimension.Item where itemKey  = 9
+-- SELECT * FROM Dimension.Item where itemKey  = '14249' 
 -- SELECT * FROM Dimension.Item where item = '9493402'
 
 -- SELECT top 10 * FROM Dimension.Item where pchg_active_ind = 1
 -- SELECT top 10 * FROM Dimension.Item where pchg_mpc_active_ind = 1
+
