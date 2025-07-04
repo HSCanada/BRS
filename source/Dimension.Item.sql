@@ -68,6 +68,7 @@ AS
 --	31 Jan 25	tmc		add rollup_hsb_code for US PPE HSB tracking
 --	05 Mar 25	tmc		add hsb brand equity for fin planning
 --	10 Mar 25	tmc		add global item current so we can compare hsb_brand curr
+--	11 Apr 25	tmc		mov global item map from lookup to item (max flex/cntsku
 **    
 *******************************************************************************/
 
@@ -238,9 +239,12 @@ SELECT
 ,ISNULL(glob.global_product_class,'')					as glob_prod_curr_class
 ,ISNULL( glob.level_num, 0)								as glob_prod_curr_level
 ,ISNULL( glob.counting_sku_ind, 0)						as glob_prod_curr_counting_sku_ind
-,ISNULL(SUBSTRING(glob.global_product_class,1,3),'')	as glob_prod_curr_class3
-,ISNULL(SUBSTRING(glob.global_product_class,1,6),'')	as glob_prod_curr_class6
-,ISNULL(SUBSTRING(glob.global_product_class,1,9),'')	as glob_prod_curr_class9
+
+,glob.global_prod_level1	as glob_prod_curr_class3
+,glob.global_prod_level2	as glob_prod_curr_class6
+,glob.global_prod_level3	as glob_prod_curr_class9
+,glob.global_prod_level4	as glob_prod_curr_class12
+
 ,rtrim(glob.global_product_class) + ' | ' 
 	+ glob.global_product_class_descr					as glob_prod_curr_descr
 
@@ -308,8 +312,9 @@ FROM
 	LEFT JOIN [Pricing].[item_wcs_unique_fields_file_F5656] wcs
 	ON i.Item =wcs.QVLITM_item_number
 
-	LEFT JOIN [hfm].[global_product] glob
-	ON c.global_product_class = glob.global_product_class
+	LEFT JOIN hfm.global_product_review glob
+--	LEFT JOIN [hfm].[global_product] glob
+	ON i.global_product_class = glob.global_product_class
 
 	LEFT JOIN [hfm].[exclusive_product_rule_item] equity
 	ON i.Item = equity.Item
@@ -377,9 +382,8 @@ WHERE SalesCategory <> ''
 
 -- SELECT top 10 * FROM Dimension.Item where item like '100%'
  -- SELECT count(*) FROM Dimension.Item where CompetitiveMatchKey > 1
--- ORG 252 122
--- prd = 9933
--- dev = 9434
+-- dev 253 425 / 253 425
+-- prd 254 171 / 254 171
 
 /*
 -- finance vs opts vs comm consistency check
@@ -391,6 +395,6 @@ GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 -- SELECT * FROM Dimension.Item where itemKey  = '14249' 
 -- SELECT * FROM Dimension.Item where item = '9493402'
 
--- SELECT top 10 * FROM Dimension.Item where pchg_active_ind = 1
+ -- SELECT  * FROM Dimension.Item where glob_prod_curr_counting_sku_ind =1
 -- SELECT top 10 * FROM Dimension.Item where pchg_mpc_active_ind = 1
 
