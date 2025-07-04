@@ -33,6 +33,7 @@ AS
 **	03 Feb 21		tmc	fixed salesperson name to remove code for legal reasons
 **  19 Jul 21		tmc	add salesforce adoption and opportunity for playbook
 **	07 Feb 23		tmc	quick fix for Branch consolidation (use Zone for Br Code 
+**	08 May25		tmc	update branch name for commission version
 **    
 *******************************************************************************/
 
@@ -49,7 +50,7 @@ SELECT
 	,ISNULL(BranchCount,0)		AS BranchCount
 	,[CostCenter]
 	,b.Branch					AS BranchCode
-	,b.BranchName
+	,b.BranchNameComm			AS BranchName
 	,b.ZoneName					AS ZoneName
 	,tracker_ind
 
