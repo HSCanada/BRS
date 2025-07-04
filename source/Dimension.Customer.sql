@@ -64,6 +64,7 @@ AS
 --	19 Nov 24	tmc		add segment new for modelling
 --	19 Feb 25	tmc		add FSC as of last fiscal for FSC growth modelling
 --  06 Mar 25	tmc		add FSC MasterCode to help with analysis
+--	22 Apr 25	tmc		add ISR comm codes for campaign models
 **    
 *******************************************************************************/
 
@@ -153,7 +154,7 @@ SELECT
 	,RTRIM(terr.FSCStatusCode)							AS FscStatusCode
 
 	,RTRIM(isr.TerritoryCd)								AS IsrTerritoryCd
-	,RTRIM(isr.FSCName)									AS IsrName
+	,RTRIM(isr_master.salesperson_nm)					AS IsrName
 	,RTRIM(isr.FSCStatusCode)							AS IsrStatusCode
 
 	-- Closed -> Special Market -> Focus -> Default
@@ -236,7 +237,7 @@ SELECT
 	,ISNULL([wheel_seg6_equipment_services_ind], 0)		AS wheel_seg6_equipment_services_ind
 	,ISNULL([wheel_seg7_business_solutions_ind], 0)		AS wheel_seg7_business_solutions_ind
 
-	,[master_salesperson_cd]							AS CommMasterCode_FSC_Current
+	,fsc_master.[master_salesperson_cd]							AS CommMasterCode_FSC_Current
 	,ISNULL(comm_fsc_bonus_2_ind,0)						AS service_bonus_include_ind
 	,c.CreateDate
 	,c.adhoc_model_code
@@ -262,6 +263,8 @@ SELECT
 
 	,ISNULL(last_dec.[HIST_MarketClass], '')		AS LastDec_MarketClass
 	,ISNULL(last_dec.[HIST_SegCd], '')				AS LastDec_SegCd
+
+	,RTRIM(isr_master.comm_plan_id)   ISRCommPlan
 
 
 FROM
@@ -314,6 +317,12 @@ FROM
 
 	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
+
+	-- current (could be updated any time)
+	-- xxx
+	INNER JOIN [comm].[salesperson_master] isr_master
+	ON isr.comm_salesperson_key_id = isr_master.salesperson_key_id
+
 
 	LEFT JOIN [dbo].[BRS_Employee] isr_emp
 	ON isr.[FSCRollup] = isr_emp.[IsrRollupCd]
@@ -430,20 +439,21 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 */
 
 -- test details
--- SELECT  top 10 * FROM Dimension.Customer where [wheel_active_ind] = 0 and wheel_thresh1_sales_ind = 1
+ SELECT  top 100 * FROM Dimension.Customer 
 
 -- SELECT  count(*) FROM Dimension.Customer
--- ORG= 139 147
--- new= 139 147 (ok)
+-- ORG= 139 377
+-- new= 139 377
 
 -- test
 -- SELECT  distinct FocusCd FROM Dimension.Customer
 
 -- SELECT  * FROM Dimension.Customer where ShipTo = 1667465
  --SELECT  * FROM Dimension.Customer where FscTerritoryCd = 'AZ1CM'
-
+ /*
  SELECT   TOP (10) ShipTo, FieldSales, FieldSales_LastMonthEnd, FieldSales_LastMonthEnd_Master
 FROM            Dimension.Customer AS c
 WHERE 
 	FieldSales <> FieldSales_LastMonthEnd
 -- (FscTerritoryCd = 'AZ1CM')
+*/
