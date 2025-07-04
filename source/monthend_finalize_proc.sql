@@ -435,7 +435,7 @@ End
 Return @nErrorCode
 GO
 
--- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202303
+-- UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202401
 
 -- Prod
 -- EXEC dbo.monthend_finalize_proc @bDebug=0
@@ -443,3 +443,75 @@ GO
 -- Debug, 1m
 -- EXEC dbo.monthend_finalize_proc @bDebug=1
 
+
+
+/*
+
+[hfm].global_cube_new_proc 202401
+
+-- update missing post adj
+
+		UPDATE       BRS_Transaction
+		SET
+			GL_BusinessUnit = '020019000000'
+			,GL_Object_Sales = '4130'
+			,GL_Subsidiary_Sales = ''
+			,GL_Object_Cost = ''
+			,GL_Subsidiary_Cost = ''
+			,GL_Subsidiary_ChargeBack = ''
+			,GL_Object_ChargeBack = ''
+		WHERE
+			(GLBU_Class = 'LEASE') AND 
+			(GL_BusinessUnit = '') AND
+			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+GO
+
+
+
+		UPDATE
+			BRS_Transaction
+		SET
+			[gl_account_sales_key] = a.[gl_account_key]
+		FROM
+			hfm.account_master_F0901 AS a 
+			INNER JOIN BRS_Transaction 
+			ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+				a.GMOBJ__object_account = BRS_Transaction.GL_Object_Sales AND 
+				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
+		WHERE
+			ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
+			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+GO
+
+		UPDATE
+			BRS_Transaction
+		SET
+			[gl_account_cost_key] = a.[gl_account_key]
+		FROM
+			hfm.account_master_F0901 AS a 
+			INNER JOIN BRS_Transaction 
+			ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+				a.GMOBJ__object_account = BRS_Transaction.GL_Object_Cost AND 
+				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
+		WHERE
+			ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
+			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+GO
+
+
+		UPDATE
+			BRS_Transaction
+		SET
+			[gl_account_chargeback_key] = a.[gl_account_key]
+		FROM
+			hfm.account_master_F0901 AS a 
+			INNER JOIN BRS_Transaction 
+			ON a.GMMCU__business_unit = BRS_Transaction.GL_BusinessUnit AND 
+				a.GMOBJ__object_account = BRS_Transaction.GL_Object_ChargeBack AND 
+				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
+		WHERE
+			ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
+			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+GO
+
+*/
