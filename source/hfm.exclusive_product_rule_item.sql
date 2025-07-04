@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+**	14 Apr 25	tmc		add Owned / Private Label split logic
 *******************************************************************************/
 
 
@@ -41,9 +42,17 @@ SELECT
 	i.Supplier,
 	i.Brand,
 	i.MinorProductClass,
-	p.Excl_Code,
+
 	-- if an owned line has private label, override the BrandEquitiy
-	CASE WHEN i.Label = 'P' 
+
+	CASE WHEN i.Label = 'P' AND r.StatusCd = 2
+		THEN 'CORPORATE_BRAND' 
+		ELSE p.Excl_Code 
+	END  AS Excl_Code,
+
+--	p.Excl_Code,
+
+	CASE WHEN i.Label = 'P' AND r.StatusCd = 2
 		THEN 'CorporateBrand' 
 		ELSE p.BrandEquityCategory 
 	END BrandEquityCategory
@@ -61,7 +70,8 @@ FROM
 		--
 		i.MinorProductClass NOT LIKE RTRIM(r.MinorProductClass_Not_WhereClauseLike) AND 
 		--
-		(r.StatusCd = 1) AND 
+		-- status 1 = honor Equity; 2 = split P Label
+		(r.StatusCd between 1 and 2) AND 
 		-- test
 --		i.label = 'P' AND
 		--
@@ -110,7 +120,7 @@ FROM
 		--
 		i.MinorProductClass NOT LIKE RTRIM(r.MinorProductClass_Not_WhereClauseLike) AND 
 		--
-		(r.StatusCd = 1) AND 
+		(r.StatusCd between 1 and 2) AND 
 		-- test
 --		i.label = 'P' AND
 		--
@@ -204,7 +214,7 @@ GO
 
 --
 
--- select top 10 * from hfm.exclusive_product_rule_item where item = '5703122'
+-- select top 10 * from hfm.exclusive_product_rule_item where excl_code = 'NORDENT'
 
 -- select count(*) from hfm.exclusive_product_rule_item
 -- org 20 723, 11s
@@ -222,7 +232,124 @@ select BrandEquityCategory, Excl_Code, count(*) cnt from hfm.exclusive_product_r
 group by BrandEquityCategory, Excl_Code
 */
 
+/*
+
+excl_code	BrandEquityCategory	P status
+CARINA              	Owned	Ignore P
+ESSENTIALS_HEALTH   	Owned	Ignore P
+ORTHO_ORGANIZERS    	Owned	Ignore P
+ZIRLUX              	Owned	Ignore P
+
+CLINICIANS_CHOICE   	Owned	Split P
+NORDENT             	Owned	Split P
+DUKAL               	Strategic	Split P
+MDT                 	Strategic	Split P
+MICROCOPY           	Strategic	Split P
+
+*/
+
+-- select distinct excl_code, BrandEquityCategory from [hfm].[exclusive_product]
+
+select Excl_Code, BrandEquityCategory, count(*) cnt from hfm.exclusive_product_rule_item
+where Excl_Code in (
+'CARINA'
+,'ESSENTIALS_HEALTH'
+,'ORTHO_ORGANIZERS'
+,'ZIRLUX'
+
+,'CLINICIANS_CHOICE'
+,'NORDENT'
+,'DUKAL'
+,'MDT'
+,'MICROCOPY'
+)
+group by 
+BrandEquityCategory
+,excl_code
+order by 1
+
+/*
+
+select * from hfm.exclusive_product_rule
+where
+statuscd <>0 and
+[Excl_Code_TargKey] in (
+'CLINICIANS_CHOICE'
+,'NORDENT'
+,'DUKAL'
+,'MDT'
+,'MICROCOPY'
+)
+
+UPDATE  hfm.exclusive_product_rule
+SET        StatusCd = 2
+WHERE   (StatusCd <> 0) AND (Excl_Code_TargKey IN ('CLINICIANS_CHOICE', 'NORDENT', 'DUKAL', 'MDT', 'MICROCOPY'))
+*/
+
+
+/*
+-- ORG
+Excl_Code            BrandEquityCategory            cnt
+-------------------- ------------------------------ -----------
+CARINA               CorporateBrand                 2
+CLINICIANS_CHOICE    Owned                          2251
+CLINICIANS_CHOICE    CorporateBrand                 91
+DUKAL                Strategic                      55
+DUKAL                CorporateBrand                 19
+MDT                  CorporateBrand                 390
+MICROCOPY            CorporateBrand                 3
+MICROCOPY            Strategic                      472
+NORDENT              Owned                          741
+NORDENT              CorporateBrand                 64
+ORTHO_ORGANIZERS     CorporateBrand                 971
+ORTHO_ORGANIZERS     Owned                          97
+ZIRLUX               CorporateBrand                 495
+
+(13 rows affected)
+*/
+
+/*
+-- new
+Excl_Code            BrandEquityCategory            cnt
+-------------------- ------------------------------ -----------
+CARINA               Owned                          2
+CLINICIANS_CHOICE    Owned                          2251
+DUKAL                Strategic                      55
+MICROCOPY            Strategic                      472
+NORDENT              Owned                          741
+ORTHO_ORGANIZERS     Owned                          1068
+ZIRLUX               Owned                          495
+
+(12 rows affected)
+*/
+
+/*
+-- prod org
+Excl_Code            BrandEquityCategory            cnt
+-------------------- ------------------------------ -----------
+CLINICIANS_CHOICE    Owned                          2342
+DUKAL                Strategic                      538
+ESSENTIALS_HEALTH    Owned                          86
+MDT                  Strategic                      390
+MICROCOPY            Strategic                      475
+NORDENT              Owned                          815
+ORTHO_ORGANIZERS     Owned                          1066
+ZIRLUX               Owned                          489
+
+-- prod new
+Excl_Code            BrandEquityCategory            cnt
+-------------------- ------------------------------ -----------
+CLINICIANS_CHOICE    Owned                          2251
+DUKAL                Strategic                      518
+ESSENTIALS_HEALTH    Owned                          86
+MICROCOPY            Strategic                      472
+NORDENT              Owned                          751
+ORTHO_ORGANIZERS     Owned                          1066
+ZIRLUX               Owned                          489
 
 
 
+*/
 
+
+select item, ItemDescription, MinorProductClass, BrandEquityCategory, Excl_Code, label, testsrc from hfm.exclusive_product_rule_item where item in ('1426551', '5703122')
