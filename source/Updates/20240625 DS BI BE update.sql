@@ -586,6 +586,9 @@ UPDATE  BRS_TransactionDW_Ext
 SET        ID_DS_xref = NULL
 where ID_DS_xref is not NULL
 
+-- this neeed to move to production, financial model (DS to DW) (commission load or weekly eq open?)
+-- 
+
 -- map salesorder to the FIRST line of the order from the Daily Sales Transactions - 1
 UPDATE  BRS_TransactionDW_Ext
 SET        ID_DS_xref = upd.first_line

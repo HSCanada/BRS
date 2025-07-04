@@ -1,5 +1,21 @@
 -- HSG xref, tmc, 20 Mar 25
 
+/*
+
+-- update CAD item sales
+SELECT   TOP (1000) zzzItem2.zzzItem, zzzItem2.val1, BRS_Item.Est12MoSales
+FROM     zzzItem2 INNER JOIN
+             BRS_Item ON zzzItem2.zzzItem = BRS_Item.Item
+
+update BRS_Item set Est12MoSales = 0 where Est12MoSales <> 0
+
+
+UPDATE  BRS_Item
+SET        Est12MoSales = val1
+FROM     zzzItem2 INNER JOIN
+             BRS_Item ON zzzItem2.zzzItem = BRS_Item.Item
+*/
+
 BEGIN TRANSACTION
 GO
 CREATE TABLE pbi.item_cobra_xref
@@ -333,21 +349,21 @@ COMMIT
 
 -- pop
 
-truncate table [dbo].[zzzItem]
 
 SELECT distinct [Note1]
   FROM [dbo].[zzzItem]
-
-union 
-
+ union 
 select distinct Item
   FROM [dbo].[zzzItem]
 GO
 
 
+--> cobra2 adhoc accesss load
+truncate table [dbo].[zzzItem]
+GO
+
 insert into [pbi].[item_cobra_xref_master]
 (item)
-
 select  * from (SELECT DISTINCT Note1 AS item
 FROM     zzzItem
 UNION
@@ -355,13 +371,7 @@ SELECT DISTINCT Item
 FROM     zzzItem AS zzzItem_1 ) as s
 where not exists(SELECT * FROM [pbi].[item_cobra_xref_master] where item = s.item)
 
-
-INSERT INTO pbi.item_cobra_xref
-             (item, item_subst, match_status_cd, match_type_cd)
-SELECT    Item AS item, Note1 AS subs, Note2 AS status, 'HSB3' AS type
-FROM     zzzItem
-
-
+--< cobra2 adhoc accesss load
 --
 
 
@@ -424,4 +434,7 @@ INSERT INTO [pbi].[item_cobra_xref]
 
 INSERT INTO zzzItem
 ([Item], [Note1], [Note2], [Note3])
-SELECT distinct [item_subst], [item_subst], '', 'AAAA'  FROM [pbi].[item_cobra_xref] where [item] not in ('1014229', '1126994', '9007437')
+SELECT distinct [item_subst], [item_subst], '', 'AAAA'  FROM [pbi].[item_cobra_xref] 
+
+
+--
