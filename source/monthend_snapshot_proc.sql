@@ -33,6 +33,8 @@ AS
 **						Add EST and fix ISR snapshots
 **  16 Dec 21	tmc		add ISR logic
 **	27 Mar 23	tmc		add hsb to proc (monthly)
+**	 9 Jul 25	tmc		refactor Exclusives hisotry to use current item value
+**							instead of legacy logic
 **    
 *******************************************************************************/
 
@@ -540,6 +542,35 @@ WHERE        ([Excl_Code] = 'DENMAT')
 
 	If (@nErrorCode = 0) 
 	Begin
+		print '10. set Exclusives - Excl_key, new'
+
+		UPDATE       
+			BRS_ItemHistory
+		SET
+			Excl_key = p.[Excl_Key]
+		FROM
+			BRS_ItemHistory ih 
+			INNER JOIN [dbo].[BRS_Item] AS i 
+			ON ih.Item = i.Item AND
+				(ih.FiscalMonth = @nCurrentFiscalYearmoNum) AND
+				-- test
+				-- (ih.FiscalMonth = 202506) AND
+				--
+				(1 = 1)
+			INNER JOIN hfm.exclusive_product AS p 
+			ON i.Excl_Code  = p.Excl_Code  
+		WHERE        
+			(ISNULL(ih.Excl_key,0) <> p.[Excl_Key]) AND
+			(1=1)
+
+		Set @nErrorCode = @@Error
+	End
+
+
+
+/*
+	If (@nErrorCode = 0) 
+	Begin
 		print '10. set Exclusives - Excl_key, 1s, 1 OF 3'
 
 		UPDATE       
@@ -604,6 +635,7 @@ WHERE        ([Excl_Code] = 'DENMAT')
 
 		Set @nErrorCode = @@Error
 	End
+*/
 
 --> STOP (part 2)
 
