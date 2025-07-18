@@ -79,11 +79,11 @@ Begin
     Left =0
     Top =0
     Right =1582
-    Bottom =851
+    Bottom =833
     Left =-1
     Top =-1
-    Right =1296
-    Bottom =253
+    Right =1566
+    Bottom =219
     Left =0
     Top =0
     ColumnsShown =539

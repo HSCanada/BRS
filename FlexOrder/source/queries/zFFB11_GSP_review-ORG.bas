@@ -1,7 +1,7 @@
 ﻿Operation =1
 Option =0
 Where ="(((flex_order_file.status_code)=0) AND ((flex_order_file.batch_id) Is Null) AND "
-    "((flex_order_file.flex_code)=\"PG_IMP\"))"
+    "((flex_order_file.flex_code)=\"PG_GSP\"))"
 Begin InputTables
     Name ="flex_order_header"
     Name ="flex_order_detail"
@@ -12,30 +12,28 @@ End
 Begin OutputColumns
     Alias ="A_Ship_To"
     Expression ="flex_order_header.ShipTo"
-    Alias ="B_Document_Type"
-    Expression ="flex_batch_template.DocType"
-    Alias ="C_Item_number"
+    Alias ="B_Item_number"
     Expression ="flex_order_detail.Item"
-    Alias ="D_Line_Type"
-    Expression ="flex_batch_template.LineTypeOrder"
-    Alias ="E_Qty"
+    Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
-    Alias ="F_Unit_Price"
+    Alias ="D_Unit_Price"
     Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),CLng([PRICE]*10000),\"\""
         ")"
-    Alias ="G_Line_price_Override"
+    Alias ="E_Line_price_Override"
     Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),1,\"\")"
-    Alias ="H_Customer_PO"
+    Alias ="F_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
-    Alias ="I_Refer_order"
+    Alias ="G_Refer_order"
     Expression ="flex_order_header.ORDERNO"
-    Alias ="J_Order_Taken_By"
+    Alias ="H_Order_Taken_By"
     Expression ="flex_batch_template.OrderTakenBy"
-    Alias ="K_Ordered_By"
+    Alias ="I_Ordered_By"
     Expression ="flex_batch_template.OrderTakenBy"
-    Alias ="L_Refer_Order"
+    Alias ="J_Refer_Order"
     Expression ="flex_batch_template.refer_order"
+    Alias ="K_Order_Pend"
+    Expression ="flex_batch_template.order_pend"
 End
 Begin Joins
     LeftTable ="flex_order_header"
@@ -53,6 +51,10 @@ Begin Joins
     LeftTable ="flex_order_file"
     RightTable ="flex_batch_template"
     Expression ="flex_order_file.flex_code = flex_batch_template.flex_code"
+    Flag =1
+    LeftTable ="flex_order_header"
+    RightTable ="BRS_Customer"
+    Expression ="flex_order_header.ShipTo = BRS_Customer.ShipTo"
     Flag =1
     LeftTable ="flex_order_header"
     RightTable ="BRS_Customer"
@@ -87,110 +89,120 @@ Begin
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="B_Document_Type"
+        dbText "Name" ="J_Refer_order"
         dbLong "AggregateType" ="-1"
-        dbInteger "ColumnWidth" ="2160"
+        dbInteger "ColumnWidth" ="1755"
         dbBoolean "ColumnHidden" ="0"
     End
     Begin
-        dbText "Name" ="H_Customer_PO"
+        dbText "Name" ="K_Order_Pend"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1770"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="F_Customer_PO"
         dbInteger "ColumnWidth" ="2850"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="E_Qty"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="J_Order_Taken_By"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="G_Line_price_Override"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="C_Item_number"
+        dbText "Name" ="B_Item_number"
         dbInteger "ColumnWidth" ="1920"
         dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="L_Refer_Order"
+        dbText "Name" ="I_Ordered_By"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1695"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="C_Qty"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="975"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="D_Unit_Price"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="1620"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="E_Line_price_Override"
+        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2520"
+        dbBoolean "ColumnHidden" ="0"
+    End
+    Begin
+        dbText "Name" ="G_Refer_order"
+        dbInteger "ColumnWidth" ="1785"
+        dbBoolean "ColumnHidden" ="0"
         dbLong "AggregateType" ="-1"
     End
     Begin
-        dbText "Name" ="D_Line_Type"
+        dbText "Name" ="H_Order_Taken_By"
         dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="F_Unit_Price"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="I_Refer_order"
-        dbLong "AggregateType" ="-1"
-    End
-    Begin
-        dbText "Name" ="K_Ordered_By"
-        dbLong "AggregateType" ="-1"
+        dbInteger "ColumnWidth" ="2190"
+        dbBoolean "ColumnHidden" ="0"
     End
 End
 Begin
     State =0
     Left =0
     Top =0
-    Right =1312
-    Bottom =918
+    Right =2798
+    Bottom =1712
     Left =-1
     Top =-1
-    Right =1296
-    Bottom =441
-    Left =0
+    Right =2773
+    Bottom =263
+    Left =480
     Top =0
     ColumnsShown =539
     Begin
-        Left =324
+        Left =-156
         Top =109
-        Right =523
+        Right =43
         Bottom =364
         Top =0
         Name ="flex_order_header"
         Name =""
     End
     Begin
-        Left =853
-        Top =2
-        Right =1273
-        Bottom =369
+        Left =401
+        Top =0
+        Right =821
+        Bottom =367
         Top =0
         Name ="flex_order_detail"
         Name =""
     End
     Begin
-        Left =102
+        Left =-378
         Top =13
-        Right =246
-        Bottom =157
+        Right =-195
+        Bottom =311
         Top =0
         Name ="flex_order_file"
         Name =""
     End
     Begin
-        Left =660
-        Top =0
-        Right =999
-        Bottom =207
+        Left =68
+        Top =11
+        Right =405
+        Bottom =218
         Top =0
         Name ="flex_batch_template"
         Name =""
     End
     Begin
-        Left =599
-        Top =190
-        Right =743
-        Bottom =334
+        Left =127
+        Top =30
+        Right =271
+        Bottom =174
         Top =0
         Name ="BRS_Customer"
         Name =""

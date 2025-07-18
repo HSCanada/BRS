@@ -8,6 +8,7 @@ Begin InputTables
     Name ="flex_order_file"
     Name ="flex_batch_template"
     Name ="BRS_Customer"
+    Name ="BRS_CustomerVPA"
 End
 Begin OutputColumns
     Alias ="A_Ship_To"
@@ -17,10 +18,9 @@ Begin OutputColumns
     Alias ="C_Qty"
     Expression ="flex_order_detail.QTY"
     Alias ="D_Unit_Price"
-    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),CLng([PRICE]*10000),\"\""
-        ")"
+    Expression ="IIf([PRICE]=0 Or [flex_jde_pricing_ind]=0,CLng([PRICE]*10000),\"\")"
     Alias ="E_Line_price_Override"
-    Expression ="IIf([PRICE]=0 Or [VPA] Not In (\"123DNST\",\"DENCORP\"),1,\"\")"
+    Expression ="IIf([PRICE]=0 Or [flex_jde_pricing_ind]=0,1,\"\")"
     Alias ="F_Customer_PO"
     Expression ="[flex_po_prefix] & [flex_order_header]![ORDERNO] & \"_\" & [flex_order_header]!["
         "ACCOUNT]"
@@ -59,6 +59,10 @@ Begin Joins
     LeftTable ="flex_order_header"
     RightTable ="BRS_Customer"
     Expression ="flex_order_header.ShipTo = BRS_Customer.ShipTo"
+    Flag =1
+    LeftTable ="BRS_Customer"
+    RightTable ="BRS_CustomerVPA"
+    Expression ="BRS_Customer.VPA = BRS_CustomerVPA.VPA"
     Flag =1
 End
 Begin OrderBy
@@ -153,58 +157,67 @@ Begin
     State =0
     Left =0
     Top =0
-    Right =1038
-    Bottom =516
+    Right =2798
+    Bottom =1712
     Left =-1
     Top =-1
-    Right =1022
-    Bottom =289
-    Left =480
+    Right =2773
+    Bottom =908
+    Left =0
     Top =0
     ColumnsShown =539
     Begin
-        Left =-156
-        Top =109
-        Right =43
-        Bottom =364
+        Left =460
+        Top =170
+        Right =659
+        Bottom =425
         Top =0
         Name ="flex_order_header"
         Name =""
     End
     Begin
-        Left =401
-        Top =0
-        Right =821
-        Bottom =367
+        Left =1213
+        Top =87
+        Right =1633
+        Bottom =454
         Top =0
         Name ="flex_order_detail"
         Name =""
     End
     Begin
-        Left =-378
+        Left =102
         Top =13
-        Right =-195
+        Right =285
         Bottom =311
         Top =0
         Name ="flex_order_file"
         Name =""
     End
     Begin
-        Left =68
-        Top =11
-        Right =405
-        Bottom =218
+        Left =671
+        Top =-22
+        Right =1008
+        Bottom =185
         Top =0
         Name ="flex_batch_template"
         Name =""
     End
     Begin
-        Left =127
-        Top =30
-        Right =271
-        Bottom =174
+        Left =940
+        Top =312
+        Right =1084
+        Bottom =456
         Top =0
         Name ="BRS_Customer"
+        Name =""
+    End
+    Begin
+        Left =1346
+        Top =508
+        Right =1562
+        Bottom =724
+        Top =0
+        Name ="BRS_CustomerVPA"
         Name =""
     End
 End
