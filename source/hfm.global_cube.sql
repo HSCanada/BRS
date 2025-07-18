@@ -558,7 +558,9 @@ WHERE
 */
  
 
-SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
+SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202506
+
+SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202506 and SUPPLIER = 'SIRCER' and ANALYSIS = '3DPRINTING'
 
 -- SELECT count (*) FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
 -- ORG 313 988
