@@ -65,6 +65,7 @@ AS
 --	19 Feb 25	tmc		add FSC as of last fiscal for FSC growth modelling
 --  06 Mar 25	tmc		add FSC MasterCode to help with analysis
 --	22 Apr 25	tmc		add ISR comm codes for campaign models
+--	21 Jul 25	tmc		add location information for FSC trip planning
 **    
 *******************************************************************************/
 
@@ -266,6 +267,10 @@ SELECT
 
 	,RTRIM(isr_master.comm_plan_id)   ISRCommPlan
 
+	,c.PostalCode
+	,c.AddressLine3
+	,c.AddressLine4
+
 
 FROM
 	BRS_Customer AS c 
@@ -439,7 +444,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 */
 
 -- test details
- SELECT  top 100 * FROM Dimension.Customer 
+ SELECT  top 100 * FROM Dimension.Customer where ShipTo = 1588820
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG= 139 377

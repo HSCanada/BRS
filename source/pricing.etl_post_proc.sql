@@ -29,6 +29,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 **	31 Aug 20	tmc		Fix bug where supplier too big -- Left 6 it to fit
+--	21 Jul 
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -1287,6 +1288,7 @@ Else
 		Set @nErrorCode = @@Error
 	End
 
+/*
 	-- see end of script if this section breaks.  
 	If (@nErrorCode = 0) 
 	Begin
@@ -1334,15 +1336,17 @@ Else
 			(atn.ATSDGR_order_detail_group = '') AND 
 			(atn.ATLBT__level_break_type = 1) AND
 			-- terrible work-around for terrible pricing practices, 7 Dec 18
-			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
-			pj.PJAN8__billto not in(3823581) AND
-			pj.PJAN8__billto = 1670163 AND
+			-- xxx
+			--sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
+			--pj.PJAN8__billto not in(3823581) AND
+			-- pj.PJAN8__billto = 1670163 AND
+			--
 			(1 = 1)
 		ORDER BY 1
 
 		Set @nErrorCode = @@Error
 	End
-
+*/
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -2124,9 +2128,9 @@ GO
 			(atn.ATSDGR_order_detail_group = '') AND 
 			(atn.ATLBT__level_break_type = 1) AND
 			-- terrible work-around for terrible pricing practices, 7 Dec 18
-			sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
+			--sn.SNAST__adjustment_name not in('USENDDCC', 'USEND123', 'ADC02ALT', 'USENDALT', 'USENDJAF', 'ADC02RID', 'ADC01CUM', 'ADC03CDS') AND
 			-- test
-			pj.PJAN8__billto not in(3823581) AND
+			--pj.PJAN8__billto not in(3823581) AND
 			(1 = 1)
 		Group BY pj.PJAN8__billto 
 		Having count(*) > 1
@@ -2141,3 +2145,4 @@ GO
 -- 184927 rows
 -- org 1m57s
 -- new 1m55s
+
