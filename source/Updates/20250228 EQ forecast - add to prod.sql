@@ -74,7 +74,7 @@ SELECT TOP (1000) *
   FROM [nes].[order_ets]
 
 
--- Astea:  set new eq_forecast_est_astea_key from the Astea order pipline.   may be re-run
+--> Astea:  set new eq_forecast_est_astea_key from the Astea order pipline.   may be re-run
 UPDATE  nes.order_ets
 SET        [eq_forecast_est_astea_key] = eqord.eq_fact_id
 FROM     nes.order_ets INNER JOIN
@@ -153,6 +153,8 @@ FROM     nes.order_ets INNER JOIN
 	WSORD__equipment_order
 ) comm
 ON nes.order_ets.ets_num = comm.WSORD__equipment_order
+
+--< PROD
 
 -- 508 783
 /*
