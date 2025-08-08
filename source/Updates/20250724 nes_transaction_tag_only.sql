@@ -25,6 +25,17 @@ CREATE TABLE [Integration].[nes_transaction_tag_only](
 ) ON [USERDATA]
 GO
 
+-- pop dev to prod
+
+INSERT into [Integration].[nes_transaction_tag_only]
+(d1_branch, item, tag_number, item_description, sales_date, d1_user, work_order_num, total_extended_value, tag_date)
+SELECT    d1_branch, item, tag_number, item_description, sales_date, d1_user, work_order_num, total_extended_value, tag_date
+FROM     DEV_BRSales.Integration.nes_transaction_tag_only
+
+
+SELECT    d1_branch, item, tag_number, item_description, sales_date, d1_user, work_order_num, total_extended_value, tag_date
+FROM     Integration.nes_transaction_tag_only where work_order_num = 'WZ02140454'
+
 
 select top 10 * from [Integration].[nes_transaction_tag_only]
 
@@ -131,6 +142,7 @@ GO
 
 select distinct ICMORD_ets_order_number from nes.order_note_D1ICMTPF where not exists (select * from [nes].[order_ets] where ets_num = ICMORD_ets_order_number)
 
+
 INSERT INTO nes.order_ets
              (ets_num, note)
 SELECT DISTINCT ICMORD_ets_order_number, '.'
@@ -205,7 +217,7 @@ from OPENQUERY (ASYS_PROD, '
 		ARCPCORDTA.D1INVHPF
  
 	 WHERE 
-	IHOWO in (''WK09070199'', ''WK04260302'', ''WL03280260'', ''WW07220604'')
+	IHOWO in (''WZ06050695'', ''WZ04300689'', ''WZ04110207'', ''WZ04040339'', ''WZ03190583'', ''WZ03170070'', ''WY12190454'', ''WY11140054'', ''WY11220350'', ''WY10100033'')
 	order by 1,2
 ')
 
@@ -213,6 +225,15 @@ from OPENQUERY (ASYS_PROD, '
 
 select [group1], min([group2]), max([group2])  from  zzzGroup group by group1
 having min([group2]) <> max([group2])
+
+
+SELECT   
+-- TOP (10) 
+comm.transaction_F555115.FiscalMonth, comm.transaction_F555115.WSDOCO_salesorder_number, comm.transaction_F555115.WSDCTO_order_type, comm.transaction_F555115.WSLNID_line_number, comm.transaction_F555115.WSORD__equipment_order, comm.transaction_F555115.WSORDT_order_type, 
+             comm.transaction_F555115.WSDSC2_description_2, comm.transaction_F555115.WSDSC1_description, [WSAC10_division_code], ess_code
+FROM     comm.transaction_F555115 INNER JOIN
+             zzzItem ON comm.transaction_F555115.WSORD__equipment_order = zzzItem.Item
+
 
 
 
@@ -223,7 +244,7 @@ FROM     zzzGroup INNER JOIN
 where group2 <> ''
 GROUP BY zzzGroup.group1, nes.[order].ets_num
 HAVING   (MIN(zzzGroup.group2) <> MAX(zzzGroup.group2))
-order by 5 desc
+order by 2 desc
 
 
 SELECT   zzzGroup.group2, MIN(zzzGroup.group1) AS Expr1, MAX(zzzGroup.group1) AS Expr2
@@ -234,3 +255,88 @@ HAVING   (MIN(zzzGroup.group2) = MAX(zzzGroup.group2))
 
 
 select * from zzzGroup where group1 in ('WK09070199', 'WK04260302', 'WL03280260')
+
+/*
+UPDATE  
+-- TOP (100) 
+nes.[order]
+SET        ets_num = s.equipment_order, note = 'tc20250729 inst' 
+FROM     nes.[order] s2 INNER JOIN
+             nes.order_install_date_estimate s ON s2.work_order_num = s.work_order_num
+where ets_num is null
+
+*/
+
+
+
+select * from (SELECT    top 10 group1 as WO, MAX(group2) AS ETS
+FROM     zzzGroup
+GROUP BY group1) src
+
+
+
+-- pop ETS xref from temp table
+
+UPDATE   nes.[order]
+SET        note = N'', ets_num = null
+WHERE note <>''
+
+-- add new ETS numbers
+INSERT INTO nes.order_ets
+             (ets_num, note)
+SELECT DISTINCT group2, '.'
+FROM     zzzGroup
+WHERE   (NOT EXISTS
+                 (SELECT   *
+                 FROM     nes.order_ets AS order_ets_1
+                 WHERE   (ets_num = zzzGroup.group2)))
+
+
+
+
+-- map from D1 Workorder to EQ order (using last order to map, as the dups are mainly server / non-tag)
+UPDATE   nes.[order]
+SET         ets_num = src.ETS, note = 'tc20250806 D1xref' 
+FROM     (SELECT    group1 as WO, MAX(group2) AS ETS
+FROM     zzzGroup WHERE group2 <>''
+GROUP BY group1) src INNER JOIN
+             nes.[order] ON src.WO = nes.[order].work_order_num
+where ets_num is null
+
+-- test dups
+
+SELECT   TOP (10) ets_num, COUNT(*) AS Expr1
+FROM     nes.[order]
+GROUP BY ets_num
+having count(*) > 1
+
+select * from zzzGroup where group2 ='F79894'
+
+select * from zzzGroup where group1 ='WZ02140454'
+
+select count (*) from [Integration].[nes_transaction_tag_only]
+
+
+-- linke Comm header to nes.order
+
+
+-- link EQ order to Comm header
+-- Comm:  set new eq_forecast_act_comm_key from the commission trans.   may be re-run
+UPDATE  nes.order_ets
+SET        eq_forecast_act_comm_key = comm.comm_fact_id
+FROM     nes.order_ets INNER JOIN
+(
+	SELECT   WSORD__equipment_order, min(ID) comm_fact_id
+	FROM     comm.transaction_F555115
+	WHERE   
+	source_cd = 'JDE' AND
+	(WSDCTO_order_type = 'SL') AND
+	(WSORD__equipment_order>'') AND
+	-- astea
+	(WS$OSC_order_source_code = 'A') and
+	exists (Select * from [nes].[order_ets] o where o.[ets_num] = WSORD__equipment_order AND o.[eq_forecast_act_comm_key] is null)
+	GROup by 
+	WSORD__equipment_order
+) comm
+ON nes.order_ets.ets_num = comm.WSORD__equipment_order
+
