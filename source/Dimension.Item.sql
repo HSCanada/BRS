@@ -69,6 +69,7 @@ AS
 --	05 Mar 25	tmc		add hsb brand equity for fin planning
 --	10 Mar 25	tmc		add global item current so we can compare hsb_brand curr
 --	11 Apr 25	tmc		mov global item map from lookup to item (max flex/cntsku
+--	11 Aug 25	tmc		add RebateRollup to model (for planning)
 **    
 *******************************************************************************/
 
@@ -254,6 +255,8 @@ SELECT
 ,rtrim(glob.global_product_class) + ' | ' 
 	+ glob.global_product_class_descr					as global_product
 
+	,s.RebateRollup
+
 
 --
 
@@ -396,5 +399,5 @@ GROUP BY CommGroupEpsCode, BrandEquityCategory, BrandEquityCode, ppe_code, Label
 -- SELECT * FROM Dimension.Item where item = '9493402'
 
  -- SELECT  * FROM Dimension.Item where glob_prod_curr_counting_sku_ind =1
--- SELECT top 10 * FROM Dimension.Item where pchg_mpc_active_ind = 1
+-- SELECT top 10 * FROM Dimension.Item where RebateRollup <> ''
 
