@@ -14,3 +14,5 @@ DROP TABLE #RowCountsAndSizes
 -- select top 10 * from [comm].[transaction_F555115] order by 1
 
 -- select top 10 * from [dbo].[BRS_TransactionDW] order by 1
+
+-- select top 10 * from pricing.order_header_note_F5503
