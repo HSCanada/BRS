@@ -336,7 +336,11 @@ GO
 -- SELECT SalesCategory, COUNT(*) AS cnt FROM BRS_ItemMarketAdjustModel GROUP BY SalesCategory
 
 -- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('9394967', '9394864', '1382569', '9396337')
--- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('5876217')
+-- SELECT * FROM BRS_ItemMarketAdjustModel where item in ('1900162')
+-- SELECT * FROM BRS_ItemMarketAdjustModel where Supplier = 'DECMAT'
+-- SELECT * FROM BRS_ItemMarketAdjustModel where Supplier = 'CLINRE'
+
+
  SELECT top 10 * FROM BRS_ItemMarketAdjustModel 
 
  -- SELECT * FROM BRS_ItemMarketAdjustModel where ItemStatus = 'A'

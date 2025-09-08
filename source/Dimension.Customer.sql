@@ -66,6 +66,7 @@ AS
 --  06 Mar 25	tmc		add FSC MasterCode to help with analysis
 --	22 Apr 25	tmc		add ISR comm codes for campaign models
 --	21 Jul 25	tmc		add location information for FSC trip planning
+--  18 Aug 25	tmc		filter out Billto (mistake load from cyber)
 **    
 *******************************************************************************/
 
@@ -415,10 +416,17 @@ FROM
 
 
 WHERE 
+
+	-->  18 Aug 25	tmc		filter out Billto (mistake load from cyber)
+	(c.BillTo > 0) AND
+	(c.ShipTo <> c.BillTo) AND
+	--<
+
 -- 	(cgrp.PotentialSpendAmt BETWEEN [Spend_From] and [Spend_To]) AND
 --	(spend.Spend_Category = 'S') AND
 --	test
 --	c.Billto = 1527764 AND
+--	(c.typ
 	(1=1)
 
 
@@ -444,7 +452,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 */
 
 -- test details
- SELECT  top 100 * FROM Dimension.Customer where ShipTo = 1588820
+ SELECT  top 100 * FROM Dimension.Customer where Billto = 1530406
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG= 139 377
@@ -462,3 +470,4 @@ WHERE
 	FieldSales <> FieldSales_LastMonthEnd
 -- (FscTerritoryCd = 'AZ1CM')
 */
+
