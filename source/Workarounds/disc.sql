@@ -60,8 +60,8 @@ FROM
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
 	(
-		(t.FiscalMonth BETWEEN 202501 and 202507) OR
-		(t.FiscalMonth BETWEEN 202401 and 202407)
+		(t.FiscalMonth BETWEEN 202501 and 202508) OR
+		(t.FiscalMonth BETWEEN 202401 and 202408)
 	) AND
 	(
 		t.FreeGoodsInvoicedInd = 0 OR
