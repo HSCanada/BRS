@@ -67,6 +67,8 @@ AS
 --	22 Apr 25	tmc		add ISR comm codes for campaign models
 --	21 Jul 25	tmc		add location information for FSC trip planning
 --  18 Aug 25	tmc		filter out Billto (mistake load from cyber)
+--	17 Sep 25	tmc		update model to support GEP KPI
+--	25 Sep 25	tmc		fix bug where new FSC not yet in Comm are missing
 **    
 *******************************************************************************/
 
@@ -272,81 +274,112 @@ SELECT
 	,c.AddressLine3
 	,c.AddressLine4
 
+	,ISNULL(c.GEP_Cohort_Code, 'ZZZ') AS GEP_Cohort_Code
+
+	-- add GEP_Cohort_Weeks
+	--,gc.GEP_Chohort_Weeks_To_Date
+
+
 
 FROM
 	BRS_Customer AS c 
 
+--	LEFT JOIN BRS_CustomerSpecialty AS s 
 	INNER JOIN BRS_CustomerSpecialty AS s 
 	ON c.Specialty = s.Specialty 
 
+--	LEFT JOIN [dbo].[BRS_CustomerSegment] AS seg
 	INNER JOIN [dbo].[BRS_CustomerSegment] AS seg
 	ON c.[SegCd] = seg.[SegCd]
 
+--	LEFT JOIN [dbo].[BRS_CustomerSegment] AS seg_new
 	INNER JOIN [dbo].[BRS_CustomerSegment] AS seg_new
 	ON c.[SegCd_New] = seg_new.[SegCd]
 
+--	LEFT JOIN BRS_SalesDivision AS div 
 	INNER JOIN BRS_SalesDivision AS div 
 	ON c.SalesDivision = div.SalesDivision 
 
+--	LEFT JOIN BRS_CustomerMarketClass AS mclass 
 	INNER JOIN BRS_CustomerMarketClass AS mclass 
 	ON c.MarketClass = mclass.MarketClass 
 
+--	LEFT JOIN BRS_CustomerGroup AS cgrp
 	INNER JOIN BRS_CustomerGroup AS cgrp
 	ON c.CustGrpWrk = cgrp.CustGrp
 	
+--	LEFT JOIN BRS_CustomerMarketClass AS mcroll
 	INNER JOIN BRS_CustomerMarketClass AS mcroll
 	ON mclass.[MarketRollup_L3] = mcroll.MarketClass 
 
+--	LEFT JOIN BRS_CustomerVPA as v
 	INNER JOIN BRS_CustomerVPA as v
 	ON c.[VPA] = v.[VPA]
 
+--xx
+	LEFT JOIN [Dimension].[gep_cohort] gc
+	ON c.GEP_Cohort_Code = gc.GEP_Cohort_Code AND
+--	gc.GEP_Cohort_Code <> 'ZZ' AND
+	(1=1)
+	
 
+--	LEFT JOIN BRS_FSC_Rollup AS terr
 	INNER JOIN BRS_FSC_Rollup AS terr
 	ON c.TerritoryCd = terr.[TerritoryCd]
 
 	-- current (could be updated any time)
-	INNER JOIN [comm].[salesperson_master] fsc_master
-	ON terr.comm_salesperson_key_id = fsc_master.salesperson_key_id
+	LEFT JOIN [comm].[salesperson_master] fsc_master
+--	INNER JOIN [comm].[salesperson_master] fsc_master
+	ON ISNULL(terr.comm_salesperson_key_id,'') = fsc_master.salesperson_key_id
 
-	INNER JOIN BRS_FSC_Rollup fsc_master_terr
+	LEFT JOIN BRS_FSC_Rollup fsc_master_terr
+--	INNER JOIN BRS_FSC_Rollup fsc_master_terr
 	ON fsc_master.master_salesperson_cd = fsc_master_terr.TerritoryCd
 
-	INNER JOIN BRS_Branch AS fsc_master_branch
+	LEFT JOIN BRS_Branch AS fsc_master_branch
+--	INNER JOIN BRS_Branch AS fsc_master_branch
 	ON fsc_master_terr.Branch = fsc_master_branch.Branch
+--xx
 	
+--	LEFT JOIN BRS_FSC_Rollup AS terr_ess
 	INNER JOIN BRS_FSC_Rollup AS terr_ess
 	ON c.est_code = terr_ess.[TerritoryCd]
 
+--	LEFT JOIN [nes].[privileges] AS priv
 	INNER JOIN [nes].[privileges] AS priv
 	ON c.PrivilegesCode = priv.privileges_code
 
-
+--	LEFT JOIN BRS_FSC_Rollup AS isr
 	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
 
 	-- current (could be updated any time)
 	-- xxx
+--	LEFT JOIN [comm].[salesperson_master] isr_master
 	INNER JOIN [comm].[salesperson_master] isr_master
 	ON isr.comm_salesperson_key_id = isr_master.salesperson_key_id
-
 
 	LEFT JOIN [dbo].[BRS_Employee] isr_emp
 	ON isr.[FSCRollup] = isr_emp.[IsrRollupCd]
 
-
+--	LEFT JOIN BRS_Branch AS b 
 	INNER JOIN BRS_Branch AS b 
 	ON terr.Branch = b.Branch
 
+--	LEFT JOIN BRS_FSC_Rollup sroll
 	INNER JOIN BRS_FSC_Rollup sroll
 	ON terr.FSCRollup = sroll.TerritoryCd
 
 	--
+--	LEFT JOIN BRS_FSC_Rollup eps_roll
 	INNER JOIN BRS_FSC_Rollup eps_roll
 	ON b.EPS_code = eps_roll.TerritoryCd
 
+--	LEFT JOIN BRS_Customer_FSA AS fsa 
 	INNER JOIN BRS_Customer_FSA AS fsa 
 	ON c.FSA = fsa.FSA 
 
+--	LEFT JOIN [dbo].[BRS_CustomerBT] as bt
 	INNER JOIN [dbo].[BRS_CustomerBT] as bt
 	ON c.BillTo = bt.BillTo
 
@@ -439,9 +472,19 @@ GO
 
 /*
 print 'integrity checks (s/b 0):'
-
 print '1. missing customer?'
-SELECT * from BRS_Customer where not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo])
+SELECT * from BRS_Customer 
+where billto <> shipto and 
+billto >  0 and 
+ not exists (SELECT * FROM Dimension.Customer where  ShipTo = BRS_Customer.[ShipTo]) and
+--cps_code = 'PMT10' AND
+--TerritoryCd = 'CZ1JM' AND
+(1=1)
+-- 93 codes
+
+*/
+
+/*
 
 print '2. dup check?'
 SELECT        ShipTo, COUNT(*) AS Expr1 FROM  Dimension.Customer GROUP BY ShipTo HAVING (COUNT(*) > 1)
@@ -452,7 +495,14 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 */
 
 -- test details
- SELECT  top 100 * FROM Dimension.Customer where Billto = 1530406
+-- SELECT  top 100 * FROM Dimension.Customer where Billto = 1530406
+
+ SELECT  top 100 * FROM Dimension.Customer where shipto = 1679340
+-- SELECT  * FROM BRS_Customer  where shipto = 1679340
+
+
+
+--  SELECT distinct GEP_Cohort_Code FROM Dimension.Customer 
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG= 139 377

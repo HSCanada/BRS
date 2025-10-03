@@ -29,6 +29,7 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
+--	19 Sep 25	tmc		open list to show all items for review / update
 *******************************************************************************/
 
 
@@ -43,8 +44,13 @@ SELECT
 
 	,s.match_status_cd
 
+	,s.note_txt
+	,s.last_review_dt
+	,s.active_ind
 
-	--,i.ItemStatus
+
+
+	,i.ItemStatus
 
 	,i.MinorProductClass
 
@@ -53,6 +59,7 @@ SELECT
 
 	,i.Strength
 	,i.Size
+	,i.ManufPartNumber
 
 	,i.size_unit_rate
 	,s.uom_conv_rt
@@ -63,7 +70,8 @@ SELECT
 	,i.Supplier
 	,i.Brand
 	,i.Est12MoSales
-	,m.active_ca_ind
+--	,m.active_ca_ind
+
 
 FROM
 	pbi.item_cobra_xref AS s 
@@ -86,8 +94,12 @@ FROM
 WHERE   
 --	(m.active_ca_ind = 1) AND 
 	-- remove Purged, discontinued items
-	(i.ItemStatus not in ('P','D')) AND
-	(s.item_subst <> '') AND
+--	(i.ItemStatus in ('P','D')) AND
+--	(i.ItemStatus not in ('P','D')) AND
+
+--	(s.item_subst = '') AND
+--	(s.item_subst <> '') AND
+
 --	(s.item <> s.item_subst) AND
 	(1 = 1)
 
@@ -99,6 +111,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
- select  top 100 * from pbi.item_cobra_xref_review where item_subst = '9007437' order by 4,1
+ select  top 100 * from pbi.item_cobra_xref_review order by 4,1
+-- select  count (*) from pbi.item_cobra_xref_review 
+
+-- select  top 100 * from pbi.item_cobra_xref_review where item_subst = '9007437' order by 4,1
 
 -- select  count(*) from pbi.item_cobra_xref_review

@@ -37,10 +37,15 @@ AS
 -- 27 Oct 22	tmc		update for Free Goods modelling
 -- 09 Apr 23	tmc		fix promo tracking code to use correct flag
 -- 15 Aug 23	tmc		update datekey to work with day dimension
+-- 03 Oct 25	tmc		add GEP order flag for eComm Planning
 **    
 *******************************************************************************/
 
-SELECT        
+SELECT       
+	-- temp
+--	top 10 
+	--
+
 	t.ID											AS FactKey
 
 	,t.Shipto										AS ShipTo
@@ -95,6 +100,8 @@ SELECT
 	,CASE WHEN (fg_buy.CalMonthRedeem IS NOT NULL) AND (fg_order.FiscalMonth IS NOT NULL) THEN 1 ELSE 0 END as fg_deal_ind
 	,CASE WHEN (fg_buy.CalMonthRedeem IS NOT NULL) AND (fg_order.FiscalMonth IS NOT NULL) THEN fg_buy.deal_id ELSE 0 END as fg_deal_id
 
+-- 03 Oct 25	tmc		add GEP order flag for eComm Planning
+	,t.GEP_Order_Flag_ind
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -222,4 +229,4 @@ GO
 
 -- fail afer 2 min
 
--- select top 10 * from [Fact].[Sale_brs]
+-- select * from [Fact].[Sale_brs]

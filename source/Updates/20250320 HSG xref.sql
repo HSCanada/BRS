@@ -358,7 +358,7 @@ select distinct Item
 GO
 
 
---> cobra2 adhoc accesss load
+--> cobra2 adhoc accesss load -- START
 truncate table [dbo].[zzzItem]
 GO
 

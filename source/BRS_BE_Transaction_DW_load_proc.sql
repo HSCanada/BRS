@@ -55,7 +55,7 @@ AS
 --	09 Mar 22	tmc		exclude Private label from free goods (billing in 2022)
 --	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
 --  27 Mar 23	tmc		fix credit info addend bug
-
+--	22 Sep 25	tmc		add GEP order Flag
 **    
 *******************************************************************************/
 BEGIN
@@ -473,6 +473,8 @@ BEGIN
 				[EquipmentOrderNumber],			-- [EQORDNO]	
 				[EquipmentOrderType]			-- [EQORDTYCD]	
 
+				,[GEP_Order_Flag_ind]
+
 				)
 				SELECT     
 				s.JDEORNO AS SalesOrderNumber, 
@@ -616,7 +618,9 @@ BEGIN
 				ISNULL(s.TSSCD,'')		AS	TssCode,						 
 				ISNULL(s.CAGREPCD,'')	AS	CagCode,						 
 				ISNULL(s.EQORDNO,'')	AS	EquipmentOrderNumber,			 
-				ISNULL(s.EQORDTYCD,'')	AS	EquipmentOrderType			 
+				ISNULL(s.EQORDTYCD,'')	AS	EquipmentOrderType		
+				
+				,convert(bit, GEP_Order_Flag) AS GEP_Order_Flag_Ind
 
 			FROM         
 				STAGE_BRS_TransactionDW AS s 
