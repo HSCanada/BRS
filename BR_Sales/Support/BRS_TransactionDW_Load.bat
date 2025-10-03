@@ -17,8 +17,12 @@ BCP %DB_DST%.Integration.BRS_CreditInfo in ../Upload/BRSCreditInfo.txt -w -T -S 
 ECHO LOAD STAGE_BRS_TransactionDW...
 BCP %DB_DST%..STAGE_BRS_TransactionDW in ../Upload/BRS_TransactionDW.txt -w -T -S %BRS_SQLSERVER% -e BRS_TransactionDW_ERR.txt -F 2 -t"|"
 
+::PAUSE
+
 ECHO LOAD Prod...
 SQLCMD -S %BRS_SQLSERVER% -E -Q "USE %DB_DST%; Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=0; SELECT SalesDateLastWeekly FROM BRS_Config"
+
+PAUSE
 
 ECHO Update ISR consolidator...
 ::PAUSE
