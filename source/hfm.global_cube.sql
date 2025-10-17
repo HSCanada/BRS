@@ -35,12 +35,16 @@ AS
 **	29 Nov 24	tmc		add facts for Planning
 **  06 Dec 24	tmc		org dimensions for Planning 
 **	10 Dec 24	tmc		add salesorder xref for SO dimension
+**	07 Oct 25	tmc		add GEP flag for eComm reporting
 **    
 *******************************************************************************/
 
 	SELECT   
 
 	--> Metrics
+	--
+	--top 10
+	--
 
 	-- ID
 		t.ID										
@@ -247,6 +251,7 @@ AS
 		,hfm_cb.gl_account_key		hfm_gl_account_cb_key
 
 		-- GL <-
+		,dw.GEP_Order_Flag_ind
 
 
 

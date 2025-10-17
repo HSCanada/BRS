@@ -47,6 +47,7 @@ AS
 SELECT        
 	-- for dev speedup
 	-- top 100
+	--
 
 	-- Metrics ->
 
@@ -172,6 +173,10 @@ SELECT
 		, t.GPExclCBAmt AS TotalGPExclCBAmt
 		, t.GPAmt		AS TotalGPAmt
 		, t.NetSalesAmt AS TotalSalesAmt
+
+		,t.GEP_Order_Flag_ind
+
+		
 
 
 FROM        
