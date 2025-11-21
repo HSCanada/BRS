@@ -146,7 +146,7 @@ Begin
 		-- hack to exclude duplicate order.   Remove French?  
 		s.Q3LNGP_language <> 'F' AND
 		-- temp
-		s.[Q3DOCO_salesorder_number] not in (18368884) AND
+		s.[Q3DOCO_salesorder_number] not in (18368884, 18414779 ) AND
 		(1=1)
 		
 
