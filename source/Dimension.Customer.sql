@@ -69,6 +69,7 @@ AS
 --  18 Aug 25	tmc		filter out Billto (mistake load from cyber)
 --	17 Sep 25	tmc		update model to support GEP KPI
 --	25 Sep 25	tmc		fix bug where new FSC not yet in Comm are missing
+--	29 Oct 25	tmc		fix bug where ISR  not yet in comm are missing
 **    
 *******************************************************************************/
 
@@ -349,14 +350,14 @@ FROM
 	INNER JOIN [nes].[privileges] AS priv
 	ON c.PrivilegesCode = priv.privileges_code
 
---	LEFT JOIN BRS_FSC_Rollup AS isr
-	INNER JOIN BRS_FSC_Rollup AS isr
+	LEFT JOIN BRS_FSC_Rollup AS isr
+--	INNER JOIN BRS_FSC_Rollup AS isr
 	ON c.TsTerritoryCd = isr.TerritoryCd
 
 	-- current (could be updated any time)
 	-- xxx
---	LEFT JOIN [comm].[salesperson_master] isr_master
-	INNER JOIN [comm].[salesperson_master] isr_master
+	LEFT JOIN [comm].[salesperson_master] isr_master
+--	INNER JOIN [comm].[salesperson_master] isr_master
 	ON isr.comm_salesperson_key_id = isr_master.salesperson_key_id
 
 	LEFT JOIN [dbo].[BRS_Employee] isr_emp
@@ -497,7 +498,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- test details
 -- SELECT  top 100 * FROM Dimension.Customer where Billto = 1530406
 
- SELECT  top 100 * FROM Dimension.Customer where shipto = 1679340
+ SELECT  top 100 * FROM Dimension.Customer where shipto = 4093441
 -- SELECT  * FROM BRS_Customer  where shipto = 1679340
 
 
