@@ -546,4 +546,11 @@ OrderTakenBy <> 'CUSTOMER' and
 
 UPDATE  BRS_TransactionDW
 SET        OrderTakenBy = 'CUSTOMER'
-WHERE   (GEP_Order_Flag_ind = 1) AND (OrderSourceCode = 'w') AND (OrderTakenBy <> 'CUSTOMER') AND (1 = 1)
+WHERE   
+	(GEP_Order_Flag_ind = 1) AND 
+	(OrderSourceCode = 'w') AND 
+	(OrderTakenBy <> 'CUSTOMER') AND 
+	([CalMonth]=202510) AND
+	(1 = 1)
+
+-- ORG 13 809

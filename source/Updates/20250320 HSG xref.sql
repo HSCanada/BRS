@@ -10,11 +10,22 @@ FROM     zzzItem2 INNER JOIN
 update BRS_Item set Est12MoSales = 0 where Est12MoSales <> 0
 
 
+
+
 UPDATE  BRS_Item
 SET        Est12MoSales = val1
 FROM     zzzItem2 INNER JOIN
              BRS_Item ON zzzItem2.zzzItem = BRS_Item.Item
 */
+
+UPDATE  [dbo].[BRS_Customer]
+SET        [Est12MoTotal] =0, [Est12MoMerch]=0
+
+UPDATE        BRS_Customer
+SET                Est12MoMerch = zzzShipto2.val1
+FROM            BRS_Customer INNER JOIN
+                         zzzShipto2 ON BRS_Customer.ShipTo = zzzShipto2.ST
+
 
 BEGIN TRANSACTION
 GO
