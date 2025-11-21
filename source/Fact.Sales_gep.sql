@@ -34,7 +34,8 @@ AS
 --	05 Feb 17	tmc		Changed from goods logic from Est to Billed at zero
 --	22 Feb 18	tmc		update to daily for consolidator
 --	19 Sep 25	tmc		update model to support GEP KPI
---	02 Oct	25	tmc		add show tracking:  line, header, show promo
+--	02 Oct 25	tmc		add show tracking:  line, header, show promo
+--	21 Oct 25	tmc		add OrderTakenBy to track OneWeb vs Gep
 **    
 *******************************************************************************/
 
@@ -57,7 +58,7 @@ BEGIN
 
 	SELECT     
 		--> test case
---		top 1000 
+		-- top 100
 		--< test case
 
 		t.ID							AS FactKey
@@ -132,6 +133,12 @@ BEGIN
 	,ISNULL(phdr.promotion_key,1)	AS promo_header_key
 	,ISNULL(pshw.promotion_key,1)	AS promo_show_key
 
+	--make a case to ID Web
+	-- ,t.OrderTakenBy
+	-- help compair Gep vs OneWeb order, Customer / FSC agnostic 
+	,CASE WHEN (t.OrderSourceCode = 'W') AND (t.OrderTakenBy in('CUSTOMER','FSC')) THEN 1 ELSE 0 END WEB_Order_Flag_ind
+
+
 
 
 
@@ -176,8 +183,6 @@ BEGIN
 
 	    LEFT JOIN [dbo].[BRS_Promotion] AS pshw
 		ON t2.PromotionTrackingCode = pshw.PromotionCode
-
-
 --<	02 Oct	25	tmc		add show tracking:  line, header, show promo
 
 
@@ -217,6 +222,11 @@ BEGIN
 		(EXISTS (SELECT * FROM [Dimension].[Day] dd WHERE t.Date = dd.SalesDate)) AND
 
 		--> test case
+		/*
+		(t.OrderSourceCode = 'W') AND
+		(t.OrderTakenBy  in('CUSTOMER','FSC')) AND
+		*/
+		
 --		t.CalMonth = 202506 AND
 --		t.CalMonth = 202406 AND
 --		t.CalMonth = 202505 AND
@@ -247,6 +257,8 @@ GO
 
 -- Debug
 --  [Fact].Sales_gep
+-- ORG 5 975 794 3m23s
+-- NEW 5 975 794 3m27s
 
 -- 182 861 @ 28m, 1 mo
 -- 5 761 092, 3m46s
