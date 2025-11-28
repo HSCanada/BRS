@@ -30,6 +30,7 @@ AS
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
 --	19 Sep 25	tmc		open list to show all items for review / update
+--	25 Nov 25	tmc		cleanup fields to simplify 
 *******************************************************************************/
 
 
@@ -37,58 +38,55 @@ AS
 SELECT   
 	s.item
 	,i.FamilySetLeader
-
-
 	,s.item_subst
 	,s.match_type_cd
-
 	,s.match_status_cd
+	,i.MinorProductClass
+	,RTRIM(icat.major_desc) + ' | ' + RTRIM(icat.submajor_desc) + ' | ' + RTRIM(icat.minor_desc) product_class_descr
+	,i.ItemDescription
+	,'' AS Match_yn
+	,i.Strength
+	,i.Size
+	,i.CurrentCorporatePrice
+	,i.Excl_Code
+	,i.Supplier
+	,i.Est12MoSales
+	,'' AS Priority
 
-	,s.note_txt
-	,s.last_review_dt
+	,ISNULL(s.note_txt, '') AS note_text
+--	,s.last_review_dt
 	,s.active_ind
-
-
 
 	,i.ItemStatus
 
-	,i.MinorProductClass
 
-	,RTRIM(icat.major_desc) + ' | ' + RTRIM(icat.submajor_desc) + ' | ' + RTRIM(icat.minor_desc) product_class_descr
-	,i.ItemDescription
 
-	,i.Strength
-	,i.Size
-	,i.ManufPartNumber
+--	,i.ManufPartNumber
 
-	,i.size_unit_rate
-	,s.uom_conv_rt
+--	,i.size_unit_rate
+--	,s.uom_conv_rt
 
-	,i.CurrentCorporatePrice
-	,i.Excl_Code
 
-	,i.Supplier
-	,i.Brand
-	,i.Est12MoSales
---	,m.active_ca_ind
+--	,i.Brand
 
 
 FROM
 	pbi.item_cobra_xref AS s 
 
-	INNER JOIN BRS_Item AS i 
+	LEFT JOIN BRS_Item AS i 
+--	INNER JOIN BRS_Item AS i 
 	ON s.item = i.Item 
 
-	INNER JOIN pbi.item_cobra_xref_master AS m 
-	ON s.item_subst = m.item 
-
-	INNER JOIN pbi.item_cobra_xref_match_status AS status 
+	LEFT JOIN pbi.item_cobra_xref_match_status AS status 
+--	INNER JOIN pbi.item_cobra_xref_match_status AS status 
 	ON s.match_status_cd = status.match_status_cd 
 
-	INNER JOIN pbi.item_cobra_xref_match_type AS type 
+	LEFT JOIN pbi.item_cobra_xref_match_type AS type 
+--	INNER JOIN pbi.item_cobra_xref_match_type AS type 
 	ON s.match_type_cd = type.match_type_cd 
 
-	INNER JOIN BRS_ItemCategory AS icat 
+	LEFT JOIN BRS_ItemCategory AS icat 
+--	INNER JOIN BRS_ItemCategory AS icat 
 	ON i.MinorProductClass = icat.MinorProductClass 
 
 WHERE   
@@ -98,7 +96,7 @@ WHERE
 --	(i.ItemStatus not in ('P','D')) AND
 
 --	(s.item_subst = '') AND
---	(s.item_subst <> '') AND
+	(s.item_subst <> '') AND
 
 --	(s.item <> s.item_subst) AND
 	(1 = 1)
@@ -111,9 +109,9 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
- select  top 100 * from pbi.item_cobra_xref_review order by 4,1
+-- select  top 100 * from pbi.item_cobra_xref_review order by 4,1
 -- select  count (*) from pbi.item_cobra_xref_review 
 
--- select  top 100 * from pbi.item_cobra_xref_review where item_subst = '9007437' order by 4,1
+select  top 100 * from pbi.item_cobra_xref_review where item = '5702566' 
 
 -- select  count(*) from pbi.item_cobra_xref_review
