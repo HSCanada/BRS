@@ -58,6 +58,7 @@ SELECT
 	,s.active_ind
 
 	,i.ItemStatus
+	,i.SubMinorProductCodec
 
 
 
@@ -93,10 +94,10 @@ WHERE
 --	(m.active_ca_ind = 1) AND 
 	-- remove Purged, discontinued items
 --	(i.ItemStatus in ('P','D')) AND
---	(i.ItemStatus not in ('P','D')) AND
+	(i.ItemStatus not in ('P','D')) AND
 
 --	(s.item_subst = '') AND
-	(s.item_subst <> '') AND
+--	(s.item_subst <> '') AND
 
 --	(s.item <> s.item_subst) AND
 	(1 = 1)
