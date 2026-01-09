@@ -38,6 +38,7 @@ AS
 -- 09 Apr 23	tmc		fix promo tracking code to use correct flag
 -- 15 Aug 23	tmc		update datekey to work with day dimension
 -- 03 Oct 25	tmc		add GEP order flag for eComm Planning
+-- 05 Jan 26	tmc		add free goods est from DS Trans 
 **    
 *******************************************************************************/
 
@@ -70,10 +71,10 @@ SELECT
 	,(t.GPAtCommCostAmt)							AS GPAtCommCostAmt
 	,(t.ExtChargebackAmt)							AS ExtChargebackAmt
 
-	,(t.ExtListPrice  + t.ExtPrice -  NetSalesAmt)  AS ExtBaseAmt
-	,(t.ExtListPrice  + t.ExtPrice -2*NetSalesAmt)  AS DiscountAmt
-	,(t.ExtListPrice  + 0          -  NetSalesAmt)  AS DiscountLineAmt
-	,(0               + t.ExtPrice -  NetSalesAmt)  AS DiscountOrderAmt
+	,(t.ExtListPrice  + t.ExtPrice -  t.NetSalesAmt)  AS ExtBaseAmt
+	,(t.ExtListPrice  + t.ExtPrice -2*t.NetSalesAmt)  AS DiscountAmt
+	,(t.ExtListPrice  + 0          -  t.NetSalesAmt)  AS DiscountLineAmt
+	,(0               + t.ExtPrice -  t.NetSalesAmt)  AS DiscountOrderAmt
 
 	
 	-- Substitute logic
@@ -86,7 +87,7 @@ SELECT
 	,c.BillTo
 	,t.[DocType]
 	,[OrderPromotionCode]
-	,[OrderSourceCode]
+	,t.[OrderSourceCode]
 	,[EnteredBy]
 	,[OrderTakenBy]
 
@@ -102,9 +103,16 @@ SELECT
 
 -- 03 Oct 25	tmc		add GEP order flag for eComm Planning
 	,t.GEP_Order_Flag_ind
+	,ISNULL(tt.FreeGoodsEstInd,0) AS FreeGoodsEstInd
 
 FROM            
 	BRS_TransactionDW AS t 
+
+	--
+	LEFT JOIN BRS_Transaction AS tt
+	ON t.[SalesOrderNumber] = tt.[SalesOrderNumber] AND
+		t. [DocType] = tt.DocType AND	
+		t.[LineNumber] = tt.LineNumber
 
 	INNER JOIN BRS_SalesDay AS d 
 	ON d.SalesDate = t.Date 
@@ -216,8 +224,12 @@ GO
  -- SELECT SalesOrderNumber, GLBusinessUnit, sum(SalesAmt) FROM Fact.Sale_brs where SalesOrderNumber = 1131213 group by SalesOrderNumber, GLBusinessUnit-- 
 
  -- SELECT count(*) FROM Fact.Sale_brs
- -- ORG=7 644 973 @ 12s
-
+ --ORG=9 142 025 @ 10s
+ --NEW=9 142 025 @ 32s
+  -- prod
+ --ORG=6 288 603 @10s
+ --NEW=6 288 603 @ 30s
+ --
 -- 1 month test
 -- 1.03; 2 259 017 RAW
 -- 1.17; 2 259 017 new
