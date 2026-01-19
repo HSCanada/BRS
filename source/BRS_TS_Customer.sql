@@ -147,3 +147,6 @@ GO
 
 -- SELECT * FROM BRS_TS_Customer WHERE AccountType ='D' and FocusCd <>''
 
+-- SELECT * FROM BRS_TS_Customer WHERE TSName = 'Jessica Noad'
+
+
