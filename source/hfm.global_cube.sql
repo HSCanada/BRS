@@ -36,6 +36,7 @@ AS
 **  06 Dec 24	tmc		org dimensions for Planning 
 **	10 Dec 24	tmc		add salesorder xref for SO dimension
 **	07 Oct 25	tmc		add GEP flag for eComm reporting
+**	14 Jan 26	tmc		add pro-repair flag
 **    
 *******************************************************************************/
 
@@ -156,8 +157,12 @@ AS
 --					WHEN ih.[global_product_class] = ''				THEN 'Other_Technology'
 --					ELSE RTRIM(LEFT(ih.[global_product_class],9))
 				END
-			ELSE RTRIM(LEFT(ISNULL(iglob.[global_product_class],''),9))
---			ELSE RTRIM(LEFT(ih.[global_product_class],9))
+			ELSE 
+				CASE 
+					-- override prorepair mapping with custom US code
+					WHEN t.d1_prorepair_ind=1	THEN '920-99'
+					ELSE						RTRIM(LEFT(ISNULL(iglob.[global_product_class],''),9))
+				END
 		END											AS PRODUCT
 
 		-- label hist (dim item hist)
@@ -252,6 +257,8 @@ AS
 
 		-- GL <-
 		,dw.GEP_Order_Flag_ind
+
+		,t.d1_prorepair_ind
 
 
 
@@ -419,7 +426,7 @@ GO
  
 
  -- BI test
--- SELECT top 10 * FROM [hfm].global_cube where PERIOD = 202408
+-- SELECT top 10 * FROM [hfm].global_cube where PERIOD = 202510
  -- SELECT * FROM [hfm].global_cube where PERIOD = (SELECT PriorFiscalMonth from BRS_Config)
 
  -- SELECT PriorFiscalMonth from BRS_Config
@@ -563,9 +570,9 @@ WHERE
 */
  
 
-SELECT top 10 * FROM [hfm].global_cube AS t WHERE PERIOD =  202509  
+SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202401 and d1_prorepair_ind=1
 
-SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202509 and SUPPLIER like 'BAINT%' and PRODUCT like '880%'
+-- SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202509 and SUPPLIER like 'BAINT%' and PRODUCT like '880%'
 
 -- SELECT count (*) FROM [hfm].global_cube AS t WHERE PERIOD =  202410 
 -- ORG 313 988
