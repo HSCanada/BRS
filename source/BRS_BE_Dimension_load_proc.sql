@@ -52,6 +52,8 @@ AS
 **	19 Jun 23	tmc		add JDE marketclass to allow synch
 **	29 Oct 24	tmc		add AR clear table [Integration].[F564201_AgingBillto]
 **	14 Mar 25	tmc		synch HS Global rules for finance and commissions
+**	19 Jan 26	tmc		add eps synch from JDE territory
+
 *******************************************************************************/
 
 BEGIN
@@ -132,6 +134,24 @@ BEGIN
 											WHERE       s.TerritoryCd = c.TerritoryCd ))
 			Set @nErrorCode = @@Error
 		End
+
+	-- 19 Jan 26 add EPS terr
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '2b. Add new HSPS (from Cust FULL)...'
+
+				INSERT INTO BRS_FSC_Rollup
+									  (TerritoryCd, FSCRollup, Branch)
+				SELECT DISTINCT TerritoryCd, TerritoryCd, '' AS br
+				FROM         STAGE_BRS_CustomerFull AS c
+				WHERE     (NOT EXISTS
+										  (SELECT     *
+											FROM          BRS_FSC_Rollup AS s
+											WHERE       s.TerritoryCd = c.ExclusiveLevel4Cd ))
+			Set @nErrorCode = @@Error
+		End
+
 
 	--	20 Sep 16	tmc		added TS territory load
 
@@ -268,8 +288,8 @@ BEGIN
 				SpecialHandlingInstCd = ISNULL(s.SpecialHandlingInstCd, ''),
 				ParentCustomerNumber = ISNULL(s.ParentCustomerNumber, 0),
 
-				TsTerritoryCd = ISNULL(s.TsTerritoryCd, 0),
-				est_code = ISNULL(s.EstTerritoryCd, 0),
+				TsTerritoryCd = ISNULL(s.TsTerritoryCd, ''),
+				est_code = ISNULL(s.EstTerritoryCd, ''),
 
 				FSA = LEFT(ISNULL(s.PostalCode, ''), 3)
 				,[PrivilegesCode] = LEFT(ISNULL(s.[PrivilegesCode], ''), 5)
@@ -278,6 +298,8 @@ BEGIN
 				
 				,[SegCd_JDE] = ISNULL(s.[SegCd], '')
 				,[MarketClass_JDE] = ISNULL(s.[MarketClass],'')
+
+				,eps_code = ISNULL(ExclusiveLevel4Cd, '')
 
 
 
@@ -312,8 +334,8 @@ BEGIN
 				BRS_Customer.SpecialHandlingInstCd <> ISNULL(s.SpecialHandlingInstCd, '') OR
 				BRS_Customer.ParentCustomerNumber <> ISNULL(s.ParentCustomerNumber, 0) OR
 
-				BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, 0)  OR
-				BRS_Customer.est_code <> ISNULL(s.EstTerritoryCd, 0)  OR
+				BRS_Customer.TsTerritoryCd <> ISNULL(s.TsTerritoryCd, '')  OR
+				BRS_Customer.est_code <> ISNULL(s.EstTerritoryCd, '')  OR
 				BRS_Customer.FSA <> LEFT(ISNULL(s.PostalCode, ''), 3) OR
 
 				-- fix bad logic, tmc, 19 Sep 22
@@ -323,8 +345,9 @@ BEGIN
 
 				-- add marketclass
 				BRS_Customer.[SegCd_JDE] <> ISNULL(s.[SegCd], '') OR
-				BRS_Customer.[MarketClass_JDE] <> ISNULL(s.[MarketClass], '') 
+				BRS_Customer.[MarketClass_JDE] <> ISNULL(s.[MarketClass], '') OR
 
+				BRS_Customer.eps_code <> ISNULL(ExclusiveLevel4Cd, '')
 
 
 			Set @nErrorCode = @@Error
@@ -370,6 +393,8 @@ BEGIN
 				,[SegCd_JDE] 
 				,[MarketClass_JDE]
 
+				,eps_code
+
 			)
 
 			SELECT 
@@ -397,8 +422,8 @@ BEGIN
 				ISNULL(s.SpecialHandlingInstCd, '') AS SpecialHandlingInstCd,
 				ISNULL(s.ParentCustomerNumber, 0) AS ParentCustomerNumber,
 
-				ISNULL(s.TsTerritoryCd, 0)  AS TsTerritoryCd,
-				ISNULL(s.EstTerritoryCd, 0)  AS EstTerritoryCd,
+				ISNULL(s.TsTerritoryCd, '')  AS TsTerritoryCd,
+				ISNULL(s.EstTerritoryCd, '')  AS EstTerritoryCd,
 				LEFT(ISNULL(s.PostalCode, ''), 3) AS FSA
 
 				,LEFT(ISNULL(s.[PrivilegesCode], ''), 5)	AS PrivilegesCode
@@ -407,6 +432,8 @@ BEGIN
 
 				,ISNULL(s.[SegCd], '')						AS SegCd_JDE
 				,ISNULL(s.[MarketClass], '')				AS MarketClass_JDE
+
+				,ISNULL(s.ExclusiveLevel4Cd,'')				AS eps_code
 
 			FROM         
 				STAGE_BRS_CustomerFull AS s

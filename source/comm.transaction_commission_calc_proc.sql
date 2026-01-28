@@ -35,6 +35,7 @@ AS
 **  16 Dec 21	tmc		add ISR logic
 **	14 May 24	tmc		add FTA logic to replace PMTS
 **  17 Jun 24	tmc		add Medical Threshold logic, based in GM
+**	22 Jan 26	tmc		add FSC Tiered logic, based on Customer
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -141,6 +142,9 @@ Begin
 			-- reference cust version
 			[cust_comm_group_cd] = s.HIST_cust_comm_group_cd
 
+			-- add FSC Tiered logic, based on Customer, 22 Jan 26
+			,[comm_group_tier_cd] = s.[HIST_comm_group_tier_cd]
+
 			,fsc_code = s.HIST_TerritoryCd
 			,fsc_salesperson_key_id = s.HIST_fsc_salesperson_key_id
 			,fsc_comm_plan_id = s.HIST_fsc_comm_plan_id
@@ -188,6 +192,42 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '1b. FSC, CPS, EPS, ISR, EST update plan & terr - IMP'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			-- reference cust version
+			[cust_comm_group_cd] = s.HIST_cust_comm_group_cd
+
+			-- add FSC Tiered logic, based on Customer, 22 Jan 26
+			,[comm_group_tier_cd] = s.[HIST_comm_group_tier_cd]
+
+			-- reset calc for repeatabilty on rate / scope changes 
+			,[fsc_calc_key]=NULL
+			,[ess_calc_key]=NULL
+			,[cps_calc_key]=NULL
+			,[eps_calc_key]=NULL
+			,[isr_calc_key]=NULL
+			,[est_calc_key]=NULL
+
+		FROM
+			[dbo].[BRS_CustomerFSC_History] AS s 
+
+			INNER JOIN comm.transaction_F555115 d
+			ON (d.WSSHAN_shipto = s.Shipto) AND
+			(d.FiscalMonth = s.FiscalMonth) AND
+			(d.source_cd = 'IMP')
+		WHERE
+			s.FiscalMonth = @nCurrentFiscalYearmoNum
+
+		Set @nErrorCode = @@Error
+	End
+
 
 ------------------------------------------------------------------------------------------------------
 -- New - Transfer, after FSC / ESS territory assigned
@@ -363,6 +403,7 @@ Begin
 			comm.transaction_F555115
 		SET
 			fsc_comm_group_cd = s.HIST_comm_group_cd
+
 		-- SELECT d.* 
 		FROM
 			[dbo].[BRS_ItemHistory] AS s 
@@ -423,6 +464,11 @@ Begin
 				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.fsc_comm_plan_id <> '') AND
+
+			-- add FSC Tiered logic, based on Customer, 22 Jan 26
+			-- exclude tiered plans
+			(t.fsc_comm_plan_id NOT in ('FSCGP02', 'FSCGP02_Q', 'FSCGP03', 'FSCGP03_Q', 'FSCGP00')) AND
+
 			(t.fsc_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
 --			(g.booking_rt = 0) AND
@@ -431,6 +477,77 @@ Begin
 
 		Set @nErrorCode = @@Error
 	End
+
+--
+-- FSC tiered, XXX
+	-- add FSC Tiered logic, based on Customer, 22 Jan 26
+
+	If (@nErrorCode = 0 AND @bLegacy = 0) 
+	Begin
+		if (@bDebug <> 0)
+			print '8b. FSC update comm - tiered'
+
+		UPDATE
+			comm.transaction_F555115
+		SET
+			[fsc_comm_rt] = r.comm_rt,
+			[fsc_comm_amt] = t.[gp_ext_amt]*(r.[comm_rt]/100),
+			[fsc_calc_key] = r.calc_key
+
+		FROM
+			comm.transaction_F555115 t
+
+			--INNER JOIN [dbo].[BRS_CustomerFSC_History] c
+			--ON t.WSSHAN_shipto = c.ShipTo AND
+			--	t.FiscalMonth = c.FiscalMonth
+
+
+			INNER JOIN [comm].[group] g
+			ON t.fsc_comm_group_cd = g.comm_group_cd
+
+			INNER JOIN [comm].[plan_group_rate] AS r 
+			ON t.fsc_comm_plan_id = r.comm_plan_id AND
+				r.item_comm_group_cd  = t.fsc_comm_group_cd  AND
+				r.cust_comm_group_cd = t.[cust_comm_group_cd]   AND
+				r.[source_cd] = t.[source_cd]  AND
+				-- ensure we do not pickup medical threshhold rulles
+				r.[comm_gm_threshold_ind] = 0 AND
+
+				-- r.[comm_gm_threshold_cd] = t.[comm_group_tier_cd] =  AND
+				r.[comm_gm_threshold_cd] = 
+					CASE 
+						-- set tiers for Merch only
+						WHEN (t.fsc_comm_group_cd in ('ITMCAM', 'ITMSND', 'ITMPPE', 'ITMCRD', 'ITMPVT', 'FRESND', 'SPMFGS'))
+						THEN
+							CASE WHEN t.[cust_comm_group_cd] in ('SPCCRD', 'SPMALL', 'SPMSND')
+								-- set tier if multisite
+								THEN t.[comm_group_tier_cd]
+								-- set Base Tier if not multisite
+								ELSE '' -- 'T10' -- ''  -- test, move to blank after test
+							END
+						-- set non-Tier if not Merch
+						ELSE
+							''
+					END 
+--			(t.fsc_comm_group_cd in ('ITMCAM', 'ITMSND')) AND
+--			(t.[cust_comm_group_cd] in ('SPCCRD', 'SPMALL', 'SPMSND')) AND
+
+				-- r.[comm_gm_threshold_cd] = '' AND
+
+		WHERE        
+			-- choose explicit plans and groups to update; idea is to set tiers only where needed
+			(t.fsc_comm_plan_id in ('FSCGP02', 'FSCGP02_Q', 'FSCGP03', 'FSCGP03_Q', 'FSCGP00')) AND
+
+			(t.source_cd <> 'PAY') AND
+--			(g.booking_rt = 0) AND
+			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+			(1 = 1)
+
+		Set @nErrorCode = @@Error
+	End
+
+--
+-- add FG patch.  set to T10 if multisite TBC
 
 -- FSC threshold model, new tmc 18 Jun 24
 	If (@nErrorCode = 0 AND @bLegacy = 0) 
@@ -1437,6 +1554,7 @@ GO
 -- test cps / FTA
 
 -- EXEC comm.comm_stage_update_proc @bDebug=1
+--
 -- EXEC comm.comm_stage_update_proc @bDebug=0
 
 /*
@@ -1494,7 +1612,6 @@ UPDATE       comm.transaction_F555115
 SET                cps_salesperson_key_id = '', cps_comm_plan_id = '', cps_comm_group_cd = '', cps_comm_rt = 0, cps_comm_amt = 0, cps_calc_key = NULL
 WHERE        (FiscalMonth >= 202301) AND (cps_calc_key IS NOT NULL)
 
-
 -- test all CPS
 /****** Script for SelectTopNRows command from SSMS  ******/
 SELECT [FiscalMonth]
@@ -1517,3 +1634,4 @@ SELECT [FiscalMonth]
   order by 1
 
   */
+

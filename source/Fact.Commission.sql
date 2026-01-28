@@ -45,7 +45,7 @@ AS
 
 SELECT        
 -- use top 10 for model deploy, fast turn around
---	top 10 
+	-- top 10 
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 
@@ -263,6 +263,8 @@ FROM
 WHERE        
 --	(EXISTS (SELECT * FROM [Dimension].[Period] dd WHERE t.FiscalMonth = dd.FiscalMonth)) AND
 	-- test
+	--(t.FiscalMonth = 202511) AND
+	--
 
 	(1 = 1)
 

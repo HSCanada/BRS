@@ -31,7 +31,8 @@ AS
 **	29 Jan 21	tmc		add Private Label logic for 2021 plan    
 **	27 Feb 21	tmc		add Private Label exclusion logic
 **  16 Dec 21	tmc		add ISR sync logic
-**	31 Jan 24	tmc		update EPS logice for 2024 plan (will be used by FSC)
+**	31 Jan 24	tmc		update EPS logic for 2024 plan (will be used by FSC)
+**	19 Jan 26	tmc		remove eps, cps synch:   this is JDE territory driving now
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -209,8 +210,8 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
---
-
+-- remove eps synch:   this is JDE territory driving now
+/*
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -229,8 +230,9 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+*/
 
-
+/*
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
@@ -253,6 +255,7 @@ Begin
 
 	Set @nErrorCode = @@Error
 End
+*/
 
 If (@nErrorCode = 0) 
 Begin

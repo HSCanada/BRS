@@ -39,6 +39,8 @@ AS
 --	27 Feb 20	tmc		moved filter business logic to flags
 --	01 Feb 21	tmc		remove territory exception for 2021 plan
 --	31 Jan 24	tmc		refactor to source commissions, Branch, Dental, and no Elite
+--	19 Jan 26	tmc		eps is JDE territory driving now
+
 **    
 *******************************************************************************/
 
@@ -71,7 +73,7 @@ SELECT
 	RTRIM(f.[TerritoryCd])	AS Field_Level_4,
 	f.Branch				AS Field_Level_3,
 	'.'						AS Field_Level_3_Description,
-	RTRIM(b.EPS_code)		AS Eps_Code,
+	RTRIM(c.eps_code)		AS Eps_Code,
 	eps.FSCName				AS Eps_Name
 
 	
@@ -93,17 +95,21 @@ FROM
 	INNER JOIN [dbo].[BRS_CustomerSpecialty] AS s
 	ON c.Specialty = s.Specialty
 
+	-- fsc
 	INNER JOIN BRS_FSC_Rollup AS f 
 	ON c.TerritoryCd = f.TerritoryCd 
 
+	-- isr
 	INNER JOIN BRS_FSC_Rollup AS t 
 	ON c.TsTerritoryCd = t.TerritoryCd 
 
+	-- fsc branch
 	INNER JOIN [dbo].[BRS_Branch] AS b
 	ON f.Branch = b.Branch
 
+	-- eps
 	INNER JOIN BRS_FSC_Rollup AS eps 
-	ON b.EPS_code = eps.TerritoryCd
+	ON c.eps_code = eps.TerritoryCd
 
 
 WHERE

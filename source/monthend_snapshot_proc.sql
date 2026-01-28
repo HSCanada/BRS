@@ -33,8 +33,9 @@ AS
 **						Add EST and fix ISR snapshots
 **  16 Dec 21	tmc		add ISR logic
 **	27 Mar 23	tmc		add hsb to proc (monthly)
-**	 9 Jul 25	tmc		refactor Exclusives hisotry to use current item value
+**	 9 Jul 25	tmc		refactor Exclusives history to use current item value
 **							instead of legacy logic
+**	27 Jan 26	tmc		add FSC Tiered logic, based on Customer
 **    
 *******************************************************************************/
 
@@ -201,7 +202,7 @@ Begin
 		Set @nErrorCode = @@Error
 		If @nRowCount > 0 Set @nErrorCode = 3
 	End
-
+/*
 	If (@nErrorCode = 0) 
 	Begin
 		if (@bDebug <> 0)
@@ -221,6 +222,7 @@ Begin
 		Set @nErrorCode = @@Error
 		If @nRowCount > 0 Set @nErrorCode = 4
 	End
+*/
 
 /*
 	-- activeate once EVERY account has ISR terr
@@ -303,6 +305,9 @@ Begin
 			,HIST_TsTerritoryCd
 			,HIST_SalesDivision
 			,[HIST_cust_comm_group_cd]
+
+			,[HIST_comm_group_tier_cd]
+
 			-- new comm history
 			,[HIST_fsc_salesperson_key_id]
 			,[HIST_fsc_comm_plan_id]
@@ -336,6 +341,9 @@ Begin
 			,c.TsTerritoryCd
 			,c.SalesDivision
 			,c.comm_status_cd
+
+			,c.comm_group_tier_cd
+
 			-- new comm history
 			,ISNULL(fsc_comm.salesperson_key_id,'')
 			,ISNULL(fsc_comm.comm_plan_id,'')
