@@ -451,6 +451,7 @@ GO
 
 -- update missing post adj
 
+		-- fix leasing
 		UPDATE       BRS_Transaction
 		SET
 			GL_BusinessUnit = '020019000000'
@@ -463,11 +464,10 @@ GO
 		WHERE
 			(GLBU_Class = 'LEASE') AND 
 			(GL_BusinessUnit = '') AND
-			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+			(BRS_Transaction.FiscalMonth between 202501 and 202512)
 GO
 
-
-
+		-- fix sales
 		UPDATE
 			BRS_Transaction
 		SET
@@ -480,9 +480,10 @@ GO
 				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Sales
 		WHERE
 			ISNULL([gl_account_sales_key],0) <> a.[gl_account_key] AND
-			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+			(BRS_Transaction.FiscalMonth between 202501 and 202512)
 GO
 
+		-- fix cost
 		UPDATE
 			BRS_Transaction
 		SET
@@ -495,10 +496,10 @@ GO
 				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_Cost
 		WHERE
 			ISNULL([gl_account_cost_key],0) <> a.[gl_account_key] AND
-			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+			(BRS_Transaction.FiscalMonth between 202501 and 202512)
 GO
 
-
+		-- fix chargeback
 		UPDATE
 			BRS_Transaction
 		SET
@@ -511,7 +512,7 @@ GO
 				a.GMSUB__subsidiary = BRS_Transaction.GL_Subsidiary_ChargeBack
 		WHERE
 			ISNULL([gl_account_chargeback_key],0) <> a.[gl_account_key] AND
-			(BRS_Transaction.FiscalMonth between 202401 and 202504)
+			(BRS_Transaction.FiscalMonth between 202501 and 202512)
 GO
 
 */
