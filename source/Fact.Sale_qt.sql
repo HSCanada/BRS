@@ -39,11 +39,12 @@ AS
 **	20 Jul 22	tmc		add PO Field to help with GSP analysis
 **	21 Jul 22	tmc		move filter logic from SSAS model to query.  add P&G FG
 **	09 Apr 23	tmc		fix bug where free goods breaking saleorder logic
+**	30 Jan 26	tmc		add free goods estimate flag
 **    
 *******************************************************************************/
 
 SELECT
---    top 10      
+     top 10      
 	t.ID											AS FactKey
 
 	,c.BillTo										AS BillTo
@@ -103,6 +104,8 @@ SELECT
 	,CASE WHEN  NOT t.DocType like 'S%' OR t.Date = t.OrderFirstShipDate THEN 0 ELSE 1 END backorder_ind
 	,CAST(t.OrderFirstShipDate AS date)							AS OrderFirstShipDateKey
 	,hdr.[CustomerPOText1]
+
+	,t.FreeGoodsEstInd
 
 
 FROM            
@@ -164,7 +167,8 @@ FROM
 				(h.DocType = d.DocType) AND
 				(d.Item = ii.Item) AND
 				-- remove FG from first order key
-				(d.FreeGoodsInvoicedInd = 0 or ii.Supplier= 'PROCGA' ) AND
+				--
+				--(d.FreeGoodsInvoicedInd = 0 or ii.Supplier= 'PROCGA' ) AND
 				(ii.SalesCategory in( 'MERCH', 'SMEQU', 'TEETH')) AND
 
 				(1=1)
@@ -261,7 +265,11 @@ WHERE
 
 	(i.SalesCategory in( 'MERCH', 'SMEQU', 'TEETH')) AND
 	-- Free goods is a rabbit hole.  just allowing GSP in for now, tmc, 21 Jul 22
-	(t.FreeGoodsInvoicedInd = 0 OR i.Supplier= 'PROCGA' ) AND
+	(t.FreeGoodsEstInd) = 0 AND
+
+	-- remove fG to test
+	--(t.FreeGoodsInvoicedInd = 0 OR i.Supplier= 'PROCGA' ) AND
+
 	-- test
 	--t.SalesOrderNumber = 1113586 AND
 	(1 = 1)
@@ -274,6 +282,8 @@ GO
 
 -- SELECT count(*) FROM Fact.Sale_qt
 -- 8671158 60s
+
+-- 5101477
 
 /*
 
@@ -376,7 +386,11 @@ from BRS_TransactionDW where CalMonth = 202109 and DocType like 'S%'
 -- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 and doctype = 'CM' and ReturnValidInd =0
 -- SELECT top 100 * FROM Fact.Sale_qt where fiscalmonth >= 201901 
 
+ -- SELECT top 100 * FROM Fact.Sale_qt where FreeGoodsEstInd = 1 and FreeGoodsInvoicedInd = 1
+
 -- why do we care about first ship date on credit? what problems? just just the order date.  full stop.
 
 -- SELECT FactKeyFirst, * FROM Fact.Sale_qt where SalesOrderNumber = 15098812 order by 2
 -- SELECT * FROM Fact.Sale_qt where FactKeyFirst = 39854701 order by 1
+
+-- SELECT distinct FreeGoodsEstInd FROM Fact.Sale_qt 

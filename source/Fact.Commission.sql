@@ -45,11 +45,13 @@ AS
 
 SELECT        
 -- use top 10 for model deploy, fast turn around
-	-- top 10 
+	--  top 10 
+
 	t.ID											AS FactKey
 	,t.FiscalMonth									AS FiscalMonth	
 
-	-- Note, default FSC = 2 is a magic number -- too late to fix...
+	-- Note, default FSC = 2 is a magic number -- too late to fix... (ideally,1)
+	-- should have have 1, but the SQL was incremented.   All good!
 	--		also, the item calc groups are being remapped to 
 	--			the commission group.  ERD @ gdocs
 

@@ -70,6 +70,7 @@ AS
 --	17 Sep 25	tmc		update model to support GEP KPI
 --	25 Sep 25	tmc		fix bug where new FSC not yet in Comm are missing
 --	29 Oct 25	tmc		fix bug where ISR  not yet in comm are missing
+--	29 Jan 26	tmc		add GEP cohort and tier to current (for Tier analysis)
 **    
 *******************************************************************************/
 
@@ -276,6 +277,7 @@ SELECT
 	,c.AddressLine4
 
 	,ISNULL(c.GEP_Cohort_Code, 'ZZZ') AS GEP_Cohort_Code
+	,c.comm_group_tier_cd
 
 	-- add GEP_Cohort_Weeks
 	--,gc.GEP_Chohort_Weeks_To_Date
@@ -504,6 +506,8 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 
 
 --  SELECT distinct GEP_Cohort_Code FROM Dimension.Customer 
+
+--  SELECT distinct comm_group_tier_cd FROM Dimension.Customer 
 
 -- SELECT  count(*) FROM Dimension.Customer
 -- ORG= 139 377

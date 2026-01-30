@@ -490,7 +490,8 @@ SET        disp_comm_group_cd =
 				END 
 WHERE   (item_comm_group_cd = 'ITMPPE') AND (comm_plan_id IN ('FSCGP02', 'FSCGP02_Q', 'FSCGP03', 'FSCGP03_Q', 'FSCGP00')) AND (source_cd IN ('JDE', 'IMP')) AND (1 = 1)
 
-
+/*
+-- not needed as the imp that the tiers set / overriden during comm calc
 print 'add tier to Integration_comm_adjustment_Staging'
 BEGIN TRANSACTION
 GO
@@ -500,7 +501,7 @@ GO
 ALTER TABLE Integration.comm_adjustment_Staging SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
-
+*/
 
 -- add Tiers to new FSC plan
 /*
@@ -1011,7 +1012,7 @@ EXEC comm.transaction_commission_calc_proc @bDebug = 0
 
 print ('set SM tier to T30 for testing')
 UPDATE  BRS_CustomerFSC_History
-SET        HIST_comm_group_tier_cd = 'T30'
+SET        HIST_comm_group_tier_cd = 'T10'
 WHERE   (FiscalMonth between 202501 and 202512) AND (HIST_cust_comm_group_cd IN ('SPCCRD', 'SPMALL', 'SPMSND'))
 GO
 
@@ -1244,6 +1245,13 @@ Jan = 2025 FY
 */
 --<
 
+print ('fin missing map fix')
+UPDATE  hfm.account_master_F0901
+SET        HFM_CostCenter = N'CC020099000000', LastUpdated = '2026-01-29'
+WHERE   (GMOBJ__object_account = '4730') AND (HFM_CostCenter IS NULL) AND (1 = 1)
+
+-- fix DS fin
+
 -- YTD testing
 print ('recalc 2025, 10m')
 print 202501
@@ -1294,10 +1302,23 @@ print 202512
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202512
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
-
+/*
 print 202601
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202601
 Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+*/
+
+-- set rates
+SELECT   
+comm_plan_id, item_comm_group_cd, cust_comm_group_cd, source_cd, comm_gm_threshold_cd, disp_comm_group_cd, comm_rt, active_ind, creation_dt, note_txt, show_ind, calc_key, fg_comm_group_cd,  comm_group_tier_ind
+FROM     comm.plan_group_rate AS r
+WHERE   
+(comm_plan_id IN ('FSCGP02', 'FSCGP02_Q', 'FSCGP03', 'FSCGP03_Q')) AND (source_cd IN ('JDE', 'IMP')) AND (active_ind = 1) AND (1 = 1) and
+--comm_group_tier_ind = 0 and
+-- comm_rt = 0 and
+disp_comm_group_cd not in ('SALD30', 'SCRCRD', 'STMPBA', 'ITMEQ0')
+ORDER BY disp_comm_group_cd
 GO
 
 -- ME testing
@@ -1306,7 +1327,7 @@ GO
 
 print ('set SM tier to T30 for testing')
 UPDATE  BRS_Customer
-SET        comm_group_tier_cd = 'T40'
+SET        comm_group_tier_cd = 'T10'
 WHERE   [comm_status_cd] IN ('SPCCRD', 'SPMALL', 'SPMSND')
 GO
 
@@ -1332,6 +1353,7 @@ update [BRS_FSC_Rollup]
 set comm_salesperson_key_id = 'JULIA.MERRITT.FSC'
 where TerritoryCd = 'CZ1J2'
 
+-- temp fix
 update BRS_Item 
 set comm_group_cd = 'ITMSND'
 WHERE 
@@ -1355,4 +1377,24 @@ EXEC comm.adjustment_load_proc @bDebug = 0,@bClearStage = 0
 print ('comm.transaction_commission_calc_proc, 2m26')
 EXEC comm.transaction_commission_calc_proc @bDebug = 1
 EXEC comm.transaction_commission_calc_proc @bDebug = 0
+
+
+-- fix ME GL
+
+-- find missing map
+print ('T05: missing ENTITY_cb') 
+SELECT * FROM [hfm].global_cube where ENTITY_cb is null and ext_chargeback <> 0.0 and PERIOD = 202512
+
+-- fix missing map
+
+SELECT hfm_CostCenter, hfm_account, LastUpdated
+FROM
+	hfm.account_master_F0901 AS a 
+WHERE 
+--a.GMMCU__business_unit = '020009000100' AND 
+a.GMOBJ__object_account = '4730' AND 
+--hfm_CostCenter is null and
+-- a.GMSUB__subsidiary = 'xxx' AND
+(1=1)
+order by 1
 
