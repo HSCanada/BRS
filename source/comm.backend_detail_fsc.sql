@@ -39,6 +39,7 @@ GO
 --	20 Oct 21	tmc	add Free goods to details with opt out for back compatible
 --  18 Jun 24	tmc	add med threshold support fields
 --  04 Jul 24	tmc reverse: add Free goods to details with opt out for back compatible
+--	03 Feb 26	tmc	add FSC Tier code 
 
 *******************************************************************************/
 
@@ -104,6 +105,10 @@ SELECT
 	,ISNULL(pr.[comm_gm_threshold_descr],'') as comm_gm_threshold_descr
 	,t.fsc_calc_key
 
+	,t.comm_group_tier_cd
+	,cust.MarketClass
+	,cust.SegCd
+
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -145,7 +150,7 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- SELECT top 10 * FROM [comm].[backend_detail_fsc]
+SELECT top 10 * FROM [comm].[backend_detail_fsc] where comm_group_tier_cd <> ''
 
 -- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'PAIGE.DALLEY' 
 -- SELECT * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'JANET.SQUIRES' and show_ind = 0 order by item_comm_group_cd 
