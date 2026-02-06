@@ -71,6 +71,7 @@ AS
 --	25 Sep 25	tmc		fix bug where new FSC not yet in Comm are missing
 --	29 Oct 25	tmc		fix bug where ISR  not yet in comm are missing
 --	29 Jan 26	tmc		add GEP cohort and tier to current (for Tier analysis)
+--	06 Feb 26	tmc		add HSPS / eps name and fix branch
 **    
 *******************************************************************************/
 
@@ -260,7 +261,9 @@ SELECT
 	,fsc_master.[adhoc_model_1_text] AS CommMasterCode_adhoc_model_3_text
 
 	,RTRIM(seg_new.[SegCd_map])		AS SegmentCodeNEW
-	,eps_roll.FSCName eps_branch
+	,RTRIM(eps_terr.TerritoryCd)	AS eps_branch
+	,RTRIM(eps_terr.FSCName)		AS eps_name
+--	,eps_terr.FSCName eps_branch
 
 	,RTRIM(fsc_master.comm_plan_id)					AS FieldSalesCommPlan
 	,RTRIM(fsc_master_branch.BranchName)			AS FieldSalesBranchName
@@ -374,9 +377,8 @@ FROM
 	ON terr.FSCRollup = sroll.TerritoryCd
 
 	--
---	LEFT JOIN BRS_FSC_Rollup eps_roll
-	INNER JOIN BRS_FSC_Rollup eps_roll
-	ON b.EPS_code = eps_roll.TerritoryCd
+	LEFT JOIN BRS_FSC_Rollup eps_terr
+	ON c.eps_code = eps_terr.TerritoryCd
 
 --	LEFT JOIN BRS_Customer_FSA AS fsa 
 	INNER JOIN BRS_Customer_FSA AS fsa 
@@ -500,9 +502,10 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- test details
 -- SELECT  top 100 * FROM Dimension.Customer where Billto = 1530406
 
- SELECT  top 100 * FROM Dimension.Customer where shipto = 4093441
+-- SELECT  top 100 * FROM Dimension.Customer where shipto = 4093441
 -- SELECT  * FROM BRS_Customer  where shipto = 1679340
 
+SELECT  distinct eps_branch, eps_name  FROM Dimension.Customer order by 2
 
 
 --  SELECT distinct GEP_Cohort_Code FROM Dimension.Customer 
