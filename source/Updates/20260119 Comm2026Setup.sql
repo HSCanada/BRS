@@ -824,6 +824,9 @@ GO
 select * from  [comm].[plan_group_rate] where 
 [calc_key] in (
 
+106750
+,106745
+/*
 90911
 ,92543
 ,92717
@@ -884,6 +887,7 @@ select * from  [comm].[plan_group_rate] where
 ,106769
 ,106847
 ,106889
+*/
 ) order by 5
 
 -- review rule details (test new)
@@ -1397,4 +1401,17 @@ a.GMOBJ__object_account = '4730' AND
 -- a.GMSUB__subsidiary = 'xxx' AND
 (1=1)
 order by 1
+
+-- view Tier exception
+
+select * from [comm].[transaction_F555115]
+where [ID] in(
+24162433
+,24174669
+,24236942
+,24314330
+,24362047
+,24367724
+,24368502
+)
 
