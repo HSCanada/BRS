@@ -31,6 +31,7 @@ AS
 **	-----	----------	--------------------------------------------
 --	19 Sep 25	tmc		open list to show all items for review / update
 --	25 Nov 25	tmc		cleanup fields to simplify 
+--	05 Feb 26	tmc		add new fields to support better match review (after id)
 *******************************************************************************/
 
 
@@ -60,15 +61,16 @@ SELECT
 	,i.ItemStatus
 	,i.SubMinorProductCodec
 
+--	05 Feb 26	tmc		add new fields to support better match review (after id)
+	,s.id
+	,s.us_item_subst
 
-
---	,i.ManufPartNumber
-
---	,i.size_unit_rate
---	,s.uom_conv_rt
-
-
---	,i.Brand
+	,i.ManufPartNumber
+	,i.size_unit_rate
+	,s.uom_conv_rt
+	,i.Brand
+	,s.us_contents_per_uom_amt
+	,s.us_uom_conv_rt
 
 
 FROM
@@ -113,6 +115,6 @@ GO
 -- select  top 100 * from pbi.item_cobra_xref_review order by 4,1
 -- select  count (*) from pbi.item_cobra_xref_review 
 
-select  top 100 * from pbi.item_cobra_xref_review where item = '5702566' 
+select  top 100 * from pbi.item_cobra_xref_review where item_subst in('5873061', '4681139')
 
 -- select  count(*) from pbi.item_cobra_xref_review
