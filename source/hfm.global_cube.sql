@@ -177,7 +177,7 @@ AS
 
 		,CASE 
 			WHEN t.GLBU_Class in ('BSOLN', 'DTXSP', 'LEASE') 
-			THEN '' 
+			THEN 'Unspecified_Brand' 
 			ELSE 
 				CASE 
 					-- override prorepair mapping with custom US code
@@ -584,7 +584,8 @@ WHERE
 */
  
 
-SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202401 and d1_prorepair_ind=1
+-- SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202401 and d1_prorepair_ind=1
+-- SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202512 and BRAND_LINE = ''
 
 -- SELECT * FROM [hfm].global_cube AS t WHERE PERIOD =  202509 and SUPPLIER like 'BAINT%' and PRODUCT like '880%'
 

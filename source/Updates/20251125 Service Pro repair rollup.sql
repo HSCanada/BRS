@@ -1,5 +1,5 @@
 -- Service Pro repair rollup, tmc, 25 Nov 25
-
+/*
 SELECT TOp 10
 *
 FROM [Offline].[dbo].[OL_ServiceData]
@@ -95,6 +95,8 @@ insert into [nes].[call_type]
 (call_type_code, call_type_descr)
 select Item, '.' from [zzzItem] where not exists (select * from [nes].[call_type] ct where ct.call_type_code = Item)
 
+*/
+
 -- truncate table zzzshipto2
 -- load
 insert into zzzshipto2 
@@ -104,7 +106,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202501 and 202512 AND
+	[TCPDT] between 202401 and 202601 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -119,12 +121,13 @@ GO
 -- test missing orders (found to be internal)
 select ST, Note FROM zzzShipto2 where not exists (Select * from BRS_Transaction t where t.InvoiceNumber = ST) order by 2
 
+/*
 -- test dollars1 salesorder - failed
-
 SELECT   RTRIM(zzzShipto2.Note) AS call_type, s.FiscalMonth, s.DocType, SalesDivision, SUM(s.NetSalesAmt) AS sales_amt
 FROM     zzzShipto2 INNER JOIN
              BRS_Transaction s ON zzzShipto2.ST = s.SalesOrderNumber
 GROUP BY zzzShipto2.Note, s.FiscalMonth, s.DocType, s.SalesDivision
+*/
 
 -- test dollars2, invoice -
 
@@ -133,7 +136,7 @@ FROM     zzzShipto2 INNER JOIN
              BRS_Transaction s ON zzzShipto2.ST = s.InvoiceNumber
 GROUP BY zzzShipto2.Note, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
 
-
+/*
 print ('add pro-repair flag')
 BEGIN TRANSACTION
 GO
@@ -142,18 +145,21 @@ ALTER TABLE dbo.BRS_Transaction ADD
 GO
 COMMIT
 
+*/
+
 print ('set pre-repair flag')
 
 UPDATE  BRS_Transaction
 SET        d1_prorepair_ind = 1
 FROM     zzzShipto2 INNER JOIN
              BRS_Transaction ON zzzShipto2.ST = BRS_Transaction.InvoiceNumber
+GO
 
 SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, SUM(s.NetSalesAmt) AS sales_amt
 FROM      [hfm].global_cube s
 WHERE d1_prorepair_ind=1
 GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE
-
+GO
 
 
 --WO = WY12130099

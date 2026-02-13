@@ -60,12 +60,17 @@ FROM
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
 	(
-		(t.FiscalMonth BETWEEN 202501 and 202512) OR
-		(t.FiscalMonth BETWEEN 202401 and 202412)
+		(t.FiscalMonth BETWEEN 202601 and 202601) OR
+		(t.FiscalMonth BETWEEN 202501 and 202501)
 	) AND
 	(
+		-- back out free goods billed
 		t.FreeGoodsInvoicedInd = 0 OR
-		(t.FreeGoodsInvoicedInd = 1 AND i.Label = 'P')
+		-- except owned and corporate
+		(t.FreeGoodsInvoicedInd = 1 AND i.Excl_Code <> 'BRANDED') or 
+		-- excel GSP
+		(t.FreeGoodsInvoicedInd = 1 AND i.Supplier = 'PROCGA') 
+--		(t.FreeGoodsInvoicedInd = 1 AND i.Label = 'P')
 	)  AND 
 
 	-- test with quote exclude
@@ -119,3 +124,5 @@ ORDER BY 1
 
 -- ORG 35 902 rows, 16s
 -- NEW 54 171, 17s
+
+-- select distinct Excl_Code from BRS_item
