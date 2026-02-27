@@ -106,7 +106,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202401 and 202601 AND
+	[TCPDT] between 202201 and 202601 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -159,7 +159,23 @@ SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT
 FROM      [hfm].global_cube s
 WHERE d1_prorepair_ind=1
 GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE
+Order by 1
 GO
+
+SELECT   'sales' as src, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt) AS value_amt
+FROM     BRS_Transaction s 
+WHERE d1_prorepair_ind=1
+GROUP BY s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
+
+UNION ALL
+
+SELECT   'gp' as src, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt - s.ExtendedCostAmt) AS value_amt
+FROM     BRS_Transaction s 
+WHERE d1_prorepair_ind=1
+GROUP BY s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
+
+
+
 
 
 --WO = WY12130099
