@@ -40,12 +40,15 @@ AS
 --	21 Jun 22	tmc		Patch SM logic to fix ZahnSM and 123Dental priors
 --  18 Jan 23	tmc		add Heartland VPA to logic
 --  15 Sep 23	tmc		add new Segment logic
+--	02 Mar26	tmc		add multisite rule tracking to help fix bugs
 **    
 *******************************************************************************/
 BEGIN
 
 Declare @nErrorCode int, @nTranCount int
 Declare @sMessage varchar(255)
+Declare @sMS_Rule varchar(255)
+
 
 
 Set @nErrorCode = @@Error
@@ -67,6 +70,7 @@ Set @nBatchStatus = -1
 Set @nExceptionCount = 0
 Set @nRowCount = 0
 Set @sMessage = ''
+Set @sMS_Rule = ''
 
 -- Start transaction
 if (@nTranCount = 0)
@@ -120,14 +124,16 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '01. clear'
 	if (@bDebug <> 0)
-		print '1. clear'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = '', 
-		SegCd_New = ''
+		MarketClass_New = ''
+		,SegCd_New = ''
+		,adhoc_model_2_text = @sMS_Rule
 
 	Set @nErrorCode = @@Error
 End
@@ -135,14 +141,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '02. Set non Dental based on Division'
 	if (@bDebug <> 0)
-		print ' 2. Set non Dental based on Division'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = d.MarketClass_New, 
-		SegCd_New = '' 
+		MarketClass_New = d.MarketClass_New
+		,SegCd_New = '' 
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer INNER JOIN
 
@@ -160,14 +169,18 @@ End
 -- DCC BT set
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '03. Set DCC based on BT=2613256 (Elite)'
 	if (@bDebug <> 0)
-		print '3. Set DCC based on BT=2613256 (Elite)'
+
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'ELITE', 
-		SegCd_New = 'NDSO'
+		MarketClass_New = 'ELITE'
+		,SegCd_New = 'NDSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE  
 		[VPA] in ('DENCORP', '123DNST') AND
 		(MarketClass_New = '')
@@ -177,14 +190,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '04. Set DCC based on BT=2613256 (Zahn -> ZahnSM)'
 	if (@bDebug <> 0)
-		print '3b. Set DCC based on BT=2613256 (Zahn -> ZahnSM)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'ZAHNSM', 
-		SegCd_New = 'DSO'
+		MarketClass_New = 'ZAHNSM'
+		,SegCd_New = 'DSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		[VPA] in ('DENCORP', '123DNST') AND
 		(SalesDivision = 'AAL')
@@ -195,14 +211,44 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '05. Set DCC based on VPA (history)'
 	if (@bDebug <> 0)
-		print '3c. Set DCC based on Specialty (Various)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = s.MarketClass_New,
-		SegCd_New = s.SegCd_New
+		MarketClass_New = BRS_Customer.MarketClass
+		,SegCd_New = BRS_Customer.SegCd
+		,adhoc_model_2_text = @sMS_Rule
+
+	FROM            
+		BRS_Customer 
+		INNER JOIN BRS_CustomerVPA s 
+		ON BRS_Customer.VPA = s.VPA
+	WHERE        
+		(BRS_Customer.MarketClass_New = '') AND 
+		(BRS_Customer.CustGrpWrk in('Dental Corp', '123 Dentist (Heartland)')) AND
+		(BRS_Customer.VPA <> '0') AND 
+--		(s.MarketClass <> '') 
+		(1=1)
+
+	Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	Set @sMS_Rule = '06. Set DCC based on Specialty (Various)'
+	if (@bDebug <> 0)
+		print @sMS_Rule
+
+	UPDATE       
+		BRS_Customer
+	SET                
+		MarketClass_New = s.MarketClass_New
+		,SegCd_New = s.SegCd_New
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 		INNER JOIN BRS_CustomerSpecialty AS s 
@@ -217,14 +263,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '07. Set DCC based on DSO (Exception)'
 	if (@bDebug <> 0)
-		print '3d. Set DCC based on DSO (Exception)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'PVTPRC', 
-		SegCd_New = ''
+		MarketClass_New = 'PVTPRC'
+		,SegCd_New = ''
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 	WHERE        
@@ -239,14 +288,17 @@ End
 -- AO BT Set
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '08. Set Alpha Omega based on BT=1765054'
 	if (@bDebug <> 0)
-		print '4. Set Alpha Omega based on BT=1765054 (MM / RDSO)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'MIDMKT', 
-		SegCd_New = 'RDSO'
+		MarketClass_New = 'MIDMKT'
+		,SegCd_New = 'RDSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		(BillTo = 1765054) AND 
 		(MarketClass_New = '')
@@ -256,14 +308,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '09. Set Dental Students - Primary (INSTIT)'
 	if (@bDebug <> 0)
-		print '5a. Set Dental Students - Primary (INSTIT)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'INSTIT', 
-		SegCd_New = 'PDS'
+		MarketClass_New = 'INSTIT'
+		,SegCd_New = 'PDS'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		(Specialty	= 'STUD') AND 
 		(MarketClass_New = '')
@@ -275,14 +330,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '10. Set Dental Students (INSTIT)'
 	if (@bDebug <> 0)
-		print '5b. Set Dental Students (INSTIT)'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'INSTIT', 
-		SegCd_New = 'DSH'
+		MarketClass_New = 'INSTIT'
+		,SegCd_New = 'DSH'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		(Specialty	= 'STUA') AND 
 		(MarketClass_New = '')
@@ -293,14 +351,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '11. Zahn SM Exception'
 	if (@bDebug <> 0)
-		print '6. Zahn SM Exception'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'ZAHNSM', 
-		SegCd_New = 'DSO'
+		MarketClass_New = 'ZAHNSM'
+		,SegCd_New = 'DSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 		INNER JOIN BRS_CustomerGroup AS g 
@@ -314,14 +375,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '12. MM Groups with VPAs'
 	if (@bDebug <> 0)
-		print '7. MM Groups with VPAs'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = g.MarketClass_New, 
-		SegCd_New = g.SegCd_New
+		MarketClass_New = g.MarketClass_New 
+		,SegCd_New = g.SegCd_New
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 
@@ -338,18 +402,19 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-
-
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '13. MM Groups with no VPAs'
 	if (@bDebug <> 0)
-		print '8. MM Groups with no VPAs'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = g.MarketClass_New, 
-		SegCd_New = g.SegCd_New
+		MarketClass_New = g.MarketClass_New
+		,SegCd_New = g.SegCd_New
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 	
@@ -358,7 +423,8 @@ Begin
 
 	WHERE        
 		(BRS_Customer.MarketClass_New = '') AND 
-		(g.MarketClass_New <> '')
+		(g.MarketClass_New <> '') AND
+		(g.CustGrp <> '') 
 
 	Set @nErrorCode = @@Error
 End
@@ -367,14 +433,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '14. Set No Group based on Specialty'
 	if (@bDebug <> 0)
-		print '9. Set No Group based on Specialty'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = s.MarketClass_New, 
-		SegCd_New = s.SegCd_New
+		MarketClass_New = s.MarketClass_New 
+		,SegCd_New = s.SegCd_New
+		,adhoc_model_2_text = @sMS_Rule
+
 	FROM            
 		BRS_Customer 
 	
@@ -390,14 +459,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '15. Zahn SM exception correction'
 	if (@bDebug <> 0)
-		print '10. Zahn SM exception correction'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'MIDMKT', 
-		SegCd_New = 'DSO'
+		MarketClass_New = 'MIDMKT'
+		,SegCd_New = 'DSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		(SalesDivision = 'AAD') AND 
 		(MarketClass_New = 'ZAHNSM')
@@ -408,14 +480,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '16. Dental Specialty exception correction'
 	if (@bDebug <> 0)
-		print '11. Dental Specialty exception correction'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'PVTPRC', 
-		SegCd_New = ''
+		MarketClass_New = 'PVTPRC'
+		,SegCd_New = ''
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		(SalesDivision = 'AAD') AND 
 		(MarketClass_New In ('ANIMAL','MEDICL','ZAHN'))
@@ -423,17 +498,19 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
--- XXX
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '17. Patch Zahn SM for groups that span Den&Lab'
 	if (@bDebug <> 0)
-		print '12. Patch Zahn SM for groups that span Dental and Lab'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass_New = 'ZAHNSM', 
-		SegCd_New = 'DSO'
+		MarketClass_New = 'ZAHNSM' 
+		,SegCd_New = 'DSO'
+		,adhoc_model_2_text = @sMS_Rule
+
 	-- SELECT *
 	FROM            
 		BRS_Customer 
@@ -453,7 +530,7 @@ End
 If (@nErrorCode = 0) 
 Begin
 	if (@bDebug <> 0)
-		print '13. Patch non-multisite segments'
+		print '16b. Patch non-multisite segments'
 
 
 	if (@bDebug <> 0)
@@ -498,14 +575,17 @@ End
 
 If (@nErrorCode = 0) 
 Begin
+	Set @sMS_Rule = '18. merge new codes'
 	if (@bDebug <> 0)
-		print '14. merge new codes'
+		print @sMS_Rule
 
 	UPDATE       
 		BRS_Customer
 	SET                
-		MarketClass = MarketClass_New, 
-		SegCd = SegCd_New
+		MarketClass = MarketClass_New
+		,SegCd = SegCd_New
+		,adhoc_model_2_text = @sMS_Rule
+
 	WHERE        
 		MarketClass = ''
 
@@ -777,3 +857,4 @@ GO
 -- [BRS_BE_Transaction_post_proc] @bDebug=1
 
 
+-- select distinct adhoc_model_2_text from BRS_Customer
