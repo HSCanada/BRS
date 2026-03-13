@@ -1306,12 +1306,16 @@ print 202512
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202512
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
-/*
+
 print 202601
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202601
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
-*/
+
+print 202602
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202602
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
 
 -- set rates
 SELECT   

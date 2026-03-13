@@ -106,7 +106,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202201 and 202601 AND
+	[TCPDT] between 202601 and 202603 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -134,6 +134,7 @@ GROUP BY zzzShipto2.Note, s.FiscalMonth, s.DocType, s.SalesDivision
 SELECT   RTRIM(zzzShipto2.Note) AS call_type, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt) AS sales_amt
 FROM     zzzShipto2 INNER JOIN
              BRS_Transaction s ON zzzShipto2.ST = s.InvoiceNumber
+where d1_prorepair_ind is null
 GROUP BY zzzShipto2.Note, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
 
 /*
@@ -153,6 +154,8 @@ UPDATE  BRS_Transaction
 SET        d1_prorepair_ind = 1
 FROM     zzzShipto2 INNER JOIN
              BRS_Transaction ON zzzShipto2.ST = BRS_Transaction.InvoiceNumber
+where d1_prorepair_ind is null
+
 GO
 
 SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, SUM(s.NetSalesAmt) AS sales_amt
