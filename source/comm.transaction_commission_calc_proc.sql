@@ -36,6 +36,7 @@ AS
 **	14 May 24	tmc		add FTA logic to replace PMTS
 **  17 Jun 24	tmc		add Medical Threshold logic, based in GM
 **	22 Jan 26	tmc		add FSC Tiered logic, based on Customer
+--	16 Mar 26	tmc		fix EPS logic (and reset itemcomm for recalc)
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int
@@ -173,6 +174,15 @@ Begin
 			,ess_comm_plan_id = ''
 
 			-- reset calc for repeatabilty on rate / scope changes 
+
+			--	16 Mar 26	tmc		fix EPS logic (and reset itemcomm for recalc)			
+			,fsc_comm_group_cd = ''
+			,ess_comm_group_cd = ''
+			,cps_comm_group_cd = ''
+			,eps_comm_group_cd = ''
+			,isr_comm_group_cd = ''
+			,est_comm_group_cd = ''
+
 			,[fsc_calc_key]=NULL
 			,[ess_calc_key]=NULL
 			,[cps_calc_key]=NULL
@@ -188,7 +198,15 @@ Begin
 			(d.FiscalMonth = s.FiscalMonth) AND
 			(d.source_cd = 'JDE')
 		WHERE
-			s.FiscalMonth = @nCurrentFiscalYearmoNum
+			s.FiscalMonth = @nCurrentFiscalYearmoNum AND
+
+			--	16 Mar 26	tmc		fix EPS logic
+			--> temp test EPS
+			-- (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND
+			--<
+
+			(1=1)
+
 
 		Set @nErrorCode = @@Error
 	End
@@ -223,7 +241,14 @@ Begin
 			(d.FiscalMonth = s.FiscalMonth) AND
 			(d.source_cd = 'IMP')
 		WHERE
-			s.FiscalMonth = @nCurrentFiscalYearmoNum
+			s.FiscalMonth = @nCurrentFiscalYearmoNum AND
+
+			--	16 Mar 26	tmc		fix EPS logic
+			--> temp test EPS
+			-- (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND
+			--<
+
+			(1=1)
 
 		Set @nErrorCode = @@Error
 	End
@@ -1130,6 +1155,12 @@ Begin
 			(1 = 1)
 		WHERE   
 			(s.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+
+			--	16 Mar 26	tmc		fix EPS logic
+			--> temp test EPS
+			-- (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND
+			--<
+
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -1171,6 +1202,12 @@ Begin
 			(t.source_cd <> 'PAY') AND
 			(g.booking_rt = 0) AND
 			(t.FiscalMonth = @nCurrentFiscalYearmoNum ) AND
+
+			--	16 Mar 26	tmc		fix EPS logic
+			--> temp test EPS
+			-- (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND
+			--<
+
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -1206,10 +1243,17 @@ Begin
 				r.[comm_gm_threshold_ind] = 0 
 		WHERE        
 			(t.eps_comm_plan_id <> '') AND
+			-- how is this being set? ****
 			(t.eps_comm_group_cd <> '') AND 
 			(t.source_cd <> 'PAY') AND
 			(g.booking_rt <> 0) AND
 			(t.FiscalMonth =@nCurrentFiscalYearmoNum ) AND
+
+			--	16 Mar 26	tmc		fix EPS logic
+			--> temp test EPS
+			-- (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND
+			--<
+
 			(1 = 1)
 
 		Set @nErrorCode = @@Error
@@ -1635,3 +1679,4 @@ SELECT [FiscalMonth]
 
   */
 
+-- Exec comm.transaction_commission_calc_proc @bDebug=1
