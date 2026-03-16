@@ -1408,14 +1408,7 @@ order by 1
 
 -- view Tier exception
 
-select * from [comm].[transaction_F555115]
-where [ID] in(
-24162433
-,24174669
-,24236942
-,24314330
-,24362047
-,24367724
-,24368502
-)
-
+SELECT   FiscalMonth, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, source_cd, transaction_amt, gp_ext_amt, eps_code, eps_salesperson_key_id, eps_comm_group_cd, eps_comm_rt, eps_comm_amt, eps_calc_key, ID
+FROM     comm.transaction_F555115
+WHERE   (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742))
+order by 1
