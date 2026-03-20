@@ -53,6 +53,7 @@ AS
 **	29 Oct 24	tmc		add AR clear table [Integration].[F564201_AgingBillto]
 **	14 Mar 25	tmc		synch HS Global rules for finance and commissions
 **	19 Jan 26	tmc		add eps synch from JDE territory
+**	19 Mar 26	tmc		add 2 AR fields for Customer Master project
 
 *******************************************************************************/
 
@@ -301,6 +302,8 @@ BEGIN
 
 				,eps_code = ISNULL(ExclusiveLevel4Cd, '')
 
+				,Apply_Restocking_Charges = ISNULL(s.Apply_Restocking_Charges, '')
+				,Credit_Card_Autopay_Flag = ISNULL(s.Credit_Card_Autopay_Flag, '')
 
 
 			FROM         
@@ -347,7 +350,10 @@ BEGIN
 				BRS_Customer.[SegCd_JDE] <> ISNULL(s.[SegCd], '') OR
 				BRS_Customer.[MarketClass_JDE] <> ISNULL(s.[MarketClass], '') OR
 
-				BRS_Customer.eps_code <> ISNULL(ExclusiveLevel4Cd, '')
+				BRS_Customer.eps_code <> ISNULL(ExclusiveLevel4Cd, '') OR
+
+				BRS_Customer.Apply_Restocking_Charges <> ISNULL(s.Apply_Restocking_Charges, '') OR
+				BRS_Customer.Credit_Card_Autopay_Flag <> ISNULL(s.Credit_Card_Autopay_Flag, '') 
 
 
 			Set @nErrorCode = @@Error
@@ -395,6 +401,9 @@ BEGIN
 
 				,eps_code
 
+				,Apply_Restocking_Charges
+				,Credit_Card_Autopay_Flag
+
 			)
 
 			SELECT 
@@ -434,6 +443,9 @@ BEGIN
 				,ISNULL(s.[MarketClass], '')				AS MarketClass_JDE
 
 				,ISNULL(s.ExclusiveLevel4Cd,'')				AS eps_code
+
+				,ISNULL(s.Apply_Restocking_Charges,'')		AS Apply_Restocking_Charges
+				,ISNULL(s.Credit_Card_Autopay_Flag,'')		AS Credit_Card_Autopay_Flag
 
 			FROM         
 				STAGE_BRS_CustomerFull AS s

@@ -70,6 +70,7 @@ AS
 --	10 Mar 25	tmc		add global item current so we can compare hsb_brand curr
 --	11 Apr 25	tmc		mov global item map from lookup to item (max flex/cntsku
 --	11 Aug 25	tmc		add RebateRollup to model (for planning)
+--	17 Mar 26	tmc		add brand to help with HSPS / CSS model
 **    
 *******************************************************************************/
 

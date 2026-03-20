@@ -784,23 +784,23 @@ select
 -- *	
 --dev.ess_calc_key, prod.ess_calc_key, * 
 
---dev.fsc_calc_key, prod.fsc_calc_key, * 
+dev.fsc_calc_key, prod.fsc_calc_key, * 
 
-distinct dev.fsc_calc_key
+--distinct dev.fsc_calc_key
 
 from 
 	BRSales.[comm].[transaction_F555115] prod 
 	LEFT JOIN DEV_BRSales.[comm].[transaction_F555115] dev
 		ON prod.ID = dev.ID
 where 
-	prod.FiscalMonth = 202512 AND
+	prod.FiscalMonth between 202501 and 202602 AND
 	(
-		(ISNULL(prod.fsc_calc_key,0) <> ISNULL(dev.fsc_calc_key, 0)) OR
-		(ISNULL(prod.ess_calc_key,0) <> ISNULL(dev.ess_calc_key, 0)) OR
+--		(ISNULL(prod.fsc_calc_key,0) <> ISNULL(dev.fsc_calc_key, 0)) OR
+--		(ISNULL(prod.ess_calc_key,0) <> ISNULL(dev.ess_calc_key, 0)) OR
 
-		(ISNULL(prod.isr_calc_key,0) <> ISNULL(dev.isr_calc_key, 0)) OR
+--		(ISNULL(prod.isr_calc_key,0) <> ISNULL(dev.isr_calc_key, 0)) OR
 		(ISNULL(prod.eps_calc_key,0) <> ISNULL(dev.eps_calc_key, 0)) OR
-		(ISNULL(prod.cps_calc_key,0) <> ISNULL(dev.cps_calc_key, 0)) OR
+--		(ISNULL(prod.cps_calc_key,0) <> ISNULL(dev.cps_calc_key, 0)) OR
 		(1<>1)
 	) and
 
@@ -824,8 +824,34 @@ GO
 select * from  [comm].[plan_group_rate] where 
 [calc_key] in (
 
-106750
-,106745
+33611
+,34115
+,34118
+,34613
+,34619
+,46382
+,46384
+,46385
+,48576
+,48588
+,48600
+,48648
+,49284
+,49296
+,49356
+,66604
+,74857
+,75006
+,75017
+,75021
+,75028
+,83126
+,83216
+,106841
+,107201
+,107741
+,107747
+,107759
 /*
 90911
 ,92543
@@ -1408,7 +1434,8 @@ order by 1
 
 -- view Tier exception
 
-SELECT   FiscalMonth, WSDOCO_salesorder_number, WSDCTO_order_type, WSLNID_line_number, source_cd, transaction_amt, gp_ext_amt, eps_code, eps_salesperson_key_id, eps_comm_group_cd, eps_comm_rt, eps_comm_amt, eps_calc_key, ID
-FROM     comm.transaction_F555115
-WHERE   (ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742))
-order by 1
+SELECT   t.FiscalMonth, t.WSDOCO_salesorder_number, t.WSDCTO_order_type, t.WSLNID_line_number, t.source_cd, t.transaction_amt, t.gp_ext_amt, t.eps_code, t.eps_salesperson_key_id, t.eps_comm_group_cd, t.eps_comm_rt, t.eps_comm_amt, t.eps_calc_key, t.ID, h.HIST_comm_group_eps_cd
+FROM     comm.transaction_F555115 AS t LEFT OUTER JOIN
+             BRS_ItemHistory AS h ON t.FiscalMonth = h.FiscalMonth AND t.WSLITM_item_number = h.Item
+WHERE   (t.ID IN (22267142, 21388929, 21090696, 21300165, 22445407, 20811322, 22890042, 23632742)) AND (1 = 1)
+ORDER BY t.FiscalMonth
