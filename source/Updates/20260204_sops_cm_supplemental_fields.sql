@@ -8,7 +8,7 @@ ALTER VIEW [sops].[cm_supplemental_fields]
 AS
 SELECT        BRS_Customer.ShipTo, BRS_Customer.MarketClass, BRS_Customer.SegCd, BRS_Customer.MarketClass_New, BRS_Customer.SegCd_New, BRS_Customer.DSO_ParentShipTo, 
                          BRS_Customer.comm_status_cd AS comm_group_cd, BRS_Customer.comm_group_tier_cd, fsc.TerritoryCd AS FSC_TerritoryCd, fsc.FSCName AS FSC_Name,  isr.TerritoryCd AS ISR_TerritoryCd, isr.FSCName AS ISR_Name, hsps.TerritoryCd AS HSPS_TerritoryCd, 
-                         hsps.FSCName AS HSPS_Name, Apply_Restocking_Charges, Credit_Card_Autopay_Flag, ISNULL(bt.A5AFC__apply_finance_charges_yn, '') AS Apply_Late_Fees, BillTo
+                         hsps.FSCName AS HSPS_Name, Apply_Restocking_Charges, Credit_Card_Autopay_Flag, ISNULL(bt.A5AFC__apply_finance_charges_yn, '') AS Apply_Late_Fees, BillTo, fsc.Branch as FSC_BranchCd, SalesDivision
 FROM
 	BRS_Customer 
 
@@ -30,8 +30,9 @@ WHERE
 
 GO
 
-select top 10 * from [sops].[cm_supplemental_fields] where MarketClass = 'MIDMKT'
+select  * from [sops].[cm_supplemental_fields] where MarketClass like 'INST%'
 
+select  * from [sops].[cm_supplemental_fields] where MarketClass like 'INST%'
 
 
 select count(*) from [sops].[cm_supplemental_fields]
