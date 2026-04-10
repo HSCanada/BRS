@@ -135,7 +135,7 @@ ORDER BY us_status_cd
 GO
 
 
---- add new
+--- add new US
 
 SELECT   s.item, s.us_item_subst
 FROM     pbi.item_cobra_xref RIGHT OUTER JOIN
