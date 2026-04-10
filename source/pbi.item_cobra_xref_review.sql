@@ -71,7 +71,9 @@ SELECT
 	,i.Brand
 	,s.us_contents_per_uom_amt
 	,s.us_uom_conv_rt
-
+	,icat.major_cd
+	,icat.CategoryRollup
+	,i.comm_group_eps_cd
 
 FROM
 	pbi.item_cobra_xref AS s 
@@ -115,6 +117,6 @@ GO
 -- select  top 100 * from pbi.item_cobra_xref_review order by 4,1
 -- select  count (*) from pbi.item_cobra_xref_review 
 
-select  top 100 * from pbi.item_cobra_xref_review where item_subst in('5873061', '4681139')
+ select  top 100 * from pbi.item_cobra_xref_review where item_subst in('5873061', '4681139')
 
 -- select  count(*) from pbi.item_cobra_xref_review
