@@ -56,6 +56,7 @@ AS
 --	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
 --  27 Mar 23	tmc		fix credit info addend bug
 --	22 Sep 25	tmc		add GEP order Flag
+--	15 Mar 26	tmc		add GEP promo
 **    
 *******************************************************************************/
 BEGIN
@@ -104,6 +105,8 @@ BEGIN
 		TRUNCATE TABLE STAGE_BRS_Promotion
 		TRUNCATE TABLE STAGE_BRS_TransactionDW
 		TRUNCATE TABLE [Integration].[BRS_CreditInfo]
+
+		TRUNCATE TABLE STAGE_BRS_Promotion_GEP
 
 		Set @nErrorCode = @@Error
 
@@ -165,6 +168,19 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '2b. Add new Promo GEP...'
+
+			INSERT INTO BRS_Promotion_GEP
+				(Promo_Code_GEP)
+			SELECT	DISTINCT PMCD 
+			FROM	STAGE_BRS_Promotion_GEP 
+			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE PMCD=PromotionCode) 
+
+			Set @nErrorCode = @@Error
+		End
 
 
 		If (@nErrorCode = 0) 

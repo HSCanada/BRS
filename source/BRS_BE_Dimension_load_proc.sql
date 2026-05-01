@@ -54,6 +54,7 @@ AS
 **	14 Mar 25	tmc		synch HS Global rules for finance and commissions
 **	19 Jan 26	tmc		add eps synch from JDE territory
 **	19 Mar 26	tmc		add 2 AR fields for Customer Master project
+**	14 Apr 26	tmc		add Medical Price to item for pricing team
 
 *******************************************************************************/
 
@@ -563,6 +564,9 @@ BEGIN
 				Brand = ISNULL(s.Brand, ''),
  				[SubMinorProductCodec] = ISNULL(s.SMNPRCLID,'*')
 
+				,CurrentMedPrice= ISNULL(s.CurrentMedPrice, 0)
+
+
              
 			FROM         
 				STAGE_BRS_ItemFull AS s 
@@ -594,7 +598,10 @@ BEGIN
 				d.DivisionalMarketAdjustmentPct <> ISNULL(s.DivisionalMarketAdjustmentPct, 0) OR  
 				d.CurrentCorporatePrice <> ISNULL(s.CurrentCorporatePrice, 0) OR
 				d.Brand <> ISNULL(s.Brand, '') OR
-				d.[SubMinorProductCodec] <> ISNULL(s.SMNPRCLID,'*')
+				d.[SubMinorProductCodec] <> ISNULL(s.SMNPRCLID,'*') OR
+
+				d.CurrentMedPrice <> ISNULL(s.CurrentMedPrice, 0) 
+
 
 			Set @nErrorCode = @@Error
 		End
@@ -632,6 +639,7 @@ BEGIN
 				CurrentCorporatePrice,
 				Brand,
 				[SubMinorProductCodec]
+				,CurrentMedPrice
 			)
 
 			SELECT 
@@ -659,6 +667,7 @@ BEGIN
 				ISNULL(s.CurrentCorporatePrice, 0) CurrentCorporatePrice,
 				ISNULL(Brand,''),
 				ISNULL(s.SMNPRCLID,'*')
+				,ISNULL(s.CurrentMedPrice, 0) CurrentMedPrice
 			FROM         
 				STAGE_BRS_ItemFull AS s
 			WHERE	(NOT EXISTS
