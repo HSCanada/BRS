@@ -323,11 +323,11 @@ CREATE TABLE dbo.BRS_Promotion_GEP
 	Line_Promo_Coupon_X_Ref_GEP varchar(100) NULL,
 	Line_Promo_Coupon_GEP varchar(100) NULL,
 	Line_Promo_Description_GEP varchar(120) NULL,
-	Line_Promo_End_Date_GEP date NULL,
+	Line_Promo_End_Date_GEP varchar(100) NULL,
 	Line_Promo_Message_GEP varchar(120) NULL,
 	Line_Promo_Redeem_Instructions_GEP varchar(120) NULL,
 	Line_Promo_Sales_Division_GEP varchar(10) NULL,
-	Line_Promo_Start_Date_GEP date NULL,
+	Line_Promo_Start_Date_GEP varchar(100) NULL,
 	Line_Promo_Status_GEP varchar(10) NULL,
 	Line_Promo_Type_GEP varchar(50) NULL,
 
@@ -335,11 +335,11 @@ CREATE TABLE dbo.BRS_Promotion_GEP
 	Order_Level_Coupon_GEP varchar(100) NULL,
 	Order_Level_Promo_Campaigns_GEP varchar(100) NULL,
 	Order_Level_Promo_Description_GEP varchar(120) NULL,
-	Order_Level_Promo_End_Date_GEP date NULL,
+	Order_Level_Promo_End_Date_GEP varchar(100) NULL,
 	Order_Level_Promo_Message_GEP varchar(120) NULL,
 	Order_Level_Promo_Redeem_Instructions_GEP varchar(120) NULL,
 	Order_Level_Promo_Sales_Division_GEP varchar(10) NULL,
-	Order_Level_Promo_Start_Date_GEP date NULL,
+	Order_Level_Promo_Start_Date_GEP varchar(100) NULL,
 	Order_Level_Promo_Status_GEP varchar(10) NULL,
 	Order_Level_Promo_Type_GEP varchar(50) NULL,
 
@@ -371,3 +371,143 @@ insert into BRS_Promotion_GEP
 VALUES ('')
 
 select * from BRS_Promotion_GEP
+
+--
+BEGIN TRANSACTION
+GO
+CREATE UNIQUE NONCLUSTERED INDEX BRS_Promotion_GEP_u_idx_1 ON dbo.BRS_Promotion_GEP
+	(
+	Promo_Code_GEP_key
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON USERDATA
+GO
+ALTER TABLE dbo.BRS_Promotion_GEP SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- GEP Promo DW Add
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW ADD
+	GEP_PromotionCode_key int NULL,
+	GEP_OrderPromotionCode_key int NULL
+GO
+ALTER TABLE dbo.BRS_TransactionDW SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+-- GEP Promo DW RI
+BEGIN TRANSACTION
+GO
+ALTER TABLE dbo.BRS_TransactionDW ADD CONSTRAINT
+	FK_BRS_TransactionDW_BRS_Promotion_GEP FOREIGN KEY
+	(
+	GEP_OrderPromotionCode_key
+	) REFERENCES dbo.BRS_Promotion_GEP
+	(
+	Promo_Code_GEP_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW ADD CONSTRAINT
+	FK_BRS_TransactionDW_BRS_Promotion_GEP1 FOREIGN KEY
+	(
+	GEP_PromotionCode_key
+	) REFERENCES dbo.BRS_Promotion_GEP
+	(
+	Promo_Code_GEP_key
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.BRS_TransactionDW SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+
+
+-- delete from BRS_TransactionDW where [Date] >= '2026-05-01'
+
+-- free goods
+
+-- clear DW FG (re-run newer model):  iterate from 202601 -> 202401
+UPDATE    
+	BRS_TransactionDW
+SET              
+	FreeGoodsEstInd = 0
+-- SELECT *
+FROM         
+	BRS_TransactionDW s
+		
+WHERE     
+	FreeGoodsEstInd <> 0 AND
+	[CalMonth] >= 202401 AND
+	(1=1)
+GO
+-- add 185 143 rows
+
+-- clear DS FG (re-run newer model)
+UPDATE    
+	BRS_Transaction
+SET              
+	FreeGoodsEstInd = 0,
+	AdjCode ='',
+	AdjNote = ''
+WHERE     
+	FreeGoodsEstInd <> 0 AND
+	[FiscalMonth] >= 202401 AND
+	(1=1)
+GO
+-- 185 137 rows
+
+
+-- clear DS missed FG XXXFGE 
+UPDATE    
+	BRS_Transaction
+SET              
+	AdjCode ='',
+	AdjNote = ''
+WHERE     
+	FreeGoodsEstInd = 0 AND
+	 AdjCode = 'XXXFGE' AND
+	[FiscalMonth] >= 202401 AND
+	(1=1)
+GO
+
+
+select AdjCode, AdjNote, FreeGoodsEstInd, DocType FROM BRS_Transaction where AdjCode = 'XXXFGE' and FreeGoodsEstInd = 0 and [FiscalMonth] >= 202401
+
+
+
+SELECT        d.FiscalMonth, t.SalesOrderNumber, t.Item, i.Supplier, SUM(t.GPAtFileCostAmt) AS ExtFileCostAmt, 'DS' as src
+FROM            BRS_TransactionDW AS t INNER JOIN
+                         BRS_SalesDay AS d ON t.Date = d.SalesDate INNER JOIN
+                         BRS_Item AS i ON t.Item = i.Item
+WHERE        (t.FreeGoodsEstInd = 1) AND (d.FiscalMonth between 202501 and 202603)
+GROUP BY d.FiscalMonth, t.SalesOrderNumber, t.Item, i.Supplier
+
+UNION ALL
+
+SELECT        FiscalMonth, SalesOrderNumber, Item, Supplier, SUM(ExtFileCostCadAmt) AS ExtFileCostAmt, 'FG' as src
+FROM            comm.freegoods
+WHERE        (SourceCode = 'ACT') AND 
+       (FiscalMonth BETWEEN 202501 AND 202603)
+GROUP BY FiscalMonth, SalesOrderNumber, DocType, Item, Supplier
+
+
+-- test model
+SELECT         i.Supplier, SUM(t.GPAtFileCostAmt) AS ExtFileCostAmt, 'DS' as src
+FROM            BRS_TransactionDW AS t INNER JOIN
+                         BRS_SalesDay AS d ON t.Date = d.SalesDate INNER JOIN
+                         BRS_Item AS i ON t.Item = i.Item
+WHERE        t.[FreeGoodsInvoicedInd] = 1 and (t.FreeGoodsEstInd = 0) AND (d.FiscalMonth between 202501 and 202603) AND
+	i.MajorProductClass = '081'
+GROUP BY  i.Supplier
+
+
+-- test actual
+
+SELECT        comm.freegoods.FiscalMonth, comm.freegoods.Item, comm.freegoods.Supplier, SUM(comm.freegoods.ExtFileCostCadAmt) AS ExtFileCostAmt, 'FG' AS src, i.Label
+FROM            comm.freegoods INNER JOIN
+                         BRS_Item AS i ON comm.freegoods.Item = i.Item
+WHERE        (comm.freegoods.SourceCode = 'ACT') AND (comm.freegoods.FiscalMonth BETWEEN 202501 AND 202603) AND (comm.freegoods.Supplier = 'MEDICO')
+GROUP BY comm.freegoods.FiscalMonth, comm.freegoods.DocType, comm.freegoods.Item, comm.freegoods.Supplier, i.Label

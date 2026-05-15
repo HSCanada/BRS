@@ -40,11 +40,12 @@ AS
 **	21 Jul 22	tmc		move filter logic from SSAS model to query.  add P&G FG
 **	09 Apr 23	tmc		fix bug where free goods breaking saleorder logic
 **	30 Jan 26	tmc		add free goods estimate flag
+--	14 May 26	mtc		add market Seg, GEP promo
 **    
 *******************************************************************************/
 
 SELECT
-     top 10      
+--     top 10      
 	t.ID											AS FactKey
 
 	,c.BillTo										AS BillTo
@@ -107,6 +108,11 @@ SELECT
 
 	,t.FreeGoodsEstInd
 
+	,ISNULL( mc_seg.SegKey, 1)				AS MarketClassSegmentKey
+	,t.GEP_Order_Flag_ind
+	,t.GEP_PromotionCode_key
+	,t.GEP_OrderPromotionCode_key
+
 
 FROM            
 	BRS_TransactionDW AS t 
@@ -130,12 +136,17 @@ FROM
 	ON t.PromotionCode = promo.PromotionCode AND
 		t.PriceMethod = 'P'
 
+
 	LEFT JOIN BRS_CustomerFSC_History AS h
 	ON h.ShipTo = t.Shipto   AND
 		h.FiscalMonth = d.FiscalMonth
 
 	LEFT JOIN [dbo].[BRS_CustomerMarketClass] mc
 	ON mc.MarketClass = h.HIST_MarketClass
+
+	LEFT JOIN [dbo].[BRS_CustomerSegment] mc_seg
+	ON mc_seg.[SegCd] = h.[HIST_SegCd]
+
 
 	LEFT JOIN [dbo].[BRS_Creditinfo] cred
 	ON t.CreditMinorReasonCode = cred.CreditMinorReasonCode AND

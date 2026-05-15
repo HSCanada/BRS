@@ -52,6 +52,7 @@ AS
 **	07 Feb 18	tmc		Bug fix (found by TS team).  RI fix broke PO update
 **							Marking init PO for DWTrans process fix
 **	04 Apr 24	tmc		Free Goods fix, remove Private Label from Est
+--	14 May 26	tmc		move Free Goods logic from here to DW load (qty shipped)
 **    
 *******************************************************************************/
 BEGIN
@@ -513,11 +514,17 @@ Begin
 		SUBSTRING(GLAcctNumberObjSales,6,4), 
 		SUBSTRING(GLAcctNumberObjCost,6,4),
 
+		--	14 May 26	tmc		move Free Goods logic from here to DW load (qty shipped)
+		0 AS FreeGoodsEstInd,
+		'' AS AdjCode,
+		'' AS AdjNote
+/*
 		-- exclude private label FG as of 4 Apr 24
 		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 'XXXFGE' ELSE '' END AS AdjCode,
 		--	13 Dec 16	tmc		Extend FG tag to adjust note (consistent reporting)
 		CASE WHEN NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1 and buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 AND ISNULL(i.Label, '')<>'P' THEN 'XXXFGE' ELSE '' END AS AdjNote
+*/
 
 
 	FROM         

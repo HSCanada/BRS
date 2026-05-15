@@ -106,7 +106,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202601 and 202603 AND
+	[TCPDT] between 202601 and 202604 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -158,10 +158,10 @@ where d1_prorepair_ind is null
 
 GO
 
-SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, SUM(s.NetSalesAmt) AS sales_amt
+SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, s.supplier, SUM(s.NetSalesAmt) AS sales_amt
 FROM      [hfm].global_cube s
-WHERE d1_prorepair_ind=1
-GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE
+WHERE d1_prorepair_ind=1 and FiscalMonth between 202501 and 202503
+GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE, s.SUPPLIER
 Order by 1
 GO
 

@@ -40,7 +40,9 @@ AS
 --	21 Jun 22	tmc		Patch SM logic to fix ZahnSM and 123Dental priors
 --  18 Jan 23	tmc		add Heartland VPA to logic
 --  15 Sep 23	tmc		add new Segment logic
---	02 Mar26	tmc		add multisite rule tracking to help fix bugs
+--	02 Mar 26	tmc		add multisite rule tracking to help fix bugs
+--	14 May 26	tmc		move Free Goods logic from here to DW load (qty shipped)
+
 **    
 *******************************************************************************/
 BEGIN
@@ -592,7 +594,8 @@ Begin
 	Set @nErrorCode = @@Error
 End
 
-
+--	14 May 26	tmc		move Free Goods logic from here to DW load (qty shipped)
+/*
 --	12 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 If (@bDebug <> 0)
 Begin
@@ -627,6 +630,7 @@ Begin
 	Set @nErrorCode = @@Error
 
 End
+*/
 --		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 1 ELSE 0 END AS FreeGoodsEstInd,
 --		CASE WHEN (NetSalesAmt = 0 AND dt.FreeGoodsEstInd = 1) and (buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1) AND NOT (l.SalesDate >= '1 Sep 2016' AND itm.Supplier = 'PROCGA' ) THEN 'XXXFGE' ELSE '' END AS AdjCode
 

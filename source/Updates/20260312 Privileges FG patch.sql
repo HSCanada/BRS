@@ -44,7 +44,7 @@ WHERE
 (t.ExtListPrice = 0) AND 
 (h.CorporatePrice > 0) AND 
 
-(t.CalMonth between 202601 and 202603)
+(t.CalMonth between 202501 and 202604)
 --(t.CalMonth between 202201 and 202412)
 -- subset to test
 --(t.SalesOrderNumber IN (16854633, 17040186, 17241831)) AND (h.CalMonth IN (202401, 202403, 202405))
@@ -142,7 +142,7 @@ t.LineTypeOrder, t.SalesDivision, t.MajorProductClass, t.ChargebackContractNumbe
 FROM     BRS_TransactionDW AS t 
 WHERE   
 (FreeGoodsInvoicedInd = 1) and
-(calmonth between 202603 and 202603) and
+(calmonth between 202604 and 202604) and
 --(calmonth between 202401 and 202602) and
 t.ExtListPrice = 0
 

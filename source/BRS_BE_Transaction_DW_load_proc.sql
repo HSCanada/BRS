@@ -100,7 +100,7 @@ BEGIN
 	if (@bClearStage <> 0)
 	Begin
 		if (@bDebug <> 0)
-			Print '0. Clear tables.'
+			Print '00. Clear tables.'
 
 		TRUNCATE TABLE STAGE_BRS_Promotion
 		TRUNCATE TABLE STAGE_BRS_TransactionDW
@@ -118,7 +118,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '1. Add new Promo...'
+				Print '01. Add new Promo...'
 
 			INSERT INTO BRS_Promotion
 				(PromotionCode)
@@ -133,7 +133,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '2. Updated Changed Promo...'
+				Print '02. Updated Changed Promo...'
 
 			UPDATE    
 				BRS_Promotion
@@ -171,22 +171,163 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '2b. Add new Promo GEP...'
+				Print '03. Add new Promo GEP - Promo Line'
 
 			INSERT INTO BRS_Promotion_GEP
 				(Promo_Code_GEP)
-			SELECT	DISTINCT PMCD 
-			FROM	STAGE_BRS_Promotion_GEP 
-			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE PMCD=PromotionCode) 
+			SELECT	DISTINCT RTRIM(s.[Line_Promo_Code_GEP])
+			FROM	STAGE_BRS_Promotion_GEP s
+			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE s.[Line_Promo_Code_GEP]=[Promo_Code_GEP]) 
+
+			Set @nErrorCode = @@Error
+		End
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '04. Add new Promo GEP - Promo Order'
+
+			INSERT INTO BRS_Promotion_GEP
+				(Promo_Code_GEP)
+			SELECT	DISTINCT RTRIM(s.[Order_Level_Promo_Code_GEP])
+			FROM	STAGE_BRS_Promotion_GEP s
+			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE s.[Order_Level_Promo_Code_GEP]=[Promo_Code_GEP]) 
+
+			Set @nErrorCode = @@Error
+		End
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '05. Add new Promo GEP - Tx Line'
+
+			INSERT INTO BRS_Promotion_GEP
+				(Promo_Code_GEP)
+			SELECT	DISTINCT RTRIM(s.[Line_Promo_Coupon_GEP])
+			FROM	[dbo].[STAGE_BRS_TransactionDW] s
+			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE RTRIM(s.[Line_Promo_Coupon_GEP])=RTRIM([Promo_Code_GEP]))  ORDER BY 1
+
+			Set @nErrorCode = @@Error
+		End
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '06. Add new Promo GEP - Tx Order'
+
+			INSERT INTO BRS_Promotion_GEP
+				(Promo_Code_GEP)
+			SELECT	DISTINCT RTRIM(s.[Order_Level_Promo_Code_GEP])
+			FROM	[dbo].[STAGE_BRS_TransactionDW] s
+			WHERE	NOT EXISTS (SELECT * FROM BRS_Promotion_GEP WHERE s.[Order_Level_Promo_Code_GEP]=[Promo_Code_GEP]) 
+
+			Set @nErrorCode = @@Error
+		End
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '07. Update Promo GEP - Line'
+
+			UPDATE
+				BRS_Promotion_GEP
+			SET
+				Line_Promo_Campaigns_GEP = ISNULL(s.[Line_Promo_Campaigns_GEP], '') 
+				, Line_Promo_Coupon_X_Ref_GEP = ISNULL(s.[Line_Promo_Coupon_X_Ref_GEP], '') 
+				, Line_Promo_Coupon_GEP = ISNULL(s.[Line_Promo_Coupon_GEP], '')
+				, Line_Promo_Description_GEP = ISNULL(s.[Line_Promo_Description_GEP], '')
+				, Line_Promo_End_Date_GEP = ISNULL(s.[Line_Promo_End_Date_GEP], 0)
+				, Line_Promo_Message_GEP = ISNULL(s.[Line_Promo_Message_GEP], '')
+				, Line_Promo_Redeem_Instructions_GEP = ISNULL(s.[Line_Promo_Redeem_Instructions_GEP], '')
+				, Line_Promo_Sales_Division_GEP = ISNULL(s.[Line_Promo_Sales_Division_GEP], '')
+				, Line_Promo_Start_Date_GEP = ISNULL(s.[Line_Promo_Start_Date_GEP], 0)
+				, Line_Promo_Status_GEP = ISNULL(s.[Line_Promo_Status_GEP], '')
+				, Line_Promo_Type_GEP = ISNULL(s.[Line_Promo_Type_GEP], '')
+			FROM
+				STAGE_BRS_Promotion_GEP AS s 
+	
+				INNER JOIN
+				(
+					SELECT        Line_Promo_Code_GEP, MIN(ID) AS ID_REF
+					FROM            STAGE_BRS_Promotion_GEP
+					GROUP BY Line_Promo_Code_GEP
+				) AS gep 
+				ON s.ID = gep.ID_REF 
+		
+				INNER JOIN BRS_Promotion_GEP 
+				ON s.Line_Promo_Code_GEP = BRS_Promotion_GEP.Promo_Code_GEP
+
+			WHERE
+				BRS_Promotion_GEP.Line_Promo_Campaigns_GEP <> ISNULL(s.[Line_Promo_Campaigns_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Coupon_X_Ref_GEP <> ISNULL(s.[Line_Promo_Coupon_X_Ref_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Coupon_GEP <> ISNULL(s.[Line_Promo_Coupon_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Description_GEP <> ISNULL(s.[Line_Promo_Description_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_End_Date_GEP <> ISNULL(s.[Line_Promo_End_Date_GEP], 0) OR
+				BRS_Promotion_GEP.Line_Promo_Message_GEP <> ISNULL(s.[Line_Promo_Message_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Redeem_Instructions_GEP <> ISNULL(s.[Line_Promo_Redeem_Instructions_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Sales_Division_GEP <> ISNULL(s.[Line_Promo_Sales_Division_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Start_Date_GEP <> ISNULL(s.[Line_Promo_Start_Date_GEP], 0) OR
+				BRS_Promotion_GEP.Line_Promo_Status_GEP <> ISNULL(s.[Line_Promo_Status_GEP], '') OR
+				BRS_Promotion_GEP.Line_Promo_Type_GEP <> ISNULL(s.[Line_Promo_Type_GEP], '') 
+
+			Set @nErrorCode = @@Error
+		End
+
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '08. Update Promo GEP - Order'
+
+			UPDATE
+				BRS_Promotion_GEP
+			SET
+				Order_Level_Coupon_X_Ref_GEP = ISNULL(s.[Order_Level_Coupon_X_Ref_GEP], '') 
+				, Order_Level_Coupon_GEP = ISNULL(s.[Order_Level_Coupon_GEP], '')
+				, Order_Level_Promo_Campaigns_GEP = ISNULL(s.[Order_Level_Promo_Campaigns_GEP], '') 
+				, Order_Level_Promo_Description_GEP = ISNULL(s.[Order_Level_Promo_Description_GEP], '')
+				, Order_Level_Promo_End_Date_GEP = ISNULL(s.[Order_Level_Promo_End_Date_GEP], 0)
+				, Line_Promo_Message_GEP = ISNULL(s.[Order_Level_Promo_Message_GEP], '')
+				, Order_Level_Promo_Redeem_Instructions_GEP = ISNULL(s.[Order_Level_Promo_Redeem_Instructions_GEP], '')
+				, Order_Level_Promo_Sales_Division_GEP = ISNULL(s.[Order_Level_Promo_Sales_Division_GEP], '')
+				, Order_Level_Promo_Start_Date_GEP = ISNULL(s.[Order_Level_Promo_Start_Date_GEP], 0)
+				, Order_Level_Promo_Status_GEP = ISNULL(s.[Order_Level_Promo_Status_GEP], '')
+				, Order_Level_Promo_Type_GEP = ISNULL(s.[Order_Level_Promo_Type_GEP], '')
+			-- SELECT s.* 
+			FROM
+				STAGE_BRS_Promotion_GEP AS s 
+	
+				INNER JOIN (
+					SELECT        Order_Level_Promo_Code_GEP, MIN(ID) AS ID_REF
+					FROM            STAGE_BRS_Promotion_GEP
+					GROUP BY Order_Level_Promo_Code_GEP
+				) AS gep 
+				ON s.ID = gep.ID_REF 
+		
+				INNER JOIN BRS_Promotion_GEP 
+				ON s.Line_Promo_Code_GEP = BRS_Promotion_GEP.Promo_Code_GEP
+			WHERE
+				BRS_Promotion_GEP.Order_Level_Coupon_X_Ref_GEP <> ISNULL(s.[Order_Level_Coupon_X_Ref_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Coupon_GEP <> ISNULL(s.[Order_Level_Coupon_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_Campaigns_GEP <> ISNULL(s.[Order_Level_Promo_Campaigns_GEP], '')  OR
+				BRS_Promotion_GEP.Order_Level_Promo_Description_GEP <> ISNULL(s.[Order_Level_Promo_Description_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_End_Date_GEP <> ISNULL(s.[Order_Level_Promo_End_Date_GEP], 0) OR
+				BRS_Promotion_GEP.Line_Promo_Message_GEP <> ISNULL(s.[Order_Level_Promo_Message_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_Redeem_Instructions_GEP <> ISNULL(s.[Order_Level_Promo_Redeem_Instructions_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_Sales_Division_GEP <> ISNULL(s.[Order_Level_Promo_Sales_Division_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_Start_Date_GEP <> ISNULL(s.[Order_Level_Promo_Start_Date_GEP], 0) OR
+				BRS_Promotion_GEP.Order_Level_Promo_Status_GEP <> ISNULL(s.[Order_Level_Promo_Status_GEP], '') OR
+				BRS_Promotion_GEP.Order_Level_Promo_Type_GEP <> ISNULL(s.[Order_Level_Promo_Type_GEP], '') 
+
 
 			Set @nErrorCode = @@Error
 		End
 
 
+
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '3. Add new BU...'
+				Print '09. Add new BU...'
 
 				INSERT INTO BRS_BusinessUnit
 									  (BusinessUnit)
@@ -204,7 +345,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '4. Add new ESS...'
+				Print '10. Add new ESS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [ESSCD], ''
@@ -220,7 +361,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '5. Add new CCS...'
+				Print '11. Add new CCS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [CCSCD], ''
@@ -236,7 +377,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '6. Add new TSS...'
+				Print '12. Add new TSS...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [TSSCD], ''
@@ -252,7 +393,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '7. Add new DTX...'
+				Print '13. Add new DTX...'
 
 			INSERT INTO [dbo].[BRS_FSC_Rollup] ([TerritoryCd], [Branch])
 			SELECT DISTINCT [CAGREPCD], ''
@@ -268,7 +409,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '8. Add new entered_by...'
+				Print '14. Add new entered_by...'
 
 			INSERT INTO [Pricing].[entered_by] ([entered_by_code])
 			SELECT DISTINCT [ENBYNA]
@@ -283,7 +424,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '9. Add new Sales Orders to BRS_TransactionDW_Ext...'
+				Print '15. Add new Sales Orders to BRS_TransactionDW_Ext...'
 
 			INSERT INTO 
 				BRS_TransactionDW_Ext (
@@ -319,7 +460,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '10. Update PO Text ...'
+				Print '16. Update PO Text ...'
 
 			UPDATE    
 				BRS_TransactionDW_Ext
@@ -360,7 +501,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '11. Map Promo tagged TS to Order-level TS Code...'
+				Print '17. Map Promo tagged TS to Order-level TS Code...'
 
 			UPDATE    
 				BRS_TransactionDW_Ext
@@ -389,7 +530,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '12. Append Credit lookup table'
+				Print '18. Append Credit lookup table'
 
 		INSERT INTO 
 			[dbo].[BRS_Creditinfo]
@@ -417,7 +558,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '13. LOAD BRS_TransactionDW'
+				Print '19. LOAD BRS_TransactionDW'
 
 
 			INSERT INTO BRS_TransactionDW
@@ -491,6 +632,8 @@ BEGIN
 
 				,[GEP_Order_Flag_ind]
 
+				,[GEP_PromotionCode_key]
+				,[GEP_OrderPromotionCode_key]
 				)
 				SELECT     
 				s.JDEORNO AS SalesOrderNumber, 
@@ -567,14 +710,21 @@ BEGIN
 						ABS(s.WJXBFS3) > 0.02 * s.WJXBFS1 
 					THEN 1 ELSE 0 
 				END                                             AS FreeGoodsInvoicedInd,
-		--      CASE WHEN ShippedQty <> 0 AND NetSalesAmt = 0 AND ABS(GPAtFileCostAmt) > 0.02 * ShippedQty THEN 1 ELSE 0 END AS FreeGoodsInvoicedInd
 
+				-- default to no free goods, fix later in post
+				0 AS FreeGoodsEstInd,
+
+/*
 				-- Free goods estimate model can be improved, 27 Jan 17
 				CASE 
-					WHEN s.WJXBFS2 = 0 AND dt.FreeGoodsEstInd = 1 AND 
-						buc.FreeGoodsEstInd = 1 AND mpc.FreeGoodsEstInd = 1 
+					WHEN 
+						s.WJXBFS2 = 0 AND 
+						dt.FreeGoodsEstInd = 1 AND 
+						buc.FreeGoodsEstInd = 1 AND 
+						mpc.FreeGoodsEstInd = 1 
 					THEN 1 ELSE 0 
 				END                                             AS FreeGoodsEstInd,
+*/
 
 				-- Correct Ext List on price adjusmtent as the DW field incorrect
 				CASE 
@@ -638,6 +788,10 @@ BEGIN
 				
 				,convert(bit, GEP_Order_Flag) AS GEP_Order_Flag_Ind
 
+				-- GEP Promo Head & Line Map
+				,gep_line.[Promo_Code_GEP_key] AS [GEP_PromotionCode_key]
+				,gep_order.[Promo_Code_GEP_key] AS [GEP_OrderPromotionCode_key]
+
 			FROM         
 				STAGE_BRS_TransactionDW AS s 
 
@@ -646,6 +800,17 @@ BEGIN
 
 				LEFT OUTER JOIN STAGE_BRS_Promotion AS p1 
 				ON s.PMID = p1.PMID
+
+				--> GEP promo add
+				LEFT OUTER JOIN BRS_Promotion_GEP AS gep_line
+				ON s.[Line_Promo_Coupon_GEP] = gep_line.[Promo_Code_GEP] AND
+				s.[Line_Promo_Coupon_GEP] <> '***'
+
+				LEFT OUTER JOIN BRS_Promotion_GEP AS gep_order
+				ON s.[Order_Level_Promo_Code_GEP] = gep_order.[Promo_Code_GEP] AND
+				s.[Order_Level_Promo_Code_GEP] <> '***'
+
+				--< GEP promo add
 
 				LEFT OUTER JOIN BRS_DocType as dt
 				ON s.ORDOTYCD = dt.DocType
@@ -682,6 +847,67 @@ BEGIN
 			Print ''
 		End
 
+		If (@nErrorCode = 0 And @nRowCount > 0) 
+		Begin
+
+			If (@bDebug <> 0)
+			Begin
+				Print '------------------------------------------------------------------------------------------------------------'
+				Print '20. Free goods estimate model, updated to match Datawarehouse, 12 May 26 '
+				Print '------------------------------------------------------------------------------------------------------------'
+				Print ''
+			End
+
+			UPDATE    
+				BRS_TransactionDW
+			SET              
+				FreeGoodsEstInd = 1
+			-- SELECT *
+			FROM         
+				BRS_TransactionDW s
+		
+				INNER JOIN BRS_Item AS i 
+				ON s.Item = i.Item
+
+			WHERE     
+				-- optimize for re-run
+				s.FreeGoodsEstInd <> 1 AND
+
+				-- include
+				s.NetSalesAmt = 0 AND
+				s.ShippedQty <> 0 AND
+				i.[MajorProductClass] in (	'001','002','003','004','005','006','007','008','010','011','012','013','017','019','020','021','022','023','025', '074', '369',
+											'054','057','058','124','125','300','316','320','340','364','370','083','082','076','084','355','024','073','071','372', '315') AND
+
+				-- exclude
+				s.DocType <> 'SN' AND
+				i.Supplier NOT in( 'SIRONC','BAINTE','ROSSCH','IMPEXW','SABLEI','HENGLB','GLHEAL','PROCGA','USENDO','HENSCH','ORTHOT','SOUDEN','FKGDCH') AND
+				i.Label <> 'P' AND 
+				i.Item NOT in ('9394930','1381736','9395540') AND
+	
+				-- remove below 3 comments to retro-fix DW FG flags 
+--				/*
+				EXISTS
+				(
+					Select 
+						* 
+					From 
+						STAGE_BRS_TransactionDW s
+					Where 
+						SalesOrderNumber = s.JDEORNO And
+						DocType = s.ORDOTYCD And
+						LineNumber = ROUND(s.LNNO * 1000,0) 
+				) AND
+--				*/
+--				[CalMonth] >= 202401 AND
+				(1 = 1)
+
+			Set @nErrorCode = @@Error
+
+
+		End
+
+/*
 
 		--	15 Sep 16	tmc		Add P&G Free good work-aournd to exclude P&G Free Goods after 1 Sept 16;  Proper fix once new Free Goods in place
 
@@ -691,7 +917,7 @@ BEGIN
 			If (@bDebug <> 0)
 			Begin
 				Print '------------------------------------------------------------------------------------------------------------'
-				Print '14. Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
+				Print '20. Free Goods P&G correction to remove free goods estimate for PROCGA >= 1 Sep 16'
 				Print 'Once on the new sytem this will re revisited.  tmc, 13 Sep 16'
 				Print '------------------------------------------------------------------------------------------------------------'
 				Print ''
@@ -735,7 +961,7 @@ BEGIN
 			If (@bDebug <> 0)
 			Begin
 				Print '------------------------------------------------------------------------------------------------------------'
-				Print '14b. Free Goods Private Label correction to remove free goods estimates for Label = P
+				Print '21. Free Goods Private Label correction to remove free goods estimates for Label = P
 				Print '------------------------------------------------------------------------------------------------------------'
 				Print ''
 			End
@@ -774,31 +1000,12 @@ BEGIN
 
 
 		End
-
-		/*  retro fix, 1 time
-			Print '14c. Free Goods Private Label correction to remove free goods estimates for Label = P - Retro 1-time
-
-			UPDATE    
-				BRS_TransactionDW
-			SET              
-				FreeGoodsEstInd = 0
-			FROM         
-				BRS_TransactionDW 
-		
-				INNER JOIN BRS_Item AS i 
-				ON BRS_TransactionDW.Item = i.Item
-
-			WHERE     
-				(i.Label = 'P') AND 
-				(BRS_TransactionDW.FreeGoodsEstInd = 1) AND
-				(1 = 1)
-		*/
-
+*/
 
 		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '15. Update SalesDateLastWeekly'	
+				Print '21. Update SalesDateLastWeekly'	
 
 			UPDATE    
 				BRS_Config
@@ -808,6 +1015,7 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+
 		If (@nErrorCode = 0 ) 
 --		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
@@ -815,7 +1023,7 @@ BEGIN
 			If (@bDebug <> 0)
 			Begin
 				Print '--------------------------------------------------------------------------------'
-				Print '16. add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 '
+				Print '22. add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 '
 				Print '--------------------------------------------------------------------------------'
 				Print ''
 			End
@@ -856,11 +1064,66 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+		If (@nErrorCode = 0 ) 
+--		If (@nErrorCode = 0 And @nRowCount > 0) 
+		Begin
+
+			If (@bDebug <> 0)
+			Begin
+				Print '--------------------------------------------------------------------------------'
+				Print '23. add FG side-effect here, copy FG flag from DW to DS, tmc, 14 May 26'
+				Print '--------------------------------------------------------------------------------'
+				Print ''
+			End
+
+			--- 
+			UPDATE    
+				BRS_Transaction
+			SET
+				FreeGoodsEstInd = w.[FreeGoodsEstInd],
+				AdjCode = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END,
+				AdjNote = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END
+				
+			-- SELECT w.SalesOrderNumber, w.DocType, w.LineNumber, w.Item, w.FreeGoodsInvoicedInd, w.FreeGoodsEstInd, t.FreeGoodsEstInd, t.FiscalMonth, t.ExtendedCostAmt, t.AdjCode, t.AdjNote
+			FROM         
+				BRS_TransactionDW AS w 
+				INNER JOIN BRS_Transaction t
+				ON w.SalesOrderNumber = t.SalesOrderNumberKEY AND 
+					w.DocType = t.DocType AND
+					w.LineNumber = t.LineNumber AND 
+
+					-- needed?
+					w.Date = t.SalesDate AND 
+					w.Shipto = t.Shipto AND
+					w.Item = t.Item AND 
+					w.LineTypeOrder = t.LineTypeOrder
+			WHERE     
+				(t.FreeGoodsEstInd <> w.FreeGoodsEstInd)  AND
+
+				-- remove below 3 comments to retro-fix DS FG flags 
+--				/*
+				EXISTS
+				(
+					Select * 
+					From STAGE_BRS_TransactionDW s
+					Where 
+						w.SalesOrderNumber = s.JDEORNO And
+						w.DocType = s.ORDOTYCD And
+						w.LineNumber = ROUND(s.LNNO * 1000,0) 
+				) AND
+--				*/
+--				[CalMonth] >= 202401 AND
+				(1 = 1)
+
+
+			Set @nErrorCode = @@Error
+		End
+
 		--
 		If (@nErrorCode = 0 And @nRowCount > 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '17. Update Credit Info'
+				Print '24. Update Credit Info'
 
 			UPDATE
 				BRS_TransactionDW
@@ -877,13 +1140,12 @@ BEGIN
 
 			Set @nErrorCode = @@Error
 		End
---
 
 
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '18. Clear STAGE_BRS_TransactionDW'	
+				Print '25. Clear STAGE_BRS_TransactionDW'	
 
 			Delete FROM STAGE_BRS_TransactionDW
 
@@ -955,6 +1217,9 @@ DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
 				(1=1)
 
 */
+
+-- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=1
+-- Exec BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0
 
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
