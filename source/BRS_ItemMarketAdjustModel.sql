@@ -78,11 +78,13 @@ FROM
 	INNER JOIN BRS_ItemLabel AS lab 
 	ON i.Label = lab.Label 
 	
-	INNER JOIN BRS_ItemStocking AS stk 
-	ON i.StockingType = stk.StockingType
 
 	INNER JOIN [dbo].[BRS_ItemCategory] AS cat
 	ON i.MinorProductClass = cat.MinorProductClass
+
+	INNER JOIN BRS_ItemStocking AS stk 
+	ON i.StockingType = stk.StockingType
+
 
 	CROSS JOIN [dbo].[BRS_Config] AS cfg
 
@@ -341,7 +343,7 @@ GO
 -- SELECT * FROM BRS_ItemMarketAdjustModel where Supplier = 'CLINRE'
 
 
- SELECT top 10 * FROM BRS_ItemMarketAdjustModel 
+ SELECT top 10 * FROM BRS_ItemMarketAdjustModel where item in('5823817',  '1000063', '7808937') order by 1
 
  -- SELECT * FROM BRS_ItemMarketAdjustModel where ItemStatus = 'A'
 
@@ -349,3 +351,7 @@ GO
 
 -- ORG 76965
 
+
+	-- test
+	
+	--
