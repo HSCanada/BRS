@@ -55,6 +55,7 @@ AS
 **	19 Jan 26	tmc		add eps synch from JDE territory
 **	19 Mar 26	tmc		add 2 AR fields for Customer Master project
 **	14 Apr 26	tmc		add Medical Price to item for pricing team
+--	28 May 26	tmc		add Med exception logic
 
 *******************************************************************************/
 
@@ -714,6 +715,20 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+
+	If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '17. override Medical stocking to fix MA pricing'
+
+			UPDATE  BRS_Item
+			SET        StockingType = 'S'
+			FROM     BRS_Item INNER JOIN
+						 BRS_ItemCategory ON BRS_Item.MinorProductClass = BRS_ItemCategory.MinorProductClass
+			WHERE   (BRS_ItemCategory.ma_stocking_override_ind = 1) AND (BRS_Item.StockingType <> 'S')
+
+			Set @nErrorCode = @@Error
+		End
 
 
 	------------------------------------------------------------------------------------------------------------
