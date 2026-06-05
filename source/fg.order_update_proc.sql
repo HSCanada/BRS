@@ -31,6 +31,7 @@ AS
 **	19 Sep 22	tmc		link last backorder to month
 **	03 Feb 23	tmc		de-couple fiscal data lockin so can run FG any time
 **  07 Dec 24   tmc		removed CB update from DW trans (new Free Goods with CB)
+--  15 May 26	tmc		Correct DW missing Ext List Price (for free goods disc)
 *******************************************************************************/
 
 Declare @nErrorCode int, @nTranCount int, @nRowCount int
@@ -644,6 +645,42 @@ Begin
 		(1=1)
 
 		Set @nErrorCode = @@Error
+End
+
+If (@nErrorCode = 0) 
+Begin
+	if (@bDebug <> 0)
+		print '205. Correct DW missing Ext List Price (side effect to allow correct discount analysis on free goods'
+
+
+	-- fix FG with missing ExtListPrice 
+	UPDATE  BRS_TransactionDW
+	SET      
+		-- patch the free goods missing ext price base on historical base
+		 ExtListPrice = h.CorporatePrice * t.ShippedQty
+
+		-- archive old data
+		,ExtListPriceORG = ExtListPrice
+
+	FROM     
+	BRS_TransactionDW t 
+
+	LEFT OUTER JOIN BRS_ItemBaseHistory AS h 
+
+	ON t.CalMonth = h.CalMonth AND t.Item = h.Item
+	WHERE   
+	-- fixed are Free goods with missing extprice and historical base non-zero
+	(t.FreeGoodsInvoicedInd = 1) AND 
+	(t.ExtListPrice = 0) AND 
+	(h.CorporatePrice > 0) AND 
+
+	(t.CalMonth = @nCurrentFiscalYearmoNum ) AND
+	-- subset to test
+	--(t.SalesOrderNumber IN (16854633, 17040186, 17241831)) AND (h.CalMonth IN (202401, 202403, 202405))
+	(1=1)
+
+
+	Set @nErrorCode = @@Error
 End
 
 If (@nErrorCode = 0) 
