@@ -88,7 +88,7 @@ BEGIN
 	if (@bClearStage <> 0)
 	Begin
 		if (@bDebug <> 0)
-			Print 'Clear tables.'
+			Print '1. Clear tables.'
 
 		TRUNCATE TABLE STAGE_BRS_ItemBaseHistory
 		TRUNCATE TABLE STAGE_BRS_ItemSupplierCost
@@ -103,7 +103,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add Current Base and Supplier Cost to STAGE_BRS_ItemBaseHistory ...'
+				Print '2. Add Current Base and Supplier Cost to STAGE_BRS_ItemBaseHistory ...'
 
 			INSERT INTO STAGE_BRS_ItemBaseHistory (
 				Item,
@@ -151,7 +151,7 @@ BEGIN
 					ON i.Item = subq_cost.Item
 
 			WHERE
-		--		i.Item = '6008159' AND
+				-- i.Item = '1000007' AND
 				1=1
 			GROUP BY 
 				i.Item

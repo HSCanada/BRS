@@ -505,7 +505,7 @@ SELECT * from Dimension.Customer where CommMasterCode_Current is null
 -- SELECT  top 100 * FROM Dimension.Customer where shipto = 4093441
 -- SELECT  * FROM BRS_Customer  where shipto = 1679340
 
-SELECT  distinct eps_branch, eps_name  FROM Dimension.Customer order by 2
+-- SELECT  distinct eps_branch, eps_name  FROM Dimension.Customer order by 2
 
 
 --  SELECT distinct GEP_Cohort_Code FROM Dimension.Customer 

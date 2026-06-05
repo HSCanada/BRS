@@ -343,7 +343,7 @@ GO
 -- SELECT * FROM BRS_ItemMarketAdjustModel where Supplier = 'CLINRE'
 
 
- SELECT top 10 * FROM BRS_ItemMarketAdjustModel where item in('5823817',  '1000063', '7808937') order by 1
+ SELECT top 10 * FROM BRS_ItemMarketAdjustModel where item in('5823817',  '1000063', '7808937', '5834629' ) order by 1
 
  -- SELECT * FROM BRS_ItemMarketAdjustModel where ItemStatus = 'A'
 

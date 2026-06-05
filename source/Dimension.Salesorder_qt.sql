@@ -86,6 +86,7 @@ SELECT
 	,f.[CustomerPOText1]
 
 	,os.OrderSourceCode
+	
 FROM
 	Fact.Sale_qt AS f 
 
