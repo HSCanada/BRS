@@ -10,11 +10,7 @@ ECHO RUN SSIS_br_d1_weekly_etl on %BRS_SQLSERVER%.%DB_DST%
 
 :: PAUSE
 
-::osql -S %BRS_SQLSERVER% -E -r -p -Q"exec msdb.dbo.sp_start_job 'SSIS_br_d1_weekly_etl'"
-sqlcmd -S %BRS_SQLSERVER% -E -d MSDB -Q"exec msdb.dbo.sp_start_job 'SSIS_br_d1_weekly_etl'"
-
-::osql -S %BRS_SQLSERVER% -E -r -p -Q"exec msdb.dbo.sp_start_job 'SSIS_br_d1_daily_etl'"
-::sqlcmd -S %BRS_SQLSERVER% -E -d MSDB -Q "sp_start_job 'SSIS_br_d1_daily_etl'"
+sqlcmd -C -S %BRS_SQLSERVER% -E -d MSDB -Q"exec msdb.dbo.sp_start_job 'SSIS_br_d1_weekly_etl'"
 
 
 PAUSE
