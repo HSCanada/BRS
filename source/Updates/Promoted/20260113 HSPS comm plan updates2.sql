@@ -48,6 +48,42 @@ WHERE
 (1=1)
 GO
 
+UPDATE  
+--	TOP (10) 
+	BRS_CustomerFSC_History
+SET        
+HIST_eps_code = CASE WHEN c.eps_code = '**' THEN '' ELSE c.eps_code END 
+, HIST_eps_salesperson_key_id = CASE WHEN c.eps_code = '**' THEN '' ELSE BRS_FSC_Rollup.comm_salesperson_key_id END 
+, HIST_eps_comm_plan_id = CASE WHEN c.eps_code = '**' THEN '' ELSE comm.salesperson_master.comm_plan_id END 
+
+FROM     
+	[dbo].[BRS_Customer] c 
+	
+	INNER JOIN BRS_FSC_Rollup 
+	ON c.eps_code = BRS_FSC_Rollup.TerritoryCd 
+	
+	INNER JOIN comm.salesperson_master 
+	ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id 
+	
+	INNER JOIN BRS_CustomerFSC_History 
+	ON c.ShipTo = BRS_CustomerFSC_History.Shipto
+
+WHERE   
+(BRS_CustomerFSC_History.FiscalMonth between 202604 and 202606) AND 
+(c.eps_code <> HIST_eps_code) AND
+(1=1)
+GO
+
+/*
+*/
+
+SELECT   BRS_CustomerFSC_History.HIST_eps_code, BRS_CustomerFSC_History.HIST_eps_salesperson_key_id, BRS_CustomerFSC_History.HIST_eps_comm_plan_id, BRS_CustomerFSC_History.FiscalMonth
+FROM     BRS_Customer AS c INNER JOIN
+             BRS_FSC_Rollup ON c.eps_code = BRS_FSC_Rollup.TerritoryCd INNER JOIN
+             comm.salesperson_master ON BRS_FSC_Rollup.comm_salesperson_key_id = comm.salesperson_master.salesperson_key_id INNER JOIN
+             BRS_CustomerFSC_History ON c.ShipTo = BRS_CustomerFSC_History.Shipto AND c.eps_code <> BRS_CustomerFSC_History.HIST_eps_code
+WHERE   (BRS_CustomerFSC_History.FiscalMonth BETWEEN 202604 AND 202606) AND (1 = 1)
+
 
 print 202501
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202501
@@ -95,5 +131,19 @@ Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
 print 202512
 UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202512
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+
+
+print 202604
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202604
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202605
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202605
+Exec comm.transaction_commission_calc_proc @bDebug=0
+GO
+print 202606
+UPDATE [dbo].[BRS_Config] SET [PriorFiscalMonth] = 202606
 Exec comm.transaction_commission_calc_proc @bDebug=0
 GO
