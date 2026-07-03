@@ -165,6 +165,8 @@ BEGIN
 		Set @nErrorCode = @@Error
 	End
 
+	-- add new prorepair code?  tmc 29 Jun 26
+
 
 	If (@nErrorCode = 0) 
 	Begin
@@ -281,6 +283,16 @@ GO
 -- Test logic
 -- ensure date is last business day
 -- SELECT SalesDateLastWeekly FROM BRS_Config
+
+-- test for new priv code setup in d1 but NOT sql (very infrequent)
+/*
+SELECT 
+      distinct [priv_code]
+  FROM [BRSales].[Integration].[open_order_prorepr] s
+where not exists (select * from nes.privileges p where  s.[priv_code] = p.privileges_code)
+*/
+
+
 
 
 -- prod run 
