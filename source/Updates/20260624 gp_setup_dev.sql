@@ -3,16 +3,17 @@
 
 USE [master]
 
+-- est 15m
 BACKUP DATABASE [BRSales] TO  DISK = N'F:\SQLData\brs_mockup_genpact_20260625.bak' WITH NOFORMAT, NOINIT,  NAME = N'BRSales-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10
 GO
 
+-- est 5m
 RESTORE DATABASE [DEV_BRSales] FROM  DISK = N'F:\SQLData\brs_mockup_genpact_20260625.bak' WITH  FILE = 1,  
 MOVE N'BRS_Primary' TO N'F:\SQLData\DEV_BRSales_PROD.mdf',  
 MOVE N'BRS_UserData' TO N'F:\SQLData\DEV_BRSales_UserData.ndf',  
 MOVE N'BRS_Log' TO N'F:\SQLData\DEV_BRSales_log.ldf',  NOUNLOAD, REPLACE, STATS = 5
 
 GO
-
 
 
 -- add prod roles to dev genpact
@@ -60,6 +61,11 @@ USHSI\Sudhir.Sudhir
 USHSI\Sudhanshu.Tyagi
 USHSI\Rohilla.Raina
 USHSI\Tarang.Jain
+
+-- mode 
+
+-- reminder to run
+USE DEV_BRSales
 
 -- Step 3: Assign the user to the database role
 print 'setup USHSI\Sudhir.Sudhir'
