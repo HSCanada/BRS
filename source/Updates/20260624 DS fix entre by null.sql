@@ -64,8 +64,10 @@ SELECT TOP (1000) [JDEORNO]
   FROM [BRSales].[dbo].[STAGE_BRS_TransactionDW] where [ENBYNA] is null 
 
 
+-- GEP bug fix -- salesperson is missing from JDE
 UPDATE [dbo].[STAGE_BRS_TransactionDW] 
-SET [ENBYNA] = 'MMCCLE'
+SET [ENBYNA] = ''
+--SET [ENBYNA] = 'MMCCLE'
 where [ENBYNA] is null 
 
 Exec BRS_BE_Transaction_DW_load_proc @bClearStage=0, @bDebug=1;

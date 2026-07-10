@@ -106,7 +106,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202605 and 202605 AND
+	[TCPDT] between 202606 and 202606 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -149,7 +149,6 @@ COMMIT
 */
 
 print ('set pre-repair flag')
-
 UPDATE  BRS_Transaction
 SET        d1_prorepair_ind = 1
 FROM     zzzShipto2 INNER JOIN
@@ -160,7 +159,7 @@ GO
 
 SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, s.supplier, SUM(s.NetSalesAmt) AS sales_amt
 FROM      [hfm].global_cube s
-WHERE d1_prorepair_ind=1 and FiscalMonth between 202501 and 202503
+WHERE d1_prorepair_ind=1 and FiscalMonth between 202606 and 202606
 GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE, s.SUPPLIER
 Order by 1
 GO
