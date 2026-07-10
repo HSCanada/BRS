@@ -53,6 +53,7 @@ AS
 **							Marking init PO for DWTrans process fix
 **	04 Apr 24	tmc		Free Goods fix, remove Private Label from Est
 --	14 May 26	tmc		move Free Goods logic from here to DW load (qty shipped)
+--	05 Jul 26	tmc		fix logic so day cannot be re-loaded (day status =15)
 **    
 *******************************************************************************/
 BEGIN
@@ -425,7 +426,8 @@ if (@bDebug <> 0)
 
 
 -- 999 = Locked
-If (@nBatchStatus <>999)
+If (@nBatchStatus <15)
+--If (@nBatchStatus <>999)
 Begin
 
 
