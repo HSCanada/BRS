@@ -4,11 +4,11 @@
 USE [master]
 
 -- est 15m
-BACKUP DATABASE [BRSales] TO  DISK = N'F:\SQLData\brs_mockup_genpact_20260625.bak' WITH NOFORMAT, NOINIT,  NAME = N'BRSales-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10
+BACKUP DATABASE [BRSales] TO  DISK = N'F:\SQLData\brs_mockup_genpact_20260708.bak' WITH NOFORMAT, NOINIT,  NAME = N'BRSales-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10
 GO
 
 -- est 5m
-RESTORE DATABASE [DEV_BRSales] FROM  DISK = N'F:\SQLData\brs_mockup_genpact_20260625.bak' WITH  FILE = 1,  
+RESTORE DATABASE [DEV_BRSales] FROM  DISK = N'F:\SQLData\brs_mockup_genpact_20260708.bak' WITH  FILE = 1,  
 MOVE N'BRS_Primary' TO N'F:\SQLData\DEV_BRSales_PROD.mdf',  
 MOVE N'BRS_UserData' TO N'F:\SQLData\DEV_BRSales_UserData.ndf',  
 MOVE N'BRS_Log' TO N'F:\SQLData\DEV_BRSales_log.ldf',  NOUNLOAD, REPLACE, STATS = 5
@@ -121,4 +121,13 @@ ALTER ROLE purch_role ADD MEMBER			[USHSI\Tarang.Jain];
 GO
 
 
+-- note, add below users to mdsdb and SSISDB
 
+GO
+USE [msdb]
+GO
+ALTER ROLE [SQLAgentOperatorRole] ADD MEMBER [USHSI\Sudhir.Sudhir];
+ALTER ROLE [SQLAgentOperatorRole] ADD MEMBER [USHSI\Sudhanshu.Tyagi];
+ALTER ROLE [SQLAgentOperatorRole] ADD MEMBER [USHSI\Rohilla.Raina];
+ALTER ROLE [SQLAgentOperatorRole] ADD MEMBER [USHSI\Tarang.Jain];
+GO
