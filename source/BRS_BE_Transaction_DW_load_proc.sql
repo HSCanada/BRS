@@ -56,7 +56,8 @@ AS
 --	04 Jan 23	tmc		fix first ship date defaults 0 -> Null -> 1/1/1980
 --  27 Mar 23	tmc		fix credit info addend bug
 --	22 Sep 25	tmc		add GEP order Flag
---	15 Mar 26	tmc		add GEP promo
+--	15 Mar 26	tmc		add GEP promo (**reversed by tmc to allow 08 Jul patch)
+--	08 Jul 26	tmc		GEP bug fix -- salesperson is missing from JDE
 **    
 *******************************************************************************/
 BEGIN
@@ -224,6 +225,9 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
+/*
+	-- skipping now, until GEP promo further tested
+
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
@@ -272,6 +276,7 @@ BEGIN
 
 			Set @nErrorCode = @@Error
 		End
+
 
 		If (@nErrorCode = 0) 
 		Begin
@@ -322,7 +327,7 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
-
+*/
 
 		If (@nErrorCode = 0) 
 		Begin
@@ -632,8 +637,10 @@ BEGIN
 
 				,[GEP_Order_Flag_ind]
 
-				,[GEP_PromotionCode_key]
-				,[GEP_OrderPromotionCode_key]
+				-- tc back-out reapply AFTER genpact live, 08 Jul 26
+				--,[GEP_PromotionCode_key]
+				--,[GEP_OrderPromotionCode_key]
+				--
 				)
 				SELECT     
 				s.JDEORNO AS SalesOrderNumber, 
@@ -644,7 +651,9 @@ BEGIN
 				s.ADNOID AS Shipto, 
 				s.ITLONO AS Item, 
 
-				s.ENBYNA AS EnteredBy, 
+				-- GEP bug fix -- salesperson is missing from JDE, 08 Jul 26
+				ISNULL(s.ENBYNA, '') AS EnteredBy, 
+				--
 				ISNULL(s.ORTKBYID,'') AS OrderTakenBy, 
 				s.ORSCCD AS OrderSourceCode, 
 				LEFT(s.RF1TT,25) AS CustomerPOText1, 
@@ -788,9 +797,12 @@ BEGIN
 				
 				,convert(bit, GEP_Order_Flag) AS GEP_Order_Flag_Ind
 
+				--> tc back-out reapply AFTER genpact live, 08 Jul 26
 				-- GEP Promo Head & Line Map
-				,gep_line.[Promo_Code_GEP_key] AS [GEP_PromotionCode_key]
-				,gep_order.[Promo_Code_GEP_key] AS [GEP_OrderPromotionCode_key]
+				--,gep_line.[Promo_Code_GEP_key] AS [GEP_PromotionCode_key]
+				--,gep_order.[Promo_Code_GEP_key] AS [GEP_OrderPromotionCode_key]
+				--< tc back-out reapply AFTER genpact live, 08 Jul 26
+
 
 			FROM         
 				STAGE_BRS_TransactionDW AS s 
@@ -1224,7 +1236,7 @@ DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
 -- prod run 
 -- BRS_BE_Transaction_DW_load_proc @bDebug=0
 
--- Dev run (5.45m)
+-- Dev run (21s)
 -- BRS_BE_Transaction_DW_load_proc @bDebug=1
 
 
