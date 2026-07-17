@@ -30,7 +30,8 @@ AS
 *******************************************************************************
 **	Date:	Author:		Description:
 **	-----	----------	--------------------------------------------
-**	9 Jun 19	tmc		add subminorcode
+**	09 Jun 19	tmc		add subminorcode
+**	15 Jul 26	tmc		add roles to script for genpact support & fix Size trim
 *******************************************************************************/
 
 BEGIN
@@ -79,7 +80,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new MPC (ItemFull) ...'
+				Print '1. Add new MPC (ItemFull) ...'
 
 				INSERT INTO BRS_ItemMPC
 									  (MajorProductClass)
@@ -95,7 +96,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new MinorProductClass (ItemFull) ...'
+				Print '2. Add new MinorProductClass (ItemFull) ...'
 
 				INSERT INTO dbo.BRS_ItemCategory
 									  (MinorProductClass)
@@ -113,7 +114,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Supplier (ItemFull) ...'
+				Print '3. Add new Supplier (ItemFull) ...'
 
 				INSERT INTO usd.BRS_ItemSupplier
 									  (Supplier, supplier_nm, CountryGroup)
@@ -129,7 +130,7 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print 'Add new Brand (ItemFull) ...'
+				Print '4. Add new Brand (ItemFull) ...'
 
 				INSERT INTO usd.BRS_ItemSupplier
 									  (Supplier, supplier_nm, CountryGroup)
@@ -146,34 +147,37 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'UPDATE BRS_Item changes'
+				Print '5. UPDATE BRS_Item changes'
 
 			UPDATE    usd.BRS_Item
 			SET 
 
-				ItemDescription= LEFT(ISNULL(s.ItemDescription, ''),40), 
-				Supplier= ISNULL(s.Supplier, ''), 
-				Size= ISNULL(s.Size, ''), 
-				Strength= LEFT(ISNULL(s.Strength, ''),12), 
-				ManufPartNumber= Left(ISNULL(s.ManufPartNumber, ''),15), 
-				FamilySetLeader= ISNULL(s.FamilySetLeader, ''), 
-				ItemStatus= ISNULL(s.ItemStatus, ''), 
-				Label= ISNULL(s.Label, ''), 
-				StockingType= ISNULL(s.StockingType, ''), 
-				GLCategory= ISNULL(s.GLCategory, ''), 
-				TagableItemFlag= ISNULL(s.TagableItemFlag, ''), 
-				ItemCreationDate= ISNULL(s.ItemCreationDate, '1 Jan 1980'), 
-				SalesCategory= ISNULL(s.SalesCategory, ''), 
-				MajorProductClass= ISNULL(s.MajorProductClass, ''), 
-				SubMajorProdClass= ISNULL(s.SubMajorProdClass, ''), 
-				MinorProductClass= ISNULL(s.MinorProductClass, ''), 
-				CurrentFileCost= ISNULL(s.CurrentFileCost, 0), 
-				FreightAdjPct= ISNULL(s.FreightAdjPct, 0), 
-				CorporateMarketAdjustmentPct= ISNULL(s.CorporateMarketAdjustmentPct, 0), 
-				DivisionalMarketAdjustmentPct= ISNULL(s.DivisionalMarketAdjustmentPct, 0), 
-				CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0),
-				Brand = ISNULL(s.Brand, ''),
-				[SubMinorProductCodec] = ISNULL(s.SMNPRCLID,'*')
+				ItemDescription= LEFT(ISNULL(s.ItemDescription, ''),40)
+				,Supplier= ISNULL(s.Supplier, '')
+
+				,Size= LEFT(ISNULL(s.Size, ''),8)
+				,Strength= LEFT(ISNULL(s.Strength, ''),12)
+				,ManufPartNumber= Left(ISNULL(s.ManufPartNumber, ''),15)
+
+				,FamilySetLeader= ISNULL(s.FamilySetLeader, '')
+				,ItemStatus= ISNULL(s.ItemStatus, '')
+				,Label= ISNULL(s.Label, '')
+				,StockingType= ISNULL(s.StockingType, '')
+				,GLCategory= ISNULL(s.GLCategory, '') 
+				,TagableItemFlag= ISNULL(s.TagableItemFlag, '')
+
+				,ItemCreationDate= ISNULL(s.ItemCreationDate, '1 Jan 1980')
+				,SalesCategory= ISNULL(s.SalesCategory, '')
+				,MajorProductClass= ISNULL(s.MajorProductClass, '')
+				,SubMajorProdClass= ISNULL(s.SubMajorProdClass, '')
+				,MinorProductClass= ISNULL(s.MinorProductClass, '')
+				,CurrentFileCost= ISNULL(s.CurrentFileCost, 0)
+				,FreightAdjPct= ISNULL(s.FreightAdjPct, 0)
+				,CorporateMarketAdjustmentPct= ISNULL(s.CorporateMarketAdjustmentPct, 0)
+				,DivisionalMarketAdjustmentPct= ISNULL(s.DivisionalMarketAdjustmentPct, 0)
+				,CurrentCorporatePrice= ISNULL(s.CurrentCorporatePrice, 0)
+				,Brand = ISNULL(s.Brand, '')
+				,[SubMinorProductCodec] = ISNULL(s.SMNPRCLID,'*')
 
              
 			FROM         
@@ -186,15 +190,19 @@ BEGIN
 
 				d.ItemDescription <> LEFT(ISNULL(s.ItemDescription, ''),40) OR 
 				d.Supplier <> ISNULL(s.Supplier, '')  OR  
-				d.Size <> ISNULL(s.Size, '')  OR 
+
+				d.Size <> LEFT(ISNULL(s.Size, ''), 8)  OR 
 				d.Strength <> LEFT(ISNULL(s.Strength, ''),12)  OR 
 				d.ManufPartNumber <> Left(ISNULL(s.ManufPartNumber, ''),15) OR  
+
 				d.FamilySetLeader <> ISNULL(s.FamilySetLeader, '') OR  
 				d.ItemStatus <> ISNULL(s.ItemStatus, '') OR  
 				d.Label <> ISNULL(s.Label, '') OR  
 				d.StockingType <> ISNULL(s.StockingType, '') OR   
 				d.GLCategory <> ISNULL(s.GLCategory, '') OR  
 				d.TagableItemFlag <> ISNULL(s.TagableItemFlag, '') OR  
+
+
 				d.ItemCreationDate <> ISNULL(s.ItemCreationDate, '1 Jan 1980') OR  
 				d.SalesCategory <> ISNULL(s.SalesCategory, '') OR  
 				d.MajorProductClass <> ISNULL(s.MajorProductClass, '') OR  
@@ -208,6 +216,7 @@ BEGIN
 				d.Brand <> ISNULL(s.Brand, '') OR
 				d.[SubMinorProductCodec] <> ISNULL(s.SMNPRCLID,'*')
 
+
 			Set @nErrorCode = @@Error
 		End
 
@@ -216,7 +225,7 @@ BEGIN
 		Begin
 
 			if (@bDebug <> 0)
-				Print 'ADD BRS_Item NEW'
+				Print '6. ADD BRS_Item NEW'
 
 			INSERT INTO usd.BRS_Item (
 
@@ -317,6 +326,11 @@ BEGIN
 END
 
 GO
+
+-- add exec rights to proc for genpact
+GRANT EXECUTE ON usd.BRS_BE_Dimension_load_proc TO [maint_role]
+GO
+
 
 -- Exec usd.BRS_BE_Dimension_load_proc @bClearStage=0, @bDebug=0
 
