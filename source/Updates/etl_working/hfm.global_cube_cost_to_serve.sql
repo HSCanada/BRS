@@ -112,7 +112,7 @@
 
 
 	WHERE
-		(t.FiscalMonth between 202601 AND 202603)  AND
+		(t.FiscalMonth between 202604 AND 202606)  AND
 
 		(t.SalesDivision NOT IN('AZA', 'AZE')) AND 
 
