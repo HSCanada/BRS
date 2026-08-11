@@ -11,11 +11,12 @@ print 'ho, no go!'
 
 truncate table zzzItem2
 
+-- update dates for 12mo
 INSERT INTO zzzItem2 
 ([zzzItem], [val1])
 SELECT        Item, SUM(NetSalesAmt) AS sales
 FROM            BRS_TransactionDW
-WHERE        (CalMonth BETWEEN 202503 AND 202602)
+WHERE        (CalMonth BETWEEN 202507 AND 202606)
 GROUP BY Item
 
 
@@ -70,7 +71,8 @@ FROM     pbi.item_cobra_xref AS item_cobra_xref_1 RIGHT OUTER JOIN
 WHERE   (item_cobra_xref_1.item IS NULL) AND (s.item <> s.us_item_subst)
 
 
--- update where match
+-- NOTE: update where match (run when US data is in stage Integration.pbi_item_cobra_xref)
+
 UPDATE  
 	pbi.item_cobra_xref
 SET        
@@ -94,19 +96,18 @@ select count( * )FROM Integration.pbi_item_cobra_xref
 -- add new CA
 
 
-
-
 -- translate East to West codes
 
 SELECT count (*)
   FROM [dbo].[zzzItem]
 
 
+-- add new Private Label or Owned products to the match table
 INSERT INTO pbi.item_cobra_xref
                          (item, item_subst, match_status_cd, match_type_cd, note_txt)
 SELECT
 -- TOP (10)
-item, item AS item_subst, '' AS match_status_cd, 'AAAA' as match_type_cd, 'TC20260326' AS note_txt
+item, item AS item_subst, '' AS match_status_cd, 'AAAA' as match_type_cd, 'TC20260724' AS note_txt
 FROM            [dbo].[BRS_Item] i
 WHERE
     (
@@ -119,11 +120,13 @@ WHERE
     )
 GO
 
+-- add new Private Label or Owned products to the match table (what is this?)
+
 INSERT INTO pbi.item_cobra_xref
                          (item, item_subst, match_status_cd, match_type_cd, note_txt)
 SELECT
  -- TOP (10)
-item, '' AS item_subst, '' AS match_status_cd, 'HSB3' as match_type_cd, 'TC20260326' AS note_txt
+item, '' AS item_subst, '' AS match_status_cd, 'HSB3' as match_type_cd, 'TC20260724' AS note_txt
 FROM            [dbo].[BRS_Item] i
 WHERE
     (
