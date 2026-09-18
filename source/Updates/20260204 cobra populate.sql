@@ -16,7 +16,7 @@ INSERT INTO zzzItem2
 ([zzzItem], [val1])
 SELECT        Item, SUM(NetSalesAmt) AS sales
 FROM            BRS_TransactionDW
-WHERE        (CalMonth BETWEEN 202507 AND 202606)
+WHERE        (CalMonth BETWEEN 202508 AND 202607)
 GROUP BY Item
 
 
@@ -55,7 +55,7 @@ where not exists(SELECT * FROM [pbi].[item_cobra_xref_master] where item = s.ite
 -- 
 --- add new US
 
-
+-- populdate Integration.pbi_item_cobra_xref
 
 SELECT   s.item, s.us_item_subst
 FROM     pbi.item_cobra_xref RIGHT OUTER JOIN
@@ -107,7 +107,7 @@ INSERT INTO pbi.item_cobra_xref
                          (item, item_subst, match_status_cd, match_type_cd, note_txt)
 SELECT
 -- TOP (10)
-item, item AS item_subst, '' AS match_status_cd, 'AAAA' as match_type_cd, 'TC20260724' AS note_txt
+item, item AS item_subst, '' AS match_status_cd, 'AAAA' as match_type_cd, 'TC20260814' AS note_txt
 FROM            [dbo].[BRS_Item] i
 WHERE
     (
@@ -126,7 +126,7 @@ INSERT INTO pbi.item_cobra_xref
                          (item, item_subst, match_status_cd, match_type_cd, note_txt)
 SELECT
  -- TOP (10)
-item, '' AS item_subst, '' AS match_status_cd, 'HSB3' as match_type_cd, 'TC20260724' AS note_txt
+item, '' AS item_subst, '' AS match_status_cd, 'HSB3' as match_type_cd, 'TC20260814' AS note_txt
 FROM            [dbo].[BRS_Item] i
 WHERE
     (
@@ -142,4 +142,17 @@ WHERE
     )
 GO
 
+/*
+-- added 14 Aug 26
 
+BEGIN TRANSACTION
+GO
+ALTER TABLE pbi.item_cobra_xref ADD
+	reviewed_ind bit NOT NULL CONSTRAINT DF_item_cobra_xref_reviewed_ind DEFAULT 0
+GO
+ALTER TABLE pbi.item_cobra_xref SET (LOCK_ESCALATION = TABLE)
+GO
+COMMIT
+*/
+
+-- truncate table zzzGroup
