@@ -57,6 +57,7 @@ SELECT
 	,ISNULL(s.note_txt, '') AS note_text
 --	,s.last_review_dt
 	,s.active_ind
+	,s.reviewed_ind
 
 	,i.ItemStatus
 	,i.SubMinorProductCodec
