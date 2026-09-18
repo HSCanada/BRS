@@ -40,6 +40,7 @@ GO
 --  18 Jun 24	tmc	add med threshold support fields
 --  04 Jul 24	tmc reverse: add Free goods to details with opt out for back compatible
 --	03 Feb 26	tmc	add FSC Tier code 
+--	08 Sep 26	tmc add salesplan for multisite details
 
 *******************************************************************************/
 
@@ -109,6 +110,9 @@ SELECT
 	,cust.MarketClass
 	,cust.SegCd
 
+	,RTRIM(v.VPA) + ' | ' + RTRIM(VPADesc)  			AS SalesPlan
+
+
 
 FROM         
 	[comm].[transaction_F555115] t
@@ -131,8 +135,13 @@ FROM
 	INNER JOIN [comm].[group] g
 	ON g.comm_group_cd = pr.disp_comm_group_cd
 
+
 	LEFT JOIN [dbo].[BRS_Customer] cust
 	ON t.WSSHAN_shipto = cust.ShipTo
+
+	LEFT JOIN BRS_CustomerVPA as v
+	ON cust.[VPA] = v.[VPA]
+
 
 WHERE     
 	t.FiscalMonth = (Select [PriorFiscalMonth] from [dbo].[BRS_Config]) AND
@@ -158,6 +167,9 @@ SELECT top 10 * FROM [comm].[backend_detail_fsc] where comm_group_tier_cd <> ''
 
 
 --SELECT * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd <>  ess_salesperson_cd_new
+--SELECT count(*) FROM [comm].[backend_detail_fsc] 
+-- ORG 217896
+-- NEW 217896
 
 --SELECT top 10 * FROM [comm].[backend_detail_fsc] where salesperson_key_id = 'ESS32'
 --SELECT top 10 * FROM [comm].[backend_detail_fsc] where ess_salesperson_cd = 'ESS47'
