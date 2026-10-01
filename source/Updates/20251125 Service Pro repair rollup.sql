@@ -184,7 +184,7 @@ SELECT
     ,MIN([Call type])
   FROM [Offline].[dbo].[OL_ServiceData] 
   where 
-	[TCPDT] between 202608 and 202608 AND
+	[TCPDT] between 202609 and 202609 AND
 --	[JDE order number] <> 0 AND
 	[Call type] like 'PR%'  AND
 --	[Call type] = 'TRAN' AND
@@ -199,13 +199,13 @@ GO
 -- test missing orders from DS (found to be internal)
 select ST, Note FROM zzzShipto2 where not exists (Select * from BRS_Transaction t where t.InvoiceNumber = ST) order by 2 desc
 
-Select * from BRS_Transaction t where t.InvoiceNumber = 20151830
+Select * from BRS_Transaction t where t.InvoiceNumber = 24291940
 
 -- test missing orders from Comm (why? )
 
 select ST, Note FROM zzzShipto2 where not exists (Select * from [comm].[transaction_F555115] t where t. = ST) order by 2 desc
 
-Select * from [comm].[transaction_F555115] t where t.WSDOCO_salesorder_number = 15895636
+Select * from [comm].[transaction_F555115] t where t.WSDOCO_salesorder_number = 24291940
 
 
 /*
@@ -251,17 +251,21 @@ GROUP BY s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.PRODUCT, s.BRAND_LINE
 Order by 1
 GO
 
-SELECT   'sales' as src, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt) AS value_amt
+-- prelim
+SELECT   'sales' as src, s.FiscalMonth, SUM(s.NetSalesAmt) AS value_amt
+--SELECT   'sales' as src, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt) AS value_amt
 FROM     BRS_Transaction s 
-WHERE d1_prorepair_ind=1
-GROUP BY s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
+WHERE d1_prorepair_ind=1 and FiscalMonth >= 202601
+GROUP BY s.FiscalMonth
+--GROUP BY s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
 
 UNION ALL
 
-SELECT   'gp' as src, s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, SalesDivision, SUM(s.NetSalesAmt - s.ExtendedCostAmt) AS value_amt
+SELECT   'gp' as src, s.FiscalMonth, SUM(s.NetSalesAmt - s.ExtendedCostAmt) AS value_amt
 FROM     BRS_Transaction s 
-WHERE d1_prorepair_ind=1
-GROUP BY s.FiscalMonth, s.DocType, s.SalesOrderNumber, s.InvoiceNumber, s.SalesDivision
+WHERE d1_prorepair_ind=1 and FiscalMonth >= 202601
+GROUP BY s.FiscalMonth
+order by 2,1
 
 
 
