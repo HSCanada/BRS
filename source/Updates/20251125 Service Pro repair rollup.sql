@@ -241,7 +241,6 @@ SET        d1_prorepair_ind = 1
 FROM     zzzShipto2 INNER JOIN
              BRS_Transaction ON zzzShipto2.ST = BRS_Transaction.InvoiceNumber
 where d1_prorepair_ind is null
-
 GO
 
 SELECT   s.FiscalMonth, s.ACCOUNT_sales, s.ENTITY_sales, s.BRAND_LINE, s.PRODUCT, s.supplier, SUM(s.NetSalesAmt) AS sales_amt
