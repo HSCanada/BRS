@@ -225,7 +225,7 @@ BEGIN
 			Set @nErrorCode = @@Error
 		End
 
-/*
+-->
 	-- skipping now, until GEP promo further tested
 
 		If (@nErrorCode = 0) 
@@ -240,13 +240,18 @@ BEGIN
 				, Line_Promo_Coupon_X_Ref_GEP = ISNULL(s.[Line_Promo_Coupon_X_Ref_GEP], '') 
 				, Line_Promo_Coupon_GEP = ISNULL(s.[Line_Promo_Coupon_GEP], '')
 				, Line_Promo_Description_GEP = ISNULL(s.[Line_Promo_Description_GEP], '')
-				, Line_Promo_End_Date_GEP = ISNULL(s.[Line_Promo_End_Date_GEP], 0)
+
+				, Line_Promo_Start_Date_GEP = CAST(NULLIF(s.[Line_Promo_Start_Date_GEP], '0') as date)
+				, Line_Promo_End_Date_GEP = CAST(NULLIF(s.[Line_Promo_End_Date_GEP], '0') as date)
+
 				, Line_Promo_Message_GEP = ISNULL(s.[Line_Promo_Message_GEP], '')
 				, Line_Promo_Redeem_Instructions_GEP = ISNULL(s.[Line_Promo_Redeem_Instructions_GEP], '')
 				, Line_Promo_Sales_Division_GEP = ISNULL(s.[Line_Promo_Sales_Division_GEP], '')
-				, Line_Promo_Start_Date_GEP = ISNULL(s.[Line_Promo_Start_Date_GEP], 0)
+
 				, Line_Promo_Status_GEP = ISNULL(s.[Line_Promo_Status_GEP], '')
+
 				, Line_Promo_Type_GEP = ISNULL(s.[Line_Promo_Type_GEP], '')
+			-- select * 
 			FROM
 				STAGE_BRS_Promotion_GEP AS s 
 	
@@ -262,17 +267,19 @@ BEGIN
 				ON s.Line_Promo_Code_GEP = BRS_Promotion_GEP.Promo_Code_GEP
 
 			WHERE
-				BRS_Promotion_GEP.Line_Promo_Campaigns_GEP <> ISNULL(s.[Line_Promo_Campaigns_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Coupon_X_Ref_GEP <> ISNULL(s.[Line_Promo_Coupon_X_Ref_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Coupon_GEP <> ISNULL(s.[Line_Promo_Coupon_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Description_GEP <> ISNULL(s.[Line_Promo_Description_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_End_Date_GEP <> ISNULL(s.[Line_Promo_End_Date_GEP], 0) OR
-				BRS_Promotion_GEP.Line_Promo_Message_GEP <> ISNULL(s.[Line_Promo_Message_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Redeem_Instructions_GEP <> ISNULL(s.[Line_Promo_Redeem_Instructions_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Sales_Division_GEP <> ISNULL(s.[Line_Promo_Sales_Division_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Start_Date_GEP <> ISNULL(s.[Line_Promo_Start_Date_GEP], 0) OR
-				BRS_Promotion_GEP.Line_Promo_Status_GEP <> ISNULL(s.[Line_Promo_Status_GEP], '') OR
-				BRS_Promotion_GEP.Line_Promo_Type_GEP <> ISNULL(s.[Line_Promo_Type_GEP], '') 
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Campaigns_GEP, '') <> ISNULL(s.[Line_Promo_Campaigns_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Coupon_X_Ref_GEP, '') <> ISNULL(s.[Line_Promo_Coupon_X_Ref_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Coupon_GEP, '') <> ISNULL(s.[Line_Promo_Coupon_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Description_GEP, '') <> ISNULL(s.[Line_Promo_Description_GEP], '') OR
+
+				BRS_Promotion_GEP.Line_Promo_End_Date_GEP <> CAST(NULLIF(s.[Line_Promo_End_Date_GEP], '0') as date) OR
+				BRS_Promotion_GEP.Line_Promo_Start_Date_GEP <> CAST(NULLIF(s.[Line_Promo_Start_Date_GEP], '0') AS date) OR
+
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Message_GEP, '') <> ISNULL(s.[Line_Promo_Message_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Redeem_Instructions_GEP, '') <> ISNULL(s.[Line_Promo_Redeem_Instructions_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Sales_Division_GEP, '') <> ISNULL(s.[Line_Promo_Sales_Division_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Status_GEP, '') <> ISNULL(s.[Line_Promo_Status_GEP], '') OR
+				ISNULL(BRS_Promotion_GEP.Line_Promo_Type_GEP, '') <> ISNULL(s.[Line_Promo_Type_GEP], '') 
 
 			Set @nErrorCode = @@Error
 		End
@@ -290,11 +297,14 @@ BEGIN
 				, Order_Level_Coupon_GEP = ISNULL(s.[Order_Level_Coupon_GEP], '')
 				, Order_Level_Promo_Campaigns_GEP = ISNULL(s.[Order_Level_Promo_Campaigns_GEP], '') 
 				, Order_Level_Promo_Description_GEP = ISNULL(s.[Order_Level_Promo_Description_GEP], '')
-				, Order_Level_Promo_End_Date_GEP = ISNULL(s.[Order_Level_Promo_End_Date_GEP], 0)
+
+				, Order_Level_Promo_End_Date_GEP = CAST(NULLIF(s.[Order_Level_Promo_End_Date_GEP], '0') as date)
+				, Order_Level_Promo_Start_Date_GEP = CAST(NULLIF(s.[Order_Level_Promo_Start_Date_GEP], '0') as date)
+
 				, Line_Promo_Message_GEP = ISNULL(s.[Order_Level_Promo_Message_GEP], '')
 				, Order_Level_Promo_Redeem_Instructions_GEP = ISNULL(s.[Order_Level_Promo_Redeem_Instructions_GEP], '')
 				, Order_Level_Promo_Sales_Division_GEP = ISNULL(s.[Order_Level_Promo_Sales_Division_GEP], '')
-				, Order_Level_Promo_Start_Date_GEP = ISNULL(s.[Order_Level_Promo_Start_Date_GEP], 0)
+
 				, Order_Level_Promo_Status_GEP = ISNULL(s.[Order_Level_Promo_Status_GEP], '')
 				, Order_Level_Promo_Type_GEP = ISNULL(s.[Order_Level_Promo_Type_GEP], '')
 			-- SELECT s.* 
@@ -315,19 +325,23 @@ BEGIN
 				BRS_Promotion_GEP.Order_Level_Coupon_GEP <> ISNULL(s.[Order_Level_Coupon_GEP], '') OR
 				BRS_Promotion_GEP.Order_Level_Promo_Campaigns_GEP <> ISNULL(s.[Order_Level_Promo_Campaigns_GEP], '')  OR
 				BRS_Promotion_GEP.Order_Level_Promo_Description_GEP <> ISNULL(s.[Order_Level_Promo_Description_GEP], '') OR
-				BRS_Promotion_GEP.Order_Level_Promo_End_Date_GEP <> ISNULL(s.[Order_Level_Promo_End_Date_GEP], 0) OR
+
+				BRS_Promotion_GEP.Order_Level_Promo_End_Date_GEP <> CAST(NULLIF(s.[Order_Level_Promo_End_Date_GEP], '0') as date) OR
+				BRS_Promotion_GEP.Order_Level_Promo_Start_Date_GEP <> CAST(NULLIF(s.[Order_Level_Promo_Start_Date_GEP], '0') as date) OR
+
 				BRS_Promotion_GEP.Line_Promo_Message_GEP <> ISNULL(s.[Order_Level_Promo_Message_GEP], '') OR
 				BRS_Promotion_GEP.Order_Level_Promo_Redeem_Instructions_GEP <> ISNULL(s.[Order_Level_Promo_Redeem_Instructions_GEP], '') OR
 				BRS_Promotion_GEP.Order_Level_Promo_Sales_Division_GEP <> ISNULL(s.[Order_Level_Promo_Sales_Division_GEP], '') OR
-				BRS_Promotion_GEP.Order_Level_Promo_Start_Date_GEP <> ISNULL(s.[Order_Level_Promo_Start_Date_GEP], 0) OR
+
+
 				BRS_Promotion_GEP.Order_Level_Promo_Status_GEP <> ISNULL(s.[Order_Level_Promo_Status_GEP], '') OR
 				BRS_Promotion_GEP.Order_Level_Promo_Type_GEP <> ISNULL(s.[Order_Level_Promo_Type_GEP], '') 
 
 
 			Set @nErrorCode = @@Error
 		End
+--<
 
-*/
 
 		If (@nErrorCode = 0) 
 		Begin
@@ -563,7 +577,96 @@ BEGIN
 		If (@nErrorCode = 0) 
 		Begin
 			if (@bDebug <> 0)
-				Print '19. LOAD BRS_TransactionDW'
+				Print '19a. Update BRS_TransactionDW GEP Promo (retro)'
+
+		UPDATE       
+			BRS_TransactionDW
+		SET    
+			BRS_TransactionDW.GEP_Order_Flag_ind = s.GEP_Order_Flag
+			,BRS_TransactionDW.GEP_PromotionCode_key = gep_line.Promo_Code_GEP_key
+			,BRS_TransactionDW.GEP_OrderPromotionCode_key = gep_order.Promo_Code_GEP_key 
+		FROM            
+			BRS_TransactionDW 
+
+			INNER JOIN STAGE_BRS_TransactionDW AS s 
+			ON s.JDEORNO = BRS_TransactionDW.SalesOrderNumber AND 
+			s.ORDOTYCD = BRS_TransactionDW.DocType AND 
+			ROUND(s.LNNO * 1000, 0) = BRS_TransactionDW.LineNumber AND 
+			BRS_TransactionDW.Item = s.ITLONO AND 
+			BRS_TransactionDW.Shipto = s.ADNOID 
+
+			LEFT OUTER JOIN BRS_Promotion_GEP AS gep_line 
+			ON s.Line_Promo_Coupon_GEP = gep_line.Promo_Code_GEP AND 
+			s.Line_Promo_Coupon_GEP <> '***' 
+
+			LEFT OUTER JOIN BRS_Promotion_GEP AS gep_order 
+			ON s.Order_Level_Promo_Code_GEP = gep_order.Promo_Code_GEP AND 
+			s.Order_Level_Promo_Code_GEP <> '***'
+
+		WHERE
+			(s.GEP_Order_Flag <> BRS_TransactionDW.GEP_Order_Flag_ind)  OR
+			(
+				(gep_line.Promo_Code_GEP_key <> ISNULL(BRS_TransactionDW.GEP_PromotionCode_key, '')) OR
+				(gep_order.Promo_Code_GEP_key <> ISNULL(BRS_TransactionDW.GEP_OrderPromotionCode_key, ''))
+			)
+
+/*
+			SELECT     
+				s.JDEORNO AS SalesOrderNumber, 
+				s.ORDOTYCD AS DocType, 
+				ROUND(s.LNNO * 1000,0) AS LineNumber, 
+				s.CMID AS CalMonth, 
+				s.PDDT AS Date, 
+				s.ADNOID AS Shipto, 
+				s.ITLONO AS Item
+			
+				,convert(bit, GEP_Order_Flag) AS GEP_Order_Flag_Ind
+
+				,gep_line.[Promo_Code_GEP_key] AS GEP_PromotionCode_key
+				,gep_order.[Promo_Code_GEP_key] AS GEP_OrderPromotionCode_key
+
+
+			FROM         
+				STAGE_BRS_TransactionDW AS s 
+
+				INNER JOIN BRS_TransactionDW d
+				ON s.JDEORNO = d.SalesOrderNumber And
+				s.ORDOTYCD = d.DocType And
+				ROUND(s.LNNO * 1000,0) = d.LineNumber
+
+				--> GEP promo add
+				LEFT OUTER JOIN BRS_Promotion_GEP AS gep_line
+				ON s.[Line_Promo_Coupon_GEP] = gep_line.[Promo_Code_GEP] AND
+				s.[Line_Promo_Coupon_GEP] <> '***'
+
+				LEFT OUTER JOIN BRS_Promotion_GEP AS gep_order
+				ON s.[Order_Level_Promo_Code_GEP] = gep_order.[Promo_Code_GEP] AND
+				s.[Order_Level_Promo_Code_GEP] <> '***'
+				--< GEP promo add
+
+			WHERE
+				-- sanity check filters that should not be needed due to salesorder join
+				(s.ITLONO = d.Item) AND
+				(s.ADNOID = d.Shipto) AND
+				(
+
+					(s.GEP_Order_Flag <> d.GEP_Order_Flag_ind) OR
+					(gep_line.[Promo_Code_GEP_key] <> ISNULL(d.GEP_PromotionCode_key, '')) OR
+					(gep_order.[Promo_Code_GEP_key] <> ISNULL(d.GEP_OrderPromotionCode_key, ''))
+				) AND
+				(1=1)
+
+*/
+			Set @nErrorCode = @@Error
+
+
+		End
+
+--
+		If (@nErrorCode = 0) 
+		Begin
+			if (@bDebug <> 0)
+				Print '19b. LOAD BRS_TransactionDW'
 
 
 			INSERT INTO BRS_TransactionDW
@@ -638,8 +741,8 @@ BEGIN
 				,[GEP_Order_Flag_ind]
 
 				-- tc back-out reapply AFTER genpact live, 08 Jul 26
-				--,[GEP_PromotionCode_key]
-				--,[GEP_OrderPromotionCode_key]
+				,[GEP_PromotionCode_key]
+				,[GEP_OrderPromotionCode_key]
 				--
 				)
 				SELECT     
@@ -799,8 +902,8 @@ BEGIN
 
 				--> tc back-out reapply AFTER genpact live, 08 Jul 26
 				-- GEP Promo Head & Line Map
-				--,gep_line.[Promo_Code_GEP_key] AS [GEP_PromotionCode_key]
-				--,gep_order.[Promo_Code_GEP_key] AS [GEP_OrderPromotionCode_key]
+				,gep_line.[Promo_Code_GEP_key] AS GEP_PromotionCode_key
+				,gep_order.[Promo_Code_GEP_key] AS GEP_OrderPromotionCode_key
 				--< tc back-out reapply AFTER genpact live, 08 Jul 26
 
 
@@ -1040,7 +1143,9 @@ BEGIN
 				Print ''
 			End
 
-			--- 
+			---this code updates the daily sales chargeback as a sideeffect
+			-- note:   change backs on private label are note valid
+			-- XXX
 			UPDATE    
 				BRS_Transaction
 			SET              
@@ -1096,7 +1201,7 @@ BEGIN
 				AdjCode = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END,
 				AdjNote = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END
 				
-			-- SELECT w.SalesOrderNumber, w.DocType, w.LineNumber, w.Item, w.FreeGoodsInvoicedInd, w.FreeGoodsEstInd, t.FreeGoodsEstInd, t.FiscalMonth, t.ExtendedCostAmt, t.AdjCode, t.AdjNote
+			-- SELECT t.[FiscalMonth], w.SalesOrderNumber, w.DocType, w.LineNumber, w.Item, w.FreeGoodsInvoicedInd, w.FreeGoodsEstInd, t.FreeGoodsEstInd, t.FiscalMonth, t.ExtendedCostAmt, t.[ExtChargebackAmt], t.AdjCode, t.AdjNote
 			FROM         
 				BRS_TransactionDW AS w 
 				INNER JOIN BRS_Transaction t
@@ -1124,7 +1229,7 @@ BEGIN
 						w.LineNumber = ROUND(s.LNNO * 1000,0) 
 				) AND
 --				*/
---				[CalMonth] >= 202401 AND
+--				[CalMonth] >= 202501 AND
 				(1 = 1)
 
 
@@ -1238,5 +1343,8 @@ DELETE FROM [BRS_TransactionDW] where date = '2021-03-23'
 
 -- Dev run (21s)
 -- BRS_BE_Transaction_DW_load_proc @bDebug=1
+-- ORG 8m16s
+
+
 
 
