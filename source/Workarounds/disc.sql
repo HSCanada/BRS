@@ -60,8 +60,8 @@ FROM
 WHERE         
 	(t.SalesCategory = 'MERCH') AND 
 	(
-		(t.FiscalMonth BETWEEN 202601 and 202602) OR
-		(t.FiscalMonth BETWEEN 202501 and 202502)
+		(t.FiscalMonth BETWEEN 202601 and 202609) OR
+		(t.FiscalMonth BETWEEN 202501 and 202509)
 	) AND
 	(
 		-- back out free goods billed
@@ -126,3 +126,10 @@ ORDER BY 1
 -- NEW 54 171, 17s
 
 -- select distinct Excl_Code from BRS_item
+
+
+
+
+
+
+
