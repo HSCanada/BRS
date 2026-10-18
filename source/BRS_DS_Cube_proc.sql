@@ -916,3 +916,17 @@ GO
 --
 -- Exec BRS_DS_Cube_proc @month_factor=2
 -- Exec BRS_DS_Cube_proc @month_factor=1
+
+-- show July config
+
+SELECT TOP (1000) [id]
+      ,[SalesDate]
+      ,[FiscalMonth]
+      ,[PriorFiscalMonth]
+      ,[SalesDateLastWeekly]
+      ,[HistorySummaryMonths]
+      ,[OffsetDaySeq_Yoy_Fiscal]
+      ,[OffsetDaySeq_Yoy_Fiscal_SameDay]
+      ,[OffsetDaySeq_Yoy_Fiscal_SameDay_Default]
+      ,[PY_SalesDateLastWeekly]
+  FROM [dbo].[BRS_Config]
