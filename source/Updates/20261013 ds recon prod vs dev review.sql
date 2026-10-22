@@ -121,8 +121,7 @@ SELECT TOP (1000) [FiscalMonth]
       ,[d1_prorepair_ind]
   FROM [BRSales].[dbo].[BRS_Transaction] 
   where 
--- actual (good
-,tc)
+-- actual (good,tc)
 --   [DocType] <> 'AA' and
 -- adj
    [DocType] = 'AA' and
@@ -172,12 +171,16 @@ SELECT  [id]
 id     SalesDate               FiscalMonth PriorFiscalMonth SalesDateLastWeekly     HistorySummaryMonths OffsetDaySeq_Yoy_Fiscal OffsetDaySeq_Yoy_Fiscal_SameDay OffsetDaySeq_Yoy_Fiscal_SameDay_Default PY_SalesDateLastWeekly
 ------ ----------------------- ----------- ---------------- ----------------------- -------------------- ----------------------- ------------------------------- --------------------------------------- -----------------------
 0      2026-07-31 00:00:00.000 202607      202607           2026-07-31 00:00:00.000 25                   364                     0                               0                                       2025-03-28 00:00:00.000
+
+id     SalesDate               FiscalMonth PriorFiscalMonth SalesDateLastWeekly     HistorySummaryMonths OffsetDaySeq_Yoy_Fiscal OffsetDaySeq_Yoy_Fiscal_SameDay OffsetDaySeq_Yoy_Fiscal_SameDay_Default PY_SalesDateLastWeekly
+------ ----------------------- ----------- ---------------- ----------------------- -------------------- ----------------------- ------------------------------- --------------------------------------- -----------------------
+0      2026-09-25 00:00:00.000 202609      202609           2026-09-25 00:00:00.000 25                   364                     0                               0                                       2025-03-28 00:00:00.000
+
 */
 
 
 EXEC dbo.monthend_summary_proc @bDebug = 1
-
-
+-- eta 9m
 
 -- 
 
@@ -590,9 +593,354 @@ ALTER TABLE dbo.BRS_TransactionDW SET (LOCK_ESCALATION = TABLE)
 GO
 COMMIT
 
+-- add RI
+ALTER TABLE [fg].[transaction_F5554240]  WITH CHECK ADD  CONSTRAINT [FK_transaction_F5554240_BRS_TransactionDW] FOREIGN KEY([WKDOCO_salesorder_number], [WKDCTO_order_type], [WKLNNO_line_number])
+REFERENCES [dbo].[BRS_TransactionDW] ([SalesOrderNumber], [DocType], [LineNumber])
+GO
+
+ALTER TABLE [fg].[transaction_F5554240] CHECK CONSTRAINT [FK_transaction_F5554240_BRS_TransactionDW]
+GO
+
+
+
+--
 
 -- note:  (fisc = cal for Aug)
 delete from [dbo].[BRS_TransactionDW] where [CalMonth] >= 202608
--- xx min
+
+-- 617 369 rows deleted
+-- 4 min
+
+-- 617 369 added
+-- 4 min
+
+/*
+-- dev load 1 - load init
+---------------------------------------------------------
+Proc: BRS_BE_Transaction_DW_load_proc
+Desc: Update DW Table with new transaction details
+Mode: DEBUG
+---------------------------------------------------------
+(0 rows affected)
+17. Map Promo tagged TS to Order-level TS Code...
+
+(2474 rows affected)
+18. Append Credit lookup table
+
+(0 rows affected)
+19a. Update BRS_TransactionDW GEP Promo (retro)
+
+(0 rows affected)
+19b. LOAD BRS_TransactionDW
+
+(617369 rows affected)
+------------------------------------------------------------------------------------------------------------
+20. Free goods estimate model, updated to match Datawarehouse, 12 May 26 
+------------------------------------------------------------------------------------------------------------
+ 
+
+(14205 rows affected)
+21. Update SalesDateLastWeekly
+
+(1 row affected)
+--------------------------------------------------------------------------------
+22. add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 
+--------------------------------------------------------------------------------
+ 
+
+(3757 rows affected)
+--------------------------------------------------------------------------------
+23. add FG side-effect here, copy FG flag from DW to DS, tmc, 14 May 26
+--------------------------------------------------------------------------------
+ 
+
+(6137 rows affected)
+24. Update Credit Info
+
+(4081 rows affected)
+25. Clear STAGE_BRS_TransactionDW
+
+(617369 rows affected)
+
+*/
+
+-- test GEP promo retro
+update [dbo].[BRS_TransactionDW]
+set [GEP_Order_Flag_ind] = 0,
+[GEP_PromotionCode_key] = null,
+[GEP_OrderPromotionCode_key] = null
+where [CalMonth] = 202608
+-- ORG 226878 row
+/*
+19a. Update BRS_TransactionDW GEP Promo (retro)
+(95489 rows affected)
+19b. LOAD BRS_TransactionDW
+(0 rows affected)
+*/
+
+-- test FG retro
+update [dbo].[BRS_TransactionDW]
+set [FreeGoodsEstInd]= 0
+where [CalMonth] = 202609
+/*
+------------------------------------------------------------------------------------------------------------
+No transactions to load.  Skipping to end. 
+------------------------------------------------------------------------------------------------------------
+ 
+--------------------------------------------------------------------------------
+22. add chargeback side-effect here, copy CB amt from DW to DS, tmc, 17 Dec 17 
+--------------------------------------------------------------------------------
+ 
+
+(0 rows affected)
+--------------------------------------------------------------------------------
+23. add FG side-effect here, copy FG flag from DW to DS, tmc, 14 May 26
+--------------------------------------------------------------------------------
+ 
+
+(0 rows affected)
+*/
+
+-- test Sep reload
+delete from [dbo].[BRS_TransactionDW] where [CalMonth] >= 202609
+/*19b. LOAD BRS_TransactionDW
+(390491 rows affected)
+------------------------------------------------------------------------------------------------------------
+20. Free goods estimate model, updated to match Datawarehouse, 12 May 26 
+------------------------------------------------------------------------------------------------------------
+(9413 rows affected)
+*/
+
+-- test DW FG est Aug - Oct - good est?  compare with prod, BI
 
 
+SELECT   
+--	TOP (100) 
+	dev.SalesOrderNumber, dev.DocType, dev.LineNumber, dev.OrderSourceCode, dev.CalMonth, dev.Date, i.item, i.[MajorProductClass], i.Supplier, i.Label, i.Excl_Code
+	, dev.[ChargebackContractNumber], dev.ShippedQty, dev.NetSalesAmt, dev.GPAmt, dev.ExtChargebackAmt, dev.ID, dev.FreeGoodsInvoicedInd, dev.[FreeGoodsEstInd]
+	, prod.[ChargebackContractNumber], prod.ShippedQty, prod.NetSalesAmt, prod.GPAmt, prod.ExtChargebackAmt, prod.ID, prod.FreeGoodsInvoicedInd, prod.[FreeGoodsEstInd]
+FROM
+	BRS_TransactionDW dev
+
+	-- vs prod
+	INNER JOIN BRSales..BRS_TransactionDW prod 
+	ON  dev.SalesOrderNumber = prod.SalesOrderNumber AND
+		dev.DocType = prod.DocType and
+		dev.LineNumber = prod.LineNumber
+
+	INNER JOIN BRS_Item i
+	ON dev.Item = i.item_usd
+WHERE
+	dev.CalMonth = 202301 and
+
+	-- out for 20207 - 08 by 5153, mainly handpieces
+	-- dev.[FreeGoodsEstInd] <> prod.[FreeGoodsEstInd] and 
+
+	-- good
+	-- dev.FreeGoodsInvoicedInd <> prod.FreeGoodsInvoicedInd and
+
+	dev.[FreeGoodsEstInd]  = 1 and
+--	dev.ExtChargebackAmt > 0 and
+	(1=1)
+ORDER BY 
+dev.GPAmt asc
+-- dev.Date
+GO
+
+--  DW fg flag is review: BAD
+SELECT
+    BRS_TransactionDW.CalMonth,
+    Sum(BRS_TransactionDW.ShippedQty) AS SumOfShippedQty,
+    Sum(BRS_TransactionDW.NetSalesAmt) AS SumOfNetSalesAmt,
+    Sum(BRS_TransactionDW.GPAmt) AS SumOfGPAmt,
+    Sum(BRS_TransactionDW.ExtChargebackAmt) AS SumOfExtChargebackAmt,
+	count(*) lines
+FROM
+    BRS_TransactionDW
+WHERE
+    (((BRS_TransactionDW.CalMonth) >= 202501)) and
+    (((BRS_TransactionDW.FreeGoodsEstInd) <> 0))
+	(1=1)
+GROUP BY
+    BRS_TransactionDW.CalMonth
+GO
+
+--> prod
+-- fix FG est
+UPDATE    
+	BRS_TransactionDW
+SET              
+FreeGoodsEstInd = 0
+-- SELECT *
+FROM         
+BRS_TransactionDW s
+		
+WHERE     
+-- optimize for re-run
+s.FreeGoodsEstInd =1 and
+[CalMonth] >= 202401 AND
+(1=1)
+-- 15 161 rows
+
+
+UPDATE    
+BRS_TransactionDW
+SET              
+FreeGoodsEstInd = 1
+-- SELECT *
+FROM         
+BRS_TransactionDW s
+		
+INNER JOIN BRS_Item AS i 
+ON s.Item = i.Item
+
+WHERE     
+-- optimize for re-run
+s.FreeGoodsInvoicedInd = 1 AND
+
+-- est
+s.FreeGoodsEstInd <> 1 AND
+
+-- include
+s.NetSalesAmt = 0 AND
+s.ShippedQty <> 0 AND
+i.[MajorProductClass] in (	'001','002','003','004','005','006','007','008','010','011','012','013','017','019','020','021','022','023','025', '074', '369',
+							'054','057','058','124','125','300','316','320','340','364','370','083','082','076','084','355','024','073','071','372', '315') AND
+
+-- exclude
+s.DocType <> 'SN' AND
+i.Supplier NOT in( 'SIRONC','BAINTE','ROSSCH','IMPEXW','SABLEI','HENGLB','GLHEAL','PROCGA','USENDO','HENSCH','ORTHOT','SOUDEN','FKGDCH') AND
+i.Label <> 'P' AND 
+i.Item NOT in ('9394930','1381736','9395540') AND
+	
+-- remove below 3 comments to retro-fix DW FG flags 
+/*
+EXISTS
+(
+	Select 
+		* 
+	From 
+		STAGE_BRS_TransactionDW s
+	Where 
+		SalesOrderNumber = s.JDEORNO And
+		DocType = s.ORDOTYCD And
+		LineNumber = ROUND(s.LNNO * 1000,0) 
+) AND
+*/
+[CalMonth] >= 202401 AND
+(1 = 1)
+-- 219639 rows
+
+
+--  DS fg flag is review: BAD
+SELECT
+    t.[FiscalMonth],
+--    Sum(t.ShippedQty) AS SumOfShippedQty,
+    Sum(t.NetSalesAmt) AS SumOfNetSalesAmt,
+    Sum(t.[ExtendedCostAmt]) AS SumOfExtendedCostAmt,
+    Sum(t.ExtChargebackAmt) AS SumOfExtChargebackAmt,
+	count(*) lines
+FROM
+    BRS_Transaction t
+WHERE
+    (t.[FiscalMonth] >= 202501) and
+    (
+--		(t.FreeGoodsEstInd = 1) and
+--		([AdjCode] <> 'XXXFGE')
+
+--		(t.FreeGoodsEstInd = 0) and
+		([AdjCode] = 'XXXFGE')
+	)
+GROUP BY
+    t.[FiscalMonth]
+GO
+
+-- test FG vs ADJ
+
+SELECT   FiscalMonth, FreeGoodsEstInd, AdjCode, SUM(NetSalesAmt) AS sales, SUM(ExtendedCostAmt) AS cost, SUM(ExtChargebackAmt) AS cb
+FROM     BRS_Transaction AS t
+where 
+FiscalMonth between 202607 and 202609 and
+AdjCode in ('XXXFGE','FREEGD')
+GROUP BY FiscalMonth, AdjCode, FreeGoodsEstInd
+
+
+-- Sept MTD FG adj
+SELECT   FiscalMonth, doctype, SalesOrderNumber, FreeGoodsEstInd, AdjCode, AdjNum, AdjNote, NetSalesAmt,ExtendedCostAmt, ExtChargebackAmt, ID,  SalesOrderNumberKEY, LineNumber, Branch, TerritoryCd, Shipto, GLBU_Class,   GL_BusinessUnit
+FROM     BRS_Transaction AS t
+where 
+FiscalMonth between 202609 and 202609 and
+AdjCode in ('FREEGD')
+order by  LineNumber
+
+
+
+SELECT   FiscalMonth, doctype, FreeGoodsEstInd, AdjCode, NetSalesAmt,ExtendedCostAmt, ExtChargebackAmt
+FROM     BRS_Transaction AS t
+where 
+FiscalMonth between 202607 and 202609 and
+AdjCode in ('XXXFGE')
+and ExtChargebackAmt <> 0
+order by  1
+
+-- fix cb 
+UPDATE  BRS_Transaction
+SET        ExtChargebackAmt = 0
+WHERE   (FiscalMonth BETWEEN 202607 AND 202609) AND (AdjCode IN ('XXXFGE')) AND (ExtChargebackAmt <> 0)
+
+SELECT   FiscalMonth, [SalesOrderNumberKEY], doctype, shipto, item, [GLBU_Class], FreeGoodsEstInd, AdjCode, AdjNote, AdjNum, NetSalesAmt,ExtendedCostAmt, ExtChargebackAmt
+FROM     BRS_Transaction AS t
+where 
+FiscalMonth between 202609 and 202609 and
+AdjCode in ('FREEGD')
+order by  1
+
+-- match FG to DUT
+
+SELECT   t.FiscalMonth, t.doctype, t.FreeGoodsEstInd, t.AdjCode, t.NetSalesAmt,t.ExtendedCostAmt, t.ExtChargebackAmt,
+		dut.FiscalMonth, dut.doctype, dut.FreeGoodsEstInd, dut.AdjCode, dut.NetSalesAmt,dut.ExtendedCostAmt, dut.ExtChargebackAmt
+FROM     
+	BRS_Transaction AS t
+
+	INNER JOIN DUT_BRSales..BRS_Transaction AS dut
+	ON t.id = dut.id
+where 
+t.FiscalMonth between 202608 and 202608 and
+--t.AdjCode in ('XXXFGE')
+t.AdjCode <> dut.AdjCode
+order by  1
+
+-- fix Aug to org
+UPDATE  BRS_Transaction
+SET        FreeGoodsEstInd =dut.FreeGoodsEstInd, AdjCode =dut.AdjCode,  ExtChargebackAmt =dut.ExtChargebackAmt
+FROM     BRS_Transaction INNER JOIN
+             DUT_BRSales.dbo.BRS_Transaction AS dut ON BRS_Transaction.ID = dut.ID AND BRS_Transaction.AdjCode <> dut.AdjCode
+WHERE   (BRS_Transaction.FiscalMonth BETWEEN 202608 AND 202608)
+--rows = 425
+
+
+-- remove 
+
+-- Sept MTD FG adj - review
+SELECT   FiscalMonth, doctype, SalesOrderNumber, FreeGoodsEstInd,  AdjCode, AdjNum, AdjNote, NetSalesAmt,ExtendedCostAmt, ExtChargebackAmt, ID,  SalesOrderNumberKEY, LineNumber, Branch, TerritoryCd, Shipto, GLBU_Class,   GL_BusinessUnit, GL_Object_Sales, GL_Object_Cost, GL_Object_ChargeBack
+FROM     BRS_Transaction AS t
+where 
+FiscalMonth between 202609 and 202609 and
+--AdjNum = 'AA-099' and
+AdjNum = 'AA-005' and
+--AdjCode in ('FREEGD' ) and
+--GL_Object_Cost = 4579       and
+(1=1)
+order by  LineNumber
+
+-- Sept MTD FG adj - stash
+SELECT   FiscalMonth, DocType, SalesOrderNumber, FreeGoodsEstInd, AdjCode, AdjNum, AdjNote, NetSalesAmt, ExtendedCostAmt, ExtChargebackAmt, ID, SalesOrderNumberKEY, LineNumber, Branch, TerritoryCd, Shipto, GLBU_Class, GL_BusinessUnit
+INTO       BRS_Transaction_fg_202609_bad_tc
+FROM     BRS_Transaction AS t
+WHERE   (FiscalMonth BETWEEN 202609 AND 202609) AND (AdjNum = 'AA-005') AND (1 = 1)
+-- (72 rows affected)
+
+-- Sept MTD FG adj - remove
+DELETE FROM BRS_Transaction
+--WHERE   (FiscalMonth BETWEEN 202609 AND 202609) AND (AdjNum = 'AA-099') AND (1 = 1)
+WHERE   (FiscalMonth BETWEEN 202609 AND 202609) AND (AdjNum = 'AA-005') AND (1 = 1)
