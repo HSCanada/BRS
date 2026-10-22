@@ -528,19 +528,20 @@ BEGIN
 				TsTerritoryOrgCd =	r.[TerritoryCd],
 				TsTerritoryCd=		r.[TerritoryCd]
 
---			select SalesOrderNumber, r.[TerritoryCd], CustomerPOText1
+--			select SalesOrderNumber, TsTerritoryCd, TsTerritoryOrgCd, r.[TerritoryCd], CustomerPOText1
 			FROM         
-				BRS_TransactionDW_Ext 
+				BRS_TransactionDW_Ext s
 
 				INNER JOIN [dbo].[BRS_FSC_Rollup]  r
-				ON BRS_TransactionDW_Ext.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
+				ON s.CustomerPOText1 LIKE r.Rule_WhereClauseLike AND
 					r.Rule_WhereClauseLike <>''
-			WHERE     
+			WHERE    
 				EXISTS
 				(
 					Select * From [dbo].[STAGE_BRS_TransactionDW] s
 					Where JDEORNO = SalesOrderNumber 
-				)
+				) AND
+				(s.TsTerritoryCd <> r.[TerritoryCd]) 
 
 			Set @nErrorCode = @@Error
 		End
@@ -986,7 +987,8 @@ BEGIN
 
 			WHERE     
 				-- optimize for re-run
-				s.FreeGoodsEstInd <> 1 AND
+				(s.FreeGoodsInvoicedInd = 1) AND
+				(s.FreeGoodsEstInd <> 1) AND
 
 				-- include
 				s.NetSalesAmt = 0 AND
@@ -1201,7 +1203,7 @@ BEGIN
 				AdjCode = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END,
 				AdjNote = CASE WHEN w.[FreeGoodsEstInd] =1  THEN 'XXXFGE' ELSE '' END
 				
-			-- SELECT t.[FiscalMonth], w.SalesOrderNumber, w.DocType, w.LineNumber, w.Item, w.FreeGoodsInvoicedInd, w.FreeGoodsEstInd, t.FreeGoodsEstInd, t.FiscalMonth, t.ExtendedCostAmt, t.[ExtChargebackAmt], t.AdjCode, t.AdjNote
+			-- SELECT t.[FiscalMonth], w.SalesOrderNumber, w.DocType, w.LineNumber, w.Item, w.[ShippedQty], w.[NetSalesAmt], w.[GPAmt], w.FreeGoodsInvoicedInd, w.FreeGoodsEstInd, t.FreeGoodsEstInd, t.FiscalMonth, t.ExtendedCostAmt, t.[ExtChargebackAmt], t.AdjCode, t.AdjNote
 			FROM         
 				BRS_TransactionDW AS w 
 				INNER JOIN BRS_Transaction t
@@ -1229,8 +1231,9 @@ BEGIN
 						w.LineNumber = ROUND(s.LNNO * 1000,0) 
 				) AND
 --				*/
---				[CalMonth] >= 202501 AND
+--				[CalMonth] >= 202608 AND
 				(1 = 1)
+--				order by 1
 
 
 			Set @nErrorCode = @@Error
